@@ -10,6 +10,7 @@
 !*.sh
 !*.py
 !*.yaml
+!*.md
 
 # even if they are inside subdirectories
 !*/
