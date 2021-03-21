@@ -17,7 +17,7 @@ from hipe4ml.tree_handler import TreeHandler
 from sklearn.model_selection import train_test_split
 
 
-def presel_eff_hist(col_name, split, cent_bins, bins):
+def presel_eff_hist(df_list, col_name, split, cent_bins, bins):
     # fill histograms (vs. ct and vs. pt)
     hist_eff = ROOT.TH1F(
         f'fPreselEff_vs_{col_name}_{split}_{cent_bins[0]}_{cent_bins[1]}',
@@ -25,9 +25,9 @@ def presel_eff_hist(col_name, split, cent_bins, bins):
             bins, dtype='f'))
     hist_gen = ROOT.TH1F('fPreselGen_vs_{col_name}', 'Gen', len(bins)-1, np.array(bins, dtype='f'))
 
-    for val in df_signal_cent[col_name]:
+    for val in df_list[0][col_name]:
         hist_eff.Fill(val)
-    for val in df_generated_cent[col_name]:
+    for val in df_list[1][col_name]:
         hist_gen.Fill(val)
 
     # compute efficiency and set properties
@@ -46,7 +46,7 @@ def presel_eff_hist(col_name, split, cent_bins, bins):
 SPLIT = True
 
 # training
-TRAINING = True
+TRAINING = False
 PLOT_DIR = 'plots'
 MAKE_PRESELECTION_EFFICIENCY = False
 MAKE_FEATURES_PLOTS = False
@@ -98,30 +98,29 @@ if TRAINING:
     for split in SPLIT_LIST:
 
         df_signal = uproot.open(os.path.expandvars(MC_PATH))['SignalTable'].arrays(library="pd")
-        df_generated = uproot.open(os.path.expandvars(MC_PATH))['GenTable'].arrays(library="pd")
         df_background = uproot.open(os.path.expandvars(BKG_PATH))['DataTable'].arrays(library="pd")
 
         if SPLIT:
             split_ineq_sign = '>'
             if split == 'antimatter':
                 split_ineq_sign = '<'
-            df_signal = df_signal.query(f'ArmenterosAlpha {split_ineq_sign} 0')
-            df_generated = df_generated.query(f'matter {split_ineq_sign} 0.5')
-            df_background = df_background.query(f'ArmenterosAlpha {split_ineq_sign} 0')
 
         for cent_bins in CENTRALITY_LIST:
-
-            df_signal_cent = df_signal.query(f'centrality > {cent_bins[0]} and centrality < {cent_bins[1]}')
-            df_generated_cent = df_generated.query(f'centrality > {cent_bins[0]} and centrality < {cent_bins[1]}')
-            df_background_cent = df_background.query(f'centrality > {cent_bins[0]} and centrality < {cent_bins[1]}')
 
             if MAKE_PRESELECTION_EFFICIENCY:
                 ##############################################################
                 # PRESELECTION EFFICIENCY
                 ##############################################################
+                df_generated = uproot.open(os.path.expandvars(MC_PATH))['GenTable'].arrays(library="pd")
+                df_signal_cent = df_signal.query(
+                    f'ArmenterosAlpha {split_ineq_sign} 0 and centrality > {cent_bins[0]} and centrality < {cent_bins[1]}')
+                df_generated_cent = df_generated.query(
+                    f'matter {split_ineq_sign} 0.5 and centrality > {cent_bins[0]} and centrality < {cent_bins[1]}')
+                del df_generated
+
                 # fill histograms (vs. ct and vs. pt)
-                hist_eff_ct = presel_eff_hist('ct', split, cent_bins, CT_BINS)
-                hist_eff_pt = presel_eff_hist('pt', split, cent_bins, PT_BINS)
+                hist_eff_ct = presel_eff_hist([df_signal_cent, df_generated_cent], 'ct', split, cent_bins, CT_BINS)
+                hist_eff_pt = presel_eff_hist([df_signal_cent, df_generated_cent], 'pt', split, cent_bins, PT_BINS)
 
                 # plot histograms
                 if not os.path.isdir(f'{PLOT_DIR}/presel_eff'):
@@ -133,6 +132,9 @@ if TRAINING:
                 c1.Print(f'{PLOT_DIR}/presel_eff/hPreselEffVsCt_{split}_{cent_bins[0]}_{cent_bins[1]}.png')
                 hist_eff_pt.Draw()
                 c1.Print(f'{PLOT_DIR}/presel_eff/hPreselEffVsPt_{split}_{cent_bins[0]}_{cent_bins[1]}.png')
+
+                del df_signal_cent
+                del df_generated_cent
                 ##############################################################
 
             for ct_bins in zip(CT_BINS[:-1], CT_BINS[1:]):
@@ -141,18 +143,26 @@ if TRAINING:
                 ##############################################################
                 # TRAINING AND TEST SET PREPARATION
                 ##############################################################
-                df_signal_cent_ct = df_signal_cent.query(f'ct > {ct_bins[0]} and ct < {ct_bins[1]}')
-                df_background_cent_ct = df_background_cent.query(f'ct > {ct_bins[0]} and ct < {ct_bins[1]}')
+                df_signal_cent_ct = df_signal.query(
+                    f'ArmenterosAlpha {split_ineq_sign} 0 and centrality > {cent_bins[0]} and centrality < {cent_bins[1]} and ct > {ct_bins[0]} and ct < {ct_bins[1]}')
+                df_background_cent_ct = df_background.query(
+                    f'ArmenterosAlpha {split_ineq_sign} 0 and centrality > {cent_bins[0]} and centrality < {cent_bins[1]} and ct > {ct_bins[0]} and ct < {ct_bins[1]}')
                 df_signal_cent_ct = df_signal_cent_ct[TRAINING_COLUMNS_LIST]
                 df_background_cent_ct = df_background_cent_ct[TRAINING_COLUMNS_LIST]
+                print(f'{ct_bins[0]}_{ct_bins[1]}')
 
                 # define tree handlers
                 signal_tree_handler = TreeHandler()
                 background_tree_handler_full = TreeHandler()
                 signal_tree_handler.set_data_frame(df_signal_cent_ct)
                 background_tree_handler_full.set_data_frame(df_background_cent_ct)
+                del df_signal_cent_ct
+                del df_background_cent_ct
+
+                # downscale background
                 background_tree_handler = background_tree_handler_full.get_subset(
                     size=int(0.8*signal_tree_handler.get_n_cand()), rndm_state=RANDOM_STATE)
+                del background_tree_handler_full
 
                 # features plot
                 leg_labels = ['background', 'signal']
