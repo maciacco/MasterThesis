@@ -46,7 +46,7 @@ def presel_eff_hist(df_list, col_name, split, cent_bins, bins):
 SPLIT = True
 
 # training
-TRAINING = False
+TRAINING = True
 PLOT_DIR = 'plots'
 MAKE_PRESELECTION_EFFICIENCY = False
 MAKE_FEATURES_PLOTS = False
@@ -54,7 +54,7 @@ OPTIMIZE = False
 TRAIN = False
 
 # application
-APPLICATION = True
+APPLICATION = False
 
 # avoid pandas warning
 warnings.simplefilter(action='ignore', category=FutureWarning)
@@ -149,7 +149,6 @@ if TRAINING:
                     f'ArmenterosAlpha {split_ineq_sign} 0 and centrality > {cent_bins[0]} and centrality < {cent_bins[1]} and ct > {ct_bins[0]} and ct < {ct_bins[1]}')
                 df_signal_cent_ct = df_signal_cent_ct[TRAINING_COLUMNS_LIST]
                 df_background_cent_ct = df_background_cent_ct[TRAINING_COLUMNS_LIST]
-                print(f'{ct_bins[0]}_{ct_bins[1]}')
 
                 # define tree handlers
                 signal_tree_handler = TreeHandler()
@@ -237,12 +236,13 @@ if APPLICATION:
             split_ineq_sign = '>'
             if split == 'antimatter':
                 split_ineq_sign = '<'
-            df_data = df_data.query(f'ArmenterosAlpha {split_ineq_sign} 0')
 
         for cent_bins in CENTRALITY_LIST:
-            df_data_cent = df_data.query(f'centrality > {cent_bins[0]} and centrality < {cent_bins[1]}')
+            df_data_cent = df_data.query(f'ArmenterosAlpha {split_ineq_sign} 0 and centrality > {cent_bins[0]} and centrality < {cent_bins[1]}')
             data_tree_handler = TreeHandler()
             data_tree_handler.set_data_frame(df_data_cent)
+            del df_data_cent
+
             data_tree_handler.slice_data_frame('ct', list(zip(CT_BINS[:-1], CT_BINS[1:])))
             model_hdl_array = np.empty((len(CT_BINS)-1,), dtype=object)
 

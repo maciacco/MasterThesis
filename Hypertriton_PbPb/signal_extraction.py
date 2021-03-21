@@ -13,6 +13,30 @@ import yaml
 from hipe4ml.model_handler import ModelHandler
 from hipe4ml.tree_handler import TreeHandler
 
+
+def ndarray2roo(ndarray, var):
+    if isinstance(ndarray, ROOT.RooDataSet):
+        print('Already a RooDataSet')
+        return ndarray
+
+    assert isinstance(ndarray, np.ndarray), 'Did not receive NumPy array'
+    assert len(ndarray.shape) == 1, 'Can only handle 1d array'
+
+    name = var.GetName()
+    x = np.zeros(1, dtype=np.float64)
+
+    tree = ROOT.TTree('tree', 'tree')
+    tree.Branch(f'{name}', x, f'{name}/D')
+
+    for i in ndarray:
+        x[0] = i
+        tree.Fill()
+
+    array_roo = ROOT.RooDataSet(
+        'data', 'dataset from tree', tree, ROOT.RooArgSet(var))
+    return array_roo
+
+
 SPLIT = True
 
 # avoid pandas warning
@@ -51,5 +75,18 @@ for split in SPLIT_LIST:
             df_data = pd.read_parquet(f'df/{bin}')
 
             for eff_score in zip(eff_array, score_eff_arrays_dict[bin]):
-                # print(f'eff = {1-eff_score[0]}, score = {eff_score[1]}')
-                df_data.query(f'model_output > {eff_score[1]}')
+                formatted_eff="{:.2f}".format(1-eff_score[0])
+                print(f'eff = {1-eff_score[0]:.2f}, score = {eff_score[1]:.2f}')
+                df_data_sel = df_data.query(f'model_output > {eff_score[1]}')
+
+                roo_m = ROOT.RooRealVar("m", "#it{M} (^{3}He + #pi^{-})", 2.96, 3.04, "GeV/#it{c}^{2}")
+                roo_data = ndarray2roo(np.array(df_data_sel['m']), roo_m)
+                frame = roo_m.frame(2.96, 3.04)
+                frame.SetTitle(str(ct_bins[0])+'#leq #it{c}t<'+str(ct_bins[1])+' cm, '+str(cent_bins[0])+'-'+str(cent_bins[1])+'%, '+str(formatted_eff))
+                roo_data.plotOn(frame)
+                canv = ROOT.TCanvas()
+                frame.Draw("")
+
+                if not os.path.isdir('plots/signal_extraction'):
+                    os.mkdir('plots/signal_extraction')
+                canv.Print(f'plots/signal_extraction/{1-eff_score[0]:.2f}_{bin}.png')
