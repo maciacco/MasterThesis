@@ -48,8 +48,9 @@ SPLIT = True
 # training
 TRAINING = True
 PLOT_DIR = 'plots'
-MAKE_PRESELECTION_EFFICIENCY = False
+MAKE_PRESELECTION_EFFICIENCY = True
 MAKE_FEATURES_PLOTS = False
+MAKE_TRAIN_TEST_PLOT = False
 OPTIMIZE = False
 TRAIN = False
 
@@ -133,6 +134,11 @@ if TRAINING:
                 hist_eff_pt.Draw()
                 c1.Print(f'{PLOT_DIR}/presel_eff/hPreselEffVsPt_{split}_{cent_bins[0]}_{cent_bins[1]}.png')
 
+                root_file_presel_eff = ROOT.TFile("PreselEff.root", "update")
+                hist_eff_ct.Write()
+                hist_eff_pt.Write()
+                root_file_presel_eff.Close()
+
                 del df_signal_cent
                 del df_generated_cent
                 ##############################################################
@@ -206,12 +212,14 @@ if TRAINING:
                 else:
                     model_hdl.load_model_handler(f'models/{bin}_optimized_trained')
 
-                if not os.path.isdir(f'{PLOT_DIR}/train_test_out'):
-                    os.mkdir(f'{PLOT_DIR}/train_test_out')
-                plot_utils.plot_output_train_test(model_hdl, train_test_data,
-                                                  logscale=True, density=True, labels=leg_labels)
-                plt.savefig(f'{PLOT_DIR}/train_test_out/{bin}_out')
-                plt.close('all')
+                # second condition needed because of issue with Qt libraries
+                if MAKE_TRAIN_TEST_PLOT and not MAKE_PRESELECTION_EFFICIENCY:
+                    if not os.path.isdir(f'{PLOT_DIR}/train_test_out'):
+                        os.mkdir(f'{PLOT_DIR}/train_test_out')
+                    plot_utils.plot_output_train_test(model_hdl, train_test_data,
+                                                        logscale=True, density=True, labels=leg_labels)
+                    plt.savefig(f'{PLOT_DIR}/train_test_out/{bin}_out')
+                    plt.close('all')
 
                 # get scores corresponding to BDT efficiencies using test set
                 eff_array = np.arange(0.10, 0.51, 0.01)
