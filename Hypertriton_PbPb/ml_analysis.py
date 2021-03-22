@@ -55,7 +55,7 @@ OPTIMIZE = False
 TRAIN = False
 
 # application
-APPLICATION = False
+APPLICATION = True
 
 # avoid pandas warning
 warnings.simplefilter(action='ignore', category=FutureWarning)
@@ -217,7 +217,7 @@ if TRAINING:
                     if not os.path.isdir(f'{PLOT_DIR}/train_test_out'):
                         os.mkdir(f'{PLOT_DIR}/train_test_out')
                     plot_utils.plot_output_train_test(model_hdl, train_test_data,
-                                                        logscale=True, density=True, labels=leg_labels)
+                                                      logscale=True, density=True, labels=leg_labels)
                     plt.savefig(f'{PLOT_DIR}/train_test_out/{bin}_out')
                     plt.close('all')
 
@@ -246,7 +246,8 @@ if APPLICATION:
                 split_ineq_sign = '<'
 
         for cent_bins in CENTRALITY_LIST:
-            df_data_cent = df_data.query(f'ArmenterosAlpha {split_ineq_sign} 0 and centrality > {cent_bins[0]} and centrality < {cent_bins[1]}')
+            df_data_cent = df_data.query(
+                f'ArmenterosAlpha {split_ineq_sign} 0 and centrality > {cent_bins[0]} and centrality < {cent_bins[1]}')
             data_tree_handler = TreeHandler()
             data_tree_handler.set_data_frame(df_data_cent)
             del df_data_cent
