@@ -48,9 +48,9 @@ SPLIT = True
 # training
 TRAINING = True
 PLOT_DIR = 'plots'
-MAKE_PRESELECTION_EFFICIENCY = True
+MAKE_PRESELECTION_EFFICIENCY = False
 MAKE_FEATURES_PLOTS = False
-MAKE_TRAIN_TEST_PLOT = False
+MAKE_TRAIN_TEST_PLOT = True
 OPTIMIZE = False
 TRAIN = False
 
@@ -93,6 +93,11 @@ if TRAINING:
     # make plot directory
     if not os.path.isdir(PLOT_DIR):
         os.mkdir(PLOT_DIR)
+
+    # make dataframe directory
+    if not os.path.isdir('df'):
+        os.mkdir('df')
+    score_eff_arrays_dict = pickle.load(open("file_score_eff_dict", "rb"))
 
     score_eff_arrays_dict = dict()
 
@@ -153,8 +158,8 @@ if TRAINING:
                     f'ArmenterosAlpha {split_ineq_sign} 0 and centrality > {cent_bins[0]} and centrality < {cent_bins[1]} and ct > {ct_bins[0]} and ct < {ct_bins[1]}')
                 df_background_cent_ct = df_background.query(
                     f'ArmenterosAlpha {split_ineq_sign} 0 and centrality > {cent_bins[0]} and centrality < {cent_bins[1]} and ct > {ct_bins[0]} and ct < {ct_bins[1]}')
-                df_signal_cent_ct = df_signal_cent_ct[TRAINING_COLUMNS_LIST]
-                df_background_cent_ct = df_background_cent_ct[TRAINING_COLUMNS_LIST]
+                #df_signal_cent_ct = df_signal_cent_ct[TRAINING_COLUMNS_LIST]
+                #df_background_cent_ct = df_background_cent_ct[TRAINING_COLUMNS_LIST]
 
                 # define tree handlers
                 signal_tree_handler = TreeHandler()
@@ -181,9 +186,9 @@ if TRAINING:
                         alpha=0.3, grid=False)
                     plt.subplots_adjust(left=0.06, bottom=0.06, right=0.99, top=0.96, hspace=0.55, wspace=0.55)
                     plt.savefig(f'{PLOT_DIR}/features/FeaturePlots_{bin}')
-                    plot_utils.plot_corr([background_tree_handler], TRAINING_COLUMNS_LIST, leg_labels)
+                    plot_utils.plot_corr([background_tree_handler], TRAINING_COLUMNS_LIST, ['background'])
                     plt.savefig(f'{PLOT_DIR}/features/BackgroundCorrelationMatrix_{bin}')
-                    plot_utils.plot_corr([signal_tree_handler], TRAINING_COLUMNS_LIST, leg_labels)
+                    plot_utils.plot_corr([signal_tree_handler], TRAINING_COLUMNS_LIST, ['background'])
                     plt.savefig(f'{PLOT_DIR}/features/SignalCorrelationMatrix_{bin}')
                     plt.close('all')
 
@@ -222,11 +227,23 @@ if TRAINING:
                     plt.close('all')
 
                 # get scores corresponding to BDT efficiencies using test set
-                eff_array = np.arange(0.10, 0.51, 0.01)
+                eff_array = np.arange(0.10, 0.91, 0.01)
                 test_y_score = model_hdl.predict(train_test_data[2])
                 score_array = analysis_utils.score_from_efficiency_array(
                     train_test_data[3], test_y_score, efficiency_selected=eff_array, keep_lower=True)
                 score_eff_arrays_dict[bin] = score_array
+
+                # write test set data frame
+                train_test_data[2]['model_output']=test_y_score
+                train_test_data[2]['y_test']=train_test_data[3]
+                train_test_data[2].to_parquet(f'df/mc_{bin}', compression='gzip')
+
+                # get the model hyperparameters
+                if not os.path.isdir('hyperparams'):
+                    os.mkdir('hyperparams')
+                model_params_dict = model_hdl.get_model_params()
+                with open(f'hyperparams/model_params_{bin}.yml', 'w') as outfile:
+                    yaml.dump(model_params_dict, outfile, default_flow_style=False)
                 ##############################################################
 
     pickle.dump(score_eff_arrays_dict, open("file_score_eff_dict", "wb"))
@@ -261,7 +278,7 @@ if APPLICATION:
                 model_hdl_array[i_ct_bins].load_model_handler(f'models/{bin}_optimized_trained')
 
             data_tree_handler.apply_model_handler(list(model_hdl_array))
-            eff_array = np.arange(0.10, 0.51, 0.01)
+            eff_array = np.arange(0.10, 0.91, 0.01)
 
             for i_ct_bins in range(len(CT_BINS)-1):
                 bin = f'{split}_{cent_bins[0]}_{cent_bins[1]}_{CT_BINS[i_ct_bins]}_{CT_BINS[i_ct_bins+1]}'
