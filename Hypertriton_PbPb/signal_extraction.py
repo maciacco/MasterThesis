@@ -86,12 +86,12 @@ for split in SPLIT_LIST:
                 roo_data = ndarray2roo(np.array(df_data_sel['m']), roo_m)
 
                 # declare fit model (gaus + pol2)
-                roo_n_signal = ROOT.RooRealVar('Nsignal', 'N_{signal}', 1., 50.)
-                roo_mean = ROOT.RooRealVar('mean', '#mu', 2.991, 2.9880, 2.9950)
-                roo_sigma = ROOT.RooRealVar('sigma', '#sigma', 0.0010, 0.0060)
+                roo_n_signal = ROOT.RooRealVar('Nsignal', 'N_{signal}', 0., 1000.)
+                roo_mean = ROOT.RooRealVar('mean', '#mu', 2.989, 2.993)
+                roo_sigma = ROOT.RooRealVar('sigma', '#sigma', 0.002, 0.004)
                 roo_signal = ROOT.RooGaussian('signal', 'signal', roo_m, roo_mean, roo_sigma)
 
-                roo_n_background = ROOT.RooRealVar('Nbackground', 'N_{bkg}', 1500., 1.e3, 1.e4)
+                roo_n_background = ROOT.RooRealVar('Nbackground', 'N_{bkg}', 0., 100000.)
                 roo_a = ROOT.RooRealVar('a', 'a', -0.01, 0.01)
                 roo_b = ROOT.RooRealVar('b', 'b', -.5, -1.e-5)
                 roo_bkg = ROOT.RooPolynomial('background', 'background', roo_m, ROOT.RooArgList(roo_b, roo_a))
@@ -104,7 +104,7 @@ for split in SPLIT_LIST:
                 ROOT.RooMsgService.instance().setGlobalKillBelow(ROOT.RooFit.ERROR)
                 ROOT.RooMsgService.instance().setSilentMode(ROOT.kTRUE)
                 ROOT.gErrorIgnoreLevel = ROOT.kError
-                roo_bkg.fitTo(roo_data, ROOT.RooFit.Save())
+                roo_model.fitTo(roo_data, ROOT.RooFit.Save())
 
                 # plot
                 xframe = roo_m.frame(2.96, 3.04, 32)
@@ -121,8 +121,10 @@ for split in SPLIT_LIST:
                 roo_model.plotOn(xframe, ROOT.RooFit.Components('signal'), ROOT.RooFit.Name('signal'),
                                  ROOT.RooFit.LineStyle(ROOT.kDashed), ROOT.RooFit.LineColor(ROOT.kRed))
                 roo_model.plotOn(xframe, ROOT.RooFit.Name('model'), ROOT.RooFit.LineColor(ROOT.kBlue))
+
+                formatted_chi2 = "{:.2f}".format(xframe.chiSquare('model', 'data'))
                 roo_model.paramOn(xframe, ROOT.RooFit.Label(
-                    '#chi^{2}/NDF = '+str(xframe.chiSquare('model', 'data'))),
+                    '#chi^{2}/NDF = '+formatted_chi2),
                     ROOT.RooFit.Layout(0.68, 0.96, 0.96))
 
                 # write to file

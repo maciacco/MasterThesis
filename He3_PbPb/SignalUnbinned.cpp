@@ -181,7 +181,7 @@ void SignalUnbinned(const float cutDCAz = 1.f, const int cutTPCcls = 89, const b
 
         // frame
         TString plotTitle = TString::Format("%.2f#leq #it{p}_{T}<%.2f GeV/#it{c}, %.0f-%.0f%%", minPt, maxPt, kCentBinsLimitsHe3[iCent][0], kCentBinsLimitsHe3[iCent][1]);
-        RooPlot *xframe = tpcNsigma.frame(RooFit::Bins(50), RooFit::Title(plotTitle), RooFit::Name(Form("f%sNSigma_%.0f_%.0f_%.2f_%.2f", kAntimatterMatter[iMatt], kCentBinsLimitsHe3[iCent][0], kCentBinsLimitsHe3[iCent][1], minPt, maxPt)));
+        RooPlot *xframe = tpcNsigma.frame(RooFit::Bins(48), RooFit::Title(plotTitle), RooFit::Name(Form("f%sNSigma_%.0f_%.0f_%.2f_%.2f", kAntimatterMatter[iMatt], kCentBinsLimitsHe3[iCent][0], kCentBinsLimitsHe3[iCent][1], minPt, maxPt)));
         dataPt.plotOn(xframe, RooFit::Name("dataNsigma"));
 
         if (extractSignal)
