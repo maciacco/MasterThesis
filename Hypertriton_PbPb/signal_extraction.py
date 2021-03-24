@@ -75,6 +75,9 @@ for split in SPLIT_LIST:
             df_data = pd.read_parquet(f'df/{bin}')
             df_signal = pd.read_parquet(f'df/mc_{bin}')
 
+            root_file_signal_extraction = ROOT.TFile("SignalExtraction.root", "update")
+            root_file_signal_extraction.mkdir(f'{bin}')
+
             for eff_score in zip(eff_array, score_eff_arrays_dict[bin]):
                 formatted_eff = "{:.2f}".format(1-eff_score[0])
                 print(f'eff = {1-eff_score[0]:.2f}, score = {eff_score[1]:.2f}')
@@ -82,22 +85,20 @@ for split in SPLIT_LIST:
                 df_signal_sel = df_signal.query(f'model_output > {eff_score[1]}')
 
                 # get invariant mass distribution
-                root_file_signal_extraction = ROOT.TFile("SignalExtraction.root", "update")
-                root_file_signal_extraction.mkdir(f'{bin}')
                 roo_m = ROOT.RooRealVar("m", "#it{M} (^{3}He + #pi^{-})", 2.96, 3.04, "GeV/#it{c}^{2}")
                 roo_data = ndarray2roo(np.array(df_data_sel['m']), roo_m)
                 roo_signal = ndarray2roo(np.array(df_signal_sel['m']), roo_m)
 
                 # declare fit model (gaus + pol2)
-                roo_n_signal = ROOT.RooRealVar('Nsignal', 'N_{signal}', 0., 1000.)
-                delta_mass = ROOT.RooRealVar("deltaM", '#Deltam', -0.01, 0.01, 'GeV/c^{2}')
+                roo_n_signal = ROOT.RooRealVar('Nsignal', 'N_{signal}', 0., 100.)
+                delta_mass = ROOT.RooRealVar("deltaM", '#Deltam', 0., 0.002, 'GeV/c^{2}')
                 shifted_mass = ROOT.RooAddition("mPrime", "m + #Deltam", ROOT.RooArgList(roo_m, delta_mass))
                 roo_signal = ROOT.RooKeysPdf("signal", "signal", shifted_mass, roo_m,
                                              roo_signal, ROOT.RooKeysPdf.MirrorBoth, 2)
 
-                roo_n_background = ROOT.RooRealVar('Nbackground', 'N_{bkg}', 0., 100000.)
-                roo_a = ROOT.RooRealVar('a', 'a', -0.05, 0.05)
-                roo_b = ROOT.RooRealVar('b', 'b', -.5, -1.e-5)
+                roo_n_background = ROOT.RooRealVar('Nbackground', 'N_{bkg}', 0., 2.e6)
+                roo_a = ROOT.RooRealVar('a', 'a', 0.01, 0.2)
+                roo_b = ROOT.RooRealVar('b', 'b', -1.0, -0.2)
                 roo_bkg = ROOT.RooPolynomial('background', 'background', roo_m, ROOT.RooArgList(roo_b, roo_a))
 
                 roo_model = ROOT.RooAddPdf(
@@ -115,7 +116,7 @@ for split in SPLIT_LIST:
                 xframe.SetTitle(
                     str(ct_bins[0]) + '#leq #it{c}t<' + str(ct_bins[1]) + ' cm, ' + str(cent_bins[0]) + '-' +
                     str(cent_bins[1]) + '%, ' + str(formatted_eff))
-                xframe.SetName(f'fInvMass_{bin}')
+                xframe.SetName(f'fInvMass_{formatted_eff}')
                 roo_data.plotOn(xframe, ROOT.RooFit.Name('data'))
                 roo_model.plotOn(
                     xframe, ROOT.RooFit.Components('background'),
@@ -143,4 +144,4 @@ for split in SPLIT_LIST:
                     os.mkdir('plots/signal_extraction')
                 canv.Print(f'plots/signal_extraction/{1-eff_score[0]:.2f}_{bin}.png')
 
-                root_file_signal_extraction.Close()
+            root_file_signal_extraction.Close()
