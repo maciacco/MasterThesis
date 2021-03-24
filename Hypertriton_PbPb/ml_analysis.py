@@ -176,7 +176,8 @@ if TRAINING:
 
                 # features plot
                 leg_labels = ['background', 'signal']
-                if MAKE_FEATURES_PLOTS:
+                # second condition needed because of issue with Qt libraries
+                if MAKE_FEATURES_PLOTS and not MAKE_PRESELECTION_EFFICIENCY:
                     if not os.path.isdir(f'{PLOT_DIR}/features'):
                         os.mkdir(f'{PLOT_DIR}/features')
 
@@ -188,7 +189,7 @@ if TRAINING:
                     plt.savefig(f'{PLOT_DIR}/features/FeaturePlots_{bin}')
                     plot_utils.plot_corr([background_tree_handler], TRAINING_COLUMNS_LIST, ['background'])
                     plt.savefig(f'{PLOT_DIR}/features/BackgroundCorrelationMatrix_{bin}')
-                    plot_utils.plot_corr([signal_tree_handler], TRAINING_COLUMNS_LIST, ['background'])
+                    plot_utils.plot_corr([signal_tree_handler], TRAINING_COLUMNS_LIST, ['signal'])
                     plt.savefig(f'{PLOT_DIR}/features/SignalCorrelationMatrix_{bin}')
                     plt.close('all')
 
@@ -208,14 +209,21 @@ if TRAINING:
                 # hyperparameters optimization and model training
                 if not os.path.isdir('models'):
                     os.mkdir('models')
-                if OPTIMIZE:
+                if OPTIMIZE and TRAIN:
                     model_hdl.optimize_params_bayes(train_test_data, HYPERPARAMS_RANGES,
                                                     'roc_auc', nfold=5, init_points=10, n_iter=10, njobs=-1)
                 if TRAIN:
                     model_hdl.train_test_model(train_test_data)
-                    model_hdl.dump_model_handler(f'models/{bin}_optimized_trained')
+                    model_file_name = str(f'models/{bin}_trained')
+                    if OPTIMIZE:
+                        model_file_name = str(f'models/{bin}_optimized_trained')
+                    model_hdl.dump_model_handler(model_file_name)
                 else:
                     model_hdl.load_model_handler(f'models/{bin}_optimized_trained')
+
+                # get predictions for training and test set
+                test_y_score = model_hdl.predict(train_test_data[2])
+                train_y_score = model_hdl.predict(train_test_data[0])
 
                 # second condition needed because of issue with Qt libraries
                 if MAKE_TRAIN_TEST_PLOT and not MAKE_PRESELECTION_EFFICIENCY:
@@ -224,18 +232,25 @@ if TRAINING:
                     plot_utils.plot_output_train_test(model_hdl, train_test_data,
                                                       logscale=True, density=True, labels=leg_labels)
                     plt.savefig(f'{PLOT_DIR}/train_test_out/{bin}_out')
+
+                    plot_utils.plot_feature_imp(train_test_data[0], train_test_data[1], model_hdl)
+                    plt.savefig(f'{PLOT_DIR}/train_test_out/feature_imp_training_{bin}')
+                    plot_utils.plot_roc_train_test(
+                        train_test_data[3],
+                        test_y_score, train_test_data[1],
+                        train_y_score, labels=leg_labels)
+                    plt.savefig(f'{PLOT_DIR}/train_test_out/roc_train_test_{bin}')
                     plt.close('all')
 
                 # get scores corresponding to BDT efficiencies using test set
                 eff_array = np.arange(0.10, 0.91, 0.01)
-                test_y_score = model_hdl.predict(train_test_data[2])
                 score_array = analysis_utils.score_from_efficiency_array(
                     train_test_data[3], test_y_score, efficiency_selected=eff_array, keep_lower=True)
                 score_eff_arrays_dict[bin] = score_array
 
                 # write test set data frame
-                train_test_data[2]['model_output']=test_y_score
-                train_test_data[2]['y_test']=train_test_data[3]
+                train_test_data[2]['model_output'] = test_y_score
+                train_test_data[2]['y_test'] = train_test_data[3]
                 train_test_data[2].to_parquet(f'df/mc_{bin}', compression='gzip')
 
                 # get the model hyperparameters
