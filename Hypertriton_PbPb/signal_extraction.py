@@ -97,15 +97,15 @@ for split in SPLIT_LIST:
                 roo_signal = ROOT.RooKeysPdf("signal", "signal", shifted_mass, roo_mc_m,
                                              roo_signal, ROOT.RooKeysPdf.MirrorBoth, 2)
 
-                frame = roo_mc_m.frame()
-                roo_signal.plotOn(frame)
-                cc = ROOT.TCanvas("cc", "cc")
-                frame.Draw()
+                # frame = roo_mc_m.frame()
+                # roo_signal.plotOn(frame)
+                # cc = ROOT.TCanvas("cc", "cc")
+                # frame.Draw()
                 # cc.Print(f'kde_signal_{bin}.png')
 
-                roo_n_background = ROOT.RooRealVar('Nbackground', 'N_{bkg}', 100., 1., 2.e6)
+                roo_n_background = ROOT.RooRealVar('Nbackground', 'N_{bkg}', 10., 1., 2.e6)
                 roo_a = ROOT.RooRealVar('a', 'a', 0.1, 0.02, 0.22)
-                roo_b = ROOT.RooRealVar('b', 'b', -1.0, -0.1)
+                roo_b = ROOT.RooRealVar('b', 'b', -1.0, -0.01)
 
                 roo_bkg = ROOT.RooPolynomial('background', 'background', roo_m, ROOT.RooArgList(roo_b, roo_a))
 
