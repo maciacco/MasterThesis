@@ -68,8 +68,9 @@ score_eff_arrays_dict = pickle.load(open("file_score_eff_dict", "rb"))
 eff_array = np.arange(0.10, 0.91, 0.01)
 
 for split in SPLIT_LIST:
-    for cent_bins in CENTRALITY_LIST:
-        for ct_bins in zip(CT_BINS[:-1], CT_BINS[1:]):
+    for i_cent_bins in range(len(CENTRALITY_LIST)):
+        cent_bins = CENTRALITY_LIST[i_cent_bins]
+        for ct_bins in zip(CT_BINS[i_cent_bins][:-1], CT_BINS[i_cent_bins][1:]):
 
             bin = f'{split}_{cent_bins[0]}_{cent_bins[1]}_{ct_bins[0]}_{ct_bins[1]}'
             df_data = pd.read_parquet(f'df/{bin}')

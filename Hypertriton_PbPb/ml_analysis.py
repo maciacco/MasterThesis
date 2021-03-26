@@ -52,7 +52,8 @@ MAKE_PRESELECTION_EFFICIENCY = False
 MAKE_FEATURES_PLOTS = False
 MAKE_TRAIN_TEST_PLOT = True
 OPTIMIZE = False
-TRAIN = False
+OPTIMIZED = False
+TRAIN = True
 
 # application
 APPLICATION = True
@@ -111,7 +112,8 @@ if TRAINING:
             if split == 'antimatter':
                 split_ineq_sign = '<'
 
-        for cent_bins in CENTRALITY_LIST:
+        for i_cent_bins in range(len(CENTRALITY_LIST)):
+            cent_bins = CENTRALITY_LIST[i_cent_bins]
 
             if MAKE_PRESELECTION_EFFICIENCY:
                 ##############################################################
@@ -148,7 +150,7 @@ if TRAINING:
                 del df_generated_cent
                 ##############################################################
 
-            for ct_bins in zip(CT_BINS[:-1], CT_BINS[1:]):
+            for ct_bins in zip(CT_BINS[i_cent_bins][:-1], CT_BINS[i_cent_bins][1:]):
                 bin = f'{split}_{cent_bins[0]}_{cent_bins[1]}_{ct_bins[0]}_{ct_bins[1]}'
 
                 ##############################################################
@@ -219,7 +221,10 @@ if TRAINING:
                         model_file_name = str(f'models/{bin}_optimized_trained')
                     model_hdl.dump_model_handler(model_file_name)
                 else:
-                    model_hdl.load_model_handler(f'models/{bin}_optimized_trained')
+                    if OPTIMIZED:
+                        model_hdl.load_model_handler(f'models/{bin}_optimized_trained')
+                    else:
+                        model_hdl.load_model_handler(f'models/{bin}_trained')
 
                 # get predictions for training and test set
                 test_y_score = model_hdl.predict(train_test_data[2])
@@ -277,26 +282,31 @@ if APPLICATION:
             if split == 'antimatter':
                 split_ineq_sign = '<'
 
-        for cent_bins in CENTRALITY_LIST:
+        for i_cent_bins in range(len(CENTRALITY_LIST)):
+            cent_bins = CENTRALITY_LIST[i_cent_bins]
+
             df_data_cent = df_data.query(
                 f'ArmenterosAlpha {split_ineq_sign} 0 and centrality > {cent_bins[0]} and centrality < {cent_bins[1]}')
             data_tree_handler = TreeHandler()
             data_tree_handler.set_data_frame(df_data_cent)
             del df_data_cent
 
-            data_tree_handler.slice_data_frame('ct', list(zip(CT_BINS[:-1], CT_BINS[1:])))
-            model_hdl_array = np.empty((len(CT_BINS)-1,), dtype=object)
+            data_tree_handler.slice_data_frame('ct', list(zip(CT_BINS[i_cent_bins][:-1], CT_BINS[i_cent_bins][1:])))
+            model_hdl_array = np.empty((len(CT_BINS[i_cent_bins])-1,), dtype=object)
 
-            for i_ct_bins in range(len(CT_BINS)-1):
-                bin = f'{split}_{cent_bins[0]}_{cent_bins[1]}_{CT_BINS[i_ct_bins]}_{CT_BINS[i_ct_bins+1]}'
+            for i_ct_bins in range(len(CT_BINS[i_cent_bins])-1):
+                bin = f'{split}_{cent_bins[0]}_{cent_bins[1]}_{CT_BINS[i_cent_bins][i_ct_bins]}_{CT_BINS[i_cent_bins][i_ct_bins+1]}'
                 model_hdl_array[i_ct_bins] = ModelHandler()
-                model_hdl_array[i_ct_bins].load_model_handler(f'models/{bin}_optimized_trained')
+                if OPTIMIZED:
+                    model_hdl_array[i_ct_bins].load_model_handler(f'models/{bin}_optimized_trained')
+                else:
+                    model_hdl_array[i_ct_bins].load_model_handler(f'models/{bin}_trained')
 
             data_tree_handler.apply_model_handler(list(model_hdl_array))
             eff_array = np.arange(0.10, 0.91, 0.01)
 
-            for i_ct_bins in range(len(CT_BINS)-1):
-                bin = f'{split}_{cent_bins[0]}_{cent_bins[1]}_{CT_BINS[i_ct_bins]}_{CT_BINS[i_ct_bins+1]}'
+            for i_ct_bins in range(len(CT_BINS[i_cent_bins])-1):
+                bin = f'{split}_{cent_bins[0]}_{cent_bins[1]}_{CT_BINS[i_cent_bins][i_ct_bins]}_{CT_BINS[i_cent_bins][i_ct_bins+1]}'
                 slice = data_tree_handler.get_slice(i_ct_bins)
                 slice.query(f'model_output > {score_eff_arrays_dict[bin][len(eff_array)-1]}')
                 slice.to_parquet(f'df/{bin}', compression='gzip')
