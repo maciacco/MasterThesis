@@ -75,10 +75,13 @@ for split in SPLIT_LIST:
             df_data = pd.read_parquet(f'df/{bin}')
             df_signal = pd.read_parquet(f'df/mc_{bin}')
 
+            # ROOT.Math.MinimizerOptions.SetDefaultTolerance(1e-2)
             root_file_signal_extraction = ROOT.TFile("SignalExtraction.root", "update")
             root_file_signal_extraction.mkdir(f'{bin}')
 
             for eff_score in zip(eff_array, score_eff_arrays_dict[bin]):
+                if (ct_bins[0] > 0) and (eff_score[0] > 0.50):
+                    continue
                 formatted_eff = "{:.2f}".format(1-eff_score[0])
                 print(f'processing {bin}: eff = {1-eff_score[0]:.2f}, score = {eff_score[1]:.2f}...')
                 df_data_sel = df_data.query(f'model_output > {eff_score[1]}')
@@ -117,7 +120,7 @@ for split in SPLIT_LIST:
                 ROOT.RooMsgService.instance().setGlobalKillBelow(ROOT.RooFit.ERROR)
                 ROOT.RooMsgService.instance().setSilentMode(ROOT.kTRUE)
                 ROOT.gErrorIgnoreLevel = ROOT.kError
-                r = roo_model.fitTo(roo_data, ROOT.RooFit.Save())
+                r = roo_model.fitTo(roo_data, ROOT.RooFit.Save(), ROOT.RooFit.Extended(ROOT.kTRUE))
                 print(f'fit status: {r.status()}')
 
                 if r.status() == 0:
@@ -142,7 +145,7 @@ for split in SPLIT_LIST:
                         '#chi^{2}/NDF = '+formatted_chi2),
                         ROOT.RooFit.Layout(0.68, 0.96, 0.96))
 
-                    print(f'chi2/NDF: {formatted_chi2}')
+                    print(f'chi2/NDF: {formatted_chi2}, edm: {r.edm()}')
                     if float(formatted_chi2) < 2:
                         # write to file
                         root_file_signal_extraction.cd(f'{bin}')
