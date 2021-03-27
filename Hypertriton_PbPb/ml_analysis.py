@@ -255,7 +255,7 @@ if TRAINING:
 
                 # write test set data frame
                 train_test_data[2]['model_output'] = test_y_score
-                train_test_data[2]['y_test'] = train_test_data[3]
+                train_test_data[2]['y_true'] = train_test_data[3]
                 train_test_data[2].to_parquet(f'df/mc_{bin}', compression='gzip')
 
                 # get the model hyperparameters
