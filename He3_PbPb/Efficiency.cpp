@@ -7,6 +7,7 @@
 #include <TH2F.h>
 #include <TLatex.h>
 #include <TStyle.h>
+#include <TCanvas.h>
 
 #include "Utils.h"
 #include "Config.h"
@@ -16,6 +17,9 @@ using utils::EffErr;
 
 void Efficiency(const float cutDCAz = 1.f, const int cutTPCcls = 89, const char *inFileNameMC = "TreeOutMC", const char *outFileNameEff = "EfficiencyHe3")
 {
+  // make signal extraction plots directory
+  system(Form("mkdir %s/efficiency", kPlotDir));
+
   TFile inFile(Form("%s/%s.root", kResDir, inFileNameMC));
   TFile outFile(Form("%s/%s.root", kOutDir, outFileNameEff), "RECREATE");
 
@@ -26,6 +30,9 @@ void Efficiency(const float cutDCAz = 1.f, const int cutTPCcls = 89, const char 
 
   for (int iMatt = 0; iMatt < 2; ++iMatt)
   {
+    // make plot subdirectory
+    system(Form("mkdir %s/efficiency/%s_%1.1f_%d", kPlotDir, kAntimatterMatter[iMatt], cutDCAz, cutTPCcls));
+
     // get histograms from file
     TH2F *fTotal = (TH2F *)inFile.Get(TString::Format("%.1f_%d_/f%sTotal", cutDCAz, cutTPCcls, kAntimatterMatter[iMatt]));
     TH2F *fITS_TPC = (TH2F *)inFile.Get(TString::Format("%.1f_%d_/f%sITS_TPC", cutDCAz, cutTPCcls, kAntimatterMatter[iMatt]));
@@ -59,6 +66,11 @@ void Efficiency(const float cutDCAz = 1.f, const int cutTPCcls = 89, const char 
       fEffPt.SetOption("PE");
       outFile.cd();
       fEffPt.Write();
+
+      // save plot image
+      TCanvas canv;
+      fEffPt.Draw("");
+      canv.Print(Form("%s/efficiency/%s_%1.1f_%d/cent_%.0f_%.0f.png", kPlotDir, kAntimatterMatter[iMatt], cutDCAz, cutTPCcls, kCentBinsLimitsHe3[iCent][0], kCentBinsLimitsHe3[iCent][1]));
     }
   }
   outFile.Close();

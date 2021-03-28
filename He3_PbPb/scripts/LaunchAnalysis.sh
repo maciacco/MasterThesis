@@ -5,7 +5,7 @@
 cutDCAz=1.
 cutTPCcls=89
 binCountingFlag=1
-expFlag=1 # 0->pol1, 1->expo
+expFlag=1 # 0->pol1, 1->expo, 2->pol2
 sigmoidFlag=1
 spectraHistNameId="1.0_89_1_1_1"
 readTree=0

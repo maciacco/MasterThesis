@@ -4,6 +4,7 @@
 // - define signal region after an unbinned fit to nsigma ditribution (gaussian+expo)
 // - extract yields by bin counting in the signal region (background subtraction)
 
+#include <stdlib.h>
 #include <string>
 
 #include <Riostream.h>
@@ -37,6 +38,9 @@ const double kNSigma = 3; // define interval for bin counting
 
 void SignalUnbinned(const float cutDCAz = 1.f, const int cutTPCcls = 89, const bool binCounting = true, const int bkg_shape = 1, const char *inFileDat = "TreeOutData", const char *outFileName = "SignalHe3", const char *outFileOption = "recreate", const bool extractSignal = true, const bool binCountingNoFit = false)
 {
+  // make signal extraction plots directory
+  system(Form("mkdir %s/signal_extraction", kPlotDir));
+
   // killing RooFit output
   RooMsgService::instance().setGlobalKillBelow(RooFit::ERROR);
   RooMsgService::instance().setSilentMode(true);
@@ -68,6 +72,9 @@ void SignalUnbinned(const float cutDCAz = 1.f, const int cutTPCcls = 89, const b
       std::cout << "Tree not found!" << std::endl; // check data TFile opening
       return;
     }
+
+    // make plot subdirectory
+    system(Form("mkdir %s/signal_extraction/%s_%1.1f_%d_%d_%d", kPlotDir, kAntimatterMatter[iMatt], cutDCAz, cutTPCcls, binCounting, bkg_shape));
 
     dirOutFile->cd();
     for (int iCent = 0; iCent < kNCentClasses; ++iCent)
@@ -109,15 +116,23 @@ void SignalUnbinned(const float cutDCAz = 1.f, const int cutTPCcls = 89, const b
         RooGaussian signal("signal", "signal", tpcNsigma, mean, *sigma);
         RooAbsPdf *background;
         RooRealVar *slope;
+        RooRealVar *a;
+        RooRealVar *b;
         if (bkg_shape == 1)
         { // expo
           slope = new RooRealVar("slope", "slope", -0.4, 0.);
           background = (RooAbsPdf *)new RooExponential("background", "background", tpcNsigma, *slope);
         }
-        else
+        else if (bkg_shape == 0)
         { // pol1
           slope = new RooRealVar("slope", "slope", -0.3, 0.);
           background = (RooAbsPdf *)new RooPolynomial("background", "background", tpcNsigma, RooArgList(*slope));
+        }
+        else
+        { // pol2
+          a = new RooRealVar("a", "a", 0.03, 0.02, 0.04);
+          b = new RooRealVar("b", "b", -0.2, -0.28, 0.1);
+          background = (RooAbsPdf *)new RooPolynomial("background", "background", tpcNsigma, RooArgList(*b, *a));
         }
         RooRealVar nSignal("N_{sig}", "nSignal", 1., 10000.);
         RooRealVar nBackground("N_{bkg}", "nBackground", 0., 1000.);
@@ -137,9 +152,9 @@ void SignalUnbinned(const float cutDCAz = 1.f, const int cutTPCcls = 89, const b
           // background integral
           auto components = model.getComponents();
           auto bkgPdf = (RooAbsPdf *)components->find("background");
-          RooRealVar *bkgIntegral = (RooRealVar *)bkgPdf->createIntegral(RooArgSet(tpcNsigma), RooArgSet(tpcNsigma), "signalRange");
-          double bkgIntegral_val = nBackground.getVal() * bkgIntegral->getVal();
-          // std::cout<<bkgIntegral_val<<std::endl;
+          double bkgIntegral = (((RooAbsPdf *)model.pdfList().at(1))->createIntegral(RooArgSet(tpcNsigma), RooFit::NormSet(RooArgSet(tpcNsigma)), RooFit::Range("signalRange")))->getVal();
+          double bkgIntegral_val = nBackground.getVal() * bkgIntegral;
+          // std::cout << bkgIntegral << std::endl;
 
           double rawYield, rawYieldError, counts;
           if (binCounting)
@@ -180,8 +195,9 @@ void SignalUnbinned(const float cutDCAz = 1.f, const int cutTPCcls = 89, const b
         }
 
         // frame
+        int nBins = 48;
         TString plotTitle = TString::Format("%.2f#leq #it{p}_{T}<%.2f GeV/#it{c}, %.0f-%.0f%%", minPt, maxPt, kCentBinsLimitsHe3[iCent][0], kCentBinsLimitsHe3[iCent][1]);
-        RooPlot *xframe = tpcNsigma.frame(RooFit::Bins(48), RooFit::Title(plotTitle), RooFit::Name(Form("f%sNSigma_%.0f_%.0f_%.2f_%.2f", kAntimatterMatter[iMatt], kCentBinsLimitsHe3[iCent][0], kCentBinsLimitsHe3[iCent][1], minPt, maxPt)));
+        RooPlot *xframe = tpcNsigma.frame(RooFit::Bins(nBins), RooFit::Title(plotTitle), RooFit::Name(Form("f%sNSigma_%.0f_%.0f_%.2f_%.2f", kAntimatterMatter[iMatt], kCentBinsLimitsHe3[iCent][0], kCentBinsLimitsHe3[iCent][1], minPt, maxPt)));
         dataPt.plotOn(xframe, RooFit::Name("dataNsigma"));
 
         if (extractSignal)
@@ -194,22 +210,11 @@ void SignalUnbinned(const float cutDCAz = 1.f, const int cutTPCcls = 89, const b
 
         xframe->Write();
 
-        // save to pdf
+        // save to png
         TCanvas canv;
         canv.SetName(plotTitle);
         xframe->Draw("");
-        if (iMatt == 0 && iCent == 0 && iPtBin == 3)
-        {
-          canv.Print(Form("%s/%s.pdf[", kPlotDir, outFileName));
-          canv.Print(Form("%s/%s.pdf", kPlotDir, outFileName));
-        }
-        else if (iMatt == 1 && iCent == (kNCentClasses-1) && iPtBin == (nUsedPtBins+2))
-        {
-          canv.Print(Form("%s/%s.pdf", kPlotDir, outFileName));
-          canv.Print(Form("%s/%s.pdf]", kPlotDir, outFileName));
-        }
-        else
-          canv.Print(Form("%s/%s.pdf", kPlotDir, outFileName));
+        canv.Print(Form("%s/signal_extraction/%s_%1.1f_%d_%d_%d/cent_%.0f_%.0f_pt_%.2f_%.2f.png", kPlotDir, kAntimatterMatter[iMatt], cutDCAz, cutTPCcls, binCounting, bkg_shape, kCentBinsLimitsHe3[iCent][0], kCentBinsLimitsHe3[iCent][1], minPt, maxPt));
 
       } // end of loop on pt bins
 

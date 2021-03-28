@@ -1,6 +1,7 @@
 // Secondary.cpp
 // This macro computes the fraction of primaries
 
+#include <stdlib.h>
 #include <string>
 
 #include <Riostream.h>
@@ -21,6 +22,9 @@
 
 void Secondary(const float cutDCAz = 1.f, const int cutTPCcls = 89, const char *inFileDatName = "TreeOutData", const char *inFileMCName = "TreeOutMC", const char *inFileWDName = "EfficiencyHe3SecWd", const char *outFileName = "PrimaryHe3", const bool useWdInFit = true, const bool rebinLowStatisticsBin = false)
 {
+  // make signal extraction plots directory
+  system(Form("mkdir %s/primary_fraction", kPlotDir));
+
   // open files
   TFile *inFileDat = TFile::Open(Form("%s/%s.root", kResDir, inFileDatName));
   TFile *inFileMC = TFile::Open(Form("%s/%s.root", kResDir, inFileMCName));
@@ -29,6 +33,9 @@ void Secondary(const float cutDCAz = 1.f, const int cutTPCcls = 89, const char *
 
   for (int iMatt = 0; iMatt < 2; ++iMatt)
   {
+    // make plot subdirectory
+    system(Form("mkdir %s/primary_fraction/%s_%1.1f_%d", kPlotDir, kAntimatterMatter[iMatt], cutDCAz, cutTPCcls));
+
     // get histograms from files
     TH3F *fDCAdat = (TH3F *)inFileDat->Get(Form("%1.1f_%d_/f%sDCAxyTPC", cutDCAz, cutTPCcls, kAntimatterMatter[iMatt]));
     TH3F *fDCAprim = (TH3F *)inFileMC->Get(Form("%1.1f_%d_/f%sDCAPrimary", cutDCAz, cutTPCcls, kAntimatterMatter[iMatt]));
@@ -37,6 +44,7 @@ void Secondary(const float cutDCAz = 1.f, const int cutTPCcls = 89, const char *
 
     for (int iCent = 0; iCent < kNCentClasses; ++iCent)
     {
+      // get wd fraction
       TH1D *fWDfrac = (TH1D *)inFileWD->Get(Form("f%sEff_TPC_%.0f_%.0f", kAntimatterMatter[iMatt], kCentBinsLimitsHe3[iCent][0], kCentBinsLimitsHe3[iCent][1]));
       if (!fWDfrac)
       {
@@ -70,10 +78,11 @@ void Secondary(const float cutDCAz = 1.f, const int cutTPCcls = 89, const char *
         int lowerPtBinIndex = fDCAdat->GetYaxis()->FindBin(fPrimaryFrac.GetBinLowEdge(iPtBin));
         int upperPtBinIndex = fDCAdat->GetYaxis()->FindBin(fPrimaryFrac.GetBinLowEdge(iPtBin + 1) - 0.005f);
         double minPt = fDCAdat->GetYaxis()->GetBinLowEdge(lowerPtBinIndex);
+        double maxPt = fDCAdat->GetYaxis()->GetBinUpEdge(upperPtBinIndex);
         outFile->cd();
 
         if ((iMatt == 1) && (minPt < 2.95f))
-        { // three component fit
+        {
           // project TH3 histogram
           TH1D *fDCAdatProj;
           TH1D *fDCAMcProjPrim;
@@ -192,17 +201,17 @@ void Secondary(const float cutDCAz = 1.f, const int cutTPCcls = 89, const char *
             mc1->Draw("histosame");
 
             leg.Draw("same");
-            TText chiSq(-1., 0.2 * result->GetMaximum(), Form("chi2/NDF=%.2f/%d", chi2, fit->GetNDF()));
-            TText prob(-1., 0.1 * result->GetMaximum(), Form("prob=%.5f", fit->GetProb()));
-            TText frac1(-1, 0.75 * result->GetMaximum(), Form("%.3f +- %.3f", fracMc1, errFracMc1));
-            TText frac2(-1, 0.3 * result->GetMaximum(), Form("%.3f +- %.3f", fracMc2, errFracMc2));
-            TText frac3(-1., 0.5 * result->GetMaximum(), Form("%.3f +- %.3f", fracMc3, errFracMc3));
+            TLatex chiSq(-1., 0.2 * result->GetMaximum(), Form("#chi^{2}/NDF=%.2f", chi2/fit->GetNDF()));
+            TLatex prob(-1., 0.1 * result->GetMaximum(), Form("prob=%.7f", fit->GetProb()));
+            // TLatex frac1(-1, 0.75 * result->GetMaximum(), Form("%.3f +- %.3f", fracMc1, errFracMc1));
+            // TLatex frac2(-1, 0.3 * result->GetMaximum(), Form("%.3f +- %.3f", fracMc2, errFracMc2));
+            // TLatex frac3(-1., 0.5 * result->GetMaximum(), Form("%.3f +- %.3f", fracMc3, errFracMc3));
             chiSq.Draw("same");
             prob.Draw("same");
-            frac1.Draw("same");
-            frac2.Draw("same");
-            if (useWdInFit)
-              frac3.Draw("same");
+            // frac1.Draw("same");
+            // frac2.Draw("same");
+            // if (useWdInFit)
+            //   frac3.Draw("same");
 
             // compute fraction of primaries and material secondaries
             double intPrimDCAcut = mc1->Integral(result->FindBin(-0.1), result->FindBin(0.9));
@@ -262,6 +271,9 @@ void Secondary(const float cutDCAz = 1.f, const int cutTPCcls = 89, const char *
             fDCAMcProjSec->Write();
             if (useWdInFit)
               fDCAMcProjSecWeak->Write();
+
+            // save canvas plot
+            canv.Print(Form("%s/primary_fraction/%s_%1.1f_%d/cent_%.0f_%.0f_pt_%.2f_%.2f.png", kPlotDir, kAntimatterMatter[iMatt], cutDCAz, cutTPCcls, kCentBinsLimitsHe3[iCent][0], kCentBinsLimitsHe3[iCent][1], minPt, maxPt));
           }
         }
         else
