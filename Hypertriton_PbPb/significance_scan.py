@@ -85,5 +85,7 @@ for split in SPLIT_LIST:
                     os.mkdir(f'plots/significance_scan/{bin}')
                 plt.errorbar(side_bins, side_counts, side_errors, fmt='o')
                 plt.plot(xx, yy)
+                plt.xlabel('Invariant mass (GeV/c^2)')
+                plt.ylabel('Entries')
                 plt.savefig(f'plots/significance_scan/{bin}/{formatted_eff}_{bin}.png')
                 plt.close('all')

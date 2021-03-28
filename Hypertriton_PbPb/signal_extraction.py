@@ -9,36 +9,7 @@ import pandas as pd
 import ROOT
 import uproot
 import yaml
-
-
-def ndarray2roo(ndarray, var):
-    if isinstance(ndarray, ROOT.RooDataSet):
-        print('Already a RooDataSet')
-        return ndarray
-
-    assert isinstance(ndarray, np.ndarray), 'Did not receive NumPy array'
-    assert len(ndarray.shape) == 1, 'Can only handle 1d array'
-
-    name = var.GetName()
-    x = np.zeros(1, dtype=np.float64)
-
-    tree = ROOT.TTree('tree', 'tree')
-    tree.Branch(f'{name}', x, f'{name}/D')
-
-    for i in ndarray:
-        x[0] = i
-        tree.Fill()
-
-    array_roo = ROOT.RooDataSet(
-        'data', 'dataset from tree', tree, ROOT.RooArgSet(var))
-    return array_roo
-
-
-def significance_error(signal, background):
-    num = 0.5*signal+background
-    den = np.sqrt((signal+background)*(signal+background)*(signal+background))
-    return num/den*np.sqrt(signal)
-
+from helpers import significance_error, ndarray2roo
 
 SPLIT = True
 
@@ -97,7 +68,7 @@ for split in SPLIT_LIST:
 
                 # get invariant mass distribution (data and mc)
                 roo_m = ROOT.RooRealVar("m", "#it{M} (^{3}He + #pi^{-})", 2.96, 3.04, "GeV/#it{c}^{2}")
-                roo_mc_m = ROOT.RooRealVar("m", "#it{M} (^{3}He + #pi^{-})", 2.95, 3.05, "GeV/#it{c}^{2}")
+                roo_mc_m = ROOT.RooRealVar("m", "#it{M} (^{3}He + #pi^{-})", 2.96, 3.04, "GeV/#it{c}^{2}")
                 roo_data = ndarray2roo(np.array(df_data_sel['m']), roo_m)
                 roo_mc_signal = ndarray2roo(np.array(df_signal_sel['m']), roo_m)
 
@@ -156,8 +127,8 @@ for split in SPLIT_LIST:
                         xframe.Write()
 
                         # fit mc distribution to get sigma and mass
-                        roo_mean_mc = ROOT.RooRealVar("mean", "mean", 2.8, 3.0)
-                        roo_sigma_mc = ROOT.RooRealVar("sigma", "sigma", 0.001, 0.008)
+                        roo_mean_mc = ROOT.RooRealVar("mean", "mean", 2.98, 3.0)
+                        roo_sigma_mc = ROOT.RooRealVar("sigma", "sigma", 0.001, 0.004)
                         gaus = ROOT.RooGaussian('gaus', 'gaus', roo_m, roo_mean_mc, roo_sigma_mc)
                         gaus.fitTo(roo_mc_signal)
 
@@ -204,9 +175,10 @@ for split in SPLIT_LIST:
                         canv.Print(f'plots/signal_extraction/{bin}/{1-eff_score[0]:.2f}_{bin}.png')
 
                         # plot kde and mc
-                        frame = roo_mc_m.frame(2.96, 3.04, nBins)
+                        frame = roo_mc_m.frame(2.96, 3.04, nBins*4)
                         roo_mc_signal.plotOn(frame)
                         roo_signal.plotOn(frame)
+                        gaus.plotOn(frame, ROOT.RooFit.LineColor(ROOT.kRed), ROOT.RooFit.LineStyle(ROOT.kDashed))
                         cc = ROOT.TCanvas("cc", "cc")
                         if not os.path.isdir('plots/kde_signal'):
                             os.mkdir('plots/kde_signal')
