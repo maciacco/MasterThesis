@@ -52,10 +52,10 @@ for split in SPLIT_LIST:
             if not os.path.isdir('plots/significance_scan'):
                 os.mkdir('plots/significance_scan')
             for eff_score in zip(eff_array, score_eff_arrays_dict[bin]):
-                if (ct_bins[0] > 0) and (eff_score[0] > 0.50):
+                if (ct_bins[0] > 0) and (eff_score[0] < 0.50):
                     continue
-                formatted_eff = "{:.2f}".format(1-eff_score[0])
-                print(f'processing {bin}: eff = {1-eff_score[0]:.2f}, score = {eff_score[1]:.2f}...')
+                formatted_eff = "{:.2f}".format(eff_score[0])
+                print(f'processing {bin}: eff = {eff_score[0]:.2f}, score = {eff_score[1]:.2f}...')
 
                 # select data in the sidebands
                 df_data_sel = df_data.query(f'model_output > {eff_score[1]}')

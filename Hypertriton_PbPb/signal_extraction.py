@@ -55,10 +55,10 @@ for split in SPLIT_LIST:
             root_file_signal_extraction.mkdir(f'{bin}')
 
             for eff_score in zip(eff_array, score_eff_arrays_dict[bin]):
-                if (ct_bins[0] > 0) and (eff_score[0] > 0.50):
+                if (ct_bins[0] > 0) and (eff_score[0] < 0.50):
                     continue
-                formatted_eff = "{:.2f}".format(1-eff_score[0])
-                print(f'processing {bin}: eff = {1-eff_score[0]:.2f}, score = {eff_score[1]:.2f}...')
+                formatted_eff = "{:.2f}".format(eff_score[0])
+                print(f'processing {bin}: eff = {eff_score[0]:.2f}, score = {eff_score[1]:.2f}...')
 
                 df_data_sel = df_data.query(f'model_output > {eff_score[1]}')
                 df_signal_sel = df_signal.query(f'model_output > {eff_score[1]} and y_true == 1')
@@ -172,7 +172,7 @@ for split in SPLIT_LIST:
                             os.mkdir('plots/signal_extraction')
                         if not os.path.isdir(f'plots/signal_extraction/{bin}'):
                             os.mkdir(f'plots/signal_extraction/{bin}')
-                        canv.Print(f'plots/signal_extraction/{bin}/{1-eff_score[0]:.2f}_{bin}.png')
+                        canv.Print(f'plots/signal_extraction/{bin}/{eff_score[0]:.2f}_{bin}.png')
 
                         # plot kde and mc
                         frame = roo_mc_m.frame(2.96, 3.04, nBins*4)

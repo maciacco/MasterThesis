@@ -250,7 +250,7 @@ if TRAINING:
                 # get scores corresponding to BDT efficiencies using test set
                 eff_array = np.arange(0.10, 0.91, 0.01)
                 score_array = analysis_utils.score_from_efficiency_array(
-                    train_test_data[3], test_y_score, efficiency_selected=eff_array, keep_lower=True)
+                    train_test_data[3], test_y_score, efficiency_selected=eff_array, keep_lower=False)
                 score_eff_arrays_dict[bin] = score_array
 
                 # write test set data frame
