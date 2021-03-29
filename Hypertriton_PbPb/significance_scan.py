@@ -48,6 +48,9 @@ analysis_results_file = uproot.open(os.path.expandvars(ANALYSIS_RESULTS_PATH))
 cent_counts, cent_edges = analysis_results_file['Centrality_selected;1'].to_numpy()
 cent_bin_centers = (cent_edges[:-1]+cent_edges[1:])/2
 
+# cut dictionary
+eff_cut_dict = dict()
+
 for split in SPLIT_LIST:
     for i_cent_bins in range(len(CENTRALITY_LIST)):
         cent_bins = CENTRALITY_LIST[i_cent_bins]
@@ -141,26 +144,33 @@ for split in SPLIT_LIST:
                 plt.errorbar(mass_bins, mass_counts, np.sqrt(mass_counts), fmt='o')
                 plt.plot(xx_side, yy_side)
                 plt.plot(xx_mass, yy_mass)
-                plt.xlabel('Invariant mass (GeV/c^2)')
-                plt.ylabel('Entries')
+                plt.xlabel(r'$M \ (^{3}He + \pi^{-}) \ (\mathrm{GeV}/\it{c}^{2})$')
+                plt.ylabel(r'$\mathrm{Entries}/(2.5 \mathrm{MeV}/\it{c}^{2})$')
                 plt.savefig(f'plots/significance_scan/{bin}/{formatted_eff}_{bin}.png')
                 plt.close('all')
 
+            eff_array_reduced = eff_array[40:]
             significance_array = np.asarray(significance_list)
             significance_err_array = np.asarray(significance_err_list)
 
-            significance_array = significance_array*(eff_array[40:])
-            significance_err_array = significance_err_array*(eff_array[40:])
+            significance_array = significance_array*(eff_array_reduced)
+            significance_err_array = significance_err_array*(eff_array_reduced)
 
             low_limit = significance_array - significance_err_array
             up_limit = significance_array + significance_err_array
+
+            # cut
+            cut_eff_index = significance_array == significance_array.max()
+            cut_eff = eff_array_reduced[cut_eff_index]
+
             fig = plt.figure()
-            plt.plot(eff_array[40:], significance_array, 'b', label='Expected Significance')
-            plt.fill_between(eff_array[40:], low_limit, up_limit,
+            plt.plot(eff_array_reduced, significance_array, 'b', label='Expected Significance')
+            plt.fill_between(eff_array_reduced, low_limit, up_limit,
                              facecolor='deepskyblue', label=r'$ \pm 1\sigma$', alpha=0.3)
+            plt.vlines(cut_eff[0], 0, 10, colors='red', linestyles='dashed', label=f'cut = {"{:.2f}".format(cut_eff[0])}')
 
             handles, labels = fig.gca().get_legend_handles_labels()
-            order = [0,1]
+            order = [0,2,1]
             plt.legend([handles[idx] for idx in order],[labels[idx] for idx in order], loc='lower left')
 
             plt.xlabel("BDT Efficiency")
@@ -170,3 +180,7 @@ for split in SPLIT_LIST:
 
             plt.savefig(f'plots/significance_scan/{bin}.png')
             plt.close('all')
+
+            eff_cut_dict[bin] = cut_eff
+
+pickle.dump(eff_cut_dict, open("file_eff_cut_dict", "wb"))
