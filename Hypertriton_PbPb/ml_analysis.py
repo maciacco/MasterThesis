@@ -19,11 +19,11 @@ from sklearn.model_selection import train_test_split
 
 def presel_eff_hist(df_list, col_name, split, cent_bins, bins):
     # fill histograms (vs. ct and vs. pt)
+    bins_array = np.asarray(bins, dtype=float)
     hist_eff = ROOT.TH1F(
         f'fPreselEff_vs_{col_name}_{split}_{cent_bins[0]}_{cent_bins[1]}',
-        f'Preselection Efficiency, {split}, {cent_bins[0]}-{cent_bins[1]}%', len(bins) - 1, np.array(
-            bins, dtype='f'))
-    hist_gen = ROOT.TH1F('fPreselGen_vs_{col_name}', 'Gen', len(bins)-1, np.array(bins, dtype='f'))
+        f'Preselection Efficiency, {split}, {cent_bins[0]}-{cent_bins[1]}%', len(bins) - 1, bins_array)
+    hist_gen = ROOT.TH1F('fPreselGen_vs_{col_name}', 'Gen', len(bins)-1, bins_array)
 
     for val in df_list[0][col_name]:
         hist_eff.Fill(val)
@@ -48,7 +48,7 @@ SPLIT = True
 # training
 TRAINING = True
 PLOT_DIR = 'plots'
-MAKE_PRESELECTION_EFFICIENCY = False
+MAKE_PRESELECTION_EFFICIENCY = True
 MAKE_FEATURES_PLOTS = False
 MAKE_TRAIN_TEST_PLOT = True
 OPTIMIZE = False
@@ -127,7 +127,7 @@ if TRAINING:
                 del df_generated
 
                 # fill histograms (vs. ct and vs. pt)
-                hist_eff_ct = presel_eff_hist([df_signal_cent, df_generated_cent], 'ct', split, cent_bins, CT_BINS)
+                hist_eff_ct = presel_eff_hist([df_signal_cent, df_generated_cent], 'ct', split, cent_bins, CT_BINS[i_cent_bins])
                 hist_eff_pt = presel_eff_hist([df_signal_cent, df_generated_cent], 'pt', split, cent_bins, PT_BINS)
 
                 # plot histograms
