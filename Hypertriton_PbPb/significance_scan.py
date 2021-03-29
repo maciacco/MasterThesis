@@ -9,6 +9,7 @@ import pandas as pd
 import ROOT
 import uproot
 import yaml
+from helpers import significance_error, expected_signal
 
 SPLIT = True
 
@@ -26,7 +27,7 @@ with open(os.path.expandvars(config), 'r') as stream:
     except yaml.YAMLError as exc:
         print(exc)
 
-DATA_PATH = params['DATA_PATH']
+ANALYSIS_RESULTS_PATH = params['ANALYSIS_RESULTS_PATH']
 CT_BINS = params['CT_BINS']
 CENTRALITY_LIST = params['CENTRALITY_LIST']
 RANDOM_STATE = params['RANDOM_STATE']
@@ -39,10 +40,28 @@ if SPLIT:
 
 score_eff_arrays_dict = pickle.load(open("file_score_eff_dict", "rb"))
 eff_array = np.arange(0.10, 0.91, 0.01)
+presel_eff_file = uproot.open('PreselEff.root')
+analysis_results_file = uproot.open(os.path.expandvars(ANALYSIS_RESULTS_PATH))
+
+# get centrality selected histogram
+cent_counts, cent_edges = analysis_results_file['Centrality_selected;1'].to_numpy()
+cent_bin_centers = (cent_edges[:-1]+cent_edges[1:])/2
 
 for split in SPLIT_LIST:
     for i_cent_bins in range(len(CENTRALITY_LIST)):
         cent_bins = CENTRALITY_LIST[i_cent_bins]
+
+        # get number of events
+        cent_range_map = np.logical_and(cent_bin_centers > cent_bins[0], cent_bin_centers < cent_bins[1])
+        counts_cent_range = cent_counts[cent_range_map]
+        evts = np.sum(counts_cent_range)
+        print(f'Number of events: {evts}')
+
+        # get preselection efficiency histogram
+        presel_eff_counts, presel_eff_edges = presel_eff_file[f'fPreselEff_vs_ct_{split}_{cent_bins[0]}_{cent_bins[1]};1'].to_numpy(
+        )
+        presel_eff_bin_centers = (presel_eff_edges[1:]+presel_eff_edges[:-1])/2
+
         for ct_bins in zip(CT_BINS[i_cent_bins][:-1], CT_BINS[i_cent_bins][1:]):
 
             bin = f'{split}_{cent_bins[0]}_{cent_bins[1]}_{ct_bins[0]}_{ct_bins[1]}'
@@ -51,6 +70,11 @@ for split in SPLIT_LIST:
             # plot directory
             if not os.path.isdir('plots/significance_scan'):
                 os.mkdir('plots/significance_scan')
+
+            # lists filled inside loop
+            significance_list = []
+            significance_err_list = []
+
             for eff_score in zip(eff_array, score_eff_arrays_dict[bin]):
                 if (ct_bins[0] > 0) and (eff_score[0] < 0.50):
                     continue
@@ -78,14 +102,46 @@ for split in SPLIT_LIST:
 
                 # polynomial fit to background
                 pol = np.polynomial.Polynomial.fit(side_bins, side_counts, deg=2)
-                xx, yy = pol.linspace()
+
+                # compute background
+                pol_integral = pol.integ()
+                bin_size = (3.04-2.96)/nBins
+                bkg = (pol_integral(m_max) - pol_integral(m_min))/bin_size
+
+                # compute eff = presel_eff * BDT_eff
+                presel_eff_map = np.logical_and(presel_eff_bin_centers > ct_bins[0], presel_eff_bin_centers < ct_bins[1])
+                presel_eff = presel_eff_counts[presel_eff_map]
+                eff = presel_eff * eff_score[0]
+
+                # compute expected signal
+                sig = expected_signal(cent_bins, ct_bins, eff, evts)
+                print(f'signal = {sig}, background = {bkg}')
+                # compute significance
+                significance_list.append(sig/np.sqrt(sig+bkg))
+                significance_err_list.append(significance_error(sig, bkg))
+                print(f'ct_bins = {presel_eff_bin_centers}')
 
                 # plot histograms
                 if not os.path.isdir(f'plots/significance_scan/{bin}'):
                     os.mkdir(f'plots/significance_scan/{bin}')
                 plt.errorbar(side_bins, side_counts, side_errors, fmt='o')
+                xx, yy = pol.linspace()  # plot polynomial
                 plt.plot(xx, yy)
                 plt.xlabel('Invariant mass (GeV/c^2)')
                 plt.ylabel('Entries')
                 plt.savefig(f'plots/significance_scan/{bin}/{formatted_eff}_{bin}.png')
                 plt.close('all')
+            
+            significance_array = np.asarray(significance_list)
+            significance_err_array = np.asarray(significance_err_list)
+
+            significance_array = significance_array*eff_array[41:]
+            significance_err_array = significance_err_array*eff_array[41:]
+
+            low_limit = significance_array - significance_err_array
+            up_limit = significance_array + significance_err_array
+            fig = plt.figure()
+            plt.plot(eff_array[41:], significance_array, 'b', label='Expected Significance')
+            plt.fill_between(eff_array[41:], low_limit, up_limit,
+                            facecolor='deepskyblue', label=r'$ \pm 1\sigma$', alpha=0.3)
+            plt.savefig(f'plots/significance_scan/{bin}.png')
