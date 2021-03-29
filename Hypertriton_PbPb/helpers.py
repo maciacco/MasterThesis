@@ -39,3 +39,16 @@ def significance_error(signal, background):
     num_b_prop = 0.5*signal
     den_prop = np.sqrt((signal+background)*(signal+background)*(signal+background))
     return 1/den_prop*np.sqrt(signal*num_s_prop*num_s_prop+background*num_b_prop*num_b_prop)
+
+def expo(x):
+    return np.exp(-x / (252 * 0.029979245800)) #hyp tau taken from lifetime analysis
+
+def expected_signal(cent_class, ct_range, eff, n_events):
+    he3_yield_list = [2.35e-4, 2.03e-4, 6.58e-5]
+    correction = 0.4  # he3/hyp ratio (Very optimistic, considering it constant with centrality)
+    correction *= 0.25 # 2-body Branching ratio
+    correction *= expo(ct_range[0])- expo(ct_range[1]) #selecting the correct ct bin
+    cent_start_bin = [0., 5., 30.]
+    for cent_bin, he3_yield in zip(cent_start_bin, he3_yield_list):
+        if cent_bin==cent_class[0]:
+            return he3_yield*correction*n_events
