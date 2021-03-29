@@ -6,6 +6,7 @@ import warnings
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from scipy.stats import norm
 import ROOT
 import uproot
 import yaml
@@ -76,7 +77,7 @@ for split in SPLIT_LIST:
             significance_err_list = []
 
             for eff_score in zip(eff_array, score_eff_arrays_dict[bin]):
-                if (ct_bins[0] > 0) and (eff_score[0] < 0.50):
+                if (ct_bins[0] > 0) and (eff_score[0] < 0.49):
                     continue
                 formatted_eff = "{:.2f}".format(eff_score[0])
                 print(f'processing {bin}: eff = {eff_score[0]:.2f}, score = {eff_score[1]:.2f}...')
@@ -102,6 +103,7 @@ for split in SPLIT_LIST:
 
                 # polynomial fit to background
                 pol = np.polynomial.Polynomial.fit(side_bins, side_counts, deg=2)
+                xx_side, yy_side = pol.linspace()  # plot polynomial
 
                 # compute background
                 pol_integral = pol.integ()
@@ -109,39 +111,62 @@ for split in SPLIT_LIST:
                 bkg = (pol_integral(m_max) - pol_integral(m_min))/bin_size
 
                 # compute eff = presel_eff * BDT_eff
-                presel_eff_map = np.logical_and(presel_eff_bin_centers > ct_bins[0], presel_eff_bin_centers < ct_bins[1])
+                presel_eff_map = np.logical_and(
+                    presel_eff_bin_centers > ct_bins[0],
+                    presel_eff_bin_centers < ct_bins[1])
                 presel_eff = presel_eff_counts[presel_eff_map]
                 eff = presel_eff * eff_score[0]
 
                 # compute expected signal
-                sig = expected_signal(cent_bins, ct_bins, eff, evts)
-                print(f'signal = {sig}, background = {bkg}')
+                sig = expected_signal(cent_bins, ct_bins, eff, evts)[0]
+                mass_bins = bin_centers[mass_map]
+                mass_counts = norm.pdf(mass_bins, hyp_mass, sigma)
+                mass_counts = mass_counts*sig*bin_size
+                pol_offset = pol(mass_bins)
+                mass_counts = mass_counts+pol_offset
+
+                xx_mass = np.linspace(norm.ppf(0.005, hyp_mass, sigma), norm.ppf(0.995, hyp_mass, sigma), 100)
+                yy_mass = norm.pdf(xx_mass, hyp_mass, sigma)*sig*bin_size
+                yy_offset = pol(xx_mass)  # plot polynomial
+                yy_mass = yy_mass+yy_offset
+
                 # compute significance
                 significance_list.append(sig/np.sqrt(sig+bkg))
                 significance_err_list.append(significance_error(sig, bkg))
-                print(f'ct_bins = {presel_eff_bin_centers}')
 
                 # plot histograms
                 if not os.path.isdir(f'plots/significance_scan/{bin}'):
                     os.mkdir(f'plots/significance_scan/{bin}')
                 plt.errorbar(side_bins, side_counts, side_errors, fmt='o')
-                xx, yy = pol.linspace()  # plot polynomial
-                plt.plot(xx, yy)
+                plt.errorbar(mass_bins, mass_counts, np.sqrt(mass_counts), fmt='o')
+                plt.plot(xx_side, yy_side)
+                plt.plot(xx_mass, yy_mass)
                 plt.xlabel('Invariant mass (GeV/c^2)')
                 plt.ylabel('Entries')
                 plt.savefig(f'plots/significance_scan/{bin}/{formatted_eff}_{bin}.png')
                 plt.close('all')
-            
+
             significance_array = np.asarray(significance_list)
             significance_err_array = np.asarray(significance_err_list)
 
-            significance_array = significance_array*eff_array[41:]
-            significance_err_array = significance_err_array*eff_array[41:]
+            significance_array = significance_array*(eff_array[40:])
+            significance_err_array = significance_err_array*(eff_array[40:])
 
             low_limit = significance_array - significance_err_array
             up_limit = significance_array + significance_err_array
             fig = plt.figure()
-            plt.plot(eff_array[41:], significance_array, 'b', label='Expected Significance')
-            plt.fill_between(eff_array[41:], low_limit, up_limit,
-                            facecolor='deepskyblue', label=r'$ \pm 1\sigma$', alpha=0.3)
+            plt.plot(eff_array[40:], significance_array, 'b', label='Expected Significance')
+            plt.fill_between(eff_array[40:], low_limit, up_limit,
+                             facecolor='deepskyblue', label=r'$ \pm 1\sigma$', alpha=0.3)
+
+            handles, labels = fig.gca().get_legend_handles_labels()
+            order = [0,1]
+            plt.legend([handles[idx] for idx in order],[labels[idx] for idx in order], loc='lower left')
+
+            plt.xlabel("BDT Efficiency")
+            plt.ylabel("Significance x BDT Efficiency")
+            plt.xlim(0.5,0.9)
+            plt.ylim(0.3, up_limit.max()+0.3)
+
             plt.savefig(f'plots/significance_scan/{bin}.png')
+            plt.close('all')
