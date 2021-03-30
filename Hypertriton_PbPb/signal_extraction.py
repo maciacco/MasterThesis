@@ -54,6 +54,9 @@ for split in SPLIT_LIST:
             root_file_signal_extraction = ROOT.TFile("SignalExtraction.root", "update")
             root_file_signal_extraction.mkdir(f'{bin}')
 
+            # raw yileds histogram
+            h_raw_yields = ROOT.TH1D("fRawYields", "fRawYields", 100, -0.005, 0.995)
+
             for eff_score in zip(eff_array, score_eff_arrays_dict[bin]):
                 if (ct_bins[0] > 0) and (eff_score[0] < 0.50):
                     continue
@@ -122,6 +125,11 @@ for split in SPLIT_LIST:
 
                     print(f'chi2/NDF: {formatted_chi2}, edm: {r.edm()}')
                     if float(formatted_chi2) < 2:
+                        # fill raw yields histogram
+                        eff_index = h_raw_yields.FindBin(float(formatted_eff))
+                        h_raw_yields.SetBinContent(eff_index, roo_n_signal.getVal())
+                        h_raw_yields.SetBinError(eff_index, roo_n_signal.getError())
+
                         # write to file
                         root_file_signal_extraction.cd(f'{bin}')
                         xframe.Write()
@@ -141,11 +149,11 @@ for split in SPLIT_LIST:
                         roo_m.setRange(
                             'signalRange', mass_val - 3 * roo_sigma_mc.getVal(),
                             mass_val + 3 * roo_sigma_mc.getVal())
-                        signal_int = (
-                            roo_model.pdfList().at(0).createIntegral(m_set, normSet, ROOT.RooFit.Range("signalRange"))).getVal()
+                        signal_int = (roo_model.pdfList().at(0).createIntegral(
+                            m_set, normSet, ROOT.RooFit.Range("signalRange"))).getVal()
                         print(f'signal integral = {signal_int}')
-                        bkg_int = (
-                            roo_model.pdfList().at(1).createIntegral(m_set, normSet, ROOT.RooFit.Range("signalRange"))).getVal()
+                        bkg_int = (roo_model.pdfList().at(1).createIntegral(
+                            m_set, normSet, ROOT.RooFit.Range("signalRange"))).getVal()
                         print(f'background integral = {bkg_int}')
                         sig = signal_int*roo_n_signal.getVal()
                         bkg = bkg_int*roo_n_background.getVal()
@@ -187,4 +195,7 @@ for split in SPLIT_LIST:
                         frame.Draw()
                         cc.Print(f'plots/kde_signal/{bin}/{formatted_eff}_{bin}.png')
 
+            h_raw_yields.GetXaxis().SetTitle("BDT efficiency")
+            h_raw_yields.GetYaxis().SetTitle("#it{N_{raw}}")
+            h_raw_yields.Write()
             root_file_signal_extraction.Close()

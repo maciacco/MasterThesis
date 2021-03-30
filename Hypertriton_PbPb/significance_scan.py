@@ -62,8 +62,8 @@ for split in SPLIT_LIST:
         print(f'Number of events: {evts}')
 
         # get preselection efficiency histogram
-        presel_eff_counts, presel_eff_edges = presel_eff_file[f'fPreselEff_vs_ct_{split}_{cent_bins[0]}_{cent_bins[1]};1'].to_numpy(
-        )
+        presel_eff_counts, presel_eff_edges = presel_eff_file[
+            f'fPreselEff_vs_ct_{split}_{cent_bins[0]}_{cent_bins[1]};1'].to_numpy()
         presel_eff_bin_centers = (presel_eff_edges[1:]+presel_eff_edges[:-1])/2
 
         for ct_bins in zip(CT_BINS[i_cent_bins][:-1], CT_BINS[i_cent_bins][1:]):
@@ -167,20 +167,21 @@ for split in SPLIT_LIST:
             plt.plot(eff_array_reduced, significance_array, 'b', label='Expected Significance')
             plt.fill_between(eff_array_reduced, low_limit, up_limit,
                              facecolor='deepskyblue', label=r'$ \pm 1\sigma$', alpha=0.3)
-            plt.vlines(cut_eff[0], 0, 10, colors='red', linestyles='dashed', label=f'cut = {"{:.2f}".format(cut_eff[0])}')
+            plt.vlines(cut_eff[0], 0, 10, colors='red', linestyles='dashed',
+                       label=f'cut = {"{:.2f}".format(cut_eff[0])}')
 
             handles, labels = fig.gca().get_legend_handles_labels()
-            order = [0,2,1]
-            plt.legend([handles[idx] for idx in order],[labels[idx] for idx in order], loc='lower left')
+            order = [0, 2, 1]
+            plt.legend([handles[idx] for idx in order], [labels[idx] for idx in order], loc='lower left')
 
             plt.xlabel("BDT Efficiency")
             plt.ylabel("Significance x BDT Efficiency")
-            plt.xlim(0.5,0.9)
+            plt.xlim(0.5, 0.9)
             plt.ylim(0.3, up_limit.max()+0.3)
 
             plt.savefig(f'plots/significance_scan/{bin}.png')
             plt.close('all')
 
-            eff_cut_dict[bin] = cut_eff
+            eff_cut_dict[bin] = cut_eff[0]
 
 pickle.dump(eff_cut_dict, open("file_eff_cut_dict", "wb"))
