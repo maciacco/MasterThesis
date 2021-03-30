@@ -48,7 +48,7 @@ ratio_file = ROOT.TFile.Open('Ratio.root', 'recreate')
 for i_cent_bins in range(len(CENTRALITY_LIST)):
     cent_bins = CENTRALITY_LIST[i_cent_bins]
 
-    h_corrected_yields = [ROOT.TH1D(),ROOT.TH1D()]
+    h_corrected_yields = [ROOT.TH1D(), ROOT.TH1D()]
     for i_split, split in enumerate(SPLIT_LIST):
         print(f'{i_split} -> {split}')
         # get preselection efficiency histogram
@@ -83,6 +83,7 @@ for i_cent_bins in range(len(CENTRALITY_LIST)):
             eff_index = h_raw_yield.FindBin(float(formatted_eff_cut))
             raw_yield = h_raw_yield.GetBinContent(eff_index)
             raw_yield_error = h_raw_yield.GetBinError(eff_index)
+            print(f'eff_cut = {formatted_eff_cut}, raw_yield = {raw_yield}+{raw_yield_error}')
 
             # apply corrections
             presel_eff_map = np.logical_and(
@@ -97,16 +98,23 @@ for i_cent_bins in range(len(CENTRALITY_LIST)):
             # print(f'index = {ct_bin_index}')
             h_corrected_yields[i_split].SetBinContent(ct_bin_index, raw_yield/eff[0])
             h_corrected_yields[i_split].SetBinError(ct_bin_index, raw_yield_error/eff[0])
-        
+
         # set labels
         h_corrected_yields[i_split].GetXaxis().SetTitle("#it{c}t (cm)")
         h_corrected_yields[i_split].GetYaxis().SetTitle("d#it{N}/d#it{c}t (cm^{-1})")
-        h_corrected_yields[i_split].Scale(1.,"width")
+        h_corrected_yields[i_split].Scale(1., "width")
         h_corrected_yields[i_split].Write()
 
     # ratios
     h_ratio = ROOT.TH1D(h_corrected_yields[0])
+    h_ratio.SetName(f'fRatio_{cent_bins[0]}_{cent_bins[1]}')
+    h_ratio.SetTitle(f'{cent_bins[0]}-{cent_bins[1]}%')
     h_ratio.Divide(h_corrected_yields[0], h_corrected_yields[1], 1, 1)
+    h_ratio.GetYaxis().SetTitle("^{3}_{#bar{#Lambda}}#bar{H}/^{3}_{#Lambda}H")
+    h_ratio.Fit("pol0")
     h_ratio.Write()
+
+    del h_corrected_yields
+    del h_ratio
 
 ratio_file.Close()
