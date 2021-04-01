@@ -34,7 +34,7 @@ RANDOM_STATE = params['RANDOM_STATE']
 ##################################################################
 
 # split matter/antimatter
-SPLIT_LIST = ['']
+SPLIT_LIST = ['all']
 if SPLIT:
     SPLIT_LIST = ['antimatter', 'matter']
 
@@ -77,15 +77,15 @@ for split in SPLIT_LIST:
 
                 # declare fit model
                 # kde
-                roo_n_signal = ROOT.RooRealVar('Nsignal', 'N_{signal}', 5., 1., 50.)
+                roo_n_signal = ROOT.RooRealVar('Nsignal', 'N_{signal}', 0., 1.e3)
                 delta_mass = ROOT.RooRealVar("deltaM", '#Deltam', -0.004, 0.004, 'GeV/c^{2}')
                 shifted_mass = ROOT.RooAddition("mPrime", "m + #Deltam", ROOT.RooArgList(roo_m, delta_mass))
                 roo_signal = ROOT.RooKeysPdf("signal", "signal", shifted_mass, roo_mc_m,
                                              roo_mc_signal, ROOT.RooKeysPdf.MirrorBoth, 2)
                 # pol2
-                roo_n_background = ROOT.RooRealVar('Nbackground', 'N_{bkg}', 10., 1., 2.e6)
-                roo_a = ROOT.RooRealVar('a', 'a', 0.11, 0.10, 0.18)
-                roo_b = ROOT.RooRealVar('b', 'b', -1.0, -0.01)
+                roo_n_background = ROOT.RooRealVar('Nbackground', 'N_{bkg}', 0., 1.e4)
+                roo_a = ROOT.RooRealVar('a', 'a', -10., 10.)
+                roo_b = ROOT.RooRealVar('b', 'b', -10., 10.)
                 roo_bkg = ROOT.RooPolynomial('background', 'background', roo_m, ROOT.RooArgList(roo_b, roo_a))
                 # model
                 roo_model = ROOT.RooAddPdf(

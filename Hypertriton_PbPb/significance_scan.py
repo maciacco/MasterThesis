@@ -35,7 +35,7 @@ RANDOM_STATE = params['RANDOM_STATE']
 ##################################################################
 
 # split matter/antimatter
-SPLIT_LIST = ['']
+SPLIT_LIST = ['all']
 if SPLIT:
     SPLIT_LIST = ['antimatter', 'matter']
 
@@ -122,6 +122,8 @@ for split in SPLIT_LIST:
 
                 # compute expected signal
                 sig = expected_signal(cent_bins, ct_bins, eff, evts)[0]
+                if not SPLIT:
+                    sig *= 2
                 mass_bins = bin_centers[mass_map]
                 mass_counts = norm.pdf(mass_bins, hyp_mass, sigma)
                 mass_counts = mass_counts*sig*bin_size

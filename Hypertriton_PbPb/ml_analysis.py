@@ -50,13 +50,13 @@ TRAINING = True
 PLOT_DIR = 'plots'
 MAKE_PRESELECTION_EFFICIENCY = True
 MAKE_FEATURES_PLOTS = False
-MAKE_TRAIN_TEST_PLOT = True
+MAKE_TRAIN_TEST_PLOT = False
 OPTIMIZE = False
 OPTIMIZED = False
-TRAIN = True
+TRAIN = False
 
 # application
-APPLICATION = True
+APPLICATION = False
 
 # avoid pandas warning
 warnings.simplefilter(action='ignore', category=FutureWarning)
@@ -85,7 +85,7 @@ HYPERPARAMS_RANGES = params['HYPERPARAMS_RANGES']
 ##################################################################
 
 # split matter/antimatter
-SPLIT_LIST = ['']
+SPLIT_LIST = ['all']
 if SPLIT:
     SPLIT_LIST = ['antimatter', 'matter']
 
@@ -107,10 +107,11 @@ if TRAINING:
         df_signal = uproot.open(os.path.expandvars(MC_PATH))['SignalTable'].arrays(library="pd")
         df_background = uproot.open(os.path.expandvars(BKG_PATH))['DataTable'].arrays(library="pd")
 
+        split_ineq_sign = '> -0.1'
         if SPLIT:
-            split_ineq_sign = '>'
+            split_ineq_sign = '> 0.5'
             if split == 'antimatter':
-                split_ineq_sign = '<'
+                split_ineq_sign = '< 0.5'
 
         for i_cent_bins in range(len(CENTRALITY_LIST)):
             cent_bins = CENTRALITY_LIST[i_cent_bins]
@@ -121,9 +122,9 @@ if TRAINING:
                 ##############################################################
                 df_generated = uproot.open(os.path.expandvars(MC_PATH))['GenTable'].arrays(library="pd")
                 df_signal_cent = df_signal.query(
-                    f'ArmenterosAlpha {split_ineq_sign} 0 and centrality > {cent_bins[0]} and centrality < {cent_bins[1]}')
+                    f'Matter {split_ineq_sign} and centrality > {cent_bins[0]} and centrality < {cent_bins[1]}')
                 df_generated_cent = df_generated.query(
-                    f'matter {split_ineq_sign} 0.5 and centrality > {cent_bins[0]} and centrality < {cent_bins[1]}')
+                    f'matter {split_ineq_sign} and centrality > {cent_bins[0]} and centrality < {cent_bins[1]}')
                 del df_generated
 
                 # fill histograms (vs. ct and vs. pt)
@@ -157,24 +158,25 @@ if TRAINING:
                 # TRAINING AND TEST SET PREPARATION
                 ##############################################################
                 df_signal_cent_ct = df_signal.query(
-                    f'ArmenterosAlpha {split_ineq_sign} 0 and centrality > {cent_bins[0]} and centrality < {cent_bins[1]} and ct > {ct_bins[0]} and ct < {ct_bins[1]}')
+                    f'Matter {split_ineq_sign} and centrality > {cent_bins[0]} and centrality < {cent_bins[1]} and ct > {ct_bins[0]} and ct < {ct_bins[1]}')
                 df_background_cent_ct = df_background.query(
-                    f'ArmenterosAlpha {split_ineq_sign} 0 and centrality > {cent_bins[0]} and centrality < {cent_bins[1]} and ct > {ct_bins[0]} and ct < {ct_bins[1]}')
+                    f'Matter {split_ineq_sign} and centrality > {cent_bins[0]} and centrality < {cent_bins[1]} and ct > {ct_bins[0]} and ct < {ct_bins[1]}')
                 #df_signal_cent_ct = df_signal_cent_ct[TRAINING_COLUMNS_LIST]
                 #df_background_cent_ct = df_background_cent_ct[TRAINING_COLUMNS_LIST]
 
                 # define tree handlers
                 signal_tree_handler = TreeHandler()
-                background_tree_handler_full = TreeHandler()
+                background_tree_handler = TreeHandler()
                 signal_tree_handler.set_data_frame(df_signal_cent_ct)
-                background_tree_handler_full.set_data_frame(df_background_cent_ct)
+                background_tree_handler.set_data_frame(df_background_cent_ct)
                 del df_signal_cent_ct
                 del df_background_cent_ct
 
-                # downscale background
-                background_tree_handler = background_tree_handler_full.get_subset(
-                    size=int(0.8*signal_tree_handler.get_n_cand()), rndm_state=RANDOM_STATE)
-                del background_tree_handler_full
+                # estimate fraction of candidates bkg/sig
+                if background_tree_handler.get_n_cand() > 4*signal_tree_handler.get_n_cand():
+                    background_tree_handler = background_tree_handler.get_subset(
+                        size=int(4*signal_tree_handler.get_n_cand()), rndm_state=RANDOM_STATE)
+                print(f'fraction of candidates: bkg/sig = {background_tree_handler.get_n_cand()/signal_tree_handler.get_n_cand()}')
 
                 # features plot
                 leg_labels = ['background', 'signal']
@@ -264,6 +266,8 @@ if TRAINING:
                 model_params_dict = model_hdl.get_model_params()
                 with open(f'hyperparams/model_params_{bin}.yml', 'w') as outfile:
                     yaml.dump(model_params_dict, outfile, default_flow_style=False)
+
+                # save roc-auc
                 ##############################################################
 
     pickle.dump(score_eff_arrays_dict, open("file_score_eff_dict", "wb"))
@@ -277,16 +281,17 @@ if APPLICATION:
     for split in SPLIT_LIST:
         df_data = uproot.open(os.path.expandvars(DATA_PATH))['DataTable'].arrays(library="pd")
 
+        split_ineq_sign = '> -0.1'
         if SPLIT:
-            split_ineq_sign = '>'
+            split_ineq_sign = '> 0.5'
             if split == 'antimatter':
-                split_ineq_sign = '<'
+                split_ineq_sign = '< 0.5'
 
         for i_cent_bins in range(len(CENTRALITY_LIST)):
             cent_bins = CENTRALITY_LIST[i_cent_bins]
 
             df_data_cent = df_data.query(
-                f'ArmenterosAlpha {split_ineq_sign} 0 and centrality > {cent_bins[0]} and centrality < {cent_bins[1]}')
+                f'Matter {split_ineq_sign} and centrality > {cent_bins[0]} and centrality < {cent_bins[1]}')
             data_tree_handler = TreeHandler()
             data_tree_handler.set_data_frame(df_data_cent)
             del df_data_cent
