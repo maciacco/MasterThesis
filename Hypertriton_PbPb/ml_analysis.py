@@ -48,15 +48,15 @@ SPLIT = True
 # training
 TRAINING = True
 PLOT_DIR = 'plots'
-MAKE_PRESELECTION_EFFICIENCY = True
-MAKE_FEATURES_PLOTS = False
-MAKE_TRAIN_TEST_PLOT = False
+MAKE_PRESELECTION_EFFICIENCY = False
+MAKE_FEATURES_PLOTS = True
+MAKE_TRAIN_TEST_PLOT = True
 OPTIMIZE = False
 OPTIMIZED = False
-TRAIN = False
+TRAIN = True
 
 # application
-APPLICATION = False
+APPLICATION = True
 
 # avoid pandas warning
 warnings.simplefilter(action='ignore', category=FutureWarning)
@@ -158,9 +158,9 @@ if TRAINING:
                 # TRAINING AND TEST SET PREPARATION
                 ##############################################################
                 df_signal_cent_ct = df_signal.query(
-                    f'Matter {split_ineq_sign} and centrality > {cent_bins[0]} and centrality < {cent_bins[1]} and ct > {ct_bins[0]} and ct < {ct_bins[1]}')
+                    f'Matter {split_ineq_sign} and centrality > {cent_bins[0]} and centrality < {cent_bins[1]} and ct > {ct_bins[0]} and ct < {ct_bins[1]} and pt > 2 and pt < 10')
                 df_background_cent_ct = df_background.query(
-                    f'Matter {split_ineq_sign} and centrality > {cent_bins[0]} and centrality < {cent_bins[1]} and ct > {ct_bins[0]} and ct < {ct_bins[1]}')
+                    f'Matter {split_ineq_sign} and centrality > {cent_bins[0]} and centrality < {cent_bins[1]} and ct > {ct_bins[0]} and ct < {ct_bins[1]} and pt > 2 and pt < 10')
                 #df_signal_cent_ct = df_signal_cent_ct[TRAINING_COLUMNS_LIST]
                 #df_background_cent_ct = df_background_cent_ct[TRAINING_COLUMNS_LIST]
 
@@ -173,9 +173,9 @@ if TRAINING:
                 del df_background_cent_ct
 
                 # estimate fraction of candidates bkg/sig
-                if background_tree_handler.get_n_cand() > 4*signal_tree_handler.get_n_cand():
+                if background_tree_handler.get_n_cand() > 10*signal_tree_handler.get_n_cand():
                     background_tree_handler = background_tree_handler.get_subset(
-                        size=int(4*signal_tree_handler.get_n_cand()), rndm_state=RANDOM_STATE)
+                        size=int(10*signal_tree_handler.get_n_cand()), rndm_state=RANDOM_STATE)
                 print(f'fraction of candidates: bkg/sig = {background_tree_handler.get_n_cand()/signal_tree_handler.get_n_cand()}')
 
                 # features plot
@@ -237,7 +237,7 @@ if TRAINING:
                     if not os.path.isdir(f'{PLOT_DIR}/train_test_out'):
                         os.mkdir(f'{PLOT_DIR}/train_test_out')
                     plot_utils.plot_output_train_test(model_hdl, train_test_data,
-                                                      logscale=True, density=True, labels=leg_labels)
+                                                      logscale=True, density=False, labels=leg_labels)
                     plt.savefig(f'{PLOT_DIR}/train_test_out/{bin}_out')
 
                     plot_utils.plot_feature_imp(train_test_data[0], train_test_data[1], model_hdl)
@@ -290,28 +290,21 @@ if APPLICATION:
         for i_cent_bins in range(len(CENTRALITY_LIST)):
             cent_bins = CENTRALITY_LIST[i_cent_bins]
 
-            df_data_cent = df_data.query(
-                f'Matter {split_ineq_sign} and centrality > {cent_bins[0]} and centrality < {cent_bins[1]}')
-            data_tree_handler = TreeHandler()
-            data_tree_handler.set_data_frame(df_data_cent)
-            del df_data_cent
-
-            data_tree_handler.slice_data_frame('ct', list(zip(CT_BINS[i_cent_bins][:-1], CT_BINS[i_cent_bins][1:])))
-            model_hdl_array = np.empty((len(CT_BINS[i_cent_bins])-1,), dtype=object)
-
             for i_ct_bins in range(len(CT_BINS[i_cent_bins])-1):
                 bin = f'{split}_{cent_bins[0]}_{cent_bins[1]}_{CT_BINS[i_cent_bins][i_ct_bins]}_{CT_BINS[i_cent_bins][i_ct_bins+1]}'
-                model_hdl_array[i_ct_bins] = ModelHandler()
+                df_data_cent = df_data.query(
+                    f'Matter {split_ineq_sign} and centrality > {cent_bins[0]} and centrality < {cent_bins[1]} and pt > 2 and pt < 10')
+
+                model_hdl = ModelHandler()
                 if OPTIMIZED:
-                    model_hdl_array[i_ct_bins].load_model_handler(f'models/{bin}_optimized_trained')
+                    model_hdl.load_model_handler(f'models/{bin}_optimized_trained')
                 else:
-                    model_hdl_array[i_ct_bins].load_model_handler(f'models/{bin}_trained')
+                    model_hdl.load_model_handler(f'models/{bin}_trained')
 
-            data_tree_handler.apply_model_handler(list(model_hdl_array))
-            eff_array = np.arange(0.10, 0.91, 0.01)
+                eff_array = np.arange(0.10, 0.91, 0.01)
 
-            for i_ct_bins in range(len(CT_BINS[i_cent_bins])-1):
-                bin = f'{split}_{cent_bins[0]}_{cent_bins[1]}_{CT_BINS[i_cent_bins][i_ct_bins]}_{CT_BINS[i_cent_bins][i_ct_bins+1]}'
-                slice = data_tree_handler.get_slice(i_ct_bins)
-                slice.query(f'model_output > {score_eff_arrays_dict[bin][len(eff_array)-1]}')
-                slice.to_parquet(f'df/{bin}', compression='gzip')
+                data_y_score = model_hdl.predict(df_data_cent)
+                df_data_cent['model_output'] = data_y_score
+
+                df_data_cent = df_data_cent.query(f'model_output > {score_eff_arrays_dict[bin][len(eff_array)-1]}')
+                df_data_cent.to_parquet(f'df/{bin}', compression='gzip')

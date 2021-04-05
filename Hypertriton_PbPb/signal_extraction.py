@@ -183,7 +183,7 @@ for split in SPLIT_LIST:
                         canv.Print(f'plots/signal_extraction/{bin}/{eff_score[0]:.2f}_{bin}.png')
 
                         # plot kde and mc
-                        frame = roo_mc_m.frame(2.96, 3.04, nBins*4)
+                        frame = roo_mc_m.frame(2.96, 3.04, nBins*16)
                         roo_mc_signal.plotOn(frame)
                         roo_signal.plotOn(frame)
                         gaus.plotOn(frame, ROOT.RooFit.LineColor(ROOT.kRed), ROOT.RooFit.LineStyle(ROOT.kDashed))
@@ -193,6 +193,7 @@ for split in SPLIT_LIST:
                         if not os.path.isdir(f'plots/kde_signal/{bin}'):
                             os.mkdir(f'plots/kde_signal/{bin}')
                         frame.Draw()
+                        cc.SetLogy(ROOT.kTRUE)
                         cc.Print(f'plots/kde_signal/{bin}/{formatted_eff}_{bin}.png')
 
             h_raw_yields.GetXaxis().SetTitle("BDT efficiency")
