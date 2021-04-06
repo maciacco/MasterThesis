@@ -70,23 +70,22 @@ for split in SPLIT_LIST:
                     df_signal_sel = df_signal_sel.sample(10000)
 
                 # get invariant mass distribution (data and mc)
-                roo_m = ROOT.RooRealVar("m", "#it{M} (^{3}He + #pi^{-})", 2.96, 3.04, "GeV/#it{c}^{2}")
-                roo_mc_m = ROOT.RooRealVar("m", "#it{M} (^{3}He + #pi^{-})", 2.96, 3.04, "GeV/#it{c}^{2}")
+                roo_m = ROOT.RooRealVar("m", "#it{M} (^{3}He + #pi^{-})", 2.960, 3.025, "GeV/#it{c}^{2}")
+                roo_mc_m = ROOT.RooRealVar("m", "#it{M} (^{3}He + #pi^{-})", 2.960, 3.025, "GeV/#it{c}^{2}")
                 roo_data = ndarray2roo(np.array(df_data_sel['m']), roo_m)
                 roo_mc_signal = ndarray2roo(np.array(df_signal_sel['m']), roo_m)
 
                 # declare fit model
                 # kde
-                roo_n_signal = ROOT.RooRealVar('Nsignal', 'N_{signal}', 0., 1.e3)
-                delta_mass = ROOT.RooRealVar("deltaM", '#Deltam', -0.004, 0.004, 'GeV/c^{2}')
+                roo_n_signal = ROOT.RooRealVar('N_{signal}', 'Nsignal', 0., 1.e3)
+                delta_mass = ROOT.RooRealVar("#Deltam", 'deltaM', -0.004, 0.004, 'GeV/c^{2}')
                 shifted_mass = ROOT.RooAddition("mPrime", "m + #Deltam", ROOT.RooArgList(roo_m, delta_mass))
                 roo_signal = ROOT.RooKeysPdf("signal", "signal", shifted_mass, roo_mc_m,
                                              roo_mc_signal, ROOT.RooKeysPdf.MirrorBoth, 2)
-                # pol2
-                roo_n_background = ROOT.RooRealVar('Nbackground', 'N_{bkg}', 0., 1.e4)
-                roo_a = ROOT.RooRealVar('a', 'a', -10., 10.)
-                roo_b = ROOT.RooRealVar('b', 'b', -10., 10.)
-                roo_bkg = ROOT.RooPolynomial('background', 'background', roo_m, ROOT.RooArgList(roo_b, roo_a))
+                # pol1
+                roo_n_background = ROOT.RooRealVar('N_{bkg}', 'Nbackground', 0., 1.e4)
+                roo_slope = ROOT.RooRealVar('slope', 'slope', -10., 10.)
+                roo_bkg = ROOT.RooPolynomial('background', 'background', roo_m, ROOT.RooArgList(roo_slope))
                 # model
                 roo_model = ROOT.RooAddPdf(
                     'model', 'model', ROOT.RooArgList(roo_signal, roo_bkg),
@@ -102,8 +101,8 @@ for split in SPLIT_LIST:
                 if r.status() == 0:
 
                     # plot
-                    nBins = 32
-                    xframe = roo_m.frame(2.96, 3.04, nBins)
+                    nBins = 26
+                    xframe = roo_m.frame(2.96, 3.025, nBins)
                     xframe.SetTitle(
                         str(ct_bins[0]) + '#leq #it{c}t<' + str(ct_bins[1]) + ' cm, ' + str(cent_bins[0]) + '-' +
                         str(cent_bins[1]) + '%, ' + str(formatted_eff))
@@ -121,7 +120,8 @@ for split in SPLIT_LIST:
                     formatted_chi2 = "{:.2f}".format(xframe.chiSquare('model', 'data'))
                     roo_model.paramOn(xframe, ROOT.RooFit.Label(
                         '#chi^{2}/NDF = '+formatted_chi2),
-                        ROOT.RooFit.Layout(0.68, 0.96, 0.96))
+                        ROOT.RooFit.Layout(0.60, 0.96, 0.92))
+                    xframe.getAttText().SetTextSize(0.035)
 
                     print(f'chi2/NDF: {formatted_chi2}, edm: {r.edm()}')
                     if float(formatted_chi2) < 2:
@@ -136,7 +136,7 @@ for split in SPLIT_LIST:
 
                         # fit mc distribution to get sigma and mass
                         roo_mean_mc = ROOT.RooRealVar("mean", "mean", 2.98, 3.0)
-                        roo_sigma_mc = ROOT.RooRealVar("sigma", "sigma", 0.001, 0.004)
+                        roo_sigma_mc = ROOT.RooRealVar("sigma", "sigma", 0.0005, 0.0040)
                         gaus = ROOT.RooGaussian('gaus', 'gaus', roo_m, roo_mean_mc, roo_sigma_mc)
                         gaus.fitTo(roo_mc_signal)
 
@@ -164,11 +164,11 @@ for split in SPLIT_LIST:
                         canv = ROOT.TCanvas()
                         canv.cd()
                         text_mass = ROOT.TLatex(
-                            2.995, 0.9 * xframe.GetMaximum(),
-                            "#it{m}_{^{3}_{#Lambda}H} = " + "{:.5f}".format(mass_val) + " GeV/#it{c}")
+                            2.965, 0.9 * xframe.GetMaximum(),
+                            "#it{m}_{^{3}_{#Lambda}H} = " + "{:.6f}".format(mass_val) + " GeV/#it{c^{2}}")
                         text_mass.SetTextSize(0.035)
-                        text_signif = ROOT.TLatex(2.995, 0.82 * xframe.GetMaximum(),
-                                                  "S/#sqrt{S+B} = " + "{:.3f}".format(significance_val) + " #pm " +
+                        text_signif = ROOT.TLatex(2.965, 0.82 * xframe.GetMaximum(),
+                                                  "S/#sqrt{S+B} (3#sigma) = " + "{:.3f}".format(significance_val) + " #pm " +
                                                   "{:.3f}".format(significance_err))
                         text_signif.SetTextSize(0.035)
                         xframe.Draw("")
@@ -183,7 +183,7 @@ for split in SPLIT_LIST:
                         canv.Print(f'plots/signal_extraction/{bin}/{eff_score[0]:.2f}_{bin}.png')
 
                         # plot kde and mc
-                        frame = roo_mc_m.frame(2.96, 3.04, nBins*16)
+                        frame = roo_mc_m.frame(2.96, 3.025, nBins*16)
                         roo_mc_signal.plotOn(frame)
                         roo_signal.plotOn(frame)
                         gaus.plotOn(frame, ROOT.RooFit.LineColor(ROOT.kRed), ROOT.RooFit.LineStyle(ROOT.kDashed))

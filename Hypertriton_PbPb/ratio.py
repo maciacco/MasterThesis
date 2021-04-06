@@ -105,6 +105,25 @@ for i_cent_bins in range(len(CENTRALITY_LIST)):
         h_corrected_yields[i_split].Scale(1., "width")
         h_corrected_yields[i_split].Write()
 
+        # fit with exponential pdf
+        fit_function_expo = ROOT.TF1("expo", "expo", 2, 35)
+        h_corrected_yields[i_split].Fit(fit_function_expo, "RMLS+")
+
+        # compute lifetime
+        tau = 1/fit_function_expo.GetParameter(1)*100/3 # ps
+        tau_error = fit_function_expo.GetParError(0)*100/3/fit_function_expo.GetParameter(0)/fit_function_expo.GetParameter(1) # ps
+        tau_text = ROOT.TLatex(15, 0.9*h_corrected_yields[i_split].GetMaximum(), '#tau = ' + "{:.2f}".format(tau) + '#pm' + "{:.2f}".format(tau_error) + ' ps')
+        tau_text.SetTextSize(0.035)
+
+        # draw on canvas
+        canv = ROOT.TCanvas()
+        canv.SetName(h_corrected_yields[i_split].GetName())
+        canv.SetTitle(h_corrected_yields[i_split].GetTitle())
+        canv.cd()
+        h_corrected_yields[i_split].Draw("")
+        tau_text.Draw("same")
+        canv.Write() # write to file
+
     # ratios
     h_ratio = ROOT.TH1D(h_corrected_yields[0])
     h_ratio.SetName(f'fRatio_{cent_bins[0]}_{cent_bins[1]}')

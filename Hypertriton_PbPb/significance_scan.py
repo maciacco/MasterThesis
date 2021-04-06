@@ -93,9 +93,9 @@ for split in SPLIT_LIST:
                 sigma = 0.0015
                 m_min = hyp_mass - 3*sigma
                 m_max = hyp_mass + 3*sigma
-                nBins = 32
+                nBins = 26
 
-                counts, bin_edges = np.histogram(np.array(df_data_sel['m']), nBins, range=(2.96, 3.04))
+                counts, bin_edges = np.histogram(np.array(df_data_sel['m']), nBins, range=(2.960, 3.025))
                 bin_centers = (bin_edges[1:]+bin_edges[:-1])/2.
                 side_map = np.logical_or(bin_centers < m_min, bin_centers > m_max)
                 mass_map = np.logical_not(side_map)
@@ -110,7 +110,7 @@ for split in SPLIT_LIST:
 
                 # compute background
                 pol_integral = pol.integ()
-                bin_size = (3.04-2.96)/nBins
+                bin_size = (3.025-2.960)/nBins
                 bkg = (pol_integral(m_max) - pol_integral(m_min))/bin_size
 
                 # compute eff = presel_eff * BDT_eff

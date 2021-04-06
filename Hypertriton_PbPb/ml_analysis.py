@@ -98,7 +98,7 @@ if TRAINING:
     # make dataframe directory
     if not os.path.isdir('df'):
         os.mkdir('df')
-    score_eff_arrays_dict = pickle.load(open("file_score_eff_dict", "rb"))
+    # score_eff_arrays_dict = pickle.load(open("file_score_eff_dict", "rb"))
 
     score_eff_arrays_dict = dict()
 
