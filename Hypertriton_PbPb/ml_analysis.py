@@ -293,7 +293,7 @@ if APPLICATION:
             for i_ct_bins in range(len(CT_BINS[i_cent_bins])-1):
                 bin = f'{split}_{cent_bins[0]}_{cent_bins[1]}_{CT_BINS[i_cent_bins][i_ct_bins]}_{CT_BINS[i_cent_bins][i_ct_bins+1]}'
                 df_data_cent = df_data.query(
-                    f'Matter {split_ineq_sign} and centrality > {cent_bins[0]} and centrality < {cent_bins[1]} and pt > 2 and pt < 10')
+                    f'Matter {split_ineq_sign} and centrality > {cent_bins[0]} and centrality < {cent_bins[1]} and pt > 2 and pt < 10 and ct > {ct_bins[0]} and ct < {ct_bins[1]}')
 
                 model_hdl = ModelHandler()
                 if OPTIMIZED:
