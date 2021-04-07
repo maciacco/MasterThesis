@@ -91,7 +91,7 @@ for i_cent_bins in range(len(CENTRALITY_LIST)):
                 presel_eff_bin_centers < ct_bins[1])
             presel_eff = presel_eff_counts[presel_eff_map]
             bdt_eff = float(formatted_eff_cut)
-
+            print(f'bin: {presel_eff_map}, presel_eff: {presel_eff}')
             eff = presel_eff * eff_cut_dict[bin]
             # print(f'corrected yield = {raw_yield/eff[0]}')
             ct_bin_index = h_corrected_yields[i_split].FindBin(ct_bins[0]+0.5)

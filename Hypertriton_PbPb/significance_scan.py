@@ -121,7 +121,7 @@ for split in SPLIT_LIST:
                 eff = presel_eff * eff_score[0]
 
                 # compute expected signal
-                sig = expected_signal(cent_bins, ct_bins, eff, evts)[0]
+                sig = expected_signal(cent_bins, ct_bins, eff, evts)[0]/2.
                 if not SPLIT:
                     sig *= 2
                 mass_bins = bin_centers[mass_map]

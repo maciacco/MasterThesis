@@ -48,15 +48,15 @@ SPLIT = True
 # training
 TRAINING = True
 PLOT_DIR = 'plots'
-MAKE_PRESELECTION_EFFICIENCY = False
-MAKE_FEATURES_PLOTS = True
-MAKE_TRAIN_TEST_PLOT = True
+MAKE_PRESELECTION_EFFICIENCY = True
+MAKE_FEATURES_PLOTS = False
+MAKE_TRAIN_TEST_PLOT = False
 OPTIMIZE = False
 OPTIMIZED = False
-TRAIN = True
+TRAIN = False
 
 # application
-APPLICATION = True
+APPLICATION = False
 
 # avoid pandas warning
 warnings.simplefilter(action='ignore', category=FutureWarning)
@@ -290,8 +290,8 @@ if APPLICATION:
         for i_cent_bins in range(len(CENTRALITY_LIST)):
             cent_bins = CENTRALITY_LIST[i_cent_bins]
 
-            for i_ct_bins in range(len(CT_BINS[i_cent_bins])-1):
-                bin = f'{split}_{cent_bins[0]}_{cent_bins[1]}_{CT_BINS[i_cent_bins][i_ct_bins]}_{CT_BINS[i_cent_bins][i_ct_bins+1]}'
+            for ct_bins in zip(CT_BINS[i_cent_bins][:-1], CT_BINS[i_cent_bins][1:]):
+                bin = f'{split}_{cent_bins[0]}_{cent_bins[1]}_{ct_bins[0]}_{ct_bins[1]}'
                 df_data_cent = df_data.query(
                     f'Matter {split_ineq_sign} and centrality > {cent_bins[0]} and centrality < {cent_bins[1]} and pt > 2 and pt < 10 and ct > {ct_bins[0]} and ct < {ct_bins[1]}')
 
