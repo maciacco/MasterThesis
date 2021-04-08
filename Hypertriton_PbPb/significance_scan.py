@@ -105,7 +105,7 @@ for split in SPLIT_LIST:
                 side_errors = np.sqrt(side_counts)
 
                 # polynomial fit to background
-                pol = np.polynomial.Polynomial.fit(side_bins, side_counts, deg=2)
+                pol = np.polynomial.Polynomial.fit(side_bins, side_counts, deg=1)
                 xx_side, yy_side = pol.linspace()  # plot polynomial
 
                 # compute background
@@ -121,7 +121,7 @@ for split in SPLIT_LIST:
                 eff = presel_eff * eff_score[0]
 
                 # compute expected signal
-                sig = expected_signal(cent_bins, ct_bins, eff, evts)[0]/2.
+                sig = expected_signal(cent_bins, ct_bins, eff, evts)[0]
                 if not SPLIT:
                     sig *= 2
                 mass_bins = bin_centers[mass_map]

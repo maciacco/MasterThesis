@@ -124,7 +124,7 @@ for split in SPLIT_LIST:
                     xframe.getAttText().SetTextSize(0.035)
 
                     print(f'chi2/NDF: {formatted_chi2}, edm: {r.edm()}')
-                    if float(formatted_chi2) < 2:
+                    if float(formatted_chi2) < 2 and r.edm() < 1:
                         # fill raw yields histogram
                         eff_index = h_raw_yields.FindBin(float(formatted_eff))
                         h_raw_yields.SetBinContent(eff_index, roo_n_signal.getVal())

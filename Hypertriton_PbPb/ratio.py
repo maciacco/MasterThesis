@@ -11,6 +11,7 @@ import ROOT
 import uproot
 import yaml
 
+SPEED_OF_LIGHT = 2.99792458
 SPLIT = True
 
 # avoid pandas warning
@@ -110,8 +111,8 @@ for i_cent_bins in range(len(CENTRALITY_LIST)):
         h_corrected_yields[i_split].Fit(fit_function_expo, "RMLS+")
 
         # compute lifetime
-        tau = 1/fit_function_expo.GetParameter(1)*100/3 # ps
-        tau_error = fit_function_expo.GetParError(0)*100/3/fit_function_expo.GetParameter(0)/fit_function_expo.GetParameter(1) # ps
+        tau = -1/fit_function_expo.GetParameter(1)*100/SPEED_OF_LIGHT # ps
+        tau_error = -fit_function_expo.GetParError(1)*100/SPEED_OF_LIGHT/fit_function_expo.GetParameter(1)/fit_function_expo.GetParameter(1) # ps
         tau_text = ROOT.TLatex(15, 0.9*h_corrected_yields[i_split].GetMaximum(), '#tau = ' + "{:.2f}".format(tau) + '#pm' + "{:.2f}".format(tau_error) + ' ps')
         tau_text.SetTextSize(0.035)
 

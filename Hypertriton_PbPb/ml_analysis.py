@@ -56,7 +56,7 @@ OPTIMIZED = False
 TRAIN = False
 
 # application
-APPLICATION = False
+APPLICATION = True
 
 # avoid pandas warning
 warnings.simplefilter(action='ignore', category=FutureWarning)
