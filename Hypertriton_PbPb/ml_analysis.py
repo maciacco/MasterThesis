@@ -2,6 +2,7 @@
 import os
 import pickle
 import warnings
+import argparse
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -43,20 +44,31 @@ def presel_eff_hist(df_list, col_name, split, cent_bins, bins):
     return hist_eff
 
 
-SPLIT = True
+parser = argparse.ArgumentParser(prog='ml_analysis', allow_abbrev=True)
+parser.add_argument('-split', action='store_true')
+parser.add_argument('-mergecentrality', action='store_true')
+parser.add_argument('-eff', action='store_true')
+parser.add_argument('-train', action='store_true')
+parser.add_argument('-computescoreff', action='store_true')
+parser.add_argument('-application', action='store_true')
+args = parser.parse_args()
+
+SPLIT = args.split
 
 # training
-TRAINING = True
+TRAINING = not args.application
 PLOT_DIR = 'plots'
-MAKE_PRESELECTION_EFFICIENCY = True
-MAKE_FEATURES_PLOTS = False
-MAKE_TRAIN_TEST_PLOT = False
+MAKE_PRESELECTION_EFFICIENCY = args.eff
+MAKE_FEATURES_PLOTS = args.train
+MAKE_TRAIN_TEST_PLOT = args.train
 OPTIMIZE = False
 OPTIMIZED = False
-TRAIN = False
+TRAIN = args.train
+COMPUTE_SCORES_FROM_EFF = args.computescoreff
+MERGE_CENTRALITY = args.mergecentrality
 
 # application
-APPLICATION = True
+APPLICATION = args.application
 
 # avoid pandas warning
 warnings.simplefilter(action='ignore', category=FutureWarning)
@@ -89,6 +101,9 @@ SPLIT_LIST = ['all']
 if SPLIT:
     SPLIT_LIST = ['antimatter', 'matter']
 
+if TRAIN and MERGE_CENTRALITY:
+    CENTRALITY_LIST = [[0, 90]]
+
 if TRAINING:
 
     # make plot directory
@@ -98,7 +113,6 @@ if TRAINING:
     # make dataframe directory
     if not os.path.isdir('df'):
         os.mkdir('df')
-    # score_eff_arrays_dict = pickle.load(open("file_score_eff_dict", "rb"))
 
     score_eff_arrays_dict = dict()
 
@@ -116,7 +130,7 @@ if TRAINING:
         for i_cent_bins in range(len(CENTRALITY_LIST)):
             cent_bins = CENTRALITY_LIST[i_cent_bins]
 
-            if MAKE_PRESELECTION_EFFICIENCY:
+            if MAKE_PRESELECTION_EFFICIENCY and not MAKE_FEATURES_PLOTS and not MAKE_TRAIN_TEST_PLOT:
                 ##############################################################
                 # PRESELECTION EFFICIENCY
                 ##############################################################
@@ -222,11 +236,16 @@ if TRAINING:
                     if OPTIMIZE:
                         model_file_name = str(f'models/{bin}_optimized_trained')
                     model_hdl.dump_model_handler(model_file_name)
-                else:
+                elif COMPUTE_SCORES_FROM_EFF:
+                    bin_model = bin
+                    if MERGE_CENTRALITY:
+                        bin_model = f'all_0_90_{ct_bins[0]}_{ct_bins[1]}'
                     if OPTIMIZED:
-                        model_hdl.load_model_handler(f'models/{bin}_optimized_trained')
+                        model_hdl.load_model_handler(f'models/{bin_model}_optimized_trained')
                     else:
-                        model_hdl.load_model_handler(f'models/{bin}_trained')
+                        model_hdl.load_model_handler(f'models/{bin_model}_trained')
+                else:
+                    continue
 
                 # get predictions for training and test set
                 test_y_score = model_hdl.predict(train_test_data[2])
@@ -249,25 +268,26 @@ if TRAINING:
                     plt.savefig(f'{PLOT_DIR}/train_test_out/roc_train_test_{bin}')
                     plt.close('all')
 
-                # get scores corresponding to BDT efficiencies using test set
-                eff_array = np.arange(0.10, 0.91, 0.01)
-                score_array = analysis_utils.score_from_efficiency_array(
-                    train_test_data[3], test_y_score, efficiency_selected=eff_array, keep_lower=False)
-                score_eff_arrays_dict[bin] = score_array
+                if COMPUTE_SCORES_FROM_EFF:
+                    # get scores corresponding to BDT efficiencies using test set
+                    eff_array = np.arange(0.10, 0.91, 0.01)
+                    score_array = analysis_utils.score_from_efficiency_array(
+                        train_test_data[3], test_y_score, efficiency_selected=eff_array, keep_lower=False)
+                    score_eff_arrays_dict[bin] = score_array
 
-                # write test set data frame
-                train_test_data[2]['model_output'] = test_y_score
-                train_test_data[2]['y_true'] = train_test_data[3]
-                train_test_data[2].to_parquet(f'df/mc_{bin}', compression='gzip')
+                    # write test set data frame
+                    train_test_data[2]['model_output'] = test_y_score
+                    train_test_data[2]['y_true'] = train_test_data[3]
+                    train_test_data[2].to_parquet(f'df/mc_{bin}', compression='gzip')
 
-                # get the model hyperparameters
-                if not os.path.isdir('hyperparams'):
-                    os.mkdir('hyperparams')
-                model_params_dict = model_hdl.get_model_params()
-                with open(f'hyperparams/model_params_{bin}.yml', 'w') as outfile:
-                    yaml.dump(model_params_dict, outfile, default_flow_style=False)
+                    # get the model hyperparameters
+                    if not os.path.isdir('hyperparams'):
+                        os.mkdir('hyperparams')
+                    model_params_dict = model_hdl.get_model_params()
+                    with open(f'hyperparams/model_params_{bin}.yml', 'w') as outfile:
+                        yaml.dump(model_params_dict, outfile, default_flow_style=False)
 
-                # save roc-auc
+                    # save roc-auc
                 ##############################################################
 
     pickle.dump(score_eff_arrays_dict, open("file_score_eff_dict", "wb"))
@@ -296,10 +316,13 @@ if APPLICATION:
                     f'Matter {split_ineq_sign} and centrality > {cent_bins[0]} and centrality < {cent_bins[1]} and pt > 2 and pt < 10 and ct > {ct_bins[0]} and ct < {ct_bins[1]}')
 
                 model_hdl = ModelHandler()
+                bin_model = bin
+                if MERGE_CENTRALITY:
+                    bin_model = f'all_0_90_{ct_bins[0]}_{ct_bins[1]}'
                 if OPTIMIZED:
-                    model_hdl.load_model_handler(f'models/{bin}_optimized_trained')
+                    model_hdl.load_model_handler(f'models/{bin_model}_optimized_trained')
                 else:
-                    model_hdl.load_model_handler(f'models/{bin}_trained')
+                    model_hdl.load_model_handler(f'models/{bin_model}_trained')
 
                 eff_array = np.arange(0.10, 0.91, 0.01)
 
