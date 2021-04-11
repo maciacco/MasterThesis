@@ -1,11 +1,14 @@
 # train
-# python3 ml_analysis.py -m -t
+# python3 ml_analysis.py -m
 
-# preselection efficiency + score from efficiency
-# python3 ml_analysis.py -s -m -e -c
+# preselection efficiency
+# python3 ml_analysis.py -s -m -e
+
+# scores from efficiency
+# python3 ml_analysis.py -m -c
 
 # application
-# python3 ml_analysis.py -s -m -a
+python3 ml_analysis.py -s -m -a
 
 # significance scan
 # python significance_scan.py

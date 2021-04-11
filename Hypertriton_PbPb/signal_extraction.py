@@ -28,7 +28,7 @@ with open(os.path.expandvars(config), 'r') as stream:
         print(exc)
 
 DATA_PATH = params['DATA_PATH']
-CT_BINS = params['CT_BINS']
+CT_BINS = params['CT_BINS_CENT']
 CENTRALITY_LIST = params['CENTRALITY_LIST']
 RANDOM_STATE = params['RANDOM_STATE']
 ##################################################################
@@ -164,16 +164,22 @@ for split in SPLIT_LIST:
                         canv = ROOT.TCanvas()
                         canv.cd()
                         text_mass = ROOT.TLatex(
-                            2.965, 0.9 * xframe.GetMaximum(),
+                            2.965, 0.95 * xframe.GetMaximum(),
                             "#it{m}_{^{3}_{#Lambda}H} = " + "{:.6f}".format(mass_val) + " GeV/#it{c^{2}}")
                         text_mass.SetTextSize(0.035)
-                        text_signif = ROOT.TLatex(2.965, 0.82 * xframe.GetMaximum(),
+                        text_signif = ROOT.TLatex(2.965, 0.88 * xframe.GetMaximum(),
                                                   "S/#sqrt{S+B} (3#sigma) = " + "{:.3f}".format(significance_val) + " #pm " +
                                                   "{:.3f}".format(significance_err))
                         text_signif.SetTextSize(0.035)
+                        text_sig = ROOT.TLatex(2.965, 0.81 * xframe.GetMaximum(), "S (3#sigma) = " + "{:.1f}".format(sig) + " #pm " + "{:.1f}".format(signal_int*roo_n_signal.getError()))
+                        text_sig.SetTextSize(0.035)
+                        text_bkg = ROOT.TLatex(2.965, 0.74 * xframe.GetMaximum(), "B (3#sigma) = " + "{:.1f}".format(bkg) + " #pm" + "{:.1f}".format(bkg_int*roo_n_background.getError()))
+                        text_bkg.SetTextSize(0.035)
                         xframe.Draw("")
                         text_mass.Draw("same")
                         text_signif.Draw("same")
+                        text_sig.Draw("same")
+                        text_bkg.Draw("same")
                         print(
                             f'significance = {"{:.3f}".format(significance_val)} +/- {"{:.3f}".format(significance_err)}')
                         if not os.path.isdir('plots/signal_extraction'):

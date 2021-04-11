@@ -6,7 +6,7 @@
 #include <TFile.h>
 #include <ROOT/RDataFrame.hxx>
 
-const char *kPathToFile = "../data/Hypertriton_PbPb";
+const char *kPathToFile = ".";
 
 void CutTree(const char *inFileName, const char *outFileName, const char *treeName, const double fraction)
 {
@@ -14,7 +14,7 @@ void CutTree(const char *inFileName, const char *outFileName, const char *treeNa
   ROOT::RDataFrame df(treeName, Form("%s/%s.root", kPathToFile, inFileName));
 
   // filter data data frame
-  auto df_filtered = df.Filter(Form("( (gRandom->Rndm())>%f )", fraction));
+  auto df_filtered = df.Filter(Form("( (gRandom->Rndm())<%f )", fraction));
 
   // write
   df_filtered.Snapshot(treeName, Form("./%s.root", outFileName));

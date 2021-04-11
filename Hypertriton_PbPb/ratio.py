@@ -29,7 +29,7 @@ with open(os.path.expandvars(config), 'r') as stream:
         print(exc)
 
 ANALYSIS_RESULTS_PATH = params['ANALYSIS_RESULTS_PATH']
-CT_BINS = params['CT_BINS']
+CT_BINS = params['CT_BINS_CENT']
 CENTRALITY_LIST = params['CENTRALITY_LIST']
 RANDOM_STATE = params['RANDOM_STATE']
 ##################################################################
@@ -113,7 +113,7 @@ for i_cent_bins in range(len(CENTRALITY_LIST)):
         # compute lifetime
         tau = -1/fit_function_expo.GetParameter(1)*100/SPEED_OF_LIGHT # ps
         tau_error = fit_function_expo.GetParError(1)*100/SPEED_OF_LIGHT/fit_function_expo.GetParameter(1)/fit_function_expo.GetParameter(1) # ps
-        tau_text = ROOT.TLatex(15, 0.9*h_corrected_yields[i_split].GetMaximum(), '#tau = ' + "{:.2f}".format(tau) + '#pm' + "{:.2f}".format(tau_error) + ' ps')
+        tau_text = ROOT.TLatex(4, 0.9*h_corrected_yields[i_split].GetMaximum(), '#tau = ' + "{:.2f}".format(tau) + '#pm' + "{:.2f}".format(tau_error) + ' ps')
         tau_text.SetTextSize(0.035)
 
         # draw on canvas
