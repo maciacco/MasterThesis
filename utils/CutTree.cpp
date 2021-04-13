@@ -14,7 +14,7 @@ void CutTree(const char *inFileName, const char *outFileName, const char *treeNa
   ROOT::RDataFrame df(treeName, Form("%s/%s.root", kPathToFile, inFileName));
 
   // filter data data frame
-  auto df_filtered = df.Filter(Form("( (gRandom->Rndm())<%f )", fraction));
+  auto df_filtered = df.Filter(Form("( (gRandom->Rndm())<%f ) && (He3ProngPt > 1.2)", fraction));
 
   // write
   df_filtered.Snapshot(treeName, Form("./%s.root", outFileName));

@@ -91,8 +91,8 @@ for split in SPLIT_LIST:
                 # make histogram
                 hyp_mass = 2.991
                 sigma = 0.0015
-                m_min = hyp_mass - 3*sigma
-                m_max = hyp_mass + 3*sigma
+                m_min = 2.98 #hyp_mass - 3*sigma
+                m_max = 3.005 #hyp_mass + 3*sigma
                 nBins = 26
 
                 counts, bin_edges = np.histogram(np.array(df_data_sel['m']), nBins, range=(2.960, 3.025))
@@ -130,7 +130,7 @@ for split in SPLIT_LIST:
                 pol_offset = pol(mass_bins)
                 mass_counts = mass_counts+pol_offset
 
-                xx_mass = np.linspace(norm.ppf(0.005, hyp_mass, sigma), norm.ppf(0.995, hyp_mass, sigma), 100)
+                xx_mass = np.linspace(m_min, m_max, 100)
                 yy_mass = norm.pdf(xx_mass, hyp_mass, sigma)*sig*bin_size
                 yy_offset = pol(xx_mass)  # plot polynomial
                 yy_mass = yy_mass+yy_offset

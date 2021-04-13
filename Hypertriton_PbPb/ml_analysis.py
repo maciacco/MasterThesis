@@ -59,7 +59,7 @@ SPLIT = args.split
 TRAINING = not args.application
 PLOT_DIR = 'plots'
 MAKE_PRESELECTION_EFFICIENCY = args.eff
-MAKE_FEATURES_PLOTS = args.train
+MAKE_FEATURES_PLOTS = not args.eff
 MAKE_TRAIN_TEST_PLOT = args.train
 OPTIMIZE = False
 OPTIMIZED = False
@@ -134,13 +134,13 @@ if TRAINING:
                 ##############################################################
                 df_generated = uproot.open(os.path.expandvars(MC_PATH))['GenTable'].arrays(library="pd")
                 df_signal_cent = df_signal.query(
-                    f'Matter {split_ineq_sign} and centrality > {cent_bins[0]} and centrality < {cent_bins[1]}')
+                    f'Matter {split_ineq_sign} and centrality > {cent_bins[0]} and centrality < {cent_bins[1]} and pt > 2 and pt < 10 and Rapidity > -0.8 and Rapidity < 0.8')
                 df_generated_cent = df_generated.query(
-                    f'matter {split_ineq_sign} and centrality > {cent_bins[0]} and centrality < {cent_bins[1]}')
+                    f'matter {split_ineq_sign} and centrality > {cent_bins[0]} and centrality < {cent_bins[1]} and pt > 2 and pt < 10 and rapidity > -0.8 and rapidity < 0.8')
                 del df_generated
 
                 # fill histograms (vs. ct and vs. pt)
-                hist_eff_ct = presel_eff_hist([df_signal_cent, df_generated_cent], 'ct', split, cent_bins, CT_BINS[i_cent_bins])
+                hist_eff_ct = presel_eff_hist([df_signal_cent, df_generated_cent], 'ct', split, cent_bins, CT_BINS_CENT[i_cent_bins])
                 hist_eff_pt = presel_eff_hist([df_signal_cent, df_generated_cent], 'pt', split, cent_bins, PT_BINS)
 
                 # plot histograms
@@ -163,10 +163,49 @@ if TRAINING:
                 del df_generated_cent
                 ##############################################################
 
+    # second condition needed because of issue with Qt libraries
+    if MAKE_FEATURES_PLOTS and not MAKE_PRESELECTION_EFFICIENCY:
+        ######################################################
+        # PLOT FEATURES DISTRIBUTIONS AND CORRELATIONS
+        ######################################################
+
+        df_signal_ct = df_signal.query(f'pt > 2 and pt < 10')
+        df_background_ct = df_background.query(f'pt > 2 and pt < 10')
+
+        # define tree handlers
+        signal_tree_handler = TreeHandler()
+        background_tree_handler = TreeHandler()
+        signal_tree_handler.set_data_frame(df_signal_ct)
+        background_tree_handler.set_data_frame(df_background_ct)
+        del df_signal_ct, df_background_ct
+
+        # split data into training and test set
+        train_test_data = train_test_generator([signal_tree_handler, background_tree_handler], [
+            1, 0], test_size=0.5, random_state=RANDOM_STATE)
+        train_test_data[0]['y_true'] = train_test_data[1]
+        train_test_data[2]['y_true'] = train_test_data[3]
+        if not os.path.isdir(f'{PLOT_DIR}/features'):
+            os.mkdir(f'{PLOT_DIR}/features')
+
+        leg_labels = ['background', 'signal']
+        plot_utils.plot_distr(
+            [background_tree_handler, signal_tree_handler],
+            TRAINING_COLUMNS_LIST, bins=40, labels=leg_labels, log=True, density=True, figsize=(12, 7),
+            alpha=0.3, grid=False)
+        plt.subplots_adjust(left=0.06, bottom=0.06, right=0.99, top=0.96, hspace=0.55, wspace=0.55)
+        plt.savefig(f'{PLOT_DIR}/features/FeaturePlots')
+        plot_utils.plot_corr([background_tree_handler], TRAINING_COLUMNS_LIST, ['background'])
+        plt.savefig(f'{PLOT_DIR}/features/BackgroundCorrelationMatrix')
+        plot_utils.plot_corr([signal_tree_handler], TRAINING_COLUMNS_LIST, ['signal'])
+        plt.savefig(f'{PLOT_DIR}/features/SignalCorrelationMatrix')
+        plt.close('all')
+        del train_test_data
+        ###########################################################
+
     for ct_bins in zip(CT_BINS[:-1], CT_BINS[1:]):
 
-        df_signal_ct = df_signal.query(f'ct > {ct_bins[0]} and ct < {ct_bins[1]}')
-        df_background_ct = df_background.query(f'ct > {ct_bins[0]} and ct < {ct_bins[1]}')
+        df_signal_ct = df_signal.query(f'ct > {ct_bins[0]} and ct < {ct_bins[1]} and pt > 2 and pt < 10')
+        df_background_ct = df_background.query(f'ct > {ct_bins[0]} and ct < {ct_bins[1]} and pt > 2 and pt < 10')
 
         # define tree handlers
         signal_tree_handler = TreeHandler()
@@ -198,28 +237,6 @@ if TRAINING:
 
                 # features plot
                 leg_labels = ['background', 'signal']
-                # second condition needed because of issue with Qt libraries
-                if MAKE_FEATURES_PLOTS and not MAKE_PRESELECTION_EFFICIENCY:
-                    if not os.path.isdir(f'{PLOT_DIR}/features'):
-                        os.mkdir(f'{PLOT_DIR}/features')
-
-                    plot_utils.plot_distr(
-                        [background_tree_handler, signal_tree_handler],
-                        TRAINING_COLUMNS_LIST, bins=50, labels=leg_labels, log=True, density=True, figsize=(12, 7),
-                        alpha=0.3, grid=False)
-                    plt.subplots_adjust(left=0.06, bottom=0.06, right=0.99, top=0.96, hspace=0.55, wspace=0.55)
-                    plt.savefig(f'{PLOT_DIR}/features/FeaturePlots_{bin}')
-                    plot_utils.plot_corr([background_tree_handler], TRAINING_COLUMNS_LIST, ['background'])
-                    plt.savefig(f'{PLOT_DIR}/features/BackgroundCorrelationMatrix_{bin}')
-                    plot_utils.plot_corr([signal_tree_handler], TRAINING_COLUMNS_LIST, ['signal'])
-                    plt.savefig(f'{PLOT_DIR}/features/SignalCorrelationMatrix_{bin}')
-                    plt.close('all')
-
-                print(
-                    f'Number of candidates ({split}) for training in {cent_bins[0]}-{cent_bins[1]}%, {ct_bins[0]}<=ct<{ct_bins[1]} cm: {len(train_test_data[0])}')
-                print(
-                    f'signal candidates: {np.count_nonzero(train_test_data[1] == 1)}; background candidates: {np.count_nonzero(train_test_data[1] == 0)}; n_cand_bkg / n_cand_signal = {np.count_nonzero(train_test_data[1] == 0) / np.count_nonzero(train_test_data[1] == 1)}')
-                print('')
 
                 model_clf = xgb.XGBClassifier(use_label_encoder=False)
                 model_hdl = ModelHandler(model_clf, TRAINING_COLUMNS_LIST)
@@ -239,6 +256,8 @@ if TRAINING:
                 isModelTrained = os.path.isfile(f'models/{bin_model}_trained')
                 print(f'isModelTrained {bin_model}: {isModelTrained}')
                 if TRAIN and not isModelTrained:
+                    print(
+                    f'Number of candidates ({split}) for training in {ct_bins[0]} <= ct < {ct_bins[1]} cm: {len(train_test_data[0])}')
                     model_hdl.train_test_model(train_test_data)
                     model_file_name = str(f'models/{bin_model}_trained')
                     if OPTIMIZE:

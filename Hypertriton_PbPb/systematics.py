@@ -134,7 +134,7 @@ for i_cent_bins in range(len(CENTRALITY_LIST)):
         res = h_ratio.Fit(fit_function, 'SQ')
         systematics_file.cd(f'{cent_bins[0]}_{cent_bins[1]}')
 
-        if fit_function.GetProb() > 0.05 and res.Status() == 0 and res.Ndf() >= 1:
+        if fit_function.GetProb() > 0.05 and res.Status() == 0 and res.Ndf() > 1:
             h_ratio.Write()
             h_parameter_distribution.Fill(fit_function.GetParameter(0))
             h_prob_distribution.Fill(res.Prob())
