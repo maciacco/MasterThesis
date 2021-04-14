@@ -134,9 +134,9 @@ if TRAINING:
                 ##############################################################
                 df_generated = uproot.open(os.path.expandvars(MC_PATH))['GenTable'].arrays(library="pd")
                 df_signal_cent = df_signal.query(
-                    f'Matter {split_ineq_sign} and centrality > {cent_bins[0]} and centrality < {cent_bins[1]} and pt > 2 and pt < 10 and Rapidity > -0.8 and Rapidity < 0.8')
+                    f'Matter {split_ineq_sign} and centrality > {cent_bins[0]} and centrality < {cent_bins[1]} and pt > 2 and pt < 10')
                 df_generated_cent = df_generated.query(
-                    f'matter {split_ineq_sign} and centrality > {cent_bins[0]} and centrality < {cent_bins[1]} and pt > 2 and pt < 10 and rapidity > -0.8 and rapidity < 0.8')
+                    f'matter {split_ineq_sign} and centrality > {cent_bins[0]} and centrality < {cent_bins[1]} and pt > 2 and pt < 10')
                 del df_generated
 
                 # fill histograms (vs. ct and vs. pt)
