@@ -54,12 +54,13 @@ parser.add_argument('-application', action='store_true')
 args = parser.parse_args()
 
 SPLIT = args.split
+MAX_EFF = 0.91
 
 # training
 TRAINING = not args.application
 PLOT_DIR = 'plots'
 MAKE_PRESELECTION_EFFICIENCY = args.eff
-MAKE_FEATURES_PLOTS = not args.eff
+MAKE_FEATURES_PLOTS = False
 MAKE_TRAIN_TEST_PLOT = args.train
 OPTIMIZE = False
 OPTIMIZED = False
@@ -85,6 +86,7 @@ with open(os.path.expandvars(config), 'r') as stream:
         print(exc)
 
 DATA_PATH = params['DATA_PATH']
+MC_PATH_PLOT = params['MC_SIGNAL_PATH_PLOT']
 MC_PATH = params['MC_SIGNAL_PATH']
 BKG_PATH = params['LS_BACKGROUND_PATH']
 CT_BINS = params['CT_BINS']
@@ -164,7 +166,7 @@ if TRAINING:
                 ##############################################################
 
     # second condition needed because of issue with Qt libraries
-    if MAKE_FEATURES_PLOTS and not MAKE_PRESELECTION_EFFICIENCY:
+    if MAKE_FEATURES_PLOTS and not MAKE_PRESELECTION_EFFICIENCY and not TRAIN:
         ######################################################
         # PLOT FEATURES DISTRIBUTIONS AND CORRELATIONS
         ######################################################
@@ -258,6 +260,8 @@ if TRAINING:
                 if TRAIN and not isModelTrained:
                     print(
                     f'Number of candidates ({split}) for training in {ct_bins[0]} <= ct < {ct_bins[1]} cm: {len(train_test_data[0])}')
+                    print(
+                    f'signal candidates: {np.count_nonzero(train_test_data[1] == 1)}; background candidates: {np.count_nonzero(train_test_data[1] == 0)}; n_cand_bkg / n_cand_signal = {np.count_nonzero(train_test_data[1] == 0) / np.count_nonzero(train_test_data[1] == 1)}')
                     model_hdl.train_test_model(train_test_data)
                     model_file_name = str(f'models/{bin_model}_trained')
                     if OPTIMIZE:
@@ -287,7 +291,7 @@ if TRAINING:
                     if not os.path.isdir(f'{PLOT_DIR}/train_test_out'):
                         os.mkdir(f'{PLOT_DIR}/train_test_out')
                     plot_utils.plot_output_train_test(model_hdl, train_test_data_cent,
-                                                      logscale=True, density=False, labels=leg_labels)
+                                                      logscale=True, density=True, labels=leg_labels)
                     plt.savefig(f'{PLOT_DIR}/train_test_out/{bin}_out')
 
                     plot_utils.plot_feature_imp(train_test_data_cent[0], train_test_data_cent[1], model_hdl)
@@ -301,7 +305,7 @@ if TRAINING:
 
                 if COMPUTE_SCORES_FROM_EFF:
                     # get scores corresponding to BDT efficiencies using test set
-                    eff_array = np.arange(0.10, 0.91, 0.01)
+                    eff_array = np.arange(0.10, MAX_EFF, 0.01)
                     score_array = analysis_utils.score_from_efficiency_array(
                         train_test_data_cent[3], test_y_score, efficiency_selected=eff_array, keep_lower=False)
                     score_eff_arrays_dict[bin] = score_array
@@ -356,7 +360,7 @@ if APPLICATION:
                 else:
                     model_hdl.load_model_handler(f'models/{bin_model}_trained')
 
-                eff_array = np.arange(0.10, 0.91, 0.01)
+                eff_array = np.arange(0.10, MAX_EFF, 0.01)
 
                 data_y_score = model_hdl.predict(df_data_cent)
                 df_data_cent['model_output'] = data_y_score

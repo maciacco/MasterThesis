@@ -1,7 +1,7 @@
 ANALYSIS_RESULTS_PATH: "$HYPERML_TABLES_2/AnalysisResults_18.root"
-DATA_PATH: "$HYPERML_TABLES_2/DataTable_18_cols_red.root"
-MC_SIGNAL_PATH: "$HYPERML_TABLES_2/SignalTable_20g7_cols_red.root"
-LS_BACKGROUND_PATH: "$HYPERML_TABLES_2/DataTable_18LS_cols_red.root"
+DATA_PATH: "$HYPERML_TABLES_2/DataTable_18_cols.root"
+MC_SIGNAL_PATH: "$HYPERML_TABLES_2/SignalTable_20g7.root"
+LS_BACKGROUND_PATH: "$HYPERML_TABLES_2/DataTable_18LS_cols.root"
 
 CT_BINS: [2, 4, 8, 14, 35]
 CT_BINS_CENT: [[2, 4, 8, 14, 35], [2, 4, 8, 14, 35], [2, 4, 8, 14]]

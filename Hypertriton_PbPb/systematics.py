@@ -13,6 +13,8 @@ import yaml
 SPEED_OF_LIGHT = 2.99792458
 N_TRIALS = 10000
 SPLIT = True
+MAX_EFF = 0.90
+THRESH_EFF = 0.80
 
 # avoid pandas warning
 warnings.simplefilter(action='ignore', category=FutureWarning)
@@ -83,9 +85,13 @@ for i_cent_bins in range(len(CENTRALITY_LIST)):
                 formatted_eff_cut = "{:.2f}".format(eff_cut_dict[bin])
 
                 # look for plot with eff = eff_cut (or the nearest one)
+                bkg_shape = 'pol1'
+                if ROOT.gRandom.Rndm() > 0.5:
+                    bkg_shape = 'expo'
+
                 eff_cut_increment = 0
                 eff_cut_sign = -1
-                while signal_extraction_keys.count(f'{bin}/fInvMass_{formatted_eff_cut};1') == 0:
+                while signal_extraction_keys.count(f'{bin}_{bkg_shape}/fInvMass_{formatted_eff_cut};1') == 0:
                     if eff_cut_sign == -1:
                         eff_cut_increment += 0.01
                     eff_cut_sign *= -1
@@ -94,13 +100,13 @@ for i_cent_bins in range(len(CENTRALITY_LIST)):
                 # random sample of cut
                 lower_limit = float(formatted_eff_cut) - 0.10
                 upper_limit = float(formatted_eff_cut) + 0.10
-                if float(formatted_eff_cut) > 0.80:
-                    upper_limit = 0.90
+                if float(formatted_eff_cut) > THRESH_EFF:
+                    upper_limit = MAX_EFF
                 random_cut = lower_limit + ROOT.gRandom.Rndm()*(upper_limit-lower_limit)
                 formatted_eff_cut = "{:.2f}".format(random_cut)
 
                 # get signal
-                h_raw_yield = signal_extraction_file.Get(f'{bin}/fRawYields;1')
+                h_raw_yield = signal_extraction_file.Get(f'{bin}_{bkg_shape}/fRawYields;1')
                 eff_index = h_raw_yield.FindBin(float(formatted_eff_cut))
                 raw_yield = h_raw_yield.GetBinContent(eff_index)
                 raw_yield_error = h_raw_yield.GetBinError(eff_index)
@@ -121,7 +127,6 @@ for i_cent_bins in range(len(CENTRALITY_LIST)):
 
             # set labels
             h_corrected_yields[i_split].GetXaxis().SetTitle("#it{c}t (cm)")
-            h_corrected_yields[i_split].GetYaxis().SetTitle("d#it{N}/d#it{c}t (cm^{-1})")
             h_corrected_yields[i_split].Scale(1., "width")
 
         # ratios

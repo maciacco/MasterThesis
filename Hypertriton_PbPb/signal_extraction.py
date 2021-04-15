@@ -2,6 +2,7 @@
 import os
 import pickle
 import warnings
+import argparse
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -12,10 +13,17 @@ import yaml
 from helpers import significance_error, ndarray2roo
 
 SPLIT = True
+MAX_EFF = 0.91
 
 # avoid pandas warning
 warnings.simplefilter(action='ignore', category=FutureWarning)
 ROOT.gROOT.SetBatch()
+
+parser = argparse.ArgumentParser(prog='signal_extraction', allow_abbrev=True)
+parser.add_argument('-bkgExpo', action='store_true')
+args = parser.parse_args()
+
+BKG_EXPO = args.bkgExpo
 
 ##################################################################
 # read configuration file
@@ -38,8 +46,12 @@ SPLIT_LIST = ['all']
 if SPLIT:
     SPLIT_LIST = ['antimatter', 'matter']
 
+bkg_shape = 'pol1'
+if BKG_EXPO:
+    bkg_shape = 'expo'
+
 score_eff_arrays_dict = pickle.load(open("file_score_eff_dict", "rb"))
-eff_array = np.arange(0.10, 0.91, 0.01)
+eff_array = np.arange(0.10, MAX_EFF, 0.01)
 
 for split in SPLIT_LIST:
     for i_cent_bins in range(len(CENTRALITY_LIST)):
@@ -52,10 +64,10 @@ for split in SPLIT_LIST:
 
             # ROOT.Math.MinimizerOptions.SetDefaultTolerance(1e-2)
             root_file_signal_extraction = ROOT.TFile("SignalExtraction.root", "update")
-            root_file_signal_extraction.mkdir(f'{bin}')
+            root_file_signal_extraction.mkdir(f'{bin}_{bkg_shape}')
 
             # raw yileds histogram
-            h_raw_yields = ROOT.TH1D("fRawYields", "fRawYields", 100, -0.005, 0.995)
+            h_raw_yields = ROOT.TH1D("fRawYields", "fRawYields", 101, -0.005, 1.005)
 
             for eff_score in zip(eff_array, score_eff_arrays_dict[bin]):
                 if (ct_bins[0] > 0) and (eff_score[0] < 0.50):
@@ -71,7 +83,6 @@ for split in SPLIT_LIST:
 
                 # get invariant mass distribution (data and mc)
                 roo_m = ROOT.RooRealVar("m", "#it{M} (^{3}He + #pi^{-})", 2.960, 3.025, "GeV/#it{c}^{2}")
-                roo_mc_m = ROOT.RooRealVar("m", "#it{M} (^{3}He + #pi^{-})", 2.960, 3.025, "GeV/#it{c}^{2}")
                 roo_data = ndarray2roo(np.array(df_data_sel['m']), roo_m)
                 roo_mc_signal = ndarray2roo(np.array(df_signal_sel['m']), roo_m)
 
@@ -80,12 +91,19 @@ for split in SPLIT_LIST:
                 roo_n_signal = ROOT.RooRealVar('N_{signal}', 'Nsignal', 0., 1.e3)
                 delta_mass = ROOT.RooRealVar("#Deltam", 'deltaM', -0.004, 0.004, 'GeV/c^{2}')
                 shifted_mass = ROOT.RooAddition("mPrime", "m + #Deltam", ROOT.RooArgList(roo_m, delta_mass))
-                roo_signal = ROOT.RooKeysPdf("signal", "signal", shifted_mass, roo_mc_m,
-                                             roo_mc_signal, ROOT.RooKeysPdf.MirrorBoth, 2)
-                # pol1
+                roo_signal = ROOT.RooKeysPdf("signal", "signal", shifted_mass, roo_m,
+                                             roo_mc_signal, ROOT.RooKeysPdf.NoMirror, 2)
+
+                # background
                 roo_n_background = ROOT.RooRealVar('N_{bkg}', 'Nbackground', 0., 1.e4)
-                roo_slope = ROOT.RooRealVar('slope', 'slope', -10., 10.)
-                roo_bkg = ROOT.RooPolynomial('background', 'background', roo_m, ROOT.RooArgList(roo_slope))
+                roo_slope = ROOT.RooRealVar('slope', 'slope', -20., 20.)
+                roo_bkg = ROOT.RooRealVar()
+
+                if not BKG_EXPO:
+                    roo_bkg = ROOT.RooPolynomial('background', 'background', roo_m, ROOT.RooArgList(roo_slope))
+                else:
+                    roo_bkg = ROOT.RooExponential('background', 'background', roo_m, roo_slope)
+
                 # model
                 roo_model = ROOT.RooAddPdf(
                     'model', 'model', ROOT.RooArgList(roo_signal, roo_bkg),
@@ -131,7 +149,7 @@ for split in SPLIT_LIST:
                         h_raw_yields.SetBinError(eff_index, roo_n_signal.getError())
 
                         # write to file
-                        root_file_signal_extraction.cd(f'{bin}')
+                        root_file_signal_extraction.cd(f'{bin}_{bkg_shape}')
                         xframe.Write()
 
                         # fit mc distribution to get sigma and mass
@@ -184,12 +202,12 @@ for split in SPLIT_LIST:
                             f'significance = {"{:.3f}".format(significance_val)} +/- {"{:.3f}".format(significance_err)}')
                         if not os.path.isdir('plots/signal_extraction'):
                             os.mkdir('plots/signal_extraction')
-                        if not os.path.isdir(f'plots/signal_extraction/{bin}'):
-                            os.mkdir(f'plots/signal_extraction/{bin}')
-                        canv.Print(f'plots/signal_extraction/{bin}/{eff_score[0]:.2f}_{bin}.png')
+                        if not os.path.isdir(f'plots/signal_extraction/{bin}_{bkg_shape}'):
+                            os.mkdir(f'plots/signal_extraction/{bin}_{bkg_shape}')
+                        canv.Print(f'plots/signal_extraction/{bin}_{bkg_shape}/{eff_score[0]:.2f}_{bin}.png')
 
                         # plot kde and mc
-                        frame = roo_mc_m.frame(2.96, 3.025, nBins*16)
+                        frame = roo_m.frame(2.96, 3.025, 130)
                         roo_mc_signal.plotOn(frame)
                         roo_signal.plotOn(frame)
                         gaus.plotOn(frame, ROOT.RooFit.LineColor(ROOT.kRed), ROOT.RooFit.LineStyle(ROOT.kDashed))

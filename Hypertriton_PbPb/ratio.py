@@ -71,16 +71,17 @@ for i_cent_bins in range(len(CENTRALITY_LIST)):
             formatted_eff_cut = "{:.2f}".format(eff_cut_dict[bin])
 
             # look for plot with eff = eff_cut (or the nearest one)
+            bkg_shape = 'pol1'
             eff_cut_increment = 0
             eff_cut_sign = -1
-            while signal_extraction_keys.count(f'{bin}/fInvMass_{formatted_eff_cut};1') == 0:
+            while signal_extraction_keys.count(f'{bin}_{bkg_shape}/fInvMass_{formatted_eff_cut};1') == 0:
                 if eff_cut_sign == -1:
                     eff_cut_increment += 0.01
                 eff_cut_sign *= -1
                 formatted_eff_cut = "{:.2f}".format(eff_cut_dict[bin]+eff_cut_increment*eff_cut_sign)
 
             # get signal
-            h_raw_yield = signal_extraction_file.Get(f'{bin}/fRawYields;1')
+            h_raw_yield = signal_extraction_file.Get(f'{bin}_{bkg_shape}/fRawYields;1')
             eff_index = h_raw_yield.FindBin(float(formatted_eff_cut))
             raw_yield = h_raw_yield.GetBinContent(eff_index)
             raw_yield_error = h_raw_yield.GetBinError(eff_index)
@@ -102,7 +103,7 @@ for i_cent_bins in range(len(CENTRALITY_LIST)):
 
         # set labels
         h_corrected_yields[i_split].GetXaxis().SetTitle("#it{c}t (cm)")
-        h_corrected_yields[i_split].GetYaxis().SetTitle("d#it{N}/d#it{c}t (cm^{-1})")
+        h_corrected_yields[i_split].GetYaxis().SetTitle("d#it{N}/d(#it{c}t) (cm^{-1})")
         h_corrected_yields[i_split].Scale(1., "width")
         h_corrected_yields[i_split].Write()
 
@@ -131,7 +132,7 @@ for i_cent_bins in range(len(CENTRALITY_LIST)):
     h_ratio.SetName(f'fRatio_{cent_bins[0]}_{cent_bins[1]}')
     h_ratio.SetTitle(f'{cent_bins[0]}-{cent_bins[1]}%')
     h_ratio.Divide(h_corrected_yields[0], h_corrected_yields[1], 1, 1)
-    h_ratio.GetYaxis().SetTitle("^{3}_{#bar{#Lambda}}#bar{H}/^{3}_{#Lambda}H")
+    h_ratio.GetYaxis().SetTitle("ratio ^{3}_{#bar{#Lambda}}#bar{H} / ^{3}_{#Lambda}H")
     h_ratio.Fit("pol0")
     h_ratio.Write()
 

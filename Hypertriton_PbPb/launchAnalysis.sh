@@ -1,19 +1,20 @@
-# train
-# python3 ml_analysis.py -m
-
 # preselection efficiency
-# python3 ml_analysis.py -s -m -e
+python3 ml_analysis.py -m -s -eff
 
-# scores from efficiency
-# python3 ml_analysis.py -m -c
+# plot feature distributions and correlations
+# python3 ml_analysis.py -s -m
+
+# train/test models and compute scores
+python3 ml_analysis.py -m -s -t -c
 
 # application
 python3 ml_analysis.py -s -m -a
 
 # significance scan
-# python significance_scan.py
+python3 significance_scan.py
 
 # signal extraction
 python3 signal_extraction.py
 
 # lifetime fits + ratio
+python3 ratio.py

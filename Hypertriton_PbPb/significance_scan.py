@@ -13,6 +13,7 @@ import yaml
 from helpers import significance_error, expected_signal
 
 SPLIT = True
+MAX_EFF = 0.91
 
 # avoid pandas warning
 warnings.simplefilter(action='ignore', category=FutureWarning)
@@ -40,7 +41,7 @@ if SPLIT:
     SPLIT_LIST = ['antimatter', 'matter']
 
 score_eff_arrays_dict = pickle.load(open("file_score_eff_dict", "rb"))
-eff_array = np.arange(0.10, 0.91, 0.01)
+eff_array = np.arange(0.10, MAX_EFF, 0.01)
 presel_eff_file = uproot.open('PreselEff.root')
 analysis_results_file = uproot.open(os.path.expandvars(ANALYSIS_RESULTS_PATH))
 
@@ -178,7 +179,7 @@ for split in SPLIT_LIST:
 
             plt.xlabel("BDT Efficiency")
             plt.ylabel("Significance x BDT Efficiency")
-            plt.xlim(0.5, 0.9)
+            plt.xlim(0.5, MAX_EFF-1)
             plt.ylim(0.3, up_limit.max()+0.3)
 
             plt.savefig(f'plots/significance_scan/{bin}.png')
