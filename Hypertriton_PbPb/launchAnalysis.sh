@@ -13,8 +13,11 @@ python3 ml_analysis.py -s -m -a
 # significance scan
 python3 significance_scan.py
 
-# signal extraction
+# signal extraction (pol1)
 python3 signal_extraction.py
+
+# signal extraction (expo)
+python3 signal_extraction.py -b
 
 # lifetime fits + ratio
 python3 ratio.py

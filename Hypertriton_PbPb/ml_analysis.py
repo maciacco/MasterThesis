@@ -54,7 +54,8 @@ parser.add_argument('-application', action='store_true')
 args = parser.parse_args()
 
 SPLIT = args.split
-MAX_EFF = 0.91
+MAX_EFF = 1.00
+DUMP_HYPERPARAMS = False
 
 # training
 TRAINING = not args.application
@@ -86,7 +87,6 @@ with open(os.path.expandvars(config), 'r') as stream:
         print(exc)
 
 DATA_PATH = params['DATA_PATH']
-MC_PATH_PLOT = params['MC_SIGNAL_PATH_PLOT']
 MC_PATH = params['MC_SIGNAL_PATH']
 BKG_PATH = params['LS_BACKGROUND_PATH']
 CT_BINS = params['CT_BINS']
@@ -181,11 +181,6 @@ if TRAINING:
         background_tree_handler.set_data_frame(df_background_ct)
         del df_signal_ct, df_background_ct
 
-        # split data into training and test set
-        train_test_data = train_test_generator([signal_tree_handler, background_tree_handler], [
-            1, 0], test_size=0.5, random_state=RANDOM_STATE)
-        train_test_data[0]['y_true'] = train_test_data[1]
-        train_test_data[2]['y_true'] = train_test_data[3]
         if not os.path.isdir(f'{PLOT_DIR}/features'):
             os.mkdir(f'{PLOT_DIR}/features')
 
@@ -201,7 +196,6 @@ if TRAINING:
         plot_utils.plot_corr([signal_tree_handler], TRAINING_COLUMNS_LIST, ['signal'])
         plt.savefig(f'{PLOT_DIR}/features/SignalCorrelationMatrix')
         plt.close('all')
-        del train_test_data
         ###########################################################
 
     for ct_bins in zip(CT_BINS[:-1], CT_BINS[1:]):
@@ -313,14 +307,16 @@ if TRAINING:
                     # write test set data frame
                     train_test_data_cent[2]['model_output'] = test_y_score
                     train_test_data_cent[2]['y_true'] = train_test_data_cent[3]
+                    train_test_data_cent[2] = train_test_data_cent[2].query('y_true > 0.5')
                     train_test_data_cent[2].to_parquet(f'df/mc_{bin}', compression='gzip')
 
                     # get the model hyperparameters
-                    if not os.path.isdir('hyperparams'):
-                        os.mkdir('hyperparams')
-                    model_params_dict = model_hdl.get_model_params()
-                    with open(f'hyperparams/model_params_{bin}.yml', 'w') as outfile:
-                        yaml.dump(model_params_dict, outfile, default_flow_style=False)
+                    if DUMP_HYPERPARAMS:
+                        if not os.path.isdir('hyperparams'):
+                            os.mkdir('hyperparams')
+                        model_params_dict = model_hdl.get_model_params()
+                        with open(f'hyperparams/model_params_{bin}.yml', 'w') as outfile:
+                            yaml.dump(model_params_dict, outfile, default_flow_style=False)
 
                     # save roc-auc
                 del train_test_data_cent

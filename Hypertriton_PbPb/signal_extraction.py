@@ -13,7 +13,7 @@ import yaml
 from helpers import significance_error, ndarray2roo
 
 SPLIT = True
-MAX_EFF = 0.91
+MAX_EFF = 1.00
 
 # avoid pandas warning
 warnings.simplefilter(action='ignore', category=FutureWarning)

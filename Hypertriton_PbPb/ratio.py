@@ -109,6 +109,8 @@ for i_cent_bins in range(len(CENTRALITY_LIST)):
 
         # fit with exponential pdf
         fit_function_expo = ROOT.TF1("expo", "expo", 2, 35)
+        if cent_bins[0] == 30:
+            fit_function_expo = ROOT.TF1("expo", "expo", 2, 14)
         h_corrected_yields[i_split].Fit(fit_function_expo, "RMLS+")
 
         # compute lifetime
@@ -133,6 +135,8 @@ for i_cent_bins in range(len(CENTRALITY_LIST)):
     h_ratio.SetTitle(f'{cent_bins[0]}-{cent_bins[1]}%')
     h_ratio.Divide(h_corrected_yields[0], h_corrected_yields[1], 1, 1)
     h_ratio.GetYaxis().SetTitle("ratio ^{3}_{#bar{#Lambda}}#bar{H} / ^{3}_{#Lambda}H")
+    h_ratio.SetMarkerStyle(20)
+    h_ratio.SetMarkerSize(0.8)
     h_ratio.Fit("pol0")
     h_ratio.Write()
 

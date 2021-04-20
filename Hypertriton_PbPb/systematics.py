@@ -13,8 +13,8 @@ import yaml
 SPEED_OF_LIGHT = 2.99792458
 N_TRIALS = 10000
 SPLIT = True
-MAX_EFF = 0.90
-THRESH_EFF = 0.80
+MAX_EFF = 0.99
+THRESH_EFF = 0.90
 
 # avoid pandas warning
 warnings.simplefilter(action='ignore', category=FutureWarning)

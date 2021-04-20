@@ -13,7 +13,7 @@ import yaml
 from helpers import significance_error, expected_signal
 
 SPLIT = True
-MAX_EFF = 0.91
+MAX_EFF = 1.00
 
 # avoid pandas warning
 warnings.simplefilter(action='ignore', category=FutureWarning)
@@ -179,7 +179,7 @@ for split in SPLIT_LIST:
 
             plt.xlabel("BDT Efficiency")
             plt.ylabel("Significance x BDT Efficiency")
-            plt.xlim(0.5, MAX_EFF-1)
+            plt.xlim(0.5, MAX_EFF-0.01)
             plt.ylim(0.3, up_limit.max()+0.3)
 
             plt.savefig(f'plots/significance_scan/{bin}.png')
