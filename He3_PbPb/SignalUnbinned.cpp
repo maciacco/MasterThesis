@@ -120,12 +120,12 @@ void SignalUnbinned(const float cutDCAz = 1.f, const int cutTPCcls = 89, const b
         RooRealVar *b;
         if (bkg_shape == 1)
         { // expo
-          slope = new RooRealVar("slope", "slope", -0.4, 0.);
+          slope = new RooRealVar("slope", "slope", -1., 1.);
           background = (RooAbsPdf *)new RooExponential("background", "background", tpcNsigma, *slope);
         }
         else if (bkg_shape == 0)
         { // pol1
-          slope = new RooRealVar("slope", "slope", -0.3, 0.);
+          slope = new RooRealVar("slope", "slope", -6, 6.);
           background = (RooAbsPdf *)new RooPolynomial("background", "background", tpcNsigma, RooArgList(*slope));
         }
         else
@@ -195,7 +195,7 @@ void SignalUnbinned(const float cutDCAz = 1.f, const int cutTPCcls = 89, const b
         }
 
         // frame
-        int nBins = 48;
+        int nBins = 36;
         TString plotTitle = TString::Format("%.2f#leq #it{p}_{T}<%.2f GeV/#it{c}, %.0f-%.0f%%", minPt, maxPt, kCentBinsLimitsHe3[iCent][0], kCentBinsLimitsHe3[iCent][1]);
         RooPlot *xframe = tpcNsigma.frame(RooFit::Bins(nBins), RooFit::Title(plotTitle), RooFit::Name(Form("f%sNSigma_%.0f_%.0f_%.2f_%.2f", kAntimatterMatter[iMatt], kCentBinsLimitsHe3[iCent][0], kCentBinsLimitsHe3[iCent][1], minPt, maxPt)));
         dataPt.plotOn(xframe, RooFit::Name("dataNsigma"));

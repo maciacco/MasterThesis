@@ -42,8 +42,8 @@ const double kCentBinsLimitsHe3[][2] = {{0, 5}, {5, 10}, {30, 50}}; // centralit
 const int kNSigmaBins = 240;
 const double kDeltaNSigma = 0.05f;
 const double kLowestNSigma = -6.f;
-const double kNSigmaMin = -6.f;
-const double kNSigmaMax = 6.f;
+const double kNSigmaMin = -4.5f;
+const double kNSigmaMax = 4.5f;
 
 // DCAxy binning
 const int kNDCABins = 38;

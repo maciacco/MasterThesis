@@ -27,6 +27,12 @@ void Spectra(const float cutDCAz = 1.f, const int cutTPCcls = 89, const bool bin
   TFile *inFileRaw = TFile::Open(Form("%s/%s.root", kOutDir, signalFile));
   TFile *inFileEff = TFile::Open(Form("%s/%s.root", kOutDir, effFile));
   TFile *inFileSec = TFile::Open(Form("%s/%s.root", kOutDir, primFile));
+  if (!inFileRaw || !inFileEff || !inFileSec)
+  {
+    std::cout<<"Input files do not exist!"<<std::endl;
+    return;
+  }
+
   TFile outFile(Form("%s/%s.root", kOutDir, outFileName), outFileOption);
 
   outFile.mkdir(histoNameDir);
@@ -99,7 +105,7 @@ void Spectra(const float cutDCAz = 1.f, const int cutTPCcls = 89, const bool bin
       double spec = fSpectra[1]->GetBinContent(iPtBin);
       double antiSpecErr = fSpectra[0]->GetBinError(iPtBin);
       double specErr = fSpectra[1]->GetBinError(iPtBin);
-      if (spec > 1.e-10)
+      if (spec > 1.e-7 && antiSpec > 1.e-7)
       {
         fRatio[iCent]->SetBinContent(iPtBin, antiSpec / spec);
         fRatio[iCent]->SetBinError(iPtBin, antiSpec / spec * TMath::Sqrt(antiSpecErr * antiSpecErr / antiSpec / antiSpec + specErr * specErr / spec / spec));
