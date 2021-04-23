@@ -31,7 +31,7 @@ with open(os.path.expandvars(config), 'r') as stream:
         print(exc)
 
 ANALYSIS_RESULTS_PATH = params['ANALYSIS_RESULTS_PATH']
-CT_BINS = params['CT_BINS_CENT']
+CT_BINS_CENT = params['CT_BINS_CENT']
 CENTRALITY_LIST = params['CENTRALITY_LIST']
 RANDOM_STATE = params['RANDOM_STATE']
 ##################################################################
@@ -46,13 +46,19 @@ presel_eff_file = uproot.open('PreselEff.root')
 signal_extraction_file = ROOT.TFile.Open('SignalExtraction.root')
 signal_extraction_keys = uproot.open('SignalExtraction.root').keys()
 
-systematics_file = ROOT.TFile.Open('Systematics.root', 'recreate')
+systematics_file = ROOT.TFile.Open('SystematicsLifetime.root', 'recreate')
 
 for i_cent_bins in range(len(CENTRALITY_LIST)):
     cent_bins = CENTRALITY_LIST[i_cent_bins]
+    if cent_bins[1] < 80:
+        continue
 
-    h_parameter_distribution = ROOT.TH1D(f'fParameterDistribution_{cent_bins[0]}_{cent_bins[1]}', f'{cent_bins[0]}-{cent_bins[1]}%', 200, 0, 2)
+    h_asymmetry_distribution = ROOT.TH1D(f'fAsymmetryDistribution_{cent_bins[0]}_{cent_bins[1]}', f'{cent_bins[0]}-{cent_bins[1]}%', 200, -100, 100)
     h_prob_distribution = ROOT.TH1D(f'fProbDistribution_{cent_bins[0]}_{cent_bins[1]}', f'{cent_bins[0]}-{cent_bins[1]}%', 100, 0, 1)
+    h_lifetime = [ROOT.TH1D(), ROOT.TH1D()]
+    h_lifetime[0] = ROOT.TH1D(f'fLifetimeAntimatterDistribution_{cent_bins[0]}_{cent_bins[1]}', f'{cent_bins[0]}-{cent_bins[1]}%', 200, 150, 350)
+    h_lifetime[1] = ROOT.TH1D(f'fLifetimeMatterDistribution_{cent_bins[0]}_{cent_bins[1]}', f'{cent_bins[0]}-{cent_bins[1]}%', 200, 150, 350)
+    h_fit_status = ROOT.TH1D(f'fFitStatus_{cent_bins[0]}_{cent_bins[1]}', f'{cent_bins[0]}-{cent_bins[1]}%', 100, 0, 99)
 
     systematics_file.mkdir(f'{cent_bins[0]}_{cent_bins[1]}')
     ####################################################
@@ -64,6 +70,8 @@ for i_cent_bins in range(len(CENTRALITY_LIST)):
         h_corrected_yields = [ROOT.TH1D(), ROOT.TH1D()]
         if (i_trial % 100) == 0:
             print(f'{cent_bins[0]}-{cent_bins[1]}%: i_trial = {i_trial}')
+
+        lifetime_tmp = [-9999., -9999.]
         for i_split, split in enumerate(SPLIT_LIST):
 
             # get preselection efficiency histogram
@@ -73,13 +81,13 @@ for i_cent_bins in range(len(CENTRALITY_LIST)):
 
             # list of corrected yields
             ct_bins_tmp = [0]
-            ct_bins_tmp += CT_BINS[i_cent_bins]
+            ct_bins_tmp += CT_BINS_CENT[i_cent_bins]
             bins = np.array(ct_bins_tmp, dtype=float)
 
             h_corrected_yields[i_split] = ROOT.TH1D(
                 f'fYields_{split}_{cent_bins[0]}_{cent_bins[1]}', f'{split}, {cent_bins[0]}-{cent_bins[1]}%', len(bins)-1, bins)
 
-            for ct_bins in zip(CT_BINS[i_cent_bins][:-1], CT_BINS[i_cent_bins][1:]):
+            for ct_bins in zip(CT_BINS_CENT[i_cent_bins][:-1], CT_BINS_CENT[i_cent_bins][1:]):
 
                 bin = f'{split}_{cent_bins[0]}_{cent_bins[1]}_{ct_bins[0]}_{ct_bins[1]}'
                 formatted_eff_cut = "{:.2f}".format(eff_cut_dict[bin])
@@ -127,35 +135,47 @@ for i_cent_bins in range(len(CENTRALITY_LIST)):
 
             # set labels
             h_corrected_yields[i_split].GetXaxis().SetTitle("#it{c}t (cm)")
+            h_corrected_yields[i_split].GetYaxis().SetTitle("d#it{N}/d(#it{c}t) (cm^{-1})")
             h_corrected_yields[i_split].Scale(1., "width")
 
-        # ratios
-        h_ratio = ROOT.TH1D(h_corrected_yields[0])
-        h_ratio.SetName(f'fRatio_{cent_bins[0]}_{cent_bins[1]}')
-        h_ratio.SetTitle(f'{cent_bins[0]}-{cent_bins[1]}%')
-        h_ratio.Divide(h_corrected_yields[0], h_corrected_yields[1], 1, 1)
-        h_ratio.GetYaxis().SetTitle("^{3}_{#bar{#Lambda}}#bar{H}/^{3}_{#Lambda}H")
-        fit_function = ROOT.TF1('plo0', 'pol0', CT_BINS[i_cent_bins][0], CT_BINS[i_cent_bins][-1])
-        res = h_ratio.Fit(fit_function, 'SQ')
-        systematics_file.cd(f'{cent_bins[0]}_{cent_bins[1]}')
+            # fit with exponential pdf
+            fit_function_expo = ROOT.TF1("expo", "expo", 2, 35)
+            if cent_bins[0] == 30:
+                fit_function_expo = ROOT.TF1("expo", "expo", 2, 14)
+            res = h_corrected_yields[i_split].Fit(fit_function_expo, "QRMLS+")
 
-        if fit_function.GetProb() > 0.05 and res.Status() == 0 and res.Ndf() > 1:
-            h_ratio.Write()
-            h_parameter_distribution.Fill(fit_function.GetParameter(0))
-            h_prob_distribution.Fill(res.Prob())
-            i_trial += 1
-        del h_corrected_yields
-        del h_ratio
+            # compute lifetime
+            tau = -1/fit_function_expo.GetParameter(1)*100/SPEED_OF_LIGHT # ps
+
+            if (res.Prob() > 0.025) and (res.Prob() < 0.975) and (fit_function_expo.GetNDF() > 1):
+                systematics_file.cd(f'{cent_bins[0]}_{cent_bins[1]}')
+                # h_corrected_yields[i_split].Write()
+                lifetime_tmp[i_split] = tau
+                h_prob_distribution.Fill(res.Prob())
+                h_fit_status.Fill(fit_function_expo.IsValid())
+
+        if (lifetime_tmp[0] > 0) and (lifetime_tmp[1] > 0):
+            h_lifetime[0].Fill(lifetime_tmp[0])
+            h_lifetime[1].Fill(lifetime_tmp[1])
+            h_asymmetry_distribution.Fill(lifetime_tmp[1]-lifetime_tmp[0])
+            i_trial+=1
 
     systematics_file.cd()
-    h_parameter_distribution.GetXaxis().SetTitle("p_{0}")
-    h_parameter_distribution.GetYaxis().SetTitle("Entries")
-    h_parameter_distribution.Write()
+    h_asymmetry_distribution.GetXaxis().SetTitle("Asymmetry (ps)")
+    h_asymmetry_distribution.GetYaxis().SetTitle("Entries")
+    h_asymmetry_distribution.Write()
     h_prob_distribution.GetXaxis().SetTitle("Prob")
     h_prob_distribution.GetYaxis().SetTitle("Entries")
     h_prob_distribution.Write()
+    h_lifetime[0].GetXaxis().SetTitle("#tau (ps)")
+    h_lifetime[1].GetXaxis().SetTitle("#tau (ps)")
+    h_lifetime[0].Write()
+    h_lifetime[1].Write()
+    h_fit_status.Write()
 
-    del h_parameter_distribution
+    del h_asymmetry_distribution
     del h_prob_distribution
+    del h_fit_status
+    del h_lifetime
 
 systematics_file.Close()
