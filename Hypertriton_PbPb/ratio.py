@@ -29,7 +29,7 @@ with open(os.path.expandvars(config), 'r') as stream:
         print(exc)
 
 ANALYSIS_RESULTS_PATH = params['ANALYSIS_RESULTS_PATH']
-CT_BINS = params['CT_BINS_CENT']
+CT_BINS_CENT = params['CT_BINS_CENT']
 CENTRALITY_LIST = params['CENTRALITY_LIST']
 RANDOM_STATE = params['RANDOM_STATE']
 ##################################################################
@@ -59,13 +59,13 @@ for i_cent_bins in range(len(CENTRALITY_LIST)):
 
         # list of corrected yields
         ct_bins_tmp = [0]
-        ct_bins_tmp += CT_BINS[i_cent_bins]
+        ct_bins_tmp += CT_BINS_CENT[i_cent_bins]
         bins = np.array(ct_bins_tmp, dtype=float)
         # print(bins)
         h_corrected_yields[i_split] = ROOT.TH1D(
             f'fYields_{split}_{cent_bins[0]}_{cent_bins[1]}', f'{split}, {cent_bins[0]}-{cent_bins[1]}%', len(bins)-1, bins)
 
-        for ct_bins in zip(CT_BINS[i_cent_bins][:-1], CT_BINS[i_cent_bins][1:]):
+        for ct_bins in zip(CT_BINS_CENT[i_cent_bins][:-1], CT_BINS_CENT[i_cent_bins][1:]):
 
             bin = f'{split}_{cent_bins[0]}_{cent_bins[1]}_{ct_bins[0]}_{ct_bins[1]}'
             formatted_eff_cut = "{:.2f}".format(eff_cut_dict[bin])
