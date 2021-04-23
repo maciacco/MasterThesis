@@ -117,7 +117,7 @@ void He3AbsAnalysisPt(std::string pathToSimulation = "./")
 
     int kNorm = 0;
     int dirs[] = {295585, 295586};
-    int subdirs[] = {38, 1};
+    int subdirs[] = {38, 160};
 
     for (Int_t iDir = 0; iDir <= 1; iDir++)
     {
@@ -138,7 +138,7 @@ void He3AbsAnalysisPt(std::string pathToSimulation = "./")
                 for (Int_t i = 0; i < mcEv->GetNumberOfTracks(); ++i)
                 {
                     AliVParticle *part = mcEv->GetTrack(i);
-                    // if (part->Pt() < 2) continue; // pt cut
+                    if (part->Pt() < 2) continue; // pt cut
 
                     if (part->IsPhysicalPrimary() && std::abs(part->PdgCode()) == 1000020030)
                     {
