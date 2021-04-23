@@ -49,7 +49,11 @@ def expected_signal(cent_class, ct_range, eff, n_events):
     correction *= 0.25 # 2-body Branching ratio
     correction *= expo(ct_range[0])- expo(ct_range[1]) #selecting the correct ct bin
     correction *= eff
-    cent_start_bin = [0., 5., 30.]
-    for cent_bin, he3_yield in zip(cent_start_bin, he3_yield_list):
-        if cent_bin==cent_class[0]:
+    cent_end_bin = [5., 10., 50.]
+    for cent_bin, he3_yield in zip(cent_end_bin, he3_yield_list):
+        if cent_bin==cent_class[1]:
             return he3_yield*correction*n_events
+
+    # expected signal for 0-90% centrality
+    he3_yield_0_90 = 2.74e4
+    return correction*he3_yield_0_90

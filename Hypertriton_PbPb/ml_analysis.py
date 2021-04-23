@@ -198,7 +198,7 @@ if TRAINING:
         plt.close('all')
         ###########################################################
 
-    for ct_bins in zip(CT_BINS[:-1], CT_BINS[1:]):
+    for ct_bins in CT_BINS:
 
         df_signal_ct = df_signal.query(f'ct > {ct_bins[0]} and ct < {ct_bins[1]} and pt > 2 and pt < 10')
         df_background_ct = df_background.query(f'ct > {ct_bins[0]} and ct < {ct_bins[1]} and pt > 2 and pt < 10')

@@ -30,7 +30,7 @@ with open(os.path.expandvars(config), 'r') as stream:
         print(exc)
 
 ANALYSIS_RESULTS_PATH = params['ANALYSIS_RESULTS_PATH']
-CT_BINS = params['CT_BINS_CENT']
+CT_BINS_CENT = params['CT_BINS_CENT']
 CENTRALITY_LIST = params['CENTRALITY_LIST']
 RANDOM_STATE = params['RANDOM_STATE']
 ##################################################################
@@ -67,7 +67,7 @@ for split in SPLIT_LIST:
             f'fPreselEff_vs_ct_{split}_{cent_bins[0]}_{cent_bins[1]};1'].to_numpy()
         presel_eff_bin_centers = (presel_eff_edges[1:]+presel_eff_edges[:-1])/2
 
-        for ct_bins in zip(CT_BINS[i_cent_bins][:-1], CT_BINS[i_cent_bins][1:]):
+        for ct_bins in zip(CT_BINS_CENT[i_cent_bins][:-1], CT_BINS_CENT[i_cent_bins][1:]):
 
             bin = f'{split}_{cent_bins[0]}_{cent_bins[1]}_{ct_bins[0]}_{ct_bins[1]}'
             df_data = pd.read_parquet(f'df/{bin}')
@@ -170,7 +170,7 @@ for split in SPLIT_LIST:
             plt.plot(eff_array_reduced, significance_array, 'b', label='Expected Significance')
             plt.fill_between(eff_array_reduced, low_limit, up_limit,
                              facecolor='deepskyblue', label=r'$ \pm 1\sigma$', alpha=0.3)
-            plt.vlines(cut_eff[0], 0, 10, colors='red', linestyles='dashed',
+            plt.vlines(cut_eff[0], 0, 20, colors='red', linestyles='dashed',
                        label=f'cut = {"{:.2f}".format(cut_eff[0])}')
 
             handles, labels = fig.gca().get_legend_handles_labels()

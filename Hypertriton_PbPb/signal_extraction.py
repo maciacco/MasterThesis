@@ -36,7 +36,7 @@ with open(os.path.expandvars(config), 'r') as stream:
         print(exc)
 
 DATA_PATH = params['DATA_PATH']
-CT_BINS = params['CT_BINS_CENT']
+CT_BINS_CENT = params['CT_BINS_CENT']
 CENTRALITY_LIST = params['CENTRALITY_LIST']
 RANDOM_STATE = params['RANDOM_STATE']
 ##################################################################
@@ -56,7 +56,7 @@ eff_array = np.arange(0.10, MAX_EFF, 0.01)
 for split in SPLIT_LIST:
     for i_cent_bins in range(len(CENTRALITY_LIST)):
         cent_bins = CENTRALITY_LIST[i_cent_bins]
-        for ct_bins in zip(CT_BINS[i_cent_bins][:-1], CT_BINS[i_cent_bins][1:]):
+        for ct_bins in zip(CT_BINS_CENT[i_cent_bins][:-1], CT_BINS_CENT[i_cent_bins][1:]):
 
             bin = f'{split}_{cent_bins[0]}_{cent_bins[1]}_{ct_bins[0]}_{ct_bins[1]}'
             df_data = pd.read_parquet(f'df/{bin}')
@@ -68,6 +68,9 @@ for split in SPLIT_LIST:
 
             # raw yileds histogram
             h_raw_yields = ROOT.TH1D("fRawYields", "fRawYields", 101, -0.005, 1.005)
+
+            # significance histogram
+            h_significance = ROOT.TH1D("fSignificance", "fSignificance", 101, -0.005, 1.005)
 
             for eff_score in zip(eff_array, score_eff_arrays_dict[bin]):
                 if (ct_bins[0] > 0) and (eff_score[0] < 0.50):
@@ -178,23 +181,27 @@ for split in SPLIT_LIST:
                         significance_val = sig/np.sqrt(sig+bkg)
                         significance_err = significance_error(sig, bkg)
 
+                        # fill significance histogram
+                        h_significance.SetBinContent(eff_index, significance_val)
+                        h_significance.SetBinError(eff_index, significance_err)
+
                         # draw on canvas and save plots
                         canv = ROOT.TCanvas()
                         canv.cd()
                         text_mass = ROOT.TLatex(
-                            2.965, 0.95 * xframe.GetMaximum(),
+                            2.965, 0.74 * xframe.GetMaximum(),
                             "#it{m}_{^{3}_{#Lambda}H} = " + "{:.6f}".format(mass_val) + " GeV/#it{c^{2}}")
                         text_mass.SetTextSize(0.035)
-                        text_signif = ROOT.TLatex(2.965, 0.88 * xframe.GetMaximum(),
+                        text_signif = ROOT.TLatex(2.965, 0.95 * xframe.GetMaximum(),
                                                   "S/#sqrt{S+B} (3#sigma) = " + "{:.3f}".format(significance_val) + " #pm " +
                                                   "{:.3f}".format(significance_err))
                         text_signif.SetTextSize(0.035)
-                        text_sig = ROOT.TLatex(2.965, 0.81 * xframe.GetMaximum(), "S (3#sigma) = " + "{:.1f}".format(sig) + " #pm " + "{:.1f}".format(signal_int*roo_n_signal.getError()))
+                        text_sig = ROOT.TLatex(2.965, 0.88 * xframe.GetMaximum(), "S (3#sigma) = " + "{:.1f}".format(sig) + " #pm " + "{:.1f}".format(signal_int*roo_n_signal.getError()))
                         text_sig.SetTextSize(0.035)
-                        text_bkg = ROOT.TLatex(2.965, 0.74 * xframe.GetMaximum(), "B (3#sigma) = " + "{:.1f}".format(bkg) + " #pm" + "{:.1f}".format(bkg_int*roo_n_background.getError()))
+                        text_bkg = ROOT.TLatex(2.965, 0.81 * xframe.GetMaximum(), "B (3#sigma) = " + "{:.1f}".format(bkg) + " #pm" + "{:.1f}".format(bkg_int*roo_n_background.getError()))
                         text_bkg.SetTextSize(0.035)
                         xframe.Draw("")
-                        text_mass.Draw("same")
+                        # text_mass.Draw("same")
                         text_signif.Draw("same")
                         text_sig.Draw("same")
                         text_bkg.Draw("same")
@@ -223,4 +230,9 @@ for split in SPLIT_LIST:
             h_raw_yields.GetXaxis().SetTitle("BDT efficiency")
             h_raw_yields.GetYaxis().SetTitle("#it{N_{raw}}")
             h_raw_yields.Write()
+
+            h_significance.GetXaxis().SetTitle("BDT efficiency")
+            h_significance.GetYaxis().SetTitle("S / #sqrt{S + B}")
+            h_significance.Write()
+
             root_file_signal_extraction.Close()
