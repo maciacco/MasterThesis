@@ -28,7 +28,7 @@ for cent in centrality_classes:
     ratio_hyp_err = fit_hyp.GetParError(0)
 
     # final plot
-    ratios_vs_b = ROOT.TH1D(f'fRatio_vs_b_{cent[0]}_{cent[1]}','; #it{"la quantita\' che noi sappiamo..."}; Antimatter / Matter', 10, -0.5, 9.5)
+    ratios_vs_b = ROOT.TH1D(f'fRatio_vs_b_{cent[0]}_{cent[1]}','; #it{"la quantita\' che noi sappiamo... (B+S/3)"}; Antimatter / Matter', 10, -0.5, 9.5)
     ratios_vs_b.SetBinContent(10, ratio_he3)
     ratios_vs_b.SetBinError(10, ratio_he3_err)
     ratios_vs_b.SetBinContent(9, ratio_hyp)
