@@ -111,6 +111,8 @@ for i_cent_bins in range(len(CENTRALITY_LIST)):
         fit_function_expo = ROOT.TF1("expo", "expo", 2, 35)
         if cent_bins[0] == 30:
             fit_function_expo = ROOT.TF1("expo", "expo", 2, 14)
+        elif cent_bins[1] == 90:
+            fit_function_expo = ROOT.TF1("expo", "expo", 2, 35)
         h_corrected_yields[i_split].Fit(fit_function_expo, "RMLS+")
 
         # compute lifetime

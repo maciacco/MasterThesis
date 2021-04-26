@@ -73,7 +73,7 @@ for split in SPLIT_LIST:
             h_significance = ROOT.TH1D("fSignificance", "fSignificance", 101, -0.005, 1.005)
 
             for eff_score in zip(eff_array, score_eff_arrays_dict[bin]):
-                if (ct_bins[0] > 0) and (eff_score[0] < 0.50):
+                if (ct_bins[0] > 0.5) and (eff_score[0] < 0.50):
                     continue
                 formatted_eff = "{:.2f}".format(eff_score[0])
                 print(f'processing {bin}: eff = {eff_score[0]:.2f}, score = {eff_score[1]:.2f}...')
@@ -119,7 +119,7 @@ for split in SPLIT_LIST:
                 r = roo_model.fitTo(roo_data, ROOT.RooFit.Save(), ROOT.RooFit.Extended(ROOT.kTRUE))
 
                 print(f'fit status: {r.status()}')
-                if r.status() == 0:
+                if r.status() == 0 and delta_mass.getError() > 1.e-6:
 
                     # plot
                     nBins = 26
@@ -146,14 +146,6 @@ for split in SPLIT_LIST:
 
                     print(f'chi2/NDF: {formatted_chi2}, edm: {r.edm()}')
                     if float(formatted_chi2) < 2 and r.edm() < 1:
-                        # fill raw yields histogram
-                        eff_index = h_raw_yields.FindBin(float(formatted_eff))
-                        h_raw_yields.SetBinContent(eff_index, roo_n_signal.getVal())
-                        h_raw_yields.SetBinError(eff_index, roo_n_signal.getError())
-
-                        # write to file
-                        root_file_signal_extraction.cd(f'{bin}_{bkg_shape}')
-                        xframe.Write()
 
                         # fit mc distribution to get sigma and mass
                         roo_mean_mc = ROOT.RooRealVar("mean", "mean", 2.98, 3.0)
@@ -182,50 +174,60 @@ for split in SPLIT_LIST:
                         significance_err = significance_error(sig, bkg)
 
                         # fill significance histogram
+                        eff_index = h_significance.FindBin(float(formatted_eff))
                         h_significance.SetBinContent(eff_index, significance_val)
                         h_significance.SetBinError(eff_index, significance_err)
 
-                        # draw on canvas and save plots
-                        canv = ROOT.TCanvas()
-                        canv.cd()
-                        text_mass = ROOT.TLatex(
-                            2.965, 0.74 * xframe.GetMaximum(),
-                            "#it{m}_{^{3}_{#Lambda}H} = " + "{:.6f}".format(mass_val) + " GeV/#it{c^{2}}")
-                        text_mass.SetTextSize(0.035)
-                        text_signif = ROOT.TLatex(2.965, 0.95 * xframe.GetMaximum(),
-                                                  "S/#sqrt{S+B} (3#sigma) = " + "{:.3f}".format(significance_val) + " #pm " +
-                                                  "{:.3f}".format(significance_err))
-                        text_signif.SetTextSize(0.035)
-                        text_sig = ROOT.TLatex(2.965, 0.88 * xframe.GetMaximum(), "S (3#sigma) = " + "{:.1f}".format(sig) + " #pm " + "{:.1f}".format(signal_int*roo_n_signal.getError()))
-                        text_sig.SetTextSize(0.035)
-                        text_bkg = ROOT.TLatex(2.965, 0.81 * xframe.GetMaximum(), "B (3#sigma) = " + "{:.1f}".format(bkg) + " #pm" + "{:.1f}".format(bkg_int*roo_n_background.getError()))
-                        text_bkg.SetTextSize(0.035)
-                        xframe.Draw("")
-                        # text_mass.Draw("same")
-                        text_signif.Draw("same")
-                        text_sig.Draw("same")
-                        text_bkg.Draw("same")
-                        print(
-                            f'significance = {"{:.3f}".format(significance_val)} +/- {"{:.3f}".format(significance_err)}')
-                        if not os.path.isdir('plots/signal_extraction'):
-                            os.mkdir('plots/signal_extraction')
-                        if not os.path.isdir(f'plots/signal_extraction/{bin}_{bkg_shape}'):
-                            os.mkdir(f'plots/signal_extraction/{bin}_{bkg_shape}')
-                        canv.Print(f'plots/signal_extraction/{bin}_{bkg_shape}/{eff_score[0]:.2f}_{bin}.png')
+                        if significance_val > 2.95:
+                            # fill raw yields histogram
+                            h_raw_yields.SetBinContent(eff_index, roo_n_signal.getVal())
+                            h_raw_yields.SetBinError(eff_index, roo_n_signal.getError())
 
-                        # plot kde and mc
-                        frame = roo_m.frame(2.96, 3.025, 130)
-                        roo_mc_signal.plotOn(frame)
-                        roo_signal.plotOn(frame)
-                        gaus.plotOn(frame, ROOT.RooFit.LineColor(ROOT.kRed), ROOT.RooFit.LineStyle(ROOT.kDashed))
-                        cc = ROOT.TCanvas("cc", "cc")
-                        if not os.path.isdir('plots/kde_signal'):
-                            os.mkdir('plots/kde_signal')
-                        if not os.path.isdir(f'plots/kde_signal/{bin}'):
-                            os.mkdir(f'plots/kde_signal/{bin}')
-                        frame.Draw()
-                        cc.SetLogy(ROOT.kTRUE)
-                        cc.Print(f'plots/kde_signal/{bin}/{formatted_eff}_{bin}.png')
+                            # write to file
+                            root_file_signal_extraction.cd(f'{bin}_{bkg_shape}')
+                            xframe.Write()
+
+                            # draw on canvas and save plots
+                            canv = ROOT.TCanvas()
+                            canv.cd()
+                            text_mass = ROOT.TLatex(
+                                2.965, 0.74 * xframe.GetMaximum(),
+                                "#it{m}_{^{3}_{#Lambda}H} = " + "{:.6f}".format(mass_val) + " GeV/#it{c^{2}}")
+                            text_mass.SetTextSize(0.035)
+                            text_signif = ROOT.TLatex(2.965, 0.95 * xframe.GetMaximum(),
+                                                    "S/#sqrt{S+B} (3#sigma) = " + "{:.3f}".format(significance_val) + " #pm " +
+                                                    "{:.3f}".format(significance_err))
+                            text_signif.SetTextSize(0.035)
+                            text_sig = ROOT.TLatex(2.965, 0.88 * xframe.GetMaximum(), "S (3#sigma) = " + "{:.1f}".format(sig) + " #pm " + "{:.1f}".format(signal_int*roo_n_signal.getError()))
+                            text_sig.SetTextSize(0.035)
+                            text_bkg = ROOT.TLatex(2.965, 0.81 * xframe.GetMaximum(), "B (3#sigma) = " + "{:.1f}".format(bkg) + " #pm" + "{:.1f}".format(bkg_int*roo_n_background.getError()))
+                            text_bkg.SetTextSize(0.035)
+                            xframe.Draw("")
+                            # text_mass.Draw("same")
+                            text_signif.Draw("same")
+                            text_sig.Draw("same")
+                            text_bkg.Draw("same")
+                            print(
+                                f'significance = {"{:.3f}".format(significance_val)} +/- {"{:.3f}".format(significance_err)}')
+                            if not os.path.isdir('plots/signal_extraction'):
+                                os.mkdir('plots/signal_extraction')
+                            if not os.path.isdir(f'plots/signal_extraction/{bin}_{bkg_shape}'):
+                                os.mkdir(f'plots/signal_extraction/{bin}_{bkg_shape}')
+                            canv.Print(f'plots/signal_extraction/{bin}_{bkg_shape}/{eff_score[0]:.2f}_{bin}.png')
+
+                            # plot kde and mc
+                            frame = roo_m.frame(2.96, 3.025, 130)
+                            roo_mc_signal.plotOn(frame)
+                            roo_signal.plotOn(frame)
+                            gaus.plotOn(frame, ROOT.RooFit.LineColor(ROOT.kRed), ROOT.RooFit.LineStyle(ROOT.kDashed))
+                            cc = ROOT.TCanvas("cc", "cc")
+                            if not os.path.isdir('plots/kde_signal'):
+                                os.mkdir('plots/kde_signal')
+                            if not os.path.isdir(f'plots/kde_signal/{bin}'):
+                                os.mkdir(f'plots/kde_signal/{bin}')
+                            frame.Draw()
+                            cc.SetLogy(ROOT.kTRUE)
+                            cc.Print(f'plots/kde_signal/{bin}/{formatted_eff}_{bin}.png')
 
             h_raw_yields.GetXaxis().SetTitle("BDT efficiency")
             h_raw_yields.GetYaxis().SetTitle("#it{N_{raw}}")

@@ -21,3 +21,9 @@ python3 signal_extraction.py -b
 
 # lifetime fits + ratio
 python3 ratio.py
+
+# systematics (ratio)
+python3 systematics_ratio.py
+
+# systematics (cpt)
+python3 systematics_cpt.py

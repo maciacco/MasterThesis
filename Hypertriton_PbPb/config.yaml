@@ -3,8 +3,8 @@ DATA_PATH: "$HYPERML_TABLES_2/DataTable_18_cols.root"
 MC_SIGNAL_PATH: "$HYPERML_TABLES_2/SignalTable_20g7.root"
 LS_BACKGROUND_PATH: "$HYPERML_TABLES_2/DataTable_18LS_cols.root"
 
-CT_BINS: [[2, 4], [4, 8], [8, 14], [14, 35], [8, 23]] # training
-CT_BINS_CENT: [[2, 4, 8, 14, 35], [2, 4, 8, 14, 35], [2, 4, 8, 14], [2, 4, 8, 14, 35]]
+CT_BINS: [[2, 4], [4, 8], [8, 14], [14, 35], [4, 6], [6, 8], [4, 7], [7, 14]] # training
+CT_BINS_CENT: [[2, 4, 8, 14, 35], [2, 4, 8, 14, 35], [2, 4, 7, 14], [2, 4, 6, 8, 14, 35]]
 PT_BINS: [2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 5.5, 6.0, 6.5, 7.0, 8.0, 10.0]
 CENTRALITY_LIST:  [[0, 5], [5, 10], [30, 50], [0, 90]]
 

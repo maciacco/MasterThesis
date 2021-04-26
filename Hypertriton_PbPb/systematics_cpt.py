@@ -53,11 +53,11 @@ for i_cent_bins in range(len(CENTRALITY_LIST)):
     if cent_bins[1] < 80:
         continue
 
-    h_asymmetry_distribution = ROOT.TH1D(f'fAsymmetryDistribution_{cent_bins[0]}_{cent_bins[1]}', f'{cent_bins[0]}-{cent_bins[1]}%', 200, -100, 100)
+    h_asymmetry_distribution = ROOT.TH1D(f'fAsymmetryDistribution_{cent_bins[0]}_{cent_bins[1]}', f'{cent_bins[0]}-{cent_bins[1]}%', 400, -200, 200)
     h_prob_distribution = ROOT.TH1D(f'fProbDistribution_{cent_bins[0]}_{cent_bins[1]}', f'{cent_bins[0]}-{cent_bins[1]}%', 100, 0, 1)
     h_lifetime = [ROOT.TH1D(), ROOT.TH1D()]
-    h_lifetime[0] = ROOT.TH1D(f'fLifetimeAntimatterDistribution_{cent_bins[0]}_{cent_bins[1]}', f'{cent_bins[0]}-{cent_bins[1]}%', 200, 150, 350)
-    h_lifetime[1] = ROOT.TH1D(f'fLifetimeMatterDistribution_{cent_bins[0]}_{cent_bins[1]}', f'{cent_bins[0]}-{cent_bins[1]}%', 200, 150, 350)
+    h_lifetime[0] = ROOT.TH1D(f'fLifetimeAntimatterDistribution_{cent_bins[0]}_{cent_bins[1]}', f'{cent_bins[0]}-{cent_bins[1]}%', 1000, 0, 1000)
+    h_lifetime[1] = ROOT.TH1D(f'fLifetimeMatterDistribution_{cent_bins[0]}_{cent_bins[1]}', f'{cent_bins[0]}-{cent_bins[1]}%', 1000, 0, 1000)
     h_fit_status = ROOT.TH1D(f'fFitStatus_{cent_bins[0]}_{cent_bins[1]}', f'{cent_bins[0]}-{cent_bins[1]}%', 100, 0, 99)
 
     systematics_file.mkdir(f'{cent_bins[0]}_{cent_bins[1]}')
@@ -142,14 +142,16 @@ for i_cent_bins in range(len(CENTRALITY_LIST)):
             fit_function_expo = ROOT.TF1("expo", "expo", 2, 35)
             if cent_bins[0] == 30:
                 fit_function_expo = ROOT.TF1("expo", "expo", 2, 14)
+            elif cent_bins[1] == 90:
+                fit_function_expo = ROOT.TF1("expo", "expo", 2, 35)
             res = h_corrected_yields[i_split].Fit(fit_function_expo, "QRMLS+")
 
             # compute lifetime
             tau = -1/fit_function_expo.GetParameter(1)*100/SPEED_OF_LIGHT # ps
 
-            if (res.Prob() > 0.025) and (res.Prob() < 0.975) and (fit_function_expo.GetNDF() > 1):
+            if (res.Prob() > 0.025) and (res.Prob() < 0.975) and (fit_function_expo.GetNDF() == 3):
                 systematics_file.cd(f'{cent_bins[0]}_{cent_bins[1]}')
-                # h_corrected_yields[i_split].Write()
+                h_corrected_yields[i_split].Write()
                 lifetime_tmp[i_split] = tau
                 h_prob_distribution.Fill(res.Prob())
                 h_fit_status.Fill(fit_function_expo.IsValid())
@@ -159,7 +161,6 @@ for i_cent_bins in range(len(CENTRALITY_LIST)):
             h_lifetime[1].Fill(lifetime_tmp[1])
             h_asymmetry_distribution.Fill(lifetime_tmp[1]-lifetime_tmp[0])
             i_trial+=1
-
     systematics_file.cd()
     h_asymmetry_distribution.GetXaxis().SetTitle("Asymmetry (ps)")
     h_asymmetry_distribution.GetYaxis().SetTitle("Entries")

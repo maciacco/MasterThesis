@@ -153,6 +153,8 @@ for split in SPLIT_LIST:
                 plt.close('all')
 
             eff_array_reduced = eff_array[40:]
+            if (ct_bins[0] == 0):
+                eff_array_reduced = eff_array
             significance_array = np.asarray(significance_list)
             significance_err_array = np.asarray(significance_err_list)
 
@@ -180,6 +182,8 @@ for split in SPLIT_LIST:
             plt.xlabel("BDT Efficiency")
             plt.ylabel("Significance x BDT Efficiency")
             plt.xlim(0.5, MAX_EFF-0.01)
+            if ct_bins[0] == 0:
+                plt.xlim(0.1, MAX_EFF-0.01)
             plt.ylim(0.3, up_limit.max()+0.3)
 
             plt.savefig(f'plots/significance_scan/{bin}.png')
