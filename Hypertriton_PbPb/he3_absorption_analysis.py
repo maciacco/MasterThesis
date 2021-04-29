@@ -1,0 +1,163 @@
+#!/usr/bin/env python3
+import os
+import warnings
+import ROOT
+import numpy as np
+import yaml
+
+##################################################################
+# read configuration file
+##################################################################
+config = 'config.yaml'
+with open(os.path.expandvars(config), 'r') as stream:
+    try:
+        params = yaml.full_load(stream)
+    except yaml.YAMLError as exc:
+        print(exc)
+
+CT_BINS_CENT = params['CT_BINS_CENT']
+CENTRALITY_LIST = params['CENTRALITY_LIST']
+##################################################################
+
+split_list = ['anti', 'matt']
+cent_bins_MB = [[0, 10], [10, 40], [40, 90]]
+
+# mc input file
+mc_file = '../data/He3_PbPb/mc.root'
+outfile = ROOT.TFile("He3_abs.root", "recreate")
+
+# functions
+n_fun = [1, 1, 1, 1]  # [5, 5, 5, 4]
+func = [[] for _ in range(len(CENTRALITY_LIST)-1)]
+funcMB = [[] for _ in range(3)]
+func_max = [[] for _ in range(len(CENTRALITY_LIST)-1)]
+func_max_MB = [[] for _ in range(3)]
+
+# functions names
+func_names = ["BGBW", "Boltzmann", "Mt-exp", "Pt-exp", "LevyTsallis"]
+func_names_MB = ["BlastWave", "Boltzmann", "LevyTsallis", "Mt-exp"]
+
+# functions input files
+input_func_file = ROOT.TFile("Anti_fits.root")
+input_func_file_MB = ROOT.TFile("BlastWaveFits.root")
+
+# get functions and maxima from file
+cent_index = [1, 2, 4]
+for i_cent in range(len(CENTRALITY_LIST)-1):
+    for i_fun in range(n_fun[i_cent]):
+        func[i_cent].append(input_func_file.Get(
+            f"{func_names[i_fun]}/{cent_index[i_cent]}/{func_names[i_fun]}{cent_index[i_cent]}"))
+        func_max[i_cent].append(func[i_cent][i_fun].GetMaximum())
+for i_cent in range(3):
+    for i_fun in range(n_fun[-1]):
+        funcMB[i_cent].append(input_func_file_MB.Get(f"{func_names_MB[i_fun]}/{func_names_MB[i_fun]}{i_cent}"))
+        func_max_MB[i_cent].append(funcMB[i_cent][i_fun].GetMaximum())
+
+# book histograms
+cent_len = len(CENTRALITY_LIST)
+h_gen_ct = [[] for _ in range(cent_len)]
+h_gen_pt = [[] for _ in range(cent_len)]
+h_rec_ct = [[] for _ in range(cent_len)]
+h_rec_pt = [[] for _ in range(cent_len)]
+for i_cent in range(cent_len):
+    for i_fun in range(n_fun[i_cent]):
+        ct_bins = np.asarray(CT_BINS_CENT[i_cent], dtype="float")
+        cent_bins = CENTRALITY_LIST[i_cent]
+        f_name = func_names[i_fun]
+        if cent_bins[1] == 90:
+            f_name = func_names_MB[i_fun]
+        h_gen_ct[i_cent].append([])
+        h_gen_pt[i_cent].append([])
+        h_rec_ct[i_cent].append([])
+        h_rec_pt[i_cent].append([])
+        for split in split_list:
+            h_gen_ct[i_cent][i_fun].append(ROOT.TH1D(
+                f"fGenCt_{split}_{cent_bins[0]}_{cent_bins[1]}_{f_name}", ";#it{c}t (cm);Entries",
+                len(ct_bins) - 1, ct_bins))
+            h_gen_pt[i_cent][i_fun].append(ROOT.TH1D(
+                f"fGenPt_{split}_{cent_bins[0]}_{cent_bins[1]}_{f_name}", ";#it{p}_{T} (GeV/#it{c});Entries",
+                50, 0, 10))
+            h_rec_ct[i_cent][i_fun].append(ROOT.TH1D(
+                f"fRecCt_{split}_{cent_bins[0]}_{cent_bins[1]}_{f_name}", ";#it{c}t (cm);Entries",
+                len(ct_bins) - 1, ct_bins))
+            h_rec_pt[i_cent][i_fun].append(ROOT.TH1D(
+                f"fRecPt_{split}_{cent_bins[0]}_{cent_bins[1]}_{f_name}", ";#it{p}_{T} (GeV/#it{c});Entries",
+                50, 0, 10))
+
+# read tree
+data_frame_he3 = ROOT.RDataFrame('STree', mc_file)
+df_he3_cent = []
+df_he3_cent_MB = []
+df_he3 = data_frame_he3.Filter('abs(pt) > 2 and abs(pt) < 10')
+for cent_bins in CENTRALITY_LIST[:-1]:
+    df_he3_cent.append(df_he3.Filter(f'centrality > {cent_bins[0]} and centrality < {cent_bins[1]}'))
+for cent_bins in cent_bins_MB:
+    df_he3_cent_MB.append(df_he3.Filter(f'centrality > {cent_bins[0]} and centrality < {cent_bins[1]}'))
+
+# analysis in centrality classes
+for i_cent in range(len(CENTRALITY_LIST)-1):
+    np_he3 = df_he3_cent[i_cent].AsNumpy(["pt", "pdg"])
+    for he3 in zip(np_he3['pt'], np_he3['pdg']):
+        i_matt = 0
+        if he3[1] > 0:
+            i_matt = 1
+        for i_fun in range(n_fun[i_cent]):
+            # rejection sampling to reweight pt
+            if ROOT.gRandom.Rndm()*func_max[i_cent][i_fun] > func[i_cent][i_fun].Eval(he3[0]):
+                continue
+
+            # sample decay ct and ckeck for absorption
+            decCt = ROOT.gRandom.Exp(7.6)
+            h_gen_ct[i_cent][i_fun][i_matt].Fill(decCt)
+            h_gen_pt[i_cent][i_fun][i_matt].Fill(he3[0])
+            if decCt > 0:  # just for debug!!! right condition is: decCt < absCt
+                h_rec_ct[i_cent][i_fun][i_matt].Fill(decCt)
+                h_rec_pt[i_cent][i_fun][i_matt].Fill(he3[0])
+
+# MB analysis
+for i_cent in range(3):
+    np_he3 = df_he3_cent_MB[i_cent].AsNumpy(["pt", "pdg"])
+    for he3 in zip(np_he3['pt'], np_he3['pdg']):
+        i_matt = 0
+        if he3[1] > 0:
+            i_matt = 1
+        for i_fun in range(n_fun[i_cent]):
+            # rejection sampling to reweight pt
+            if ROOT.gRandom.Rndm()*func_max_MB[i_cent][i_fun] > funcMB[i_cent][i_fun].Eval(he3[0]):
+                continue
+
+            # sample decay ct and ckeck for absorption
+            decCt = ROOT.gRandom.Exp(7.6)
+            h_gen_ct[3][i_fun][i_matt].Fill(decCt)
+            h_gen_pt[3][i_fun][i_matt].Fill(he3[0])
+            if decCt > 0:  # just for debug!!! right condition is: decCt < absCt
+                h_rec_ct[3][i_fun][i_matt].Fill(decCt)
+                h_rec_pt[3][i_fun][i_matt].Fill(he3[0])
+
+# write histograms and compute efficiency
+for i_cent in range(cent_len):
+    cent_bins = CENTRALITY_LIST[i_cent]
+    outfile.mkdir(f"{cent_bins[0]}_{cent_bins[1]}")
+    outfile.cd(f"{cent_bins[0]}_{cent_bins[1]}")
+    for i_fun in range(n_fun[i_cent]):
+        func_name = func_names[i_fun]
+        if cent_bins[1] == 90:
+            func_name = func_names_MB[i_fun]
+        outfile.mkdir(f"{cent_bins[0]}_{cent_bins[1]}/{func_name}")
+        outfile.cd(f"{cent_bins[0]}_{cent_bins[1]}/{func_name}")
+        for i_matt in [0, 1]:
+            h_rec_ct[i_cent][i_fun][i_matt].Write()
+            h_gen_ct[i_cent][i_fun][i_matt].Write()
+            eff_ct = ROOT.TGraphAsymmErrors(h_rec_ct[i_cent][i_fun][i_matt], h_gen_ct[i_cent][i_fun][i_matt])
+            eff_ct.GetXaxis().SetTitle("#it{c}t (cm)")
+            eff_ct.GetYaxis().SetTitle("1 - #it{f}_{abs}")
+            eff_ct.Write(f"fEffCt_{split_list[i_matt]}_{cent_bins[0]}_{cent_bins[1]}_{func_name}")
+
+            h_rec_pt[i_cent][i_fun][i_matt].Write()
+            h_gen_pt[i_cent][i_fun][i_matt].Write()
+            eff_pt = ROOT.TGraphAsymmErrors(h_rec_pt[i_cent][i_fun][i_matt], h_gen_pt[i_cent][i_fun][i_matt])
+            eff_pt.GetXaxis().SetTitle("#it{p}_{T} (GeV/#it{c})")
+            eff_pt.GetYaxis().SetTitle("1 - #it{f}_{abs}")
+            eff_pt.Write(f"fEffPt_{split_list[i_matt]}_{cent_bins[0]}_{cent_bins[1]}_{func_name}")
+
+outfile.Close()
