@@ -82,6 +82,8 @@ for i_cent_bins in range(len(CENTRALITY_LIST)):
             # list of corrected yields
             ct_bins_tmp = [0]
             ct_bins_tmp += CT_BINS_CENT[i_cent_bins]
+            if cent_bins[1] == 90:
+                ct_bin_tmp = CT_BINS_CENT[i_cent_bins]
             bins = np.array(ct_bins_tmp, dtype=float)
 
             h_corrected_yields[i_split] = ROOT.TH1D(
@@ -136,22 +138,28 @@ for i_cent_bins in range(len(CENTRALITY_LIST)):
             # set labels
             h_corrected_yields[i_split].GetXaxis().SetTitle("#it{c}t (cm)")
             h_corrected_yields[i_split].GetYaxis().SetTitle("d#it{N}/d(#it{c}t) (cm^{-1})")
-            h_corrected_yields[i_split].Scale(1., "width")
+            for i_bin in range(len(bins))[2:]:
+                bin_width = h_corrected_yields[i_split].GetBinWidth(i_bin)
+                #print(f"bin: {h_corrected_yields[i_split].GetBinLowEdge(i_bin)}; bin width: {bin_width}")
+                bin_content = h_corrected_yields[i_split].GetBinContent(i_bin)
+                bin_error = h_corrected_yields[i_split].GetBinError(i_bin)
+                h_corrected_yields[i_split].SetBinContent(i_bin, bin_content/bin_width)
+                h_corrected_yields[i_split].SetBinError(i_bin, bin_error/bin_width)
 
             # fit with exponential pdf
             fit_function_expo = ROOT.TF1("expo", "expo", 2, 35)
             if cent_bins[0] == 30:
                 fit_function_expo = ROOT.TF1("expo", "expo", 2, 14)
             elif cent_bins[1] == 90:
-                fit_function_expo = ROOT.TF1("expo", "expo", 2, 35)
-            res = h_corrected_yields[i_split].Fit(fit_function_expo, "QRMLS+")
+                fit_function_expo = ROOT.TF1("expo", "expo", 0, 35)
+            res = h_corrected_yields[i_split].Fit(fit_function_expo, "QRMIS+")
 
             # compute lifetime
             tau = -1/fit_function_expo.GetParameter(1)*100/SPEED_OF_LIGHT # ps
 
-            if (res.Prob() > 0.025) and (res.Prob() < 0.975) and (fit_function_expo.GetNDF() == 3):
+            if (res.Prob() > 0.025) and (res.Prob() < 0.975) and (fit_function_expo.GetNDF() == 5):
                 systematics_file.cd(f'{cent_bins[0]}_{cent_bins[1]}')
-                h_corrected_yields[i_split].Write()
+                # h_corrected_yields[i_split].Write()
                 lifetime_tmp[i_split] = tau
                 h_prob_distribution.Fill(res.Prob())
                 h_fit_status.Fill(fit_function_expo.IsValid())

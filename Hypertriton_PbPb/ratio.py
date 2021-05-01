@@ -60,6 +60,8 @@ for i_cent_bins in range(len(CENTRALITY_LIST)):
         # list of corrected yields
         ct_bins_tmp = [0]
         ct_bins_tmp += CT_BINS_CENT[i_cent_bins]
+        if cent_bins[1] == 90:
+            ct_bin_tmp = CT_BINS_CENT[i_cent_bins]
         bins = np.array(ct_bins_tmp, dtype=float)
         # print(bins)
         h_corrected_yields[i_split] = ROOT.TH1D(
@@ -104,7 +106,14 @@ for i_cent_bins in range(len(CENTRALITY_LIST)):
         # set labels
         h_corrected_yields[i_split].GetXaxis().SetTitle("#it{c}t (cm)")
         h_corrected_yields[i_split].GetYaxis().SetTitle("d#it{N}/d(#it{c}t) (cm^{-1})")
-        h_corrected_yields[i_split].Scale(1., "width")
+        #h_corrected_yields[i_split].Scale(1, "width")
+        for i_bin in range(len(bins))[2:]:
+            bin_width = h_corrected_yields[i_split].GetBinWidth(i_bin)
+            print(f"bin: {h_corrected_yields[i_split].GetBinLowEdge(i_bin)}; bin width: {bin_width}")
+            bin_content = h_corrected_yields[i_split].GetBinContent(i_bin)
+            bin_error = h_corrected_yields[i_split].GetBinError(i_bin)
+            h_corrected_yields[i_split].SetBinContent(i_bin, bin_content/bin_width)
+            h_corrected_yields[i_split].SetBinError(i_bin, bin_error/bin_width)
         h_corrected_yields[i_split].Write()
 
         # fit with exponential pdf
@@ -112,10 +121,10 @@ for i_cent_bins in range(len(CENTRALITY_LIST)):
         if cent_bins[0] == 30:
             fit_function_expo = ROOT.TF1("expo", "expo", 2, 14)
         elif cent_bins[1] == 90:
-            fit_function_expo = ROOT.TF1("expo", "expo", 2, 35)
-        h_corrected_yields[i_split].Fit(fit_function_expo, "RMLS+")
+            fit_function_expo = ROOT.TF1("expo", "expo", 0, 35)
+        h_corrected_yields[i_split].Fit(fit_function_expo, "RMIS+")
 
-        # compute lifetime
+        # # compute lifetime
         tau = -1/fit_function_expo.GetParameter(1)*100/SPEED_OF_LIGHT # ps
         tau_error = fit_function_expo.GetParError(1)*100/SPEED_OF_LIGHT/fit_function_expo.GetParameter(1)/fit_function_expo.GetParameter(1) # ps
         tau_text = ROOT.TLatex(4, 0.9*h_corrected_yields[i_split].GetMaximum(), '#tau = ' + "{:.2f}".format(tau) + '#pm' + "{:.2f}".format(tau_error) + ' ps')

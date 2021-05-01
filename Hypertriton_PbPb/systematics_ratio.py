@@ -127,7 +127,7 @@ for i_cent_bins in range(len(CENTRALITY_LIST)):
 
             # set labels
             h_corrected_yields[i_split].GetXaxis().SetTitle("#it{c}t (cm)")
-            h_corrected_yields[i_split].Scale(1., "width")
+            #h_corrected_yields[i_split].Scale(1., "width")
 
         # ratios
         h_ratio = ROOT.TH1D(h_corrected_yields[0])
