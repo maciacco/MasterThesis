@@ -65,6 +65,8 @@ void He3AbsAnalysisPt(std::string pathToSimulation = "./")
 
     // declare histograms
     TH1D *recPt[3][2][5], *recCt[3][2][5], *genPt[3][2][5], *genCt[3][2][5];
+    TH1D *absorptionCt[3][2][5];
+    TH1D *daughterCharge[3][2][5];
     TH2F *recPtCt[3][2][5], *genPtCt[3][2][5];
     TH1D *recPtNotAbsorbed[3][2][5], *nDaughters[3][2][5], *daughterPDGCode[3][2][5];
     TH1D *recInt[3][2][5], *genInt[3][2][5];                             // pt and ct integrated analysis
@@ -89,12 +91,15 @@ void He3AbsAnalysisPt(std::string pathToSimulation = "./")
                 genPt[iCent][iMatt][iFun] = new TH1D(Form("genPt_%.0f_%.0f_%s_%s",centClasses[iCent][0],centClasses[iCent][1],antimattMatt[iMatt].data(),names[iFun].data()), "; #it{p}_{T} (GeV/#it{c}); Counts", 50, 0, 10);
                 genCt[iCent][iMatt][iFun] = new TH1D(Form("genCt_%.0f_%.0f_%s_%s",centClasses[iCent][0],centClasses[iCent][1],antimattMatt[iMatt].data(),names[iFun].data()), "; #it{c}t (cm);Counts;", 5, ctBins);
 
+                daughterCharge[iCent][iMatt][iFun] = new TH1D(Form("daughterCharge_%.0f_%.0f_%s_%s",centClasses[iCent][0],centClasses[iCent][1],antimattMatt[iMatt].data(),names[iFun].data()), "; daughterCharge (#it{e});Counts;", 11, -5, 5);
+
                 recInt[iCent][iMatt][iFun] = new TH1D(Form("recInt_%.0f_%.0f_%s_%s",centClasses[iCent][0],centClasses[iCent][1],antimattMatt[iMatt].data(),names[iFun].data()), "; #it{c}t (cm);Counts;", 1, 0, 35);
                 genInt[iCent][iMatt][iFun] = new TH1D(Form("genInt_%.0f_%.0f_%s_%s",centClasses[iCent][0],centClasses[iCent][1],antimattMatt[iMatt].data(),names[iFun].data()), "; #it{c}t (cm);Counts;", 1, 0, 35);
 
                 recPtCt[iCent][iMatt][iFun] = new TH2F(Form("recPtCt_%.0f_%.0f_%s_%s",centClasses[iCent][0],centClasses[iCent][1],antimattMatt[iMatt].data(),names[iFun].data()), "; #it{p}_{T} (GeV/#it{c}); #it{c}t (cm);", 50, ptBins, 5, ctBins);
                 genPtCt[iCent][iMatt][iFun] = new TH2F(Form("genPtCt_%.0f_%.0f_%s_%s",centClasses[iCent][0],centClasses[iCent][1],antimattMatt[iMatt].data(),names[iFun].data()), "; #it{p}_{T} (GeV/#it{c}); #it{c}t (cm);", 50, ptBins, 5, ctBins);
 
+                absorptionCt[iCent][iMatt][iFun] = new TH1D(Form("absorptionCt_%.0f_%.0f_%s_%s",centClasses[iCent][0],centClasses[iCent][1],antimattMatt[iMatt].data(),names[iFun].data()), "; #it{c}t (cm);Counts;", 301, -1, 300);
                 recPtNotAbsorbed[iCent][iMatt][iFun] = new TH1D(Form("recPtNotAbsorbed_%.0f_%.0f_%s_%s",centClasses[iCent][0],centClasses[iCent][1],antimattMatt[iMatt].data(),names[iFun].data()), "; #it{p}_{T} (GeV/#it{c}); Counts", 50, 0, 10);
                 nDaughters[iCent][iMatt][iFun] = new TH1D(Form("nDaughters_%.0f_%.0f_%s_%s",centClasses[iCent][0],centClasses[iCent][1],antimattMatt[iMatt].data(),names[iFun].data()), "; nDaughters; Counts;", 1001, 0, 1000);
                 daughterPDGCode[iCent][iMatt][iFun] = new TH1D(Form("daughterPDGCode_%.0f_%.0f_%s_%s",centClasses[iCent][0],centClasses[iCent][1],antimattMatt[iMatt].data(),names[iFun].data()), "; nDaughters; Counts;", 100, 0, 99);
@@ -160,6 +165,8 @@ void He3AbsAnalysisPt(std::string pathToSimulation = "./")
                                 genInt[iCent][isMatter][iFun]->Fill(decCt);
                                 genPtCt[iCent][isMatter][iFun]->Fill(part->Pt(),decCt);
                                 int checkedDaughters=0;
+                                bool isAbsorbed = false;
+                                double absCt = -1;
                                 if(part->GetNDaughters()>0){
                                     for (int c = part->GetDaughterFirst(); c <= part->GetDaughterLast(); ++c)
                                     {
@@ -167,8 +174,9 @@ void He3AbsAnalysisPt(std::string pathToSimulation = "./")
                                         int dPartPDG = std::abs(dPart->PdgCode());
                                         if (dPartPDG != 22 && dPartPDG != 11)
                                         {
-                                            double absCt = ComputeHe3Ct(part, dPart);
-                                            bool isAbsorbed = absCt < decCt;
+                                            absCt = ComputeHe3Ct(part, dPart);
+                                            isAbsorbed = absCt < decCt;
+                                            daughterCharge[iCent][isMatter][iFun]->Fill(dPart->Charge());
                                             if (!isAbsorbed) {
                                                 recPt[iCent][isMatter][iFun]->Fill(part->Pt());
                                                 recCt[iCent][isMatter][iFun]->Fill(decCt);
@@ -181,8 +189,9 @@ void He3AbsAnalysisPt(std::string pathToSimulation = "./")
                                     }
                                 }
 
+                                absorptionCt[iCent][isMatter][iFun]->Fill(absCt);
                                 // not-absorbed particles
-                                if (checkedDaughters==part->GetNDaughters()) {
+                                if (absCt < -0.5) {
                                     recPt[iCent][isMatter][iFun]->Fill(part->Pt());
                                     recCt[iCent][isMatter][iFun]->Fill(decCt);
                                     recInt[iCent][isMatter][iFun]->Fill(decCt);
@@ -274,11 +283,11 @@ void He3AbsAnalysisPt(std::string pathToSimulation = "./")
                 effPt.Write(Form("effPt_%.0f_%.0f_%s_%s",centClasses[iCent][0],centClasses[iCent][1],antimattMatt[iMatt].data(),names[iFun].data()));
                 TGraphAsymmErrors effCt(recCt[iCent][iMatt][iFun],genCt[iCent][iMatt][iFun]);
                 effCt.Write(Form("effCt_%.0f_%.0f_%s_%s",centClasses[iCent][0],centClasses[iCent][1],antimattMatt[iMatt].data(),names[iFun].data()));
-
+                absorptionCt[iCent][iMatt][iFun]->Write();
                 recPtCt[iCent][iMatt][iFun]->Write();
                 recPtNotAbsorbed[iCent][iMatt][iFun]->Write();
                 genPtCt[iCent][iMatt][iFun]->Write();
-
+                daughterCharge[iCent][iMatt][iFun]->Write();
                 recInt[iCent][iMatt][iFun]->Write();
                 genInt[iCent][iMatt][iFun]->Write();
                 TGraphAsymmErrors effInt(recInt[iCent][iMatt][iFun],genInt[iCent][iMatt][iFun]);
