@@ -60,8 +60,8 @@ for i_cent_bins in range(len(CENTRALITY_LIST)):
         # list of corrected yields
         ct_bins_tmp = [0]
         ct_bins_tmp += CT_BINS_CENT[i_cent_bins]
-        if cent_bins[1] == 90:
-            ct_bin_tmp = CT_BINS_CENT[i_cent_bins]
+        #if cent_bins[1] == 90:
+        #    ct_bin_tmp = CT_BINS_CENT[i_cent_bins]
         bins = np.array(ct_bins_tmp, dtype=float)
         # print(bins)
         h_corrected_yields[i_split] = ROOT.TH1D(
