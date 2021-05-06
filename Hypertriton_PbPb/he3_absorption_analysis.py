@@ -27,7 +27,7 @@ split_list = ['anti', 'matt']
 cent_bins_MB = [[0, 10], [10, 40], [40, 90]]
 
 # mc input file
-mc_file = './mc.root'
+mc_file = './AnalysisResults.root'
 outfile = ROOT.TFile("He3_abs.root", "recreate")
 centfile = ROOT.TFile("AnalysisResults_18.root")
 
@@ -93,13 +93,13 @@ for i_cent in range(cent_len):
                 1000, 0, 1000))
             h_abs_ct[i_cent][i_fun].append(ROOT.TH1D(
                 f"fAbsCt_{split}_{cent_bins[0]}_{cent_bins[1]}_{f_name}", ";#it{c}t (cm);Entries",
-                301, -1, 300))
+                len(ct_bins)-1,ct_bins))
             h_gen_radius[i_cent][i_fun].append(ROOT.TH1D(
                 f"fGenRadius_{split}_{cent_bins[0]}_{cent_bins[1]}_{f_name}", ";#it{R}_{#it{abs}} (cm);Entries",
                 1000, 0, 1000))
             h_gen_ct[i_cent][i_fun].append(ROOT.TH1D(
                 f"fGenCt_{split}_{cent_bins[0]}_{cent_bins[1]}_{f_name}", ";#it{c}t (cm);Entries",
-                36, 0, 35))
+                len(ct_bins)-1,ct_bins))
             h_gen_pt[i_cent][i_fun].append(ROOT.TH1D(
                 f"fGenPt_{split}_{cent_bins[0]}_{cent_bins[1]}_{f_name}", ";#it{p}_{T} (GeV/#it{c});Entries",
                 50, 0, 10))
@@ -108,14 +108,14 @@ for i_cent in range(cent_len):
                 1000, 0, 1000))
             h_rec_ct[i_cent][i_fun].append(ROOT.TH1D(
                 f"fRecCt_{split}_{cent_bins[0]}_{cent_bins[1]}_{f_name}", ";#it{c}t (cm);Entries",
-                36, 0, 35))
+                len(ct_bins)-1,ct_bins))
             h_rec_pt[i_cent][i_fun].append(ROOT.TH1D(
                 f"fRecPt_{split}_{cent_bins[0]}_{cent_bins[1]}_{f_name}", ";#it{p}_{T} (GeV/#it{c});Entries",
                 50, 0, 10))
 
 # read tree
 data_frame_he3 = ROOT.RDataFrame('STree', mc_file)
-data_frame_he3 = data_frame_he3.Filter('pt > 0. and pt < 10. and (flag & 1)==1')
+data_frame_he3 = data_frame_he3.Filter('pt > 2. and pt < 10. and (flag & 1)==1')
 np_he3 = data_frame_he3.AsNumpy(["pt", "pdg", "absCt", "eta"])
 
 # analysis in centrality classes
