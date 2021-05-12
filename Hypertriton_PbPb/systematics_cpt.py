@@ -46,6 +46,7 @@ presel_eff_file = uproot.open('PreselEff.root')
 signal_extraction_file = ROOT.TFile.Open('SignalExtraction.root')
 signal_extraction_keys = uproot.open('SignalExtraction.root').keys()
 
+abs_correction_file = ROOT.TFile.Open('He3_abs.root')
 systematics_file = ROOT.TFile.Open('SystematicsLifetime.root', 'recreate')
 
 for i_cent_bins in range(len(CENTRALITY_LIST)):
@@ -78,6 +79,12 @@ for i_cent_bins in range(len(CENTRALITY_LIST)):
             presel_eff_counts, presel_eff_edges = presel_eff_file[
                 f'fPreselEff_vs_ct_{split}_{cent_bins[0]}_{cent_bins[1]};1'].to_numpy()
             presel_eff_bin_centers = (presel_eff_edges[1:]+presel_eff_edges[:-1])/2
+
+            func_name = 'BGBW'
+            if cent_bins[1] == 90:
+                func_name = 'BlastWave'
+            g_abs_correction = ROOT.TGraphAsymmErrors()
+            g_abs_correction = abs_correction_file.Get(f"{cent_bins[0]}_{cent_bins[1]}/{func_name}/fEffCt_{split}_{cent_bins[0]}_{cent_bins[1]}_{func_name}")
 
             # list of corrected yields
             ct_bins_tmp = [0]
@@ -130,10 +137,12 @@ for i_cent_bins in range(len(CENTRALITY_LIST)):
                 presel_eff = presel_eff_counts[presel_eff_map]
                 bdt_eff = float(formatted_eff_cut)
                 eff = presel_eff * eff_cut_dict[bin]
+                abs = g_abs_correction.GetPointY(CT_BINS_CENT[i_cent_bins].index(ct_bins[0]))
+
                 ct_bin_index = h_corrected_yields[i_split].FindBin(ct_bins[0]+0.5)
 
-                h_corrected_yields[i_split].SetBinContent(ct_bin_index, raw_yield/eff[0])
-                h_corrected_yields[i_split].SetBinError(ct_bin_index, raw_yield_error/eff[0])
+                h_corrected_yields[i_split].SetBinContent(ct_bin_index, raw_yield/eff[0]/abs)
+                h_corrected_yields[i_split].SetBinError(ct_bin_index, raw_yield_error/eff[0]/abs)
 
             # set labels
             h_corrected_yields[i_split].GetXaxis().SetTitle("#it{c}t (cm)")

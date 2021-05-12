@@ -23,7 +23,7 @@ CT_BINS_CENT = params['CT_BINS_CENT']
 CENTRALITY_LIST = params['CENTRALITY_LIST']
 ##################################################################
 
-split_list = ['anti', 'matt']
+split_list = ['antimatter', 'matter']
 cent_bins_MB = [[0, 10], [10, 40], [40, 90]]
 
 # mc input file

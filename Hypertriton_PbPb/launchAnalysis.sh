@@ -19,6 +19,9 @@ python3 signal_extraction.py
 # signal extraction (expo)
 python3 signal_extraction.py -b
 
+# absorption correction
+he3_absorption_analysis.py
+
 # lifetime fits + ratio
 python3 ratio.py
 

@@ -44,6 +44,7 @@ presel_eff_file = uproot.open('PreselEff.root')
 signal_extraction_file = ROOT.TFile.Open('SignalExtraction.root')
 signal_extraction_keys = uproot.open('SignalExtraction.root').keys()
 
+abs_correction_file = ROOT.TFile.Open('He3_abs.root')
 ratio_file = ROOT.TFile.Open('Ratio.root', 'recreate')
 
 for i_cent_bins in range(len(CENTRALITY_LIST)):
@@ -52,10 +53,16 @@ for i_cent_bins in range(len(CENTRALITY_LIST)):
     h_corrected_yields = [ROOT.TH1D(), ROOT.TH1D()]
     for i_split, split in enumerate(SPLIT_LIST):
         print(f'{i_split} -> {split}')
-        # get preselection efficiency histogram
+        # get preselection efficiency and abs correction histograms
         presel_eff_counts, presel_eff_edges = presel_eff_file[
             f'fPreselEff_vs_ct_{split}_{cent_bins[0]}_{cent_bins[1]};1'].to_numpy()
         presel_eff_bin_centers = (presel_eff_edges[1:]+presel_eff_edges[:-1])/2
+
+        func_name = 'BGBW'
+        if cent_bins[1] == 90:
+            func_name = 'BlastWave'
+        g_abs_correction = ROOT.TGraphAsymmErrors()
+        g_abs_correction = abs_correction_file.Get(f"{cent_bins[0]}_{cent_bins[1]}/{func_name}/fEffCt_{split}_{cent_bins[0]}_{cent_bins[1]}_{func_name}")
 
         # list of corrected yields
         ct_bins_tmp = [0]
@@ -90,6 +97,7 @@ for i_cent_bins in range(len(CENTRALITY_LIST)):
             print(f'eff_cut = {formatted_eff_cut}, raw_yield = {raw_yield}+{raw_yield_error}')
 
             # apply corrections
+            # 1. efficiency (presel x BDT)
             presel_eff_map = np.logical_and(
                 presel_eff_bin_centers > ct_bins[0],
                 presel_eff_bin_centers < ct_bins[1])
@@ -97,11 +105,13 @@ for i_cent_bins in range(len(CENTRALITY_LIST)):
             bdt_eff = float(formatted_eff_cut)
             print(f'bin: {presel_eff_map}, presel_eff: {presel_eff}')
             eff = presel_eff * eff_cut_dict[bin]
-            # print(f'corrected yield = {raw_yield/eff[0]}')
+            # 2. absorption correction
+            abs = g_abs_correction.GetPointY(CT_BINS_CENT[i_cent_bins].index(ct_bins[0]))
+            print(f"absorption correction for point {CT_BINS_CENT[i_cent_bins].index(ct_bins[0])}: {abs}")
+
             ct_bin_index = h_corrected_yields[i_split].FindBin(ct_bins[0]+0.5)
-            # print(f'index = {ct_bin_index}')
-            h_corrected_yields[i_split].SetBinContent(ct_bin_index, raw_yield/eff[0])
-            h_corrected_yields[i_split].SetBinError(ct_bin_index, raw_yield_error/eff[0])
+            h_corrected_yields[i_split].SetBinContent(ct_bin_index, raw_yield/eff[0]/abs)
+            h_corrected_yields[i_split].SetBinError(ct_bin_index, raw_yield_error/eff[0]/abs)
 
         # set labels
         h_corrected_yields[i_split].GetXaxis().SetTitle("#it{c}t (cm)")
@@ -124,7 +134,7 @@ for i_cent_bins in range(len(CENTRALITY_LIST)):
             fit_function_expo = ROOT.TF1("expo", "expo", 0, 35)
         h_corrected_yields[i_split].Fit(fit_function_expo, "RMIS+")
 
-        # # compute lifetime
+        # compute lifetime
         tau = -1/fit_function_expo.GetParameter(1)*100/SPEED_OF_LIGHT # ps
         tau_error = fit_function_expo.GetParError(1)*100/SPEED_OF_LIGHT/fit_function_expo.GetParameter(1)/fit_function_expo.GetParameter(1) # ps
         tau_text = ROOT.TLatex(4, 0.9*h_corrected_yields[i_split].GetMaximum(), '#tau = ' + "{:.2f}".format(tau) + '#pm' + "{:.2f}".format(tau_error) + ' ps')
