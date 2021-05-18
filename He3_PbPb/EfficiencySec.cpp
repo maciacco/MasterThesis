@@ -8,8 +8,8 @@
 #include <TLatex.h>
 #include <TStyle.h>
 
-#include "Utils.h"
-#include "Config.h"
+#include "../utils/Utils.h"
+#include "../utils/Config.h"
 
 const double kHyperTritonHe3BR = 0.25;
 

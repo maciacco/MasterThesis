@@ -7,7 +7,7 @@
 #include <Riostream.h>
 #include <TStopwatch.h>
 
-#include "Config.h"
+#include "../utils/Config.h"
 
 void LaunchAnalyses(const bool analyse = false)
 {

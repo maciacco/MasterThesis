@@ -1,8 +1,4 @@
 // SignalUnbinned.cpp
-// This macro extracts raw yields via an unbinned analysis + cut over trackingPID flag
-// - apply cut over trackingPID (= 7 for He3)
-// - define signal region after an unbinned fit to nsigma ditribution (gaussian+expo)
-// - extract yields by bin counting in the signal region (background subtraction)
 
 #include <stdlib.h>
 #include <string>
@@ -22,7 +18,6 @@
 #include <RooDataSet.h>
 #include <RooPlot.h>
 #include <RooAbsPdf.h>
-#include <RooGaussian.h>
 #include <RooExponential.h>
 #include <RooPolynomial.h>
 #include <RooAddPdf.h>
@@ -31,12 +26,13 @@
 
 #include "../utils/Utils.h"
 #include "../utils/Config.h"
+#include "../utils/RooGausExp.h"
 
 using namespace utils;
 
 const double kNSigma = 3; // define interval for bin counting
 
-void SignalUnbinned(const float cutDCAz = 1.f, const int cutTPCcls = 89, const bool binCounting = true, const int bkg_shape = 1, const char *inFileDat = "TreeOutData", const char *outFileName = "SignalHe3", const char *outFileOption = "recreate", const bool extractSignal = true, const bool binCountingNoFit = false)
+void SignalBinned(const float cutDCAz = 1.f, const int cutTPCcls = 89, const bool binCounting = true, const int bkg_shape = 1, const char *inFileDat = "TreeOutData", const char *outFileName = "SignalHe3", const char *outFileOption = "recreate", const bool extractSignal = true, const bool binCountingNoFit = false)
 {
   // make signal extraction plots directory
   system(Form("mkdir %s/signal_extraction", kPlotDir));

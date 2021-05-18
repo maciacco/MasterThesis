@@ -9,8 +9,8 @@
 #include <TStyle.h>
 #include <TCanvas.h>
 
-#include "Utils.h"
-#include "Config.h"
+#include "../utils/Utils.h"
+#include "../utils/Config.h"
 
 using utils::Eff;
 using utils::EffErr;

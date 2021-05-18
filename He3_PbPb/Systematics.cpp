@@ -15,7 +15,7 @@
 #include <TH1D.h>
 #include <TF1.h>
 
-#include "Config.h"
+#include "../utils/Config.h"
 
 // #define USE_COUNTER
 

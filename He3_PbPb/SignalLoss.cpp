@@ -14,8 +14,8 @@
 #include <TCanvas.h>
 #include <TLegend.h>
 
-#include "Config.h"
-#include "Utils.h"
+#include "../utils/Config.h"
+#include "../utils/Utils.h"
 
 void SignalLoss(const float cutDCAz = 1.f, const int cutTPCcls = 89, const bool binCounting = true, const int bkg_shape = 1, const bool binomial = true, const char *inFileDatName = "SignalHe3", const char *inFileMCName = "TreeOutMC", const char *outFileName = "SignalLoss")
 {

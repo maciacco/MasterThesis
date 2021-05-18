@@ -12,8 +12,8 @@
 #include <TString.h>
 #include <TLatex.h>
 
-#include "Utils.h"
-#include "Config.h"
+#include "../utils/Utils.h"
+#include "../utils/Config.h"
 
 using namespace utils;
 
