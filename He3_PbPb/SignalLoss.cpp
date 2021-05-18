@@ -17,6 +17,8 @@
 #include "../utils/Config.h"
 #include "../utils/Utils.h"
 
+using namespace he3;
+
 void SignalLoss(const float cutDCAz = 1.f, const int cutTPCcls = 89, const bool binCounting = true, const int bkg_shape = 1, const bool binomial = true, const char *inFileDatName = "SignalHe3", const char *inFileMCName = "TreeOutMC", const char *outFileName = "SignalLoss")
 {
   TFile *inFileDatHe3PID = TFile::Open(Form("out/%s_He3PID.root", inFileDatName));

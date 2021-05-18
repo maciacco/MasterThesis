@@ -16,6 +16,7 @@
 #include "../utils/Config.h"
 
 using namespace utils;
+using namespace he3;
 
 void ReadTreeMC(const float cutDCAz = 1.f, const int cutTPCcls = 89, const char *outFileName = "TreeOutMC", const char *outFileOption = "recreate", const char *flagSelections = "( ( (std::abs(pt)<2.5f) && (trackingPID==7) ) || !(std::abs(pt)<2.5f) )")
 {

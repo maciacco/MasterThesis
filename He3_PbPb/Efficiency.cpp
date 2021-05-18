@@ -14,6 +14,7 @@
 
 using utils::Eff;
 using utils::EffErr;
+using namespace he3;
 
 void Efficiency(const float cutDCAz = 1.f, const int cutTPCcls = 89, const char *inFileNameMC = "TreeOutMC", const char *outFileNameEff = "EfficiencyHe3")
 {

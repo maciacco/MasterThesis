@@ -9,6 +9,8 @@
 
 #include "../utils/Config.h"
 
+using namespace he3;
+
 void LaunchTrees(const bool analyse = false)
 {
   TStopwatch swatch;

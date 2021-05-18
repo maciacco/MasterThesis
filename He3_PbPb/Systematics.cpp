@@ -17,6 +17,8 @@
 
 #include "../utils/Config.h"
 
+using namespace he3;
+
 // #define USE_COUNTER
 
 void Systematics(const int points = kNPoints, const bool cutVar = true, const bool binCountingVar = true, const bool expVar = true, const bool sigmoidVar = true, const char *outFileName = "SystematicsAll")

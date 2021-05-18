@@ -20,6 +20,8 @@
 #include "../utils/Utils.h"
 #include "../utils/Config.h"
 
+using namespace he3;
+
 void Secondary(const float cutDCAz = 1.f, const int cutTPCcls = 89, const char *inFileDatName = "TreeOutData", const char *inFileMCName = "TreeOutMC", const char *inFileWDName = "EfficiencyHe3SecWd", const char *outFileName = "PrimaryHe3", const bool useWdInFit = true, const bool rebinLowStatisticsBin = false)
 {
   // make signal extraction plots directory

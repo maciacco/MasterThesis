@@ -32,7 +32,7 @@ using namespace utils;
 
 const double kNSigma = 3; // define interval for bin counting
 
-void SignalBinned(const float cutDCAz = 1.f, const int cutTPCcls = 89, const bool binCounting = true, const int bkg_shape = 1, const char *inFileDat = "TreeOutData", const char *outFileName = "SignalHe3", const char *outFileOption = "recreate", const bool extractSignal = true, const bool binCountingNoFit = false)
+void SignalBinned(const char *cutSetting = "", const bool binCounting = true, const int bkg_shape = 1, const char *inFileDat = "AnalysisResults.root", const char *outFileName = "SignalDeuteron", const char *outFileOption = "recreate", const bool extractSignal = true)
 {
   // make signal extraction plots directory
   system(Form("mkdir %s/signal_extraction", kPlotDir));

@@ -12,6 +12,7 @@
 #include "../utils/Config.h"
 
 using utils::TTList;
+using namespace he3;
 
 void Spectra(const float cutDCAz = 1.f, const int cutTPCcls = 89, const bool binCounting = true, const int bkg_shape = 1, const bool sigmoidCorrection = true, const char *histoNameDir = ".", const char *outFileName = "SpectraHe3", const char *outFileOption = "recreate", const char *dataFile = "AnalysisResults", const char *signalFile = "SignalHe3", const char *effFile = "EfficiencyHe3", const char *primFile = "PrimaryHe3")
 {

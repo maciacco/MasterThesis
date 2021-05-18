@@ -15,6 +15,7 @@ const double kHyperTritonHe3BR = 0.25;
 
 using utils::Eff;
 using utils::EffErr;
+using namespace he3;
 
 void EfficiencySec(const float cutDCAz = 1.f, const int cutTPCcls = 89, const char *inFileNameMC = "TreeOutMC", const char *outFileNameEff = "EfficiencyHe3SecWd", const double hyperTritonToHe3Ratio = 1.)
 {

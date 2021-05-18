@@ -33,6 +33,7 @@
 #include "../utils/Config.h"
 
 using namespace utils;
+using namespace he3;
 
 const double kNSigma = 3; // define interval for bin counting
 
