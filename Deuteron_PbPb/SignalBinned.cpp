@@ -6,7 +6,7 @@
 #include <Riostream.h>
 #include <TFile.h>
 #include <TDirectory.h>
-#include <TTree.h>
+#include <TH3F.h>
 #include <TH1D.h>
 #include <TStyle.h>
 #include <TString.h>
@@ -15,7 +15,7 @@
 #include <TLine.h>
 
 #include <RooRealVar.h>
-#include <RooDataSet.h>
+#include <RooDataHist.h>
 #include <RooPlot.h>
 #include <RooAbsPdf.h>
 #include <RooExponential.h>
@@ -29,10 +29,11 @@
 #include "../utils/RooGausExp.h"
 
 using namespace utils;
+using namespace deuteron;
 
 const double kNSigma = 3; // define interval for bin counting
 
-void SignalBinned(const char *cutSetting = "", const bool binCounting = true, const int bkg_shape = 1, const char *inFileDat = "AnalysisResults.root", const char *outFileName = "SignalDeuteron", const char *outFileOption = "recreate", const bool extractSignal = true)
+void SignalBinned(const char *cutSettings = "", const bool binCounting = false, const int bkg_shape = 1, const char *inFileDat = "AnalysisResults", const char *outFileName = "SignalDeuteron", const char *outFileOption = "recreate", const bool extractSignal = true, const bool binCountingNoFit = false)
 {
   // make signal extraction plots directory
   system(Form("mkdir %s/signal_extraction", kPlotDir));
@@ -43,112 +44,112 @@ void SignalBinned(const char *cutSetting = "", const bool binCounting = true, co
   gErrorIgnoreLevel = kError; // Suppressing warning outputs
   gStyle->SetOptStat(0);
 
-  TTree *inTree;
-
   TFile *outFile = TFile::Open(TString::Format("%s/%s.root", kOutDir, outFileName), outFileOption); // output file
-  if (outFile->GetDirectory(Form("%1.1f_%d_%d_%d", cutDCAz, cutTPCcls, binCounting, bkg_shape)))
+  if (outFile->GetDirectory(Form("%s_%d_%d", cutSettings, binCounting, bkg_shape)))
     return;
-  TDirectory *dirOutFile = outFile->mkdir(Form("%1.1f_%d_%d_%d", cutDCAz, cutTPCcls, binCounting, bkg_shape));
-  TFile *dataFile = TFile::Open(TString::Format("%s/%s.root", kResDir, inFileDat)); // open data TFile
+  TDirectory *dirOutFile = outFile->mkdir(Form("%s_%d_%d", cutSettings, binCounting, bkg_shape));
+  TFile *dataFile = TFile::Open(TString::Format("%s/%s.root", kDataDir, inFileDat)); // open data TFile
   if (!dataFile)
   {
     std::cout << "File not found!" << std::endl; // check data TFile opening
     return;
   }
 
+  // get TTList
+  std::string listName = Form("mpuccio_deuterons_%s",cutSettings);
+  TTList *list = (TTList *)dataFile->Get(listName.data());
+
   for (int iMatt = 0; iMatt < 2; ++iMatt)
   { // loop on antimatter/matter
-    // Get trees from file
-    std::string treeName = Form("%1.1f_%d_/f", cutDCAz, cutTPCcls);
-    treeName.append(kAntimatterMatter[iMatt]);
-    treeName += "TreeTrackCuts";
-    inTree = (TTree *)dataFile->Get(treeName.c_str());
-    if (!inTree)
+    // Get histograms from file
+    std::string histName = Form("f%sTOFsignal",kAntimatterMatter[iMatt]);
+    TH3F *fTOFSignal = (TH3F *)list->Get(histName.data());
+    if (!fTOFSignal)
     {
-      std::cout << "Tree not found!" << std::endl; // check data TFile opening
+      std::cout << "Hstogram not found!" << std::endl; // check data TFile opening
       return;
     }
 
     // make plot subdirectory
-    system(Form("mkdir %s/signal_extraction/%s_%1.1f_%d_%d_%d", kPlotDir, kAntimatterMatter[iMatt], cutDCAz, cutTPCcls, binCounting, bkg_shape));
+    system(Form("mkdir %s/signal_extraction/%s_%s_%d_%d", kPlotDir, kAntimatterMatter[iMatt], cutSettings, binCounting, bkg_shape));
 
     dirOutFile->cd();
     for (int iCent = 0; iCent < kNCentClasses; ++iCent)
-    { // loop on centrality classes
-      RooRealVar tpcNsigma("tpcNsigma", "n#sigma", kNSigmaMin, kNSigmaMax, "a.u.");
-      RooRealVar pT("pT", "p_{T}", 1.f, 10.f, "GeV/#it{c}");
-      RooRealVar centrality("centrality", "Centrality", 0.f, 90.f, "%");
-      RooDataSet data("data", "data", RooArgSet(tpcNsigma, pT, centrality), RooFit::Import(*inTree));
+    { // loop over centrality classes
+      double pTbins[26] = {0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.4, 1.6, 1.8, 2.0, 2.2, 2.4, 2.6, 2.8, 3.0, 3.2, 3.4, 3.6, 3.8, 4.0, 4.2, 4.4, 5.0, 6.0, 8.0, 10.0};
 
-      // define pt bins
-      double pTbins[kNPtBins + 1] = {1.f, 1.5f, 2.f, 2.5f, 3.f, 3.5f, 4.f, 4.5f, 5.f, 5.5f, 6.f, 6.5f, 7.f, 8.f, 10.f};
-
-      TH1D fTPCrawYield("fRawYield", "fRawYield", kNPtBins, pTbins);          // declare TPC raw yields
+      TH1D fTOFrawYield("fRawYield", "fRawYield", kNPtBins, pTbins);          // declare raw yields histogram
       TH1D fSignificance("fSignificance", "fSignificance", kNPtBins, pTbins); // declare significance
       TH1D fSigma("fSigma", "fSigma", kNPtBins, pTbins);
       TH1D fMean("fMean", "fMean", kNPtBins, pTbins);
-      int nUsedPtBins = 12;
-      if (iCent == kNCentClasses - 1)
-      {
-        int nPtBins = 13;
-        double pTbinsNew[] = {1.f, 1.5f, 2.f, 2.5f, 3.f, 3.5f, 4.f, 4.5f, 5.f, 5.5f, 6.f, 7.f, 8.f, 10.f};
-        fTPCrawYield.SetBins(nPtBins, pTbinsNew);
-        fSignificance.SetBins(nPtBins, pTbinsNew);
-        fSigma.SetBins(nPtBins, pTbinsNew);
-        nUsedPtBins = 9;
-      }
-      for (int iPtBin = 3; iPtBin < nUsedPtBins + 3; ++iPtBin)
-      { // loop on pT bins
-        double minPt = fTPCrawYield.GetXaxis()->GetBinLowEdge(iPtBin);
-        double maxPt = fTPCrawYield.GetXaxis()->GetBinUpEdge(iPtBin);
+      int nUsedPtBins = 23;
 
-        // apply cuts to dataset
-        RooDataSet dataCut = *(RooDataSet *)data.reduce(RooFit::Cut(Form("pT>%f && pT<%f && centrality>%.0f && centrality<%.0f", minPt, maxPt, kCentBinsLimitsHe3[iCent][0], kCentBinsLimitsHe3[iCent][1])));
-        RooDataSet dataPt = *(RooDataSet *)dataCut.reduce(RooArgSet(tpcNsigma));
+      for (int iPtBin = 1; iPtBin < nUsedPtBins+1; ++iPtBin)
+      { // loop on pT bins
+        double ptMin = fTOFrawYield.GetXaxis()->GetBinLowEdge(iPtBin);
+        double ptMax = fTOFrawYield.GetXaxis()->GetBinUpEdge(iPtBin);
+        double centMin = kCentBinsLimitsDeuteron[iCent][0];
+        double centMax = kCentBinsLimitsDeuteron[iCent][1];
+
+        int pTbinsIndexMin = fTOFSignal->GetYaxis()->FindBin(ptMin);
+        int pTbinsIndexMax = fTOFSignal->GetYaxis()->FindBin(ptMax-0.005);
+
+        // project histogram
+        std::cout<<"Pt bins index: min="<<pTbinsIndexMin<<"; max="<<pTbinsIndexMax<<std::endl;
+        TH1D *tofSignalProjection = fTOFSignal->ProjectionZ(Form("f%sTOFSignal_%.0f_%.0f_%.2f_%.2f", kAntimatterMatter[iMatt], centMin, centMax, fTOFSignal->GetYaxis()->GetBinLowEdge(pTbinsIndexMin), fTOFSignal->GetYaxis()->GetBinUpEdge(pTbinsIndexMax)), kCentBinsLimitsDeuteron[iCent][0],  kCentBinsLimitsDeuteron[iCent][1], pTbinsIndexMin, pTbinsIndexMax);
+
+        // roofit variables
+        RooRealVar tofSignal("tofSignal", "#it{m}^{2}-#it{m}^{2}_{PDG}", kTOFSignalMin, kTOFSignalMax, "GeV^{2}/#it{c^{4}}");
+
+        // roofit histogram
+        RooDataHist data("data", "data", RooArgList(tofSignal), tofSignalProjection);
 
         // build composite model
-        RooRealVar mean("#mu", "mean", 0., -1., 1.);
-        RooRealVar *sigma = new RooRealVar("#sigma", "sigma", 0.8, 0.6, 0.9);
-        RooGaussian signal("signal", "signal", tpcNsigma, mean, *sigma);
+        RooRealVar mean("#mu", "mean", 0., -1., 1., "GeV^{2}/#it{c^{4}}");
+        RooRealVar *sigma = new RooRealVar("#sigma", "sigma", 0.8, 0.6, 0.9, "GeV^{2}/#it{c^{4}}");
+        RooRealVar *tau = new RooRealVar("#tau", "tau", -10., 0.);
+        RooGausExp signal("signal", "signal", tofSignal, mean, *sigma, *tau);
+        RooAbsPdf *background1;
+        RooAbsPdf *background2;
         RooAbsPdf *background;
         RooRealVar *slope;
-        RooRealVar *a;
-        RooRealVar *b;
+        RooRealVar *slope1;
+        RooRealVar *slope2;
+        RooRealVar *nBackground1;
+        RooRealVar *nBackground2;
         if (bkg_shape == 1)
         { // expo
-          slope = new RooRealVar("slope", "slope", -1., 1.);
-          background = (RooAbsPdf *)new RooExponential("background", "background", tpcNsigma, *slope);
-        }
-        else if (bkg_shape == 0)
-        { // pol1
-          slope = new RooRealVar("slope", "slope", -6, 6.);
-          background = (RooAbsPdf *)new RooPolynomial("background", "background", tpcNsigma, RooArgList(*slope));
+          slope1 = new RooRealVar("slope_{1}", "slope1", -1., 1.);
+          slope2 = new RooRealVar("slope_{2}", "slope2", -1., 1.);
+          background1 = (RooAbsPdf *)new RooExponential("background1", "background1", tofSignal, *slope1);
+          background2 = (RooAbsPdf *)new RooExponential("background2", "background2", tofSignal, *slope2);
+          nBackground1 = new RooRealVar("nBackground1", "nBackground1", 0., 10000.);
+          nBackground2 = new RooRealVar("nBackground2", "nBackground2", 0., 10000.);
         }
         else
-        { // pol2
-          a = new RooRealVar("a", "a", 0.03, 0.02, 0.04);
-          b = new RooRealVar("b", "b", -0.2, -0.28, 0.1);
-          background = (RooAbsPdf *)new RooPolynomial("background", "background", tpcNsigma, RooArgList(*b, *a));
+        {
+          std::cout << "No background shape with bkg_shape = 0!" << std::endl;
+          return;
         }
         RooRealVar nSignal("N_{sig}", "nSignal", 1., 10000.);
         RooRealVar nBackground("N_{bkg}", "nBackground", 0., 1000.);
-        RooAddPdf model("model", "model", RooArgList(signal, *background), RooArgList(nSignal, nBackground));
+        RooAddPdf model("model", "model", RooArgList(signal, *background1, *nBackground2), RooArgList(nSignal, *nBackground1, *nBackground2));
 
         if (extractSignal)
         {
           // fit model
-          RooFitResult *r = model.fitTo(dataPt, RooFit::Save());
+          RooFitResult *r = model.fitTo(data, RooFit::Save());
 
           if (r->status() > 0)
             continue;
           // signal range
           double signal_min = mean.getVal() - kNSigma * sigma->getVal(), signal_max = mean.getVal() + kNSigma * sigma->getVal();
-          tpcNsigma.setRange("signalRange", signal_min, signal_max);
+          tofSignal.setRange("signalRange", signal_min, signal_max);
 
           // background integral
           auto components = model.getComponents();
           auto bkgPdf = (RooAbsPdf *)components->find("background");
-          double bkgIntegral = (((RooAbsPdf *)model.pdfList().at(1))->createIntegral(RooArgSet(tpcNsigma), RooFit::NormSet(RooArgSet(tpcNsigma)), RooFit::Range("signalRange")))->getVal();
+          double bkgIntegral = (((RooAbsPdf *)model.pdfList().at(1))->createIntegral(RooArgSet(tofSignal), RooFit::NormSet(RooArgSet(tofSignal)), RooFit::Range("signalRange")))->getVal();
           double bkgIntegral_val = nBackground.getVal() * bkgIntegral;
           // std::cout << bkgIntegral << std::endl;
 
@@ -156,12 +157,12 @@ void SignalBinned(const char *cutSetting = "", const bool binCounting = true, co
           if (binCounting)
           {
             // total counts
-            counts = dataPt.sumEntries(Form("tpcNsigma>%f && tpcNsigma<%f", signal_min, signal_max));
+            counts = data.sumEntries(Form("tofSignal>%f && tofSignal<%f", signal_min, signal_max));
             rawYield = counts - bkgIntegral_val; // signal=counts-error
             rawYieldError = TMath::Sqrt(counts); // counts=signal+bkg => correct error from poisson statistics
             if (binCountingNoFit)
             {
-              rawYield = dataPt.sumEntries(Form("tpcNsigma>%f && tpcNsigma<%f", -0.7815 * kNSigma, 0.7815 * kNSigma)); // only for He4 in signal loss studies
+              rawYield = data.sumEntries(Form("tofSignal>%f && tofSignal<%f", -0.7815 * kNSigma, 0.7815 * kNSigma)); // only for He4 in signal loss studies
             }
           }
           else
@@ -171,30 +172,30 @@ void SignalBinned(const char *cutSetting = "", const bool binCounting = true, co
           }
 
           // fill raw yield histogram
-          fTPCrawYield.SetBinContent(fTPCrawYield.FindBin((maxPt + minPt) / 2.), rawYield);
-          fTPCrawYield.SetBinError(fTPCrawYield.FindBin((maxPt + minPt) / 2.), rawYieldError);
+          fTOFrawYield.SetBinContent(fTOFrawYield.FindBin((ptMax + ptMin) / 2.), rawYield);
+          fTOFrawYield.SetBinError(fTOFrawYield.FindBin((ptMax + ptMin) / 2.), rawYieldError);
 
           // fill significance histogram
           if (binCounting)
-            fSignificance.SetBinContent(fSignificance.FindBin((maxPt + minPt) / 2.), rawYield / rawYieldError);
+            fSignificance.SetBinContent(fSignificance.FindBin((ptMax + ptMin) / 2.), rawYield / rawYieldError);
           else
-            fSignificance.SetBinContent(fSignificance.FindBin((maxPt + minPt) / 2.), rawYield / TMath::Sqrt(rawYield + bkgIntegral_val));
-          fSignificance.SetBinError(fSignificance.FindBin((maxPt + minPt) / 2.), 0.);
+            fSignificance.SetBinContent(fSignificance.FindBin((ptMax + ptMin) / 2.), rawYield / TMath::Sqrt(rawYield + bkgIntegral_val));
+          fSignificance.SetBinError(fSignificance.FindBin((ptMax + ptMin) / 2.), 0.);
 
           // fill sigma histogram
-          fSigma.SetBinContent(fSigma.FindBin((maxPt + minPt) / 2.), sigma->getVal());
-          fSigma.SetBinError(fSigma.FindBin((maxPt + minPt) / 2.), sigma->getError());
+          fSigma.SetBinContent(fSigma.FindBin((ptMax + ptMin) / 2.), sigma->getVal());
+          fSigma.SetBinError(fSigma.FindBin((ptMax + ptMin) / 2.), sigma->getError());
 
           // fill sigma histogram
-          fMean.SetBinContent(fMean.FindBin((maxPt + minPt) / 2.), mean.getVal());
-          fMean.SetBinError(fMean.FindBin((maxPt + minPt) / 2.), mean.getError());
+          fMean.SetBinContent(fMean.FindBin((ptMax + ptMin) / 2.), mean.getVal());
+          fMean.SetBinError(fMean.FindBin((ptMax + ptMin) / 2.), mean.getError());
         }
 
         // frame
         int nBins = 36;
-        TString plotTitle = TString::Format("%.2f#leq #it{p}_{T}<%.2f GeV/#it{c}, %.0f-%.0f%%", minPt, maxPt, kCentBinsLimitsHe3[iCent][0], kCentBinsLimitsHe3[iCent][1]);
-        RooPlot *xframe = tpcNsigma.frame(RooFit::Bins(nBins), RooFit::Title(plotTitle), RooFit::Name(Form("f%sNSigma_%.0f_%.0f_%.2f_%.2f", kAntimatterMatter[iMatt], kCentBinsLimitsHe3[iCent][0], kCentBinsLimitsHe3[iCent][1], minPt, maxPt)));
-        dataPt.plotOn(xframe, RooFit::Name("dataNsigma"));
+        TString plotTitle = TString::Format("%.2f#leq #it{p}_{T}<%.2f GeV/#it{c}, %.0f-%.0f%%", ptMin, ptMax, kCentBinsLimitsDeuteron[iCent][0], kCentBinsLimitsDeuteron[iCent][1]);
+        RooPlot *xframe = tofSignal.frame(RooFit::Bins(nBins), RooFit::Title(plotTitle), RooFit::Name(Form("f%sNSigma_%.0f_%.0f_%.2f_%.2f", kAntimatterMatter[iMatt], kCentBinsLimitsDeuteron[iCent][0], kCentBinsLimitsDeuteron[iCent][1], ptMin, ptMax)));
+        data.plotOn(xframe, RooFit::Name("dataNsigma"));
 
         if (extractSignal)
         {
@@ -210,23 +211,23 @@ void SignalBinned(const char *cutSetting = "", const bool binCounting = true, co
         TCanvas canv;
         canv.SetName(plotTitle);
         xframe->Draw("");
-        canv.Print(Form("%s/signal_extraction/%s_%1.1f_%d_%d_%d/cent_%.0f_%.0f_pt_%.2f_%.2f.png", kPlotDir, kAntimatterMatter[iMatt], cutDCAz, cutTPCcls, binCounting, bkg_shape, kCentBinsLimitsHe3[iCent][0], kCentBinsLimitsHe3[iCent][1], minPt, maxPt));
+        canv.Print(Form("%s/signal_extraction/%s_%s_%d_%d/cent_%.0f_%.0f_pt_%.2f_%.2f.png", kPlotDir, kAntimatterMatter[iMatt], cutSettings, binCounting, bkg_shape, kCentBinsLimitsDeuteron[iCent][0], kCentBinsLimitsDeuteron[iCent][1], ptMin, ptMax));
 
       } // end of loop on pt bins
 
       // set raw yield histogram style and write to file
-      fTPCrawYield.SetTitle(TString::Format("%s raw yield, %.0f-%.0f%%", kAntimatterMatterLabel[iMatt], kCentBinsLimitsHe3[iCent][0], kCentBinsLimitsHe3[iCent][1]));
-      fTPCrawYield.SetName(TString::Format("f%sTPCrawYield_%.0f_%.0f", kAntimatterMatter[iMatt], kCentBinsLimitsHe3[iCent][0], kCentBinsLimitsHe3[iCent][1]));
-      fTPCrawYield.GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
-      fTPCrawYield.GetYaxis()->SetTitle("#it{N_{raw}}");
-      fTPCrawYield.SetMarkerStyle(20);
-      fTPCrawYield.SetMarkerSize(0.8);
-      fTPCrawYield.SetOption("PE");
-      fTPCrawYield.Write();
+      fTOFrawYield.SetTitle(TString::Format("%s raw yield, %.0f-%.0f%%", kAntimatterMatterLabel[iMatt], kCentBinsLimitsDeuteron[iCent][0], kCentBinsLimitsDeuteron[iCent][1]));
+      fTOFrawYield.SetName(TString::Format("f%sTPCrawYield_%.0f_%.0f", kAntimatterMatter[iMatt], kCentBinsLimitsDeuteron[iCent][0], kCentBinsLimitsDeuteron[iCent][1]));
+      fTOFrawYield.GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
+      fTOFrawYield.GetYaxis()->SetTitle("#it{N_{raw}}");
+      fTOFrawYield.SetMarkerStyle(20);
+      fTOFrawYield.SetMarkerSize(0.8);
+      fTOFrawYield.SetOption("PE");
+      fTOFrawYield.Write();
 
       // set significance histogram style and write to file
-      fSignificance.SetTitle(TString::Format("%s significance, %.0f-%.0f%%", kAntimatterMatterLabel[iMatt], kCentBinsLimitsHe3[iCent][0], kCentBinsLimitsHe3[iCent][1]));
-      fSignificance.SetName(TString::Format("f%sSignificance_%.0f_%.0f", kAntimatterMatter[iMatt], kCentBinsLimitsHe3[iCent][0], kCentBinsLimitsHe3[iCent][1]));
+      fSignificance.SetTitle(TString::Format("%s significance, %.0f-%.0f%%", kAntimatterMatterLabel[iMatt], kCentBinsLimitsDeuteron[iCent][0], kCentBinsLimitsDeuteron[iCent][1]));
+      fSignificance.SetName(TString::Format("f%sSignificance_%.0f_%.0f", kAntimatterMatter[iMatt], kCentBinsLimitsDeuteron[iCent][0], kCentBinsLimitsDeuteron[iCent][1]));
       fSignificance.GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
       fSignificance.GetYaxis()->SetTitle("S/#sqrt{N}");
       fSignificance.SetMarkerStyle(20);
@@ -235,26 +236,25 @@ void SignalBinned(const char *cutSetting = "", const bool binCounting = true, co
       fSignificance.Write();
 
       // set sigma histogram style and write to file
-      fSigma.SetTitle(TString::Format("%s sigma, %.0f-%.0f%%", kAntimatterMatterLabel[iMatt], kCentBinsLimitsHe3[iCent][0], kCentBinsLimitsHe3[iCent][1]));
-      fSigma.SetName(TString::Format("f%sSigma_%.0f_%.0f", kAntimatterMatter[iMatt], kCentBinsLimitsHe3[iCent][0], kCentBinsLimitsHe3[iCent][1]));
+      fSigma.SetTitle(TString::Format("%s sigma, %.0f-%.0f%%", kAntimatterMatterLabel[iMatt], kCentBinsLimitsDeuteron[iCent][0], kCentBinsLimitsDeuteron[iCent][1]));
+      fSigma.SetName(TString::Format("f%sSigma_%.0f_%.0f", kAntimatterMatter[iMatt], kCentBinsLimitsDeuteron[iCent][0], kCentBinsLimitsDeuteron[iCent][1]));
       fSigma.GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
-      fSigma.GetYaxis()->SetTitle("#sigma (a.u.)");
+      fSigma.GetYaxis()->SetTitle("#sigma (GeV^2/#it{c}^{4})");
       fSigma.SetMarkerStyle(20);
       fSigma.SetMarkerSize(0.8);
       fSigma.SetOption("PE");
       fSigma.Write();
 
       // set sigma histogram style and write to file
-      fMean.SetTitle(TString::Format("%s mean, %.0f-%.0f%%", kAntimatterMatterLabel[iMatt], kCentBinsLimitsHe3[iCent][0], kCentBinsLimitsHe3[iCent][1]));
-      fMean.SetName(TString::Format("f%sMean_%.0f_%.0f", kAntimatterMatter[iMatt], kCentBinsLimitsHe3[iCent][0], kCentBinsLimitsHe3[iCent][1]));
+      fMean.SetTitle(TString::Format("%s mean, %.0f-%.0f%%", kAntimatterMatterLabel[iMatt], kCentBinsLimitsDeuteron[iCent][0], kCentBinsLimitsDeuteron[iCent][1]));
+      fMean.SetName(TString::Format("f%sMean_%.0f_%.0f", kAntimatterMatter[iMatt], kCentBinsLimitsDeuteron[iCent][0], kCentBinsLimitsDeuteron[iCent][1]));
       fMean.GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
-      fMean.GetYaxis()->SetTitle("#mu (a.u.)");
+      fSigma.GetYaxis()->SetTitle("#mu (GeV^2/#it{c}^{4})");
       fMean.SetMarkerStyle(20);
       fMean.SetMarkerSize(0.8);
       fMean.SetOption("PE");
       fMean.Write();
     } // end of loop on centrality bin
-    inTree->Reset();
-  } // end of loop on antimatter/matter
+  }   // end of loop on antimatter/matter
   outFile->Close();
 } // end of macro Signal.cpp
