@@ -4,15 +4,22 @@
 #ifndef CONFIGFILE_H
 #define CONFIGFILE_H
 
+#define PID // enable pid studies
+
+// directories
 const char *kResDir = "./results";
 const char *kOutDir = "./out";
 const char *kPlotDir = "./plots";
 
+// antimatter / matter
+const char *kAntimatterMatter[2] = {"A", "M"};
+
+// centrality binning
+const int kNCentClasses = 3;
+
 //////////////////////////////////////////////////////////////
 // He3 analysis
 //////////////////////////////////////////////////////////////
-
-#define PID // enable pid studies
 
 namespace he3{
   // directories
@@ -25,7 +32,7 @@ namespace he3{
   const int kNDataFiles = 2;
     const char *kDataFileLabel[kNDataFiles] = {"LHC18q", "LHC18r"};
   
-    // pt binning
+  // pt binning
   const int kNPtBins = 14; // analysis binning
   const double kDeltaPt = 0.5f;
   const double kLowestPt = 1.f;
@@ -36,7 +43,6 @@ namespace he3{
   // centrality binning
   const int kNCentBins = 11; // total number of V0M multiplicity classes
   const double kCentBins[kNCentBins + 1] = {0.f, 5.f, 7.5f, 10.f, 20.f, 30.f, 40.f, 50.f, 60.f, 70.f, 80.f, 90.f};
-  const int kNCentClasses = 3;                                        // number of analysed centrality classes in He3 analysis
   const int kCentBinsHe3[][2] = {{1, 1}, {2, 3}, {6, 7}};             // centrality classes bin indexes in He3 analysis
   const double kCentBinsLimitsHe3[][2] = {{0, 5}, {5, 10}, {30, 50}}; // centrality classes bin limits in He3 analysis
   
@@ -53,7 +59,6 @@ namespace he3{
   const double kDCABins[kNDCABins + 1] = {-1.30, -1.20, -1.10, -1.00, -0.90, -0.80, -0.70, -0.60, -0.50, -0.40, -0.35, -0.30, -0.25, -0.20, -0.15, -0.10, -0.07, -0.04, -0.02, 0.00, 0.02, 0.04, 0.07, 0.10, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.50, 0.60, 0.70, 0.80, 0.90, 1.00, 1.10, 1.20, 1.30};
   const double kDCABinsLarge[kNDCABinsLarge + 1] = {-1.30, -1.10, -0.90, -0.70, -0.50, -0.40, -0.30, -0.20, -0.15, -0.10, -0.07, -0.04, -0.02, 0.00, 0.02, 0.04, 0.07, 0.10, 0.15, 0.20, 0.30, 0.40, 0.50, 0.70, 0.90, 1.10, 1.30};
   // antimatter/matter
-  const char *kAntimatterMatter[2] = {"A", "M"};
   const char *kAntimatterMatterLabel[2] = {"^{3}#bar{He}", "^{3}He"};
   
   // axis labels
@@ -75,6 +80,30 @@ namespace he3{
   const int kNAnalyses = 2976;
   const int kNPoints = 1e4;
 }
-  
+
+//////////////////////////////////////////////////////////////
+// deuteron analysis
+//////////////////////////////////////////////////////////////
+
+namespace deuteron{
+  // directories
+  const char *kDataDir = "../data/Deuteron_PbPb";
+
+  // TOF signal binning
+  const double kTOFSignalMin = -2.;
+  const double kTOFSignalMax = 2.5;
+
+  // pt binning
+  const int kNPtBins = 25; // analysis binning
+
+  // centrality binning
+  const double kCentBinsLimitsDeuteron[][2] = {{0, 5}, {5, 10}, {30, 50}};
+  const int kCentBinsDeuteron[][2] = {{1, 1}, {2, 2}, {5, 6}};             // centrality classes bin indexes in He3 analysis
+
+  // antimatter / matter
+  const char *kAntimatterMatterLabel[2] = {"#bar{d}", "d"};
+
+}
+
 #endif // CONFIGFILE_H
   
