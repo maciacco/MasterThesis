@@ -105,21 +105,29 @@ void SignalBinned(const char *cutSettings = "", const bool binCounting = false, 
         RooDataHist data("data", "data", RooArgList(tofSignal), tofSignalProjection);
 
         // gaussian core fit
-        tofSignalProjection->SetAxisRange(-1.,2.);
+        tofSignalProjection->SetAxisRange(-0.5,1.);
         double maxBin = tofSignalProjection->GetBinCenter(tofSignalProjection->GetMaximumBin());
         TF1 gaus("gausCore","gaus",maxBin-0.2f,maxBin+0.2f);
         tofSignalProjection->Fit("gausCore","RL","",maxBin-0.2f,maxBin+0.2f);
-        tofSignalProjection->Write();
+        tofSignalProjection->SetAxisRange(-2.,3.);
 
         // build composite model
-        RooRealVar mean("#mu", "mean", -0.5f, 1.f, "GeV^{2}/#it{c^{4}}");
-        if(ptMin>10.0){
-          mean.setVal(gaus.GetParameter(1));
+        RooRealVar mean("#mu", "mean", gaus.GetParameter(1), gaus.GetParameter(1)-0.4, gaus.GetParameter(1)+0.4, "GeV^{2}/#it{c^{4}}");
+        if(ptMin>0.85f){
           mean.setConstant(kTRUE);
         }
 
-        RooRealVar *sigma = new RooRealVar("#sigma", "sigma", 0.1, 0.2, "GeV^{2}/#it{c^{4}}");
-        RooRealVar *tau = new RooRealVar("#tau", "tau", 0.1, 1.2);
+        RooRealVar *sigma = new RooRealVar("#sigma", "sigma", gaus.GetParameter(2), 0.1f, gaus.GetParameter(2)+0.2f, "GeV^{2}/#it{c^{4}}");
+        if(ptMin>0.85f){
+          sigma->setMin(0.09f);
+          sigma->setMax(gaus.GetParameter(2)+0.1f);
+        }
+
+        RooRealVar *tau = new RooRealVar("#tau", "tau", 0.6f, 2.0f);
+        if(ptMin>1.15f){
+          tau->setMin(0.9f);
+          tau->setVal(1.1f);
+        }
         RooGausExp signal("signal", "signal", tofSignal, mean, *sigma, *tau);
         RooAbsPdf *background1;
         RooAbsPdf *background2;
@@ -131,15 +139,16 @@ void SignalBinned(const char *cutSettings = "", const bool binCounting = false, 
         RooRealVar *nBackground2;
         if (bkg_shape == 1)
         { // expo
-          slope1 = new RooRealVar("slope_{1}", "slope1", -10.f, -2.f);
-          slope2 = new RooRealVar("slope_{2}", "slope2", -2.f, -0.1f);
+          TF1 expoLeft("expoLeft","expo",-2.f,-1.4f);
+          tofSignalProjection->Fit("expoLeft");
+          slope1 = new RooRealVar("slope_{1}", "slope1", expoLeft.GetParameter(1), -7.f, -1.f);
+
+          slope2 = new RooRealVar("slope_{2}", "slope2", -0.2f, -1.f, -0.1f);
+
           background1 = (RooAbsPdf *)new RooExponential("background1", "background1", tofSignal, *slope1);
           background2 = (RooAbsPdf *)new RooExponential("background2", "background2", tofSignal, *slope2);
-          nBackground1 = new RooRealVar("nBackground1", "nBackground1", 0., 1.);
-          if(ptMin<1.0){
-            nBackground1->setVal(0.f);
-            nBackground1->setConstant(kTRUE);
-          }
+          nBackground1 = new RooRealVar("nBackground1", "nBackground1", 0.f, 1.f);
+          if(ptMin<1.65f){nBackground1->setVal(0.f); nBackground1->setConstant(kTRUE); slope1->setConstant(kTRUE);}
           background = new RooAddPdf("background","background",RooArgList(*background1,*background2),RooArgList(*nBackground1));
         }
         else
@@ -147,8 +156,8 @@ void SignalBinned(const char *cutSettings = "", const bool binCounting = false, 
           std::cout << "No background shape with bkg_shape = 0!" << std::endl;
           return;
         }
-        RooRealVar nSignal("N_{sig}", "nSignal", 100., 10000000.);
-        RooRealVar nBackground("N_{bkg}", "nBackground", 1., 10000000.);
+        RooRealVar nSignal("N_{sig}", "nSignal", 1., 10000000.);
+        RooRealVar nBackground("N_{bkg}", "nBackground", 10., 10000000.);
         RooAddPdf model("model", "model", RooArgList(signal, *background), RooArgList(nSignal, nBackground));
 
         if (extractSignal)
@@ -156,8 +165,6 @@ void SignalBinned(const char *cutSettings = "", const bool binCounting = false, 
           // fit model
           RooFitResult *r = model.fitTo(data, RooFit::Save());
 
-          if (r->status() < -0.5)
-            continue;
           // signal range
           double signal_min = mean.getVal() - kNSigma * sigma->getVal(), signal_max = mean.getVal() + kNSigma * sigma->getVal();
           tofSignal.setRange("signalRange", signal_min, signal_max);
@@ -221,6 +228,7 @@ void SignalBinned(const char *cutSettings = "", const bool binCounting = false, 
           model.paramOn(xframe, RooFit::Label(TString::Format("#chi^{2}/NDF = %2.4f", xframe->chiSquare("model", "dataNsigma"))), RooFit::Layout(0.68, 0.96, 0.96));
         }
 
+        tofSignalProjection->Write();
         xframe->Write();
 
         // save to png
