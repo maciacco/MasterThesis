@@ -91,7 +91,7 @@ namespace deuteron{
 
   // TOF signal binning
   const double kTOFSignalMin = -2.;
-  const double kTOFSignalMax = 3.;
+  const double kTOFSignalMax = 2.5;
 
   // pt binning
   const int kNPtBins = 24; // analysis binning

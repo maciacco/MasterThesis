@@ -56,13 +56,13 @@ void SignalBinned(const char *cutSettings = "", const bool binCounting = false, 
   }
 
   // get TTList
-  std::string listName = Form("mpuccio_deuterons_%s",cutSettings);
+  std::string listName = Form("mpuccio_deuterons_%s", cutSettings);
   TTList *list = (TTList *)dataFile->Get(listName.data());
 
   for (int iMatt = 0; iMatt < 2; ++iMatt)
   { // loop on antimatter/matter
     // Get histograms from file
-    std::string histName = Form("f%sTOFsignal",kAntimatterMatter[iMatt]);
+    std::string histName = Form("f%sTOFsignal", kAntimatterMatter[iMatt]);
     TH3F *fTOFSignal = (TH3F *)list->Get(histName.data());
     if (!fTOFSignal)
     {
@@ -84,7 +84,7 @@ void SignalBinned(const char *cutSettings = "", const bool binCounting = false, 
       TH1D fMean("fMean", "fMean", kNPtBins, pTbins);
       int nUsedPtBins = 22;
 
-      for (int iPtBin = 1; iPtBin < nUsedPtBins+1; ++iPtBin)
+      for (int iPtBin = 1; iPtBin < nUsedPtBins + 1; ++iPtBin)
       { // loop on pT bins
         double ptMin = fTOFrawYield.GetXaxis()->GetBinLowEdge(iPtBin);
         double ptMax = fTOFrawYield.GetXaxis()->GetBinUpEdge(iPtBin);
@@ -92,11 +92,11 @@ void SignalBinned(const char *cutSettings = "", const bool binCounting = false, 
         double centMax = kCentBinsLimitsDeuteron[iCent][1];
 
         int pTbinsIndexMin = fTOFSignal->GetYaxis()->FindBin(ptMin);
-        int pTbinsIndexMax = fTOFSignal->GetYaxis()->FindBin(ptMax-0.005);
+        int pTbinsIndexMax = fTOFSignal->GetYaxis()->FindBin(ptMax - 0.005);
 
         // project histogram
-        std::cout<<"Pt bins index: min="<<pTbinsIndexMin<<"; max="<<pTbinsIndexMax<<std::endl;
-        TH1D *tofSignalProjection = fTOFSignal->ProjectionZ(Form("f%sTOFSignal_%.0f_%.0f_%.2f_%.2f", kAntimatterMatter[iMatt], centMin, centMax, fTOFSignal->GetYaxis()->GetBinLowEdge(pTbinsIndexMin), fTOFSignal->GetYaxis()->GetBinUpEdge(pTbinsIndexMax)), kCentBinsLimitsDeuteron[iCent][0],  kCentBinsLimitsDeuteron[iCent][1], pTbinsIndexMin, pTbinsIndexMax);
+        std::cout << "Pt bins index: min=" << pTbinsIndexMin << "; max=" << pTbinsIndexMax << std::endl;
+        TH1D *tofSignalProjection = fTOFSignal->ProjectionZ(Form("f%sTOFSignal_%.0f_%.0f_%.2f_%.2f", kAntimatterMatter[iMatt], centMin, centMax, fTOFSignal->GetYaxis()->GetBinLowEdge(pTbinsIndexMin), fTOFSignal->GetYaxis()->GetBinUpEdge(pTbinsIndexMax)), kCentBinsLimitsDeuteron[iCent][0], kCentBinsLimitsDeuteron[iCent][1], pTbinsIndexMin, pTbinsIndexMax);
 
         // roofit variables
         RooRealVar tofSignal("tofSignal", "#it{m}^{2}-#it{m}^{2}_{PDG}", kTOFSignalMin, kTOFSignalMax, "GeV^{2}/#it{c^{4}}");
@@ -105,28 +105,32 @@ void SignalBinned(const char *cutSettings = "", const bool binCounting = false, 
         RooDataHist data("data", "data", RooArgList(tofSignal), tofSignalProjection);
 
         // gaussian core fit
-        tofSignalProjection->SetAxisRange(-0.5,1.);
+        tofSignalProjection->SetAxisRange(-0.5, 1.);
         double maxBin = tofSignalProjection->GetBinCenter(tofSignalProjection->GetMaximumBin());
-        TF1 gaus("gausCore","gaus",maxBin-0.2f,maxBin+0.2f);
-        tofSignalProjection->Fit("gausCore","RL","",maxBin-0.2f,maxBin+0.2f);
-        tofSignalProjection->SetAxisRange(-2.,3.);
+        TF1 gaus("gausCore", "gaus", maxBin - 0.2f, maxBin + 0.2f);
+        tofSignalProjection->Fit("gausCore", "RL", "", maxBin - 0.2f, maxBin + 0.2f);
+        tofSignalProjection->SetAxisRange(-2., 3.);
 
         // build composite model
-        RooRealVar mean("#mu", "mean", gaus.GetParameter(1), gaus.GetParameter(1)-0.4, gaus.GetParameter(1)+0.4, "GeV^{2}/#it{c^{4}}");
-        if(ptMin>0.85f){
+        RooRealVar mean("#mu", "mean", gaus.GetParameter(1), gaus.GetParameter(1) - 0.4f, gaus.GetParameter(1) + 0.4f, "GeV^{2}/#it{c^{4}}");
+        if (ptMin > 1.95f)
+        {
+          mean.setMin(gaus.GetParameter(1) - 0.3f);
+          mean.setMax(gaus.GetParameter(1) + 0.3f);
+        }
+        if ( (ptMin < 4.1f && ptMin > 3.95f) || (ptMin < 3.05f && ptMin > 2.95f))
+        {
           mean.setConstant(kTRUE);
         }
 
-        RooRealVar *sigma = new RooRealVar("#sigma", "sigma", gaus.GetParameter(2), 0.1f, gaus.GetParameter(2)+0.2f, "GeV^{2}/#it{c^{4}}");
-        if(ptMin>0.85f){
-          sigma->setMin(0.09f);
-          sigma->setMax(gaus.GetParameter(2)+0.1f);
-        }
+        RooRealVar *sigma = new RooRealVar("#sigma", "sigma", 0.1f, gaus.GetParameter(2)+0.05f, "GeV^{2}/#it{c^{4}}");
 
         RooRealVar *tau = new RooRealVar("#tau", "tau", 0.6f, 2.0f);
-        if(ptMin>1.15f){
+        if (ptMin > 1.15f)
+        {
           tau->setMin(0.9f);
-          tau->setVal(1.1f);
+          if ( (ptMin > 2.95f && ptMin < 3.05f) && iMatt == 1 )
+            tau->setVal(1.1f);
         }
         RooGausExp signal("signal", "signal", tofSignal, mean, *sigma, *tau);
         RooAbsPdf *background1;
@@ -139,25 +143,34 @@ void SignalBinned(const char *cutSettings = "", const bool binCounting = false, 
         RooRealVar *nBackground2;
         if (bkg_shape == 1)
         { // expo
-          TF1 expoLeft("expoLeft","expo",-2.f,-1.4f);
-          tofSignalProjection->Fit("expoLeft");
-          slope1 = new RooRealVar("slope_{1}", "slope1", expoLeft.GetParameter(1), -7.f, -1.f);
+          TF1 expoLeft("expoLeft", "expo", -2.f, -1.5f);
+          tofSignalProjection->Fit("expoLeft", "R", "", -2.f, -1.5f);
+          slope1 = new RooRealVar("slope_{1}", "slope1", expoLeft.GetParameter(1), -5.f, expoLeft.GetParameter(1)+0.2f);
 
-          slope2 = new RooRealVar("slope_{2}", "slope2", -0.2f, -1.f, -0.1f);
+          if (ptMin < 1.65f){
+            slope1->setVal(-0.2f);
+            slope1->setMin(-3.f);
+            slope1->setMax(0.f);
+            background = (RooAbsPdf *)new RooExponential("background", "background", tofSignal, *slope1);
+          }
+          else
+          {
+            slope2 = new RooRealVar("slope_{2}", "slope2", -0.2f, -1.0f, -0.1f);if (ptMin > 1.15f)
 
-          background1 = (RooAbsPdf *)new RooExponential("background1", "background1", tofSignal, *slope1);
-          background2 = (RooAbsPdf *)new RooExponential("background2", "background2", tofSignal, *slope2);
-          nBackground1 = new RooRealVar("nBackground1", "nBackground1", 0.f, 1.f);
-          if(ptMin<1.65f){nBackground1->setVal(0.f); nBackground1->setConstant(kTRUE); slope1->setConstant(kTRUE);}
-          background = new RooAddPdf("background","background",RooArgList(*background1,*background2),RooArgList(*nBackground1));
+            background1 = (RooAbsPdf *)new RooExponential("background1", "background1", tofSignal, *slope1);
+            background2 = (RooAbsPdf *)new RooExponential("background2", "background2", tofSignal, *slope2);
+            nBackground1 = new RooRealVar("nBackground1", "nBackground1", 0.f, 1.f);
+
+            background = new RooAddPdf("background", "background", RooArgList(*background1, *background2), RooArgList(*nBackground1));
+          }
         }
         else
         {
           std::cout << "No background shape with bkg_shape = 0!" << std::endl;
           return;
         }
-        RooRealVar nSignal("N_{sig}", "nSignal", 1., 10000000.);
-        RooRealVar nBackground("N_{bkg}", "nBackground", 10., 10000000.);
+        RooRealVar nSignal("N_{sig}", "nSignal", 1., 1000000.);
+        RooRealVar nBackground("N_{bkg}", "nBackground", 1., 10000000.);
         RooAddPdf model("model", "model", RooArgList(signal, *background), RooArgList(nSignal, nBackground));
 
         if (extractSignal)
