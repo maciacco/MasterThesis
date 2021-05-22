@@ -39,6 +39,8 @@ argumentSignal="$binCountingFlag,$expFlag"
 if [ $extractRatios -eq 1 ]; then
     root -b -l <<EOF
 .L ../utils/RooGausExp.cxx+
+.L ../utils/RooDSCBShape.cxx+
+.L ../utils/RooGausDExp.cxx+
 .L SignalBinned.cpp+
 //.L Efficiency.cpp+
 //.L EfficiencySec.cpp+

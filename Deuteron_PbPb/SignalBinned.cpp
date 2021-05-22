@@ -27,6 +27,8 @@
 #include "../utils/Utils.h"
 #include "../utils/Config.h"
 #include "../utils/RooGausExp.h"
+#include "../utils/RooDSCBShape.h"
+#include "../utils/RooGausDExp.h"
 
 using namespace utils;
 using namespace deuteron;
@@ -82,6 +84,7 @@ void SignalBinned(const char *cutSettings = "", const bool binCounting = false, 
       TH1D fSignificance("fSignificance", "fSignificance", kNPtBins, pTbins); // declare significance
       TH1D fSigma("fSigma", "fSigma", kNPtBins, pTbins);
       TH1D fMean("fMean", "fMean", kNPtBins, pTbins);
+      TH1D fAlpha("fAlpha", "fAlpha", kNPtBins, pTbins);
       int nUsedPtBins = 22;
 
       for (int iPtBin = 1; iPtBin < nUsedPtBins + 1; ++iPtBin)
@@ -107,32 +110,37 @@ void SignalBinned(const char *cutSettings = "", const bool binCounting = false, 
         // gaussian core fit
         tofSignalProjection->SetAxisRange(-0.5, 1.);
         double maxBin = tofSignalProjection->GetBinCenter(tofSignalProjection->GetMaximumBin());
-        TF1 gaus("gausCore", "gaus", maxBin - 0.2f, maxBin + 0.2f);
-        tofSignalProjection->Fit("gausCore", "RL", "", maxBin - 0.2f, maxBin + 0.2f);
+        TF1 gaus("gausCore", "gaus(0)+expo(3)", maxBin - 0.7, maxBin + 0.2);
+        gaus.SetParLimits(0, 100., 1.e5);
+        gaus.SetParLimits(1, 0.0,0.9);
+        gaus.SetParameter(1, 0.8);
+        gaus.SetParLimits(2, 0.1, 0.2);
+        gaus.SetParLimits(3, 0.,100.);
+        gaus.SetParLimits(4, -0.2, 0.);
+        tofSignalProjection->Fit("gausCore", "RL", "", maxBin - 0.7, maxBin + 0.2);
         tofSignalProjection->SetAxisRange(-2., 3.);
 
         // build composite model
-        RooRealVar mean("#mu", "mean", gaus.GetParameter(1), gaus.GetParameter(1) - 0.4f, gaus.GetParameter(1) + 0.4f, "GeV^{2}/#it{c^{4}}");
-        if (ptMin > 1.95f)
-        {
-          mean.setMin(gaus.GetParameter(1) - 0.3f);
-          mean.setMax(gaus.GetParameter(1) + 0.3f);
-        }
-        if ( (ptMin < 4.1f && ptMin > 3.95f) || (ptMin < 3.05f && ptMin > 2.95f))
-        {
-          mean.setConstant(kTRUE);
-        }
+        RooRealVar mean("#mu", "mean", 0.0,0.9, "GeV^{2}/#it{c^{4}}");
+        
+        // special case
+        if (((ptMin <1.41 && ptMin >1.39) || (ptMin <3.01 && ptMin >2.99)) && iMatt ==1 && iCent >0) mean.setVal(gaus.GetParameter(1));
+        if (ptMin <1.39) mean.setVal(gaus.GetParameter(1));
 
-        RooRealVar *sigma = new RooRealVar("#sigma", "sigma", 0.1f, gaus.GetParameter(2)+0.05f, "GeV^{2}/#it{c^{4}}");
-
-        RooRealVar *tau = new RooRealVar("#tau", "tau", 0.6f, 2.0f);
-        if (ptMin > 1.15f)
+        RooRealVar *sigma;
+        if(ptMin>1.59) sigma= new RooRealVar("#sigma", "sigma", gaus.GetParameter(2), gaus.GetParameter(2)-0.02, gaus.GetParameter(2)+0.04, "GeV^{2}/#it{c^{4}}");
+        else sigma= new RooRealVar("#sigma", "sigma",0.15,0.1,0.30, "GeV^{2}/#it{c^{4}}");
+        RooRealVar *alpha1 = new RooRealVar("#alpha_{1}", "alpha1",-2.0, -0.5);
+        RooRealVar *alpha = new RooRealVar("#alpha", "alpha",0.6, 0.5, 2.0);
+        RooAbsPdf *signal;
+        if (iMatt == 0)
         {
-          tau->setMin(0.9f);
-          if ( (ptMin > 2.95f && ptMin < 3.05f) && iMatt == 1 )
-            tau->setVal(1.1f);
+          signal = new RooGausExp("signal", "signal", tofSignal, mean, *sigma, *alpha);
         }
-        RooGausExp signal("signal", "signal", tofSignal, mean, *sigma, *tau);
+        else
+        {
+          signal = new RooGausDExp("signal", "signal", tofSignal, mean, *sigma, *alpha1, *alpha);
+        }
         RooAbsPdf *background1;
         RooAbsPdf *background2;
         RooAbsPdf *background;
@@ -143,23 +151,20 @@ void SignalBinned(const char *cutSettings = "", const bool binCounting = false, 
         RooRealVar *nBackground2;
         if (bkg_shape == 1)
         { // expo
-          TF1 expoLeft("expoLeft", "expo", -2.f, -1.5f);
-          tofSignalProjection->Fit("expoLeft", "R", "", -2.f, -1.5f);
-          slope1 = new RooRealVar("slope_{1}", "slope1", expoLeft.GetParameter(1), -5.f, expoLeft.GetParameter(1)+0.2f);
-
-          if (ptMin < 1.65f){
-            slope1->setVal(-0.2f);
-            slope1->setMin(-3.f);
-            slope1->setMax(0.f);
+          if (ptMin < 1.65)
+          {
+            slope1 = new RooRealVar("slope_{1}", "slope1", -0.2, -3., -0.0);
             background = (RooAbsPdf *)new RooExponential("background", "background", tofSignal, *slope1);
           }
           else
           {
-            slope2 = new RooRealVar("slope_{2}", "slope2", -0.2f, -1.0f, -0.1f);if (ptMin > 1.15f)
-
+            slope1 = new RooRealVar("slope_{1}", "slope1", -4.0, -4.6, -2.0);
+            // special case
+            if(ptMin>2.19&&ptMin<2.41)slope1->setVal(-4.5);
+            slope2 = new RooRealVar("slope_{2}", "slope2", -0.2, -1.0, -0.1);
             background1 = (RooAbsPdf *)new RooExponential("background1", "background1", tofSignal, *slope1);
             background2 = (RooAbsPdf *)new RooExponential("background2", "background2", tofSignal, *slope2);
-            nBackground1 = new RooRealVar("nBackground1", "nBackground1", 0.f, 1.f);
+            nBackground1 = new RooRealVar("nBackground1", "nBackground1", 0., 1.);
 
             background = new RooAddPdf("background", "background", RooArgList(*background1, *background2), RooArgList(*nBackground1));
           }
@@ -171,12 +176,13 @@ void SignalBinned(const char *cutSettings = "", const bool binCounting = false, 
         }
         RooRealVar nSignal("N_{sig}", "nSignal", 1., 1000000.);
         RooRealVar nBackground("N_{bkg}", "nBackground", 1., 10000000.);
-        RooAddPdf model("model", "model", RooArgList(signal, *background), RooArgList(nSignal, nBackground));
+        RooAddPdf model("model", "model", RooArgList(*signal, *background), RooArgList(nSignal, nBackground));
 
         if (extractSignal)
         {
           // fit model
           RooFitResult *r = model.fitTo(data, RooFit::Save());
+          //if(r->status()>0)continue;
 
           // signal range
           double signal_min = mean.getVal() - kNSigma * sigma->getVal(), signal_max = mean.getVal() + kNSigma * sigma->getVal();
@@ -222,9 +228,13 @@ void SignalBinned(const char *cutSettings = "", const bool binCounting = false, 
           fSigma.SetBinContent(fSigma.FindBin((ptMax + ptMin) / 2.), sigma->getVal());
           fSigma.SetBinError(fSigma.FindBin((ptMax + ptMin) / 2.), sigma->getError());
 
-          // fill sigma histogram
+          // fill mean histogram
           fMean.SetBinContent(fMean.FindBin((ptMax + ptMin) / 2.), mean.getVal());
           fMean.SetBinError(fMean.FindBin((ptMax + ptMin) / 2.), mean.getError());
+
+          // fill alpha histogram
+          fAlpha.SetBinContent(fAlpha.FindBin((ptMax + ptMin) / 2.), alpha->getVal());
+          fAlpha.SetBinError(fAlpha.FindBin((ptMax + ptMin) / 2.), alpha->getError());
         }
 
         // frame
@@ -282,15 +292,25 @@ void SignalBinned(const char *cutSettings = "", const bool binCounting = false, 
       fSigma.SetOption("PE");
       fSigma.Write();
 
-      // set sigma histogram style and write to file
+      // set mean histogram style and write to file
       fMean.SetTitle(TString::Format("%s mean, %.0f-%.0f%%", kAntimatterMatterLabel[iMatt], kCentBinsLimitsDeuteron[iCent][0], kCentBinsLimitsDeuteron[iCent][1]));
       fMean.SetName(TString::Format("f%sMean_%.0f_%.0f", kAntimatterMatter[iMatt], kCentBinsLimitsDeuteron[iCent][0], kCentBinsLimitsDeuteron[iCent][1]));
       fMean.GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
-      fSigma.GetYaxis()->SetTitle("#mu (GeV^2/#it{c}^{4})");
+      fMean.GetYaxis()->SetTitle("#mu (GeV^2/#it{c}^{4})");
       fMean.SetMarkerStyle(20);
       fMean.SetMarkerSize(0.8);
       fMean.SetOption("PE");
       fMean.Write();
+
+      // set sigma histogram style and write to file
+      fAlpha.SetTitle(TString::Format("%s alpha, %.0f-%.0f%%", kAntimatterMatterLabel[iMatt], kCentBinsLimitsDeuteron[iCent][0], kCentBinsLimitsDeuteron[iCent][1]));
+      fAlpha.SetName(TString::Format("f%sAlpha_%.0f_%.0f", kAntimatterMatter[iMatt], kCentBinsLimitsDeuteron[iCent][0], kCentBinsLimitsDeuteron[iCent][1]));
+      fAlpha.GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
+      fAlpha.GetYaxis()->SetTitle("#alpha");
+      fAlpha.SetMarkerStyle(20);
+      fAlpha.SetMarkerSize(0.8);
+      fAlpha.SetOption("PE");
+      fAlpha.Write();
     } // end of loop on centrality bin
   }   // end of loop on antimatter/matter
   outFile->Close();
