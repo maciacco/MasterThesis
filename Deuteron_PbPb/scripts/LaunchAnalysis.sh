@@ -1,7 +1,7 @@
 # LaunchAnalysis.sh
 
 # parameters
-cutSettings=""
+cutSettings="dcaz3"
 binCountingFlag=0
 expFlag=1 # 1->sum of 2 exp
 sigmoidFlag=1

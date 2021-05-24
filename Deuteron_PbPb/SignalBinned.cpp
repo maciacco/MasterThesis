@@ -37,14 +37,17 @@ const double kNSigma = 3; // define interval for bin counting
 
 void SignalBinned(const char *cutSettings = "", const bool binCounting = false, const int bkg_shape = 1, const char *inFileDat = "AnalysisResults", const char *outFileName = "SignalDeuteron", const char *outFileOption = "recreate", const bool extractSignal = true, const bool binCountingNoFit = false)
 {
+
   // make signal extraction plots directory
   system(Form("mkdir %s/signal_extraction", kPlotDir));
+  system(Form("mkdir %s/signal_extraction_preliminary", kPlotDir));
 
   // killing RooFit output
   RooMsgService::instance().setGlobalKillBelow(RooFit::ERROR);
   RooMsgService::instance().setSilentMode(true);
   gErrorIgnoreLevel = kError; // Suppressing warning outputs
   gStyle->SetOptStat(0);
+  gStyle->SetOptFit(1111);
 
   TFile *outFile = TFile::Open(TString::Format("%s/%s.root", kOutDir, outFileName), outFileOption); // output file
   if (outFile->GetDirectory(Form("%s_%d_%d", cutSettings, binCounting, bkg_shape)))
@@ -74,6 +77,7 @@ void SignalBinned(const char *cutSettings = "", const bool binCounting = false, 
 
     // make plot subdirectory
     system(Form("mkdir %s/signal_extraction/%s_%s_%d_%d", kPlotDir, kAntimatterMatter[iMatt], cutSettings, binCounting, bkg_shape));
+    system(Form("mkdir %s/signal_extraction_preliminary/%s_%s_%d_%d", kPlotDir, kAntimatterMatter[iMatt], cutSettings, binCounting, bkg_shape));
 
     dirOutFile->cd();
     for (int iCent = 0; iCent < kNCentClasses; ++iCent)
@@ -98,7 +102,7 @@ void SignalBinned(const char *cutSettings = "", const bool binCounting = false, 
         int pTbinsIndexMax = fTOFSignal->GetYaxis()->FindBin(ptMax - 0.005);
 
         // project histogram
-        std::cout << "Pt bins index: min=" << pTbinsIndexMin << "; max=" << pTbinsIndexMax << std::endl;
+        std::cout << "Pt bins: min=" << ptMin << "; max=" << ptMax << std::endl;
         TH1D *tofSignalProjection = fTOFSignal->ProjectionZ(Form("f%sTOFSignal_%.0f_%.0f_%.2f_%.2f", kAntimatterMatter[iMatt], centMin, centMax, fTOFSignal->GetYaxis()->GetBinLowEdge(pTbinsIndexMin), fTOFSignal->GetYaxis()->GetBinUpEdge(pTbinsIndexMax)), kCentBinsLimitsDeuteron[iCent][0], kCentBinsLimitsDeuteron[iCent][1], pTbinsIndexMin, pTbinsIndexMax);
 
         // roofit variables
@@ -110,28 +114,43 @@ void SignalBinned(const char *cutSettings = "", const bool binCounting = false, 
         // gaussian core fit
         tofSignalProjection->SetAxisRange(-0.5, 1.);
         double maxBin = tofSignalProjection->GetBinCenter(tofSignalProjection->GetMaximumBin());
-        TF1 gaus("gausCore", "gaus(0)+expo(3)", maxBin - 0.7, maxBin + 0.2);
-        gaus.SetParLimits(0, 100., 1.e5);
-        gaus.SetParLimits(1, 0.0,0.9);
-        gaus.SetParameter(1, 0.8);
-        gaus.SetParLimits(2, 0.1, 0.2);
-        gaus.SetParLimits(3, 0.,100.);
-        gaus.SetParLimits(4, -0.2, 0.);
-        tofSignalProjection->Fit("gausCore", "RL", "", maxBin - 0.7, maxBin + 0.2);
-        tofSignalProjection->SetAxisRange(-2., 3.);
+        tofSignalProjection->SetAxisRange(kTOFSignalMin, kTOFSignalMax);
+        TF1 gaus("gausCore", "gaus(0)+expo(3)", kTOFSignalMin, kTOFSignalMax);
+        gaus.SetParLimits(0, 100., 1.e6);
+        gaus.SetParLimits(1, 0.0, 0.9);
+        if (ptMin < 1.19)
+          gaus.SetParameter(1, 0.8);
+        else
+          gaus.SetParameter(1, 0.2);
+        gaus.SetParLimits(2, 0.1, 0.3);
+        gaus.SetParLimits(3, 0., 100.);
+        gaus.SetParLimits(4, -1.0, -0.1);
+        tofSignalProjection->Fit("gausCore", "QMRL", "", maxBin - 0.8, maxBin + 0.2);
 
         // build composite model
-        RooRealVar mean("#mu", "mean", 0.0,0.9, "GeV^{2}/#it{c^{4}}");
-        
-        // special case
-        if (((ptMin <1.41 && ptMin >1.39) || (ptMin <3.01 && ptMin >2.99)) && iMatt ==1 && iCent >0) mean.setVal(gaus.GetParameter(1));
-        if (ptMin <1.39) mean.setVal(gaus.GetParameter(1));
-
-        RooRealVar *sigma;
-        if(ptMin>1.59) sigma= new RooRealVar("#sigma", "sigma", gaus.GetParameter(2), gaus.GetParameter(2)-0.02, gaus.GetParameter(2)+0.04, "GeV^{2}/#it{c^{4}}");
-        else sigma= new RooRealVar("#sigma", "sigma",0.15,0.1,0.30, "GeV^{2}/#it{c^{4}}");
-        RooRealVar *alpha1 = new RooRealVar("#alpha_{1}", "alpha1",-2.0, -0.5);
-        RooRealVar *alpha = new RooRealVar("#alpha", "alpha",0.6, 0.5, 2.0);
+        RooRealVar mean("#mu", "mean", gaus.GetParameter(1), 0.0, gaus.GetParameter(1) + 0.5, "GeV^{2}/#it{c^{4}}");
+        RooRealVar *sigma = new RooRealVar("#sigma", "sigma", gaus.GetParameter(2), gaus.GetParameter(2) - 0.05, gaus.GetParameter(2) + 0.2, "GeV^{2}/#it{c^{4}}");
+        RooRealVar *alpha1 = new RooRealVar("#alpha_{1}", "alpha1", -2.0, -0.5);
+        RooRealVar *alpha = new RooRealVar("#alpha", "alpha", 0.0, 10.);
+        if (ptMin < 1.41)
+        {
+          alpha->setRange(0.5, 2.0);
+          alpha->setVal(0.6);
+        }
+        else
+        {
+          alpha->setRange(1.0, 3.0);
+          alpha->setVal(1.1);
+          if (ptMin > 2.79 && ptMin < 2.81)
+          { // special case #1
+            alpha->setVal(1.5);
+          }
+          alpha1->setRange(-2.0, -1.0);
+          if (ptMin > 2.39 && ptMin < 2.41 && iMatt == 1)
+          { // special case #1
+            alpha1->setVal(-1.9);
+          }
+        }
         RooAbsPdf *signal;
         if (iMatt == 0)
         {
@@ -151,16 +170,14 @@ void SignalBinned(const char *cutSettings = "", const bool binCounting = false, 
         RooRealVar *nBackground2;
         if (bkg_shape == 1)
         { // expo
-          if (ptMin < 1.65)
+          if ((ptMin < 1.41) || (ptMin > 1.59 && ptMin < 1.61 && iCent == 1))
           {
-            slope1 = new RooRealVar("slope_{1}", "slope1", -0.2, -3., -0.0);
+            slope1 = new RooRealVar("slope_{1}", "slope1", -0.2, -1., -0.1);
             background = (RooAbsPdf *)new RooExponential("background", "background", tofSignal, *slope1);
           }
           else
           {
-            slope1 = new RooRealVar("slope_{1}", "slope1", -4.0, -4.6, -2.0);
-            // special case
-            if(ptMin>2.19&&ptMin<2.41)slope1->setVal(-4.5);
+            slope1 = new RooRealVar("slope_{1}", "slope1", -2.1, -5., -2.0);
             slope2 = new RooRealVar("slope_{2}", "slope2", -0.2, -1.0, -0.1);
             background1 = (RooAbsPdf *)new RooExponential("background1", "background1", tofSignal, *slope1);
             background2 = (RooAbsPdf *)new RooExponential("background2", "background2", tofSignal, *slope2);
@@ -176,22 +193,27 @@ void SignalBinned(const char *cutSettings = "", const bool binCounting = false, 
         }
         RooRealVar nSignal("N_{sig}", "nSignal", 1., 1000000.);
         RooRealVar nBackground("N_{bkg}", "nBackground", 1., 10000000.);
-        RooAddPdf model("model", "model", RooArgList(*signal, *background), RooArgList(nSignal, nBackground));
+        RooAddPdf *model = new RooAddPdf("model", "model", RooArgList(*signal, *background), RooArgList(nSignal, nBackground));
 
         if (extractSignal)
         {
           // fit model
-          RooFitResult *r = model.fitTo(data, RooFit::Save());
-          //if(r->status()>0)continue;
+          RooFitResult *r;
+          for (int i = 0; i < 2; ++i)
+          {
+            r = model->fitTo(data, RooFit::Save());
+          }
+          std::cout << "fit status: " << r->status() << ";" << std::endl;
+          std::cout << "covariance quality: " << r->covQual() << std::endl;
 
           // signal range
           double signal_min = mean.getVal() - kNSigma * sigma->getVal(), signal_max = mean.getVal() + kNSigma * sigma->getVal();
           tofSignal.setRange("signalRange", signal_min, signal_max);
 
           // background integral
-          auto components = model.getComponents();
+          auto components = model->getComponents();
           auto bkgPdf = (RooAbsPdf *)components->find("background");
-          double bkgIntegral = (((RooAbsPdf *)model.pdfList().at(1))->createIntegral(RooArgSet(tofSignal), RooFit::NormSet(RooArgSet(tofSignal)), RooFit::Range("signalRange")))->getVal();
+          double bkgIntegral = (((RooAbsPdf *)model->pdfList().at(1))->createIntegral(RooArgSet(tofSignal), RooFit::NormSet(RooArgSet(tofSignal)), RooFit::Range("signalRange")))->getVal();
           double bkgIntegral_val = nBackground.getVal() * bkgIntegral;
           // std::cout << bkgIntegral << std::endl;
 
@@ -245,10 +267,11 @@ void SignalBinned(const char *cutSettings = "", const bool binCounting = false, 
 
         if (extractSignal)
         {
-          model.plotOn(xframe, RooFit::Components("background"), RooFit::Name("background"), RooFit::LineStyle(kDashed), RooFit::LineColor(kGreen));
-          model.plotOn(xframe, RooFit::Components("signal"), RooFit::Name("signal"), RooFit::LineStyle(kDashed), RooFit::LineColor(kRed));
-          model.plotOn(xframe, RooFit::Name("model"), RooFit::LineColor(kBlue));
-          model.paramOn(xframe, RooFit::Label(TString::Format("#chi^{2}/NDF = %2.4f", xframe->chiSquare("model", "dataNsigma"))), RooFit::Layout(0.68, 0.96, 0.96));
+          model->plotOn(xframe, RooFit::Components("background"), RooFit::Name("background"), RooFit::LineStyle(kDashed), RooFit::LineColor(kGreen));
+          model->plotOn(xframe, RooFit::Components("signal"), RooFit::Name("signal"), RooFit::LineStyle(kDashed), RooFit::LineColor(kRed));
+          model->plotOn(xframe, RooFit::Name("model"), RooFit::LineColor(kBlue));
+          model->paramOn(xframe, RooFit::Label(TString::Format("#chi^{2}/NDF = %2.4f", xframe->chiSquare("model", "dataNsigma"))), RooFit::Layout(0.65, 0.96, 0.92));
+          xframe->getAttText()->SetTextSize(0.03);
         }
 
         tofSignalProjection->Write();
@@ -259,6 +282,10 @@ void SignalBinned(const char *cutSettings = "", const bool binCounting = false, 
         canv.SetName(plotTitle);
         xframe->Draw("");
         canv.Print(Form("%s/signal_extraction/%s_%s_%d_%d/cent_%.0f_%.0f_pt_%.2f_%.2f.png", kPlotDir, kAntimatterMatter[iMatt], cutSettings, binCounting, bkg_shape, kCentBinsLimitsDeuteron[iCent][0], kCentBinsLimitsDeuteron[iCent][1], ptMin, ptMax));
+        tofSignalProjection->SetMarkerStyle(20);
+        tofSignalProjection->SetMarkerSize(0.8);
+        tofSignalProjection->Draw("pe");
+        canv.Print(Form("%s/signal_extraction_preliminary/%s_%s_%d_%d/cent_%.0f_%.0f_pt_%.2f_%.2f.png", kPlotDir, kAntimatterMatter[iMatt], cutSettings, binCounting, bkg_shape, kCentBinsLimitsDeuteron[iCent][0], kCentBinsLimitsDeuteron[iCent][1], ptMin, ptMax));
 
       } // end of loop on pt bins
 
