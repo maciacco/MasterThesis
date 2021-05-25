@@ -9,6 +9,7 @@ spectraHistNameId="_1_1_1"
 extractRatios=1
 
 fileData="AnalysisResults"
+fileMC="mc"
 signalName="SignalDeuteron"
 spectraName="SpectraDeuteron"
 EfficiencyHe3="EfficiencyDeuteron"
@@ -42,15 +43,13 @@ if [ $extractRatios -eq 1 ]; then
 .L ../utils/RooDSCBShape.cxx+
 .L ../utils/RooGausDExp.cxx+
 .L SignalBinned.cpp+
-//.L Efficiency.cpp+
-//.L EfficiencySec.cpp+
-//.L Secondary.cpp+
+.L Efficiency.cpp+
+.L Secondary.cpp+
 //.L Spectra.cpp+
 SignalBinned("$cutSettings",$argumentSignal,"$fileData","$signalName","recreate")
-// Efficiency($argumentCuts,"$treeMC","$EfficiencyHe3")
-// EfficiencySec($argumentCuts,"$treeMC","$EfficiencyHe3SecWD",$HYPER_TO_HE3_RATIO)
-// Secondary($argumentCuts,"$treeData","$treeMC","$EfficiencyHe3SecWD","$PrimaryHe3")
-// Spectra($argumentCuts,$argumentSignal,$sigmoidFlag,"$spectraHistNameId","$spectraName","recreate","AnalysisResults","$signalName","$EfficiencyHe3","$PrimaryHe3")
+Efficiency("$cutSettings","$fileMC","$EfficiencyHe3")
+Secondary("$cutSettings","$fileData","$fileMC","$PrimaryHe3")
+// Spectra("$cutSettings",$argumentSignal,$sigmoidFlag,"$spectraHistNameId","$spectraName","recreate","AnalysisResults","$signalName","$EfficiencyHe3","$PrimaryHe3")
 .q
 EOF
 fi
