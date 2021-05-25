@@ -82,13 +82,11 @@ void SignalBinned(const char *cutSettings = "", const bool binCounting = false, 
     dirOutFile->cd();
     for (int iCent = 0; iCent < kNCentClasses; ++iCent)
     { // loop over centrality classes
-      double pTbins[25] = {0.7f, 0.8f, 0.9f, 1.0f, 1.1f, 1.2f, 1.4f, 1.6f, 1.8f, 2.0f, 2.2f, 2.4f, 2.6f, 2.8f, 3.0f, 3.2f, 3.4f, 3.6f, 3.8f, 4.0f, 4.2f, 4.4f, 5.0f, 6.0f, 8.0f};
-
-      TH1D fTOFrawYield("fRawYield", "fRawYield", kNPtBins, pTbins);          // declare raw yields histogram
-      TH1D fSignificance("fSignificance", "fSignificance", kNPtBins, pTbins); // declare significance
-      TH1D fSigma("fSigma", "fSigma", kNPtBins, pTbins);
-      TH1D fMean("fMean", "fMean", kNPtBins, pTbins);
-      TH1D fAlpha("fAlpha", "fAlpha", kNPtBins, pTbins);
+      TH1D fTOFrawYield("fRawYield", "fRawYield", kNPtBins, kPtBins);          // declare raw yields histogram
+      TH1D fSignificance("fSignificance", "fSignificance", kNPtBins, kPtBins); // declare significance
+      TH1D fSigma("fSigma", "fSigma", kNPtBins, kPtBins);
+      TH1D fMean("fMean", "fMean", kNPtBins, kPtBins);
+      TH1D fAlpha("fAlpha", "fAlpha", kNPtBins, kPtBins);
       int nUsedPtBins = 22;
 
       for (int iPtBin = 1; iPtBin < nUsedPtBins + 1; ++iPtBin)
@@ -100,10 +98,12 @@ void SignalBinned(const char *cutSettings = "", const bool binCounting = false, 
 
         int pTbinsIndexMin = fTOFSignal->GetYaxis()->FindBin(ptMin);
         int pTbinsIndexMax = fTOFSignal->GetYaxis()->FindBin(ptMax - 0.005);
+        int centBinMin = kCentBinsDeuteron[iCent][0];
+        int centBinMax = kCentBinsDeuteron[iCent][1];
 
         // project histogram
-        std::cout << "Pt bins: min=" << ptMin << "; max=" << ptMax << std::endl;
-        TH1D *tofSignalProjection = fTOFSignal->ProjectionZ(Form("f%sTOFSignal_%.0f_%.0f_%.2f_%.2f", kAntimatterMatter[iMatt], centMin, centMax, fTOFSignal->GetYaxis()->GetBinLowEdge(pTbinsIndexMin), fTOFSignal->GetYaxis()->GetBinUpEdge(pTbinsIndexMax)), kCentBinsLimitsDeuteron[iCent][0], kCentBinsLimitsDeuteron[iCent][1], pTbinsIndexMin, pTbinsIndexMax);
+        std::cout << "Pt bins: min=" << ptMin << "; max=" << ptMax << "; indexMin=" << pTbinsIndexMin << "; indexMax=" << pTbinsIndexMax << "; centralityBinMin=" << centBinMin << "; centralityBinMax=" << centBinMax << std::endl;
+        TH1D *tofSignalProjection = fTOFSignal->ProjectionZ(Form("f%sTOFSignal_%.0f_%.0f_%.2f_%.2f", kAntimatterMatter[iMatt], centMin, centMax, fTOFSignal->GetYaxis()->GetBinLowEdge(pTbinsIndexMin), fTOFSignal->GetYaxis()->GetBinUpEdge(pTbinsIndexMax)), centBinMin, centBinMax, pTbinsIndexMin, pTbinsIndexMax);
 
         // roofit variables
         RooRealVar tofSignal("tofSignal", "#it{m}^{2}-#it{m}^{2}_{PDG}", kTOFSignalMin, kTOFSignalMax, "GeV^{2}/#it{c^{4}}");
@@ -282,6 +282,7 @@ void SignalBinned(const char *cutSettings = "", const bool binCounting = false, 
         canv.SetName(plotTitle);
         xframe->Draw("");
         canv.Print(Form("%s/signal_extraction/%s_%s_%d_%d/cent_%.0f_%.0f_pt_%.2f_%.2f.png", kPlotDir, kAntimatterMatter[iMatt], cutSettings, binCounting, bkg_shape, kCentBinsLimitsDeuteron[iCent][0], kCentBinsLimitsDeuteron[iCent][1], ptMin, ptMax));
+
         tofSignalProjection->SetMarkerStyle(20);
         tofSignalProjection->SetMarkerSize(0.8);
         tofSignalProjection->Draw("pe");
