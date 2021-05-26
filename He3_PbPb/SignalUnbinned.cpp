@@ -142,7 +142,11 @@ void SignalUnbinned(const float cutDCAz = 1.f, const int cutTPCcls = 89, const b
         if (extractSignal)
         {
           // fit model
-          RooFitResult *r = model.fitTo(dataPt, RooFit::Save());
+          RooFitResult *r;
+          for (int i = 0; i < 2; ++i)
+          { 
+            r = model.fitTo(dataPt, RooFit::Save());
+          }
 
           if (r->status() > 0)
             continue;

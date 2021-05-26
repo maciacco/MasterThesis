@@ -13,8 +13,7 @@ fileMC="mc"
 signalName="SignalDeuteron"
 spectraName="SpectraDeuteron"
 EfficiencyHe3="EfficiencyDeuteron"
-EfficiencyHe3SecWD="EfficiencyDeuteronSecWD"
-PrimaryHe3="PrimaryDeuterons"
+PrimaryHe3="PrimaryDeuteron"
 
 # create output directories
 DIR_OUT=out
@@ -45,11 +44,11 @@ if [ $extractRatios -eq 1 ]; then
 .L SignalBinned.cpp+
 .L Efficiency.cpp+
 .L Secondary.cpp+
-//.L Spectra.cpp+
-SignalBinned("$cutSettings",$argumentSignal,"$fileData","$signalName","recreate")
-Efficiency("$cutSettings","$fileMC","$EfficiencyHe3")
+.L Spectra.cpp+
+//SignalBinned("$cutSettings",$argumentSignal,"$fileData","$signalName","recreate")
+//Efficiency("$cutSettings","$fileMC","$EfficiencyHe3")
 Secondary("$cutSettings","$fileData","$fileMC","$PrimaryHe3")
-// Spectra("$cutSettings",$argumentSignal,$sigmoidFlag,"$spectraHistNameId","$spectraName","recreate","AnalysisResults","$signalName","$EfficiencyHe3","$PrimaryHe3")
+Spectra("$cutSettings",$argumentSignal,$sigmoidFlag,"$spectraHistNameId","$spectraName","recreate","AnalysisResults","$signalName","$EfficiencyHe3","$PrimaryHe3")
 .q
 EOF
 fi

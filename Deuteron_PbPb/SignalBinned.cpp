@@ -292,7 +292,7 @@ void SignalBinned(const char *cutSettings = "", const bool binCounting = false, 
 
       // set raw yield histogram style and write to file
       fTOFrawYield.SetTitle(TString::Format("%s raw yield, %.0f-%.0f%%", kAntimatterMatterLabel[iMatt], kCentBinsLimitsDeuteron[iCent][0], kCentBinsLimitsDeuteron[iCent][1]));
-      fTOFrawYield.SetName(TString::Format("f%sTPCrawYield_%.0f_%.0f", kAntimatterMatter[iMatt], kCentBinsLimitsDeuteron[iCent][0], kCentBinsLimitsDeuteron[iCent][1]));
+      fTOFrawYield.SetName(TString::Format("f%sTOFrawYield_%.0f_%.0f", kAntimatterMatter[iMatt], kCentBinsLimitsDeuteron[iCent][0], kCentBinsLimitsDeuteron[iCent][1]));
       fTOFrawYield.GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
       fTOFrawYield.GetYaxis()->SetTitle("#it{N_{raw}}");
       fTOFrawYield.SetMarkerStyle(20);
