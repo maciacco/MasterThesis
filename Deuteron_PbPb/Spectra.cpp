@@ -75,9 +75,9 @@ void Spectra(const char *cutSettings = "", const bool binCounting = false, const
         if(iMatt == 1){
           primary = sec->GetBinContent(iPtBin);
           primaryError = sec->GetBinError(iPtBin);
-          primary = sec_f->Eval(raw->GetXaxis()->GetBinCenter(iPtBin));
+          //primary = sec_f->Eval(raw->GetXaxis()->GetBinCenter(iPtBin));
         }
-        fSpectra[iMatt]->SetBinContent(iPtBin, rawYield * primary / efficiency);
+        fSpectra[iMatt]->SetBinContent(iPtBin, rawYield * primary / efficiency );
         fSpectra[iMatt]->SetBinError(iPtBin, (rawYield * primary / efficiency) * TMath::Sqrt(primaryError * primaryError / primary / primary + effError * effError / efficiency / efficiency + rawYieldError * rawYieldError / rawYield / rawYield));
 
         std::cout<<"eff="<<efficiency<<"; raw="<<rawYield<<"; rawError="<<rawYieldError<<"; primary="<<primary<<std::endl;
