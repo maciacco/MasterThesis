@@ -33,9 +33,9 @@
 using namespace utils;
 using namespace deuteron;
 
-const double kNSigma = 3; // define interval for bin counting
+const double kNSigma = 5; // define interval for bin counting
 
-void SignalBinned(const char *cutSettings = "", const bool binCounting = false, const int bkg_shape = 1, const char *inFileDat = "AnalysisResults", const char *outFileName = "SignalDeuteron", const char *outFileOption = "recreate", const bool extractSignal = true, const bool binCountingNoFit = false)
+void SignalBinned(const char *cutSettings = "", const bool binCounting = false, const int bkg_shape = 1, const char *inFileDat = "AnalysisResults", const char *outFileName = "SignalDeuteron", const char *outFileOption = "recreate", const bool extractSignal = true, const bool useDSCB = false, const bool binCountingNoFit = false)
 {
 
   // make signal extraction plots directory
@@ -132,6 +132,10 @@ void SignalBinned(const char *cutSettings = "", const bool binCounting = false, 
         RooRealVar *sigma = new RooRealVar("#sigma", "sigma", gaus.GetParameter(2), gaus.GetParameter(2) - 0.05, gaus.GetParameter(2) + 0.2, "GeV^{2}/#it{c^{4}}");
         RooRealVar *alpha1 = new RooRealVar("#alpha_{1}", "alpha1", -2.0, -0.5);
         RooRealVar *alpha = new RooRealVar("#alpha", "alpha", 0.0, 10.);
+        RooRealVar a1("a1","a1",1.,1.,2.);
+        RooRealVar a2("a2","a2",1., 1.,2.);
+        RooRealVar n1("n1","n1", 2.,10.);
+        RooRealVar n2("n2","n2", 2.,10.);
         if (ptMin < 1.41)
         {
           alpha->setRange(0.5, 2.0);
@@ -159,6 +163,9 @@ void SignalBinned(const char *cutSettings = "", const bool binCounting = false, 
         else
         {
           signal = new RooGausDExp("signal", "signal", tofSignal, mean, *sigma, *alpha1, *alpha);
+        }
+        if (useDSCB && iMatt == 1){
+          signal = new RooDSCBShape("signal", "signal", tofSignal, mean, *sigma, a1, n1, a2, n2);
         }
         RooAbsPdf *background1;
         RooAbsPdf *background2;
@@ -281,6 +288,7 @@ void SignalBinned(const char *cutSettings = "", const bool binCounting = false, 
         TCanvas canv;
         canv.SetName(plotTitle);
         xframe->Draw("");
+        // canv.SetLogy();
         canv.Print(Form("%s/signal_extraction/%s_%s_%d_%d/cent_%.0f_%.0f_pt_%.2f_%.2f.png", kPlotDir, kAntimatterMatter[iMatt], cutSettings, binCounting, bkg_shape, kCentBinsLimitsDeuteron[iCent][0], kCentBinsLimitsDeuteron[iCent][1], ptMin, ptMax));
 
         tofSignalProjection->SetMarkerStyle(20);
