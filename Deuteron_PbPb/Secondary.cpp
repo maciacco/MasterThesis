@@ -25,6 +25,8 @@ using namespace deuteron;
 
 void Secondary(const char *cutSettings = "", const char *inFileDatName = "AnalysisResults", const char *inFileMCName = "mc", const char *outFileName = "PrimaryDeuteron")
 {
+  gStyle->SetPadTickX(1);
+  gStyle->SetPadTickY(1);
   // make signal extraction plots directory
   system(Form("mkdir %s/primary_fraction", kPlotDir));
 
@@ -139,12 +141,16 @@ void Secondary(const char *cutSettings = "", const char *inFileDatName = "Analys
           result->SetLineColor(kGreen + 2);
           result->SetLineWidth(3);
           mc1->SetLineColor(kBlue);
-          mc2->SetLineColor(kOrange);
+          mc2->SetLineColor(kRed);
 
           TLegend leg(0.574499, 0.60552, 0.879628, 0.866667);
-          leg.AddEntry(result, "Fit");
-          leg.AddEntry(mc1, "Primary deuterons");
-          leg.AddEntry(mc2, "Secondary deuterons");
+            leg.AddEntry(fDCAdatProj, "data");
+          leg.AddEntry(result, "fit");
+          leg.AddEntry(mc1, "primary deuterons");
+          leg.AddEntry(mc2, "secondary deuterons");
+          leg.SetTextSize(0.035);
+          leg.SetBorderSize(0);
+
           // draw on canvas
           double chi2 = fit->GetChisquare();
           gStyle->SetOptStat(0);
@@ -163,7 +169,7 @@ void Secondary(const char *cutSettings = "", const char *inFileDatName = "Analys
           chiSq.SetTextSize(0.035);
           prob.SetTextSize(0.035);
           chiSq.Draw("same");
-          prob.Draw("same");
+          //prob.Draw("same");
 
           // compute fraction of primaries and material secondaries
           double intPrimDCAcut = mc1->Integral(result->FindBin(-0.12), result->FindBin(0.115));
@@ -242,6 +248,12 @@ void Secondary(const char *cutSettings = "", const char *inFileDatName = "Analys
       fPrimaryFrac.GetXaxis()->SetTitle(kAxisTitlePt);
       fPrimaryFrac.GetXaxis()->SetRangeUser(0.7,5.0);
       fPrimaryFrac.Write();
+
+      system(Form("mkdir %s/primary_plots", kPlotDir));
+      TCanvas cPrim("cPrim","cPrim");
+      cPrim.cd();
+      fPrimaryFrac.Draw("");
+      cPrim.Print(Form("%s/primary_plots/%s.png", kPlotDir, fPrimaryFrac.GetName()));
     }
   }
   outFile->Close();

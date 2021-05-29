@@ -121,7 +121,7 @@ void SignalUnbinned(const float cutDCAz = 1.f, const int cutTPCcls = 89, const b
         RooRealVar *b;
         if (bkg_shape == 1)
         { // expo
-          slope = new RooRealVar("slope", "slope", -1., 1.);
+          slope = new RooRealVar("#tau", "tau", -1., 1.);
           background = (RooAbsPdf *)new RooExponential("background", "background", tpcNsigma, *slope);
         }
         else if (bkg_shape == 0)
@@ -144,7 +144,7 @@ void SignalUnbinned(const float cutDCAz = 1.f, const int cutTPCcls = 89, const b
           // fit model
           RooFitResult *r;
           for (int i = 0; i < 2; ++i)
-          { 
+          {
             r = model.fitTo(dataPt, RooFit::Save());
           }
 
@@ -210,7 +210,8 @@ void SignalUnbinned(const float cutDCAz = 1.f, const int cutTPCcls = 89, const b
           model.plotOn(xframe, RooFit::Components("background"), RooFit::Name("background"), RooFit::LineStyle(kDashed), RooFit::LineColor(kGreen));
           model.plotOn(xframe, RooFit::Components("signal"), RooFit::Name("signal"), RooFit::LineStyle(kDashed), RooFit::LineColor(kRed));
           model.plotOn(xframe, RooFit::Name("model"), RooFit::LineColor(kBlue));
-          model.paramOn(xframe, RooFit::Label(TString::Format("#chi^{2}/NDF = %2.4f", xframe->chiSquare("model", "dataNsigma"))), RooFit::Layout(0.68, 0.96, 0.96));
+          model.paramOn(xframe, RooFit::Label(TString::Format("#chi^{2}/NDF = %2.4f", xframe->chiSquare("model", "dataNsigma"))), RooFit::Layout(0.65, 0.96, 0.92));
+          xframe->getAttText()->SetTextSize(0.03);
         }
 
         xframe->Write();

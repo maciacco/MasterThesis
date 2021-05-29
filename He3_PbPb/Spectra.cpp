@@ -7,6 +7,7 @@
 #include <TH2F.h>
 #include <TStyle.h>
 #include <TLatex.h>
+#include <TCanvas.h>
 
 #include "../utils/Utils.h"
 #include "../utils/Config.h"
@@ -30,7 +31,7 @@ void Spectra(const float cutDCAz = 1.f, const int cutTPCcls = 89, const bool bin
   TFile *inFileSec = TFile::Open(Form("%s/%s.root", kOutDir, primFile));
   if (!inFileRaw || !inFileEff || !inFileSec)
   {
-    std::cout<<"Input files do not exist!"<<std::endl;
+    std::cout << "Input files do not exist!" << std::endl;
     return;
   }
 
@@ -77,7 +78,7 @@ void Spectra(const float cutDCAz = 1.f, const int cutTPCcls = 89, const bool bin
         double effError = eff->GetBinError(iPtBin);
 
         double primary = 0.;
-        (!sigmoidCorrection && raw->GetBinCenter(iPtBin) < 6.3) ? primary = sec->GetBinContent(iPtBin) : primary = sec_f->Eval(raw->GetXaxis()->GetBinCenter(iPtBin));
+        (!sigmoidCorrection && raw->GetBinCenter(iPtBin) < 6.9) ? primary = sec->GetBinContent(iPtBin) : primary = sec_f->Eval(raw->GetXaxis()->GetBinCenter(iPtBin));
         fSpectra[iMatt]->SetBinContent(iPtBin, rawYield * primary / efficiency);
         fSpectra[iMatt]->SetBinError(iPtBin, rawYield * primary / efficiency * TMath::Sqrt(effError * effError / efficiency / efficiency + rawYieldError * rawYieldError / rawYield / rawYield));
       }
@@ -113,11 +114,25 @@ void Spectra(const float cutDCAz = 1.f, const int cutTPCcls = 89, const bool bin
       }
     }
     fRatio[iCent]->GetXaxis()->SetTitle(kAxisTitlePt);
-    fRatio[iCent]->GetYaxis()->SetTitle(Form("%s/%s", kAntimatterMatterLabel[0], kAntimatterMatterLabel[1]));
+    fRatio[iCent]->GetYaxis()->SetTitle(Form("Ratio %s / %s", kAntimatterMatterLabel[0], kAntimatterMatterLabel[1]));
     gStyle->SetOptFit(1111);
     fRatio[iCent]->SetTitle(Form("%.0f-%.0f%%", kCentBinsLimitsHe3[iCent][0], kCentBinsLimitsHe3[iCent][1]));
     fRatio[iCent]->Fit("pol0");
     fRatio[iCent]->Write();
+
+    TCanvas cRatio("cRatio", "cRatio");
+    cRatio.SetTicks(1, 1);
+    cRatio.cd();
+    fRatio[iCent]->GetXaxis()->SetRangeUser(2., 8.);
+    fRatio[iCent]->GetYaxis()->SetRangeUser(0., 1.8);
+    fRatio[iCent]->Draw("");
+    TLatex chi2(6., 1.45, Form("#chi^{2}/NDF = %.2f/%d", fRatio[iCent]->GetFunction("pol0")->GetChisquare(), fRatio[iCent]->GetFunction("pol0")->GetNDF()));
+    chi2.SetTextSize(0.035);
+    TLatex p0(6., 1.6, Form("R = %.2f #pm %.2f", fRatio[iCent]->GetFunction("pol0")->GetParameter(0), fRatio[iCent]->GetFunction("pol0")->GetParError(0)));
+    p0.SetTextSize(0.035);
+    chi2.Draw("same");
+    p0.Draw("same");
+    cRatio.Print(Form("%s/%s.png", kPlotDir, fRatio[iCent]->GetName()));
   }
   outFile.Close();
 }

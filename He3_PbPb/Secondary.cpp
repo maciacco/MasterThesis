@@ -22,8 +22,10 @@
 
 using namespace he3;
 
-void Secondary(const float cutDCAz = 1.f, const int cutTPCcls = 89, const char *inFileDatName = "TreeOutData", const char *inFileMCName = "TreeOutMC", const char *inFileWDName = "EfficiencyHe3SecWd", const char *outFileName = "PrimaryHe3", const bool useWdInFit = true, const bool rebinLowStatisticsBin = false)
+void Secondary(const float cutDCAz = 1.f, const int cutTPCcls = 89, const char *inFileDatName = "TreeOutData", const char *inFileMCName = "TreeOutMC", const char *inFileWDName = "EfficiencyHe3SecWd", const char *outFileName = "PrimaryHe3", const bool useWdInFit = false, const bool rebinLowStatisticsBin = true)
 {
+  gStyle->SetPadTickX(1);
+  gStyle->SetPadTickY(1);
   // make signal extraction plots directory
   system(Form("mkdir %s/primary_fraction", kPlotDir));
 
@@ -173,12 +175,15 @@ void Secondary(const float cutDCAz = 1.f, const int cutTPCcls = 89, const char *
             result->SetLineColor(kGreen + 2);
             result->SetLineWidth(3);
             mc1->SetLineColor(kBlue);
-            mc2->SetLineColor(kOrange);
+            mc2->SetLineColor(kRed);
 
             TLegend leg(0.574499, 0.60552, 0.879628, 0.866667);
-            leg.AddEntry(result, "Fit");
-            leg.AddEntry(mc1, "Primary ^{3}He");
-            leg.AddEntry(mc2, "Secondary ^{3}He");
+            leg.AddEntry(fDCAdatProj, "data");
+            leg.AddEntry(result, "fit");
+            leg.AddEntry(mc1, "primary ^{3}He");
+            leg.AddEntry(mc2, "secondary ^{3}He");
+            leg.SetTextSize(0.035);
+
             // draw on canvas
             double chi2 = fit->GetChisquare();
             gStyle->SetOptStat(0);
@@ -193,7 +198,7 @@ void Secondary(const float cutDCAz = 1.f, const int cutTPCcls = 89, const char *
               TH1F *mc3 = (TH1F *)fit->GetMCPrediction(2);
               mc3->SetName(Form("%s_Prediction", fDCAMcProjSecWeak->GetName()));
               mc3->Scale(fracMc3 * integralData / mc3->Integral(), "width");
-              mc3->SetLineColor(kRed);
+              mc3->SetLineColor(kOrange);
               mc3->Write();
 
               leg.AddEntry(mc3, "Secondary ^{3}He, weak decays");
@@ -201,15 +206,16 @@ void Secondary(const float cutDCAz = 1.f, const int cutTPCcls = 89, const char *
             }
             mc2->Draw("histosame");
             mc1->Draw("histosame");
-
+            leg.SetBorderSize(0);
             leg.Draw("same");
-            TLatex chiSq(-1., 0.2 * result->GetMaximum(), Form("#chi^{2}/NDF=%.2f", chi2/fit->GetNDF()));
+            TLatex chiSq(-1., 0.2 * result->GetMaximum(), Form("#chi^{2}/NDF=%.2f", chi2 / fit->GetNDF()));
+            chiSq.SetTextSize(0.035);
             TLatex prob(-1., 0.1 * result->GetMaximum(), Form("prob=%.7f", fit->GetProb()));
             // TLatex frac1(-1, 0.75 * result->GetMaximum(), Form("%.3f +- %.3f", fracMc1, errFracMc1));
             // TLatex frac2(-1, 0.3 * result->GetMaximum(), Form("%.3f +- %.3f", fracMc2, errFracMc2));
             // TLatex frac3(-1., 0.5 * result->GetMaximum(), Form("%.3f +- %.3f", fracMc3, errFracMc3));
             chiSq.Draw("same");
-            prob.Draw("same");
+            //prob.Draw("same");
             // frac1.Draw("same");
             // frac2.Draw("same");
             // if (useWdInFit)
@@ -223,7 +229,10 @@ void Secondary(const float cutDCAz = 1.f, const int cutTPCcls = 89, const char *
             double primaryRatioError = TMath::Sqrt(primaryRatio * (1.f - primaryRatio) / intResDCAcut);
             double secondaryRatio = intSecDCAcut / intResDCAcut;
             double secondaryRatioError = TMath::Sqrt(secondaryRatio * (1.f - secondaryRatio) / intResDCAcut);
-            fPrimaryFrac.SetBinContent(fPrimaryFrac.FindBin(minPt + 0.005f), primaryRatio);
+            if (useWdInFit)
+              fPrimaryFrac.SetBinContent(fPrimaryFrac.FindBin(minPt + 0.005f), primaryRatio);
+            else
+              fPrimaryFrac.SetBinContent(fPrimaryFrac.FindBin(minPt + 0.005f), primaryRatio * (1.f - fWDfrac->GetBinContent(fWDfrac->FindBin(minPt + 0.005f))));
             fPrimaryFrac.SetBinError(fPrimaryFrac.FindBin(minPt + 0.005f), primaryRatioError);
             fSecondaryFrac.SetBinContent(fSecondaryFrac.FindBin(minPt + 0.005f), secondaryRatio);
             fSecondaryFrac.SetBinError(fSecondaryFrac.FindBin(minPt + 0.005f), secondaryRatioError);
@@ -286,7 +295,7 @@ void Secondary(const float cutDCAz = 1.f, const int cutTPCcls = 89, const char *
       } // end of loop on centrality bin
 
       // primary fraction fit with fSigmoid function
-      TF1 fSigmoid(Form("f%sSigmoidFit_%.0f_%.0f", kAntimatterMatter[iMatt], kCentBinsLimitsHe3[iCent][0], kCentBinsLimitsHe3[iCent][1]), "[0]/(1+exp([1]*x+[2]))", 2.f, 7.f);
+      TF1 fSigmoid(Form("f%sSigmoidFit_%.0f_%.0f", kAntimatterMatter[iMatt], kCentBinsLimitsHe3[iCent][0], kCentBinsLimitsHe3[iCent][1]), "[0]/(1+exp([1]*x+[2]))", 2.f, 8.f);
       fSigmoid.SetParameter(0, 0.9f);
       if (iMatt == 1)
       {
@@ -306,7 +315,15 @@ void Secondary(const float cutDCAz = 1.f, const int cutTPCcls = 89, const char *
       fPrimaryFrac.SetOption("pe");
       fPrimaryFrac.GetYaxis()->SetTitle("#it{f}_{#it{prim}}");
       fPrimaryFrac.GetXaxis()->SetTitle(kAxisTitlePt);
+      fPrimaryFrac.GetXaxis()->SetRangeUser(2.0, 10.);
       fPrimaryFrac.Write();
+
+      system(Form("mkdir %s/primary_plots", kPlotDir));
+      TCanvas cPrim("cPrim", "cPrim");
+      cPrim.cd();
+      fPrimaryFrac.Draw("");
+      cPrim.Print(Form("%s/primary_plots/%s.png", kPlotDir, fPrimaryFrac.GetName()));
+
       if (iMatt == 1)
       {
         fSecondaryFrac.SetMarkerStyle(20);

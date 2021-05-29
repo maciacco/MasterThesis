@@ -7,6 +7,7 @@
 #include <TH2F.h>
 #include <TLatex.h>
 #include <TStyle.h>
+#include <TCanvas.h>
 
 #include "../utils/Utils.h"
 #include "../utils/Config.h"
@@ -19,6 +20,9 @@ using namespace he3;
 
 void EfficiencySec(const float cutDCAz = 1.f, const int cutTPCcls = 89, const char *inFileNameMC = "TreeOutMC", const char *outFileNameEff = "EfficiencyHe3SecWd", const double hyperTritonToHe3Ratio = 1.)
 {
+  gStyle->SetPadTickX(1);
+  gStyle->SetPadTickY(1);
+
   TFile inFile(Form("%s/%s.root", kResDir, inFileNameMC));
   TFile outFile(Form("%s/%s.root", kOutDir, outFileNameEff), "RECREATE");
 
@@ -64,10 +68,17 @@ void EfficiencySec(const float cutDCAz = 1.f, const int cutTPCcls = 89, const ch
       fEffPt.SetOption("PE");
       outFile.cd();
       fEffPt.Write();
+
+      system(Form("mkdir %s/efficiency_wd", kPlotDir));
+      TCanvas cEffPt("cEffPt", "cEffPt");
+      cEffPt.cd();
+      fEffPt.Draw("");
+      cEffPt.Print(Form("%s/efficiency_wd/%s.png", kPlotDir, fEffPt.GetName()));
+
       fTotal_Pt->Write();
       fITS_TPC_Pt->Write();
     }
   }
   outFile.Close();
-  std::cout<<" effWD "<<std::endl;
+  std::cout << " effWD " << std::endl;
 }

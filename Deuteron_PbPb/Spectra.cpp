@@ -7,6 +7,7 @@
 #include <TH2F.h>
 #include <TStyle.h>
 #include <TLatex.h>
+#include <TCanvas.h>
 
 #include "../utils/Utils.h"
 #include "../utils/Config.h"
@@ -16,7 +17,7 @@ using namespace deuteron;
 
 void Spectra(const char *cutSettings = "", const bool binCounting = false, const int bkg_shape = 1, const bool sigmoidCorrection = true, const char *histoNameDir = ".", const char *outFileName = "SpectraDeuteron", const char *outFileOption = "recreate", const char *dataFile = "AnalysisResults", const char *signalFile = "SignalDeuteron", const char *effFile = "EfficiencyDeuteron", const char *primFile = "PrimaryDeuteron")
 {
-  gStyle->SetOptFit(1111);
+  gStyle->SetOptFit(0);
 
   TH2F *fNevents;
   TFile *inFileDat = TFile::Open(Form("%s/%s.root", kDataDir, dataFile));
@@ -110,11 +111,24 @@ void Spectra(const char *cutSettings = "", const bool binCounting = false, const
       }
     }
     fRatio[iCent]->GetXaxis()->SetTitle(kAxisTitlePt);
-    fRatio[iCent]->GetYaxis()->SetTitle(Form("%s/%s", kAntimatterMatterLabel[0], kAntimatterMatterLabel[1]));
-    gStyle->SetOptFit(1111);
+    fRatio[iCent]->GetYaxis()->SetTitle(Form("Ratio %s/%s", kAntimatterMatterLabel[0], kAntimatterMatterLabel[1]));
     fRatio[iCent]->SetTitle(Form("%.0f-%.0f%%", kCentBinsLimitsDeuteron[iCent][0], kCentBinsLimitsDeuteron[iCent][1]));
     fRatio[iCent]->Fit("pol0");
     fRatio[iCent]->Write();
+    
+    TCanvas cRatio("cRatio", "cRatio");
+    cRatio.SetTicks(1, 1);
+    cRatio.cd();
+    fRatio[iCent]->GetXaxis()->SetRangeUser(1.,5.);
+    fRatio[iCent]->GetYaxis()->SetRangeUser(0., 1.4);
+    fRatio[iCent]->Draw("");
+    TLatex chi2(3.5, 1.15, Form("#chi^{2}/NDF = %.2f/%d", fRatio[iCent]->GetFunction("pol0")->GetChisquare(), fRatio[iCent]->GetFunction("pol0")->GetNDF()));
+    chi2.SetTextSize(0.035);
+    TLatex p0(3.5, 1.3, Form("R = %.3f #pm %.3f", fRatio[iCent]->GetFunction("pol0")->GetParameter(0), fRatio[iCent]->GetFunction("pol0")->GetParError(0)));
+    p0.SetTextSize(0.035);
+    chi2.Draw("same");
+    p0.Draw("same");
+    cRatio.Print(Form("%s/%s.png", kPlotDir, fRatio[iCent]->GetName()));
   }
   outFile.Close();
 }

@@ -5,6 +5,7 @@
 #include <string.h>
 
 #include <TFile.h>
+#include <TStyle.h>
 #include <TDirectory.h>
 #include <TFitResultPtr.h>
 #include <TFitResult.h>
@@ -14,6 +15,7 @@
 #include <TRandom.h>
 #include <TH1D.h>
 #include <TF1.h>
+#include <TCanvas.h>
 
 #include "../utils/Config.h"
 
@@ -23,6 +25,7 @@ using namespace he3;
 
 void Systematics(const int points = kNPoints, const bool cutVar = true, const bool binCountingVar = true, const bool expVar = true, const bool sigmoidVar = true, const char *outFileName = "SystematicsAll")
 {
+  gStyle->SetOptStat(110001110);
   TStopwatch swatch;
   swatch.Start(true);
 
@@ -96,7 +99,8 @@ void Systematics(const int points = kNPoints, const bool cutVar = true, const bo
       auto fit = fRatio.Fit(&fitFunc, "QS");
 
       int ndf = 10;
-      if (iC == 2) ndf = 8;
+      if (iC == 2)
+        ndf = 8;
       if (fit->Status() == 0 && fit->Prob() > 0.025 && fit->Prob() < 0.975 && fit->Ndf() == ndf)
       { // check chi2
         fFitPar.Fill(fitFunc.GetParameter(0));
@@ -110,8 +114,21 @@ void Systematics(const int points = kNPoints, const bool cutVar = true, const bo
 
     cdHist->cd();
     fFitPar.GetYaxis()->SetTitle("Entries");
-    fFitPar.GetXaxis()->SetTitle("p0 (^{3}#bar{He}/^{3}He)");
+    fFitPar.GetXaxis()->SetTitle("R (^{3}#bar{He}/^{3}He)");
+    fFitPar.SetDrawOption("histo");
+    fFitPar.Rebin(8);
+    fFitPar.SetFillStyle(3345);
+    fFitPar.SetLineWidth(2);
+    fFitPar.SetLineColor(kBlue);
+    fFitPar.SetFillColor(kBlue);
     fFitPar.Write();
+
+    TCanvas cFitPar("cFitPar", "cFitPar");
+    cFitPar.cd();
+    cFitPar.SetTicks(1, 1);
+    fFitPar.GetXaxis()->SetRangeUser(0.92,0.99);
+    fFitPar.Draw("");
+    cFitPar.Print(Form("%s/Systematics_%s.png", kPlotDir, fFitPar.GetName()));
 
     fProb.GetYaxis()->SetTitle("Entries");
     fProb.GetXaxis()->SetTitle("#it{P}( #chi^{2} > #chi^{2}_{#it{obs}} )");
