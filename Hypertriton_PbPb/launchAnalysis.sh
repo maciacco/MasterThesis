@@ -1,32 +1,32 @@
 # preselection efficiency
-python3 ml_analysis.py -m -s -eff
+#python3 ml_analysis.py -m -s -eff
 
 # plot feature distributions and correlations
 # python3 ml_analysis.py -s -m
 
 # train/test models and compute scores
-python3 ml_analysis.py -m -s -t -c
+#python3 ml_analysis.py -m -s -t -c
 
 # application
-python3 ml_analysis.py -s -m -a
+#python3 ml_analysis.py -s -m -a
 
 # significance scan
 python3 significance_scan.py
 
 # signal extraction (pol1)
-python3 signal_extraction.py
+#python3 signal_extraction.py
 
 # signal extraction (expo)
-python3 signal_extraction.py -b
+#python3 signal_extraction.py -b
 
 # absorption correction
-he3_absorption_analysis.py
+#he3_absorption_analysis.py
 
 # lifetime fits + ratio
-python3 ratio.py
+#python3 ratio.py
 
 # systematics (ratio)
-python3 systematics_ratio.py
+#python3 systematics_ratio.py
 
 # systematics (cpt)
-python3 systematics_cpt.py
+#python3 systematics_cpt.py

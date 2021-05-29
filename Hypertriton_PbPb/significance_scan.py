@@ -143,12 +143,16 @@ for split in SPLIT_LIST:
                 # plot histograms
                 if not os.path.isdir(f'plots/significance_scan/{bin}'):
                     os.mkdir(f'plots/significance_scan/{bin}')
-                plt.errorbar(side_bins, side_counts, side_errors, fmt='o')
-                plt.errorbar(mass_bins, mass_counts, np.sqrt(mass_counts), fmt='o')
-                plt.plot(xx_side, yy_side)
-                plt.plot(xx_mass, yy_mass)
+                fig = plt.figure()
+                plt.errorbar(side_bins, side_counts, side_errors, fmt='o', label='Data', color='blue', ecolor='black')
+                plt.errorbar(mass_bins, mass_counts, np.sqrt(mass_counts), fmt='o', label='Pseudodata', color='red', ecolor='black')
+                plt.plot(xx_side, yy_side, label='Background fit', color='green')
+                plt.plot(xx_mass, yy_mass, label='Gaussian model', color='orange')
                 plt.xlabel(r'$M \ (^{3}He + \pi^{-}) \ (\mathrm{GeV}/\it{c}^{2})$')
                 plt.ylabel(r'$\mathrm{Entries}/(2.5 \mathrm{MeV}/\it{c}^{2})$')
+                handles, labels = fig.gca().get_legend_handles_labels()
+                order = [2, 3, 0, 1]
+                plt.legend([handles[idx] for idx in order], [labels[idx] for idx in order], loc='upper right')
                 plt.savefig(f'plots/significance_scan/{bin}/{formatted_eff}_{bin}.png')
                 plt.close('all')
 
