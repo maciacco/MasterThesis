@@ -39,6 +39,8 @@ def presel_eff_hist(df_list, col_name, split, cent_bins, bins):
         hist_eff.GetXaxis().SetTitle('#it{p}_{T} (GeV/#it{c})')
     hist_eff.GetYaxis().SetTitle('Efficiency')
     hist_eff.SetMinimum(0)
+    hist_eff.SetDrawOption("histo")
+    hist_eff.SetLineWidth(2)
 
     # return histogram
     return hist_eff
@@ -117,8 +119,6 @@ if TRAINING:
     if not os.path.isdir('df'):
         os.mkdir('df')
 
-    score_eff_arrays_dict = dict()
-
     for split in SPLIT_LIST:
 
         split_ineq_sign = '> -0.1'
@@ -151,9 +151,10 @@ if TRAINING:
                 c1 = ROOT.TCanvas()
                 ROOT.gStyle.SetOptStat(0)
                 c1.cd()
-                hist_eff_ct.Draw()
+                c1.SetTicks(1,1)
+                hist_eff_ct.Draw("histo")
                 c1.Print(f'{PLOT_DIR}/presel_eff/hPreselEffVsCt_{split}_{cent_bins[0]}_{cent_bins[1]}.png')
-                hist_eff_pt.Draw()
+                hist_eff_pt.Draw("histo")
                 c1.Print(f'{PLOT_DIR}/presel_eff/hPreselEffVsPt_{split}_{cent_bins[0]}_{cent_bins[1]}.png')
 
                 root_file_presel_eff = ROOT.TFile("PreselEff.root", "update")
@@ -196,7 +197,11 @@ if TRAINING:
         plot_utils.plot_corr([signal_tree_handler], TRAINING_COLUMNS_LIST, ['signal'])
         plt.savefig(f'{PLOT_DIR}/features/SignalCorrelationMatrix')
         plt.close('all')
+
+        exit()
         ###########################################################
+
+    score_eff_arrays_dict = dict()
 
     for ct_bins in CT_BINS:
 
