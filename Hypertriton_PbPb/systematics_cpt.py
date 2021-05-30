@@ -182,6 +182,19 @@ for i_cent_bins in range(len(CENTRALITY_LIST)):
     h_asymmetry_distribution.GetXaxis().SetTitle("Asymmetry (ps)")
     h_asymmetry_distribution.GetYaxis().SetTitle("Entries")
     h_asymmetry_distribution.Write()
+
+    # save plots
+    h_asymmetry_distribution.Rebin(8)
+    c = ROOT.TCanvas("c", "c")
+    ROOT.gStyle.SetOptStat(110001110)
+    c.SetTicks(1, 1)
+    h_asymmetry_distribution.SetDrawOption("histo")
+    h_asymmetry_distribution.SetLineWidth(2)
+    h_asymmetry_distribution.SetFillStyle(3345)
+    h_asymmetry_distribution.SetFillColor(ROOT.kBlue)
+    h_asymmetry_distribution.Draw("histo")
+    c.Print(f"plots/{h_asymmetry_distribution.GetName()}.png")
+
     h_prob_distribution.GetXaxis().SetTitle("Prob")
     h_prob_distribution.GetYaxis().SetTitle("Entries")
     h_prob_distribution.Write()

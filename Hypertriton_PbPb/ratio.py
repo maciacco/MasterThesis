@@ -39,6 +39,9 @@ SPLIT_LIST = ['']
 if SPLIT:
     SPLIT_LIST = ['antimatter', 'matter']
 
+if not os.path.isdir("plots/cpt_and_lifetime"):
+    os.mkdir("plots/cpt_and_lifetime")
+
 eff_cut_dict = pickle.load(open("file_eff_cut_dict", "rb"))
 presel_eff_file = uproot.open('PreselEff.root')
 signal_extraction_file = ROOT.TFile.Open('SignalExtraction.root')
@@ -126,6 +129,9 @@ for i_cent_bins in range(len(CENTRALITY_LIST)):
             bin_error = h_corrected_yields[i_split].GetBinError(i_bin)
             h_corrected_yields[i_split].SetBinContent(i_bin, bin_content/bin_width)
             h_corrected_yields[i_split].SetBinError(i_bin, bin_error/bin_width)
+        h_corrected_yields[i_split].GetYaxis().SetRangeUser(1., 450.)
+        h_corrected_yields[i_split].SetMarkerStyle(20)
+        h_corrected_yields[i_split].SetMarkerSize(0.8)
         h_corrected_yields[i_split].Write()
 
         # fit with exponential pdf
@@ -136,21 +142,30 @@ for i_cent_bins in range(len(CENTRALITY_LIST)):
             fit_function_expo = ROOT.TF1("expo", "expo", 0, 35)
         h_corrected_yields[i_split].Fit(fit_function_expo, "RMIS+")
 
-        # compute lifetime
+        # compute and display lifetime
         tau = -1/fit_function_expo.GetParameter(1)*100/SPEED_OF_LIGHT # ps
         tau_error = fit_function_expo.GetParError(1)*100/SPEED_OF_LIGHT/fit_function_expo.GetParameter(1)/fit_function_expo.GetParameter(1) # ps
-        tau_text = ROOT.TLatex(4, 0.9*h_corrected_yields[i_split].GetMaximum(), '#tau = ' + "{:.2f}".format(tau) + '#pm' + "{:.2f}".format(tau_error) + ' ps')
+        tau_text = ROOT.TLatex(20, 100, '#tau = ' + "{:.0f}".format(tau) + '#pm' + "{:.0f}".format(tau_error) + ' ps')
         tau_text.SetTextSize(0.035)
+        
+        # display chi2
+        formatted_chi2_lifetime = "{:.2f}".format(fit_function_expo.GetChisquare())
+        chi2_lifetime_text = ROOT.TLatex(20, 70, "#chi^{2}/NDF = "+formatted_chi2_lifetime+"/"+str(fit_function_expo.GetNDF()))
+        chi2_lifetime_text.SetTextSize(0.035)
 
         # draw on canvas
         canv = ROOT.TCanvas()
+        ROOT.gStyle.SetOptStat(0)
+        canv.SetTicks(1, 1)
         canv.SetName(h_corrected_yields[i_split].GetName())
         canv.SetTitle(h_corrected_yields[i_split].GetTitle())
         canv.cd()
         h_corrected_yields[i_split].Draw("")
         tau_text.Draw("same")
+        chi2_lifetime_text.Draw("same")
         canv.SetLogy()
         canv.Write() # write to file
+        canv.Print(f'plots/cpt_and_lifetime/{h_corrected_yields[i_split].GetName()}.png')
 
     # ratios
     ROOT.gStyle.SetOptStat(0)
