@@ -189,6 +189,7 @@ void Secondary(const float cutDCAz = 1.f, const int cutTPCcls = 89, const char *
             gStyle->SetOptStat(0);
             fDCAdatProj->Scale(1, "width");
             result->Scale(1, "width");
+            fDCAdatProj->GetYaxis()->SetRangeUser(1.,1.e5);
             fDCAdatProj->Draw("Ep");
             result->Draw("histosame");
             fDCAdatProj->Draw("Epsame");
@@ -208,7 +209,7 @@ void Secondary(const float cutDCAz = 1.f, const int cutTPCcls = 89, const char *
             mc1->Draw("histosame");
             leg.SetBorderSize(0);
             leg.Draw("same");
-            TLatex chiSq(-1., 0.2 * result->GetMaximum(), Form("#chi^{2}/NDF=%.2f", chi2 / fit->GetNDF()));
+            TLatex chiSq(0.28, 500, Form("#chi^{2}/NDF=%.2f", chi2 / fit->GetNDF()));
             chiSq.SetTextSize(0.035);
             TLatex prob(-1., 0.1 * result->GetMaximum(), Form("prob=%.7f", fit->GetProb()));
             // TLatex frac1(-1, 0.75 * result->GetMaximum(), Form("%.3f +- %.3f", fracMc1, errFracMc1));
