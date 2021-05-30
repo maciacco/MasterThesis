@@ -23,6 +23,9 @@ CT_BINS_CENT = params['CT_BINS_CENT']
 CENTRALITY_LIST = params['CENTRALITY_LIST']
 ##################################################################
 
+if not os.path.isdir(f'plots/absorption_correction'):
+    os.mkdir(f'plots/absorption_correction')
+
 split_list = ['antimatter', 'matter']
 cent_bins_MB = [[0, 10], [10, 40], [40, 90]]
 
@@ -211,6 +214,13 @@ for i_cent in range(cent_len):
             eff_ct.GetXaxis().SetTitle("#it{c}t (cm)")
             eff_ct.GetYaxis().SetTitle("1 - #it{f}_{abs}")
             eff_ct.Write(f"fEffCt_{split_list[i_matt]}_{cent_bins[0]}_{cent_bins[1]}_{func_name}")
+            
+            # plot the absorption correction (as a function of ct)
+            canv = ROOT.TCanvas("canv", "canv")
+            canv.cd()
+            canv.SetTicks(1, 1)
+            eff_ct.Draw()
+            canv.Print(f"plots/absorption_correction/fEffCt_{split_list[i_matt]}_{cent_bins[0]}_{cent_bins[1]}_{func_name}.png")
 
             h_rec_pt[i_cent][i_fun][i_matt].Write()
             h_gen_pt[i_cent][i_fun][i_matt].Write()

@@ -96,6 +96,7 @@ for split in SPLIT_LIST:
                 shifted_mass = ROOT.RooAddition("mPrime", "m + #Deltam", ROOT.RooArgList(roo_m, delta_mass))
                 roo_signal = ROOT.RooKeysPdf("signal", "signal", shifted_mass, roo_m,
                                              roo_mc_signal, ROOT.RooKeysPdf.NoMirror, 2)
+                roo_signal_plot = ROOT.RooKeysPdf(roo_signal)
 
                 # background
                 roo_n_background = ROOT.RooRealVar('N_{bkg}', 'Nbackground', 0., 1.e4)
@@ -126,7 +127,7 @@ for split in SPLIT_LIST:
                     xframe = roo_m.frame(2.96, 3.025, nBins)
                     xframe.SetTitle(
                         str(ct_bins[0]) + '#leq #it{c}t<' + str(ct_bins[1]) + ' cm, ' + str(cent_bins[0]) + '-' +
-                        str(cent_bins[1]) + '%, ' + str(formatted_eff))
+                        str(cent_bins[1]) + '%, BDT efficiency = ' + str(formatted_eff))
                     xframe.SetName(f'fInvMass_{formatted_eff}')
                     roo_data.plotOn(xframe, ROOT.RooFit.Name('data'))
                     roo_model.plotOn(
@@ -217,15 +218,21 @@ for split in SPLIT_LIST:
 
                             # plot kde and mc
                             frame = roo_m.frame(2.96, 3.025, 130)
+                            frame.SetTitle(str(cent_bins[0])+"-"+str(cent_bins[1])+"%, "+str(ct_bins[0])+"#leq #it{c}t<"+str(ct_bins[1])+" cm, BDT efficiency = "+str(formatted_eff))
                             roo_mc_signal.plotOn(frame)
-                            roo_signal.plotOn(frame)
-                            gaus.plotOn(frame, ROOT.RooFit.LineColor(ROOT.kRed), ROOT.RooFit.LineStyle(ROOT.kDashed))
+                            roo_signal_plot.plotOn(frame, ROOT.RooFit.Name("KDE"))
+                            gaus.plotOn(frame, ROOT.RooFit.Name("gaussian"), ROOT.RooFit.LineColor(ROOT.kRed), ROOT.RooFit.LineStyle(ROOT.kDashed))
                             cc = ROOT.TCanvas("cc", "cc")
                             if not os.path.isdir('plots/kde_signal'):
                                 os.mkdir('plots/kde_signal')
                             if not os.path.isdir(f'plots/kde_signal/{bin}'):
                                 os.mkdir(f'plots/kde_signal/{bin}')
                             frame.Draw()
+                            leg_mc = ROOT.TLegend(0.6, 0.8, 0.85, 0.7)
+                            leg_mc.AddEntry(frame.findObject("KDE"), "KDE")
+                            leg_mc.AddEntry(frame.findObject("gaussian"), "Gaussian")
+                            leg_mc.SetBorderSize(0)
+                            leg_mc.Draw("same")
                             cc.SetLogy(ROOT.kTRUE)
                             cc.Print(f'plots/kde_signal/{bin}/{formatted_eff}_{bin}.png')
 

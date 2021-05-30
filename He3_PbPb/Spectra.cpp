@@ -128,7 +128,7 @@ void Spectra(const float cutDCAz = 1.f, const int cutTPCcls = 89, const bool bin
     fRatio[iCent]->Draw("");
     TLatex chi2(6., 1.45, Form("#chi^{2}/NDF = %.2f/%d", fRatio[iCent]->GetFunction("pol0")->GetChisquare(), fRatio[iCent]->GetFunction("pol0")->GetNDF()));
     chi2.SetTextSize(0.035);
-    TLatex p0(6., 1.6, Form("R = %.2f #pm %.2f", fRatio[iCent]->GetFunction("pol0")->GetParameter(0), fRatio[iCent]->GetFunction("pol0")->GetParError(0)));
+    TLatex p0(6., 1.6, Form("R = %.3f #pm %.3f", fRatio[iCent]->GetFunction("pol0")->GetParameter(0), fRatio[iCent]->GetFunction("pol0")->GetParError(0)));
     p0.SetTextSize(0.035);
     chi2.Draw("same");
     p0.Draw("same");

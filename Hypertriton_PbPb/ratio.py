@@ -151,15 +151,36 @@ for i_cent_bins in range(len(CENTRALITY_LIST)):
         canv.Write() # write to file
 
     # ratios
+    ROOT.gStyle.SetOptStat(0)
     h_ratio = ROOT.TH1D(h_corrected_yields[0])
     h_ratio.SetName(f'fRatio_{cent_bins[0]}_{cent_bins[1]}')
     h_ratio.SetTitle(f'{cent_bins[0]}-{cent_bins[1]}%')
     h_ratio.Divide(h_corrected_yields[0], h_corrected_yields[1], 1, 1)
     h_ratio.GetYaxis().SetTitle("ratio ^{3}_{#bar{#Lambda}}#bar{H} / ^{3}_{#Lambda}H")
+    h_ratio.GetYaxis().SetRangeUser(0., 1.8)
     h_ratio.SetMarkerStyle(20)
     h_ratio.SetMarkerSize(0.8)
     h_ratio.Fit("pol0")
     h_ratio.Write()
+
+    # plot ratios
+    c = ROOT.TCanvas("c", "c")
+    c.SetTicks(1, 1)
+    c.cd()
+    h_ratio.Draw()
+    formatted_ratio = "{:.2f}".format(h_ratio.GetFunction("pol0").GetParameter(0))
+    formatted_ratio_error = "{:.2f}".format(h_ratio.GetFunction("pol0").GetParError(0))
+    text_x_position = 20
+    if cent_bins[0] == 30:
+        text_x_position = 8
+    ratio_text = ROOT.TLatex(text_x_position, 1.6, f"R = {formatted_ratio} #pm {formatted_ratio_error}")
+    ratio_text.SetTextSize(0.035)
+    ratio_text.Draw("same")
+    formatted_chi2 = "{:.2f}".format(h_ratio.GetFunction("pol0").GetChisquare())
+    chi2_text = ROOT.TLatex(text_x_position, 1.45, "#chi^{2}/NDF = "+formatted_ratio+"/"+str(h_ratio.GetFunction("pol0").GetNDF()))
+    chi2_text.SetTextSize(0.035)
+    chi2_text.Draw("same")
+    c.Print(f"plots/{h_ratio.GetName()}.png")
 
     del h_corrected_yields
     del h_ratio
