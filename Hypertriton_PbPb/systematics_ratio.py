@@ -157,11 +157,27 @@ for i_cent_bins in range(len(CENTRALITY_LIST)):
 
     systematics_file.cd()
     h_parameter_distribution.GetXaxis().SetTitle("p_{0}")
+    h_parameter_distribution.GetXaxis().SetRangeUser(0.4, 1.4)
     h_parameter_distribution.GetYaxis().SetTitle("Entries")
+    h_parameter_distribution.GetXaxis().SetTitle("R ( ^{3}_{#bar{#Lambda}}#bar{H} / ^{3}_{#Lambda}H)")
+    h_parameter_distribution.SetDrawOption("histo")
+    h_parameter_distribution.SetLineWidth(2)
+    h_parameter_distribution.SetFillStyle(3345)
+    h_parameter_distribution.SetFillColor(ROOT.kBlue)
     h_parameter_distribution.Write()
     h_prob_distribution.GetXaxis().SetTitle("Prob")
     h_prob_distribution.GetYaxis().SetTitle("Entries")
     h_prob_distribution.Write()
+
+    # plot systematics distribution
+    c = ROOT.TCanvas("c", "c")
+    ROOT.gStyle.SetOptStat(110001110)
+    c.cd()
+    c.SetTicks(1, 1)
+    h_parameter_distribution.Rebin(2)
+    h_parameter_distribution.GetXaxis().SetRangeUser(0.2, 1.6)
+    h_parameter_distribution.Draw("histo")
+    c.Print(f"plots/{h_parameter_distribution.GetName()}.png")
 
     del h_parameter_distribution
     del h_prob_distribution

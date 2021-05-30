@@ -67,6 +67,8 @@ for i_cent_bins in range(len(CENTRALITY_LIST)):
         # list of corrected yields
         ct_bins_tmp = [0]
         ct_bins_tmp += CT_BINS_CENT[i_cent_bins]
+        if cent_bins[0]==30:
+            ct_bins_tmp = [0, 2, 4, 7, 14, 35]
         #if cent_bins[1] == 90:
         #    ct_bin_tmp = CT_BINS_CENT[i_cent_bins]
         bins = np.array(ct_bins_tmp, dtype=float)
@@ -158,6 +160,7 @@ for i_cent_bins in range(len(CENTRALITY_LIST)):
     h_ratio.Divide(h_corrected_yields[0], h_corrected_yields[1], 1, 1)
     h_ratio.GetYaxis().SetTitle("ratio ^{3}_{#bar{#Lambda}}#bar{H} / ^{3}_{#Lambda}H")
     h_ratio.GetYaxis().SetRangeUser(0., 1.8)
+    h_ratio.GetXaxis().SetRangeUser(0., 35.)
     h_ratio.SetMarkerStyle(20)
     h_ratio.SetMarkerSize(0.8)
     h_ratio.Fit("pol0")
@@ -171,8 +174,6 @@ for i_cent_bins in range(len(CENTRALITY_LIST)):
     formatted_ratio = "{:.2f}".format(h_ratio.GetFunction("pol0").GetParameter(0))
     formatted_ratio_error = "{:.2f}".format(h_ratio.GetFunction("pol0").GetParError(0))
     text_x_position = 20
-    if cent_bins[0] == 30:
-        text_x_position = 8
     ratio_text = ROOT.TLatex(text_x_position, 1.6, f"R = {formatted_ratio} #pm {formatted_ratio_error}")
     ratio_text.SetTextSize(0.035)
     ratio_text.Draw("same")
