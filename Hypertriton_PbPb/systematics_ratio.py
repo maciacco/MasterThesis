@@ -172,6 +172,8 @@ for i_cent_bins in range(len(CENTRALITY_LIST)):
     # plot systematics distribution
     c = ROOT.TCanvas("c", "c")
     ROOT.gStyle.SetOptStat(110001110)
+    ROOT.gStyle.SetStatX(0.85);
+    ROOT.gStyle.SetStatY(0.85);
     c.cd()
     c.SetTicks(1, 1)
     h_parameter_distribution.Rebin(2)

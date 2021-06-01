@@ -5,6 +5,11 @@ path_he3 = './He3_PbPb/out'
 path_hyp = './Hypertriton_PbPb'
 centrality_classes = [[0, 5], [5, 10], [30, 50]]
 
+ROOT.gStyle.SetPadTickY(1)
+ROOT.gStyle.SetPadTickX(1)
+ROOT.gStyle.SetOptStat(0)
+ROOT.gStyle.SetTextFont(4)
+
 file_he3 = ROOT.TFile.Open(path_he3 + '/SpectraHe3.root')
 file_hyp = ROOT.TFile.Open(path_hyp + '/Ratio.root')
 
@@ -44,7 +49,20 @@ for cent in centrality_classes:
     a.SetBinLabel(10,'3')
     a.SetLabelSize(0.05)
 
+    # set histogram style
+    ratios_vs_b.SetTitle(f'{cent[0]}-{cent[1]}%')
+    ratios_vs_b.SetDrawOption("pe")
+    ratios_vs_b.SetMarkerStyle(20)
+    ratios_vs_b.SetMarkerSize(0.8)
+    ratios_vs_b.GetYaxis().SetRangeUser(0., 1.2)
+
     # write to file
     ratios_vs_b.Write()
+    
+    # save plot
+    c = ROOT.TCanvas("c", "c")
+    c.cd()
+    ratios_vs_b.Draw()
+    c.Print(f"Ratios_{cent[0]}_{cent[1]}.png")
 
 file_out.Close()

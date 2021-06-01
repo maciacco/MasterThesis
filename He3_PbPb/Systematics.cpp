@@ -16,6 +16,7 @@
 #include <TH1D.h>
 #include <TF1.h>
 #include <TCanvas.h>
+#include <TPaveStats.h>
 
 #include "../utils/Config.h"
 
@@ -26,6 +27,8 @@ using namespace he3;
 void Systematics(const int points = kNPoints, const bool cutVar = true, const bool binCountingVar = true, const bool expVar = true, const bool sigmoidVar = true, const char *outFileName = "SystematicsAll")
 {
   gStyle->SetOptStat(110001110);
+  gStyle->SetStatX(0.85);
+  gStyle->SetStatY(0.85);
   TStopwatch swatch;
   swatch.Start(true);
 

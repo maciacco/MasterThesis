@@ -78,7 +78,7 @@ void Spectra(const float cutDCAz = 1.f, const int cutTPCcls = 89, const bool bin
         double effError = eff->GetBinError(iPtBin);
 
         double primary = 0.;
-        (!sigmoidCorrection && raw->GetBinCenter(iPtBin) < 6.9) ? primary = sec->GetBinContent(iPtBin) : primary = sec_f->Eval(raw->GetXaxis()->GetBinCenter(iPtBin));
+        (!sigmoidCorrection && raw->GetBinCenter(iPtBin) < 6.5) ? primary = sec->GetBinContent(iPtBin) : primary = sec_f->Eval(raw->GetXaxis()->GetBinCenter(iPtBin));
         fSpectra[iMatt]->SetBinContent(iPtBin, rawYield * primary / efficiency);
         fSpectra[iMatt]->SetBinError(iPtBin, rawYield * primary / efficiency * TMath::Sqrt(effError * effError / efficiency / efficiency + rawYieldError * rawYieldError / rawYield / rawYield));
       }

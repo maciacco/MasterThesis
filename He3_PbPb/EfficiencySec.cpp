@@ -24,6 +24,7 @@ void EfficiencySec(const float cutDCAz = 1.f, const int cutTPCcls = 89, const ch
   gStyle->SetPadTickY(1);
 
   TFile inFile(Form("%s/%s.root", kResDir, inFileNameMC));
+  TFile inFileEff(Form("%s/%s.root", kOutDir, "EfficiencyHe3"));
   TFile outFile(Form("%s/%s.root", kOutDir, outFileNameEff), "RECREATE");
 
   gStyle->SetOptStat(0);
@@ -39,6 +40,8 @@ void EfficiencySec(const float cutDCAz = 1.f, const int cutTPCcls = 89, const ch
 
     for (int iCent = 0; iCent < kNCentClasses; ++iCent)
     { // loop over centrality
+      TH1D *fEff = (TH1D*)inFileEff.Get(Form("f%sEff_TPC_%.0f_%.0f", kAntimatterMatter[iMatt], kCentBinsLimitsHe3[iCent][0], kCentBinsLimitsHe3[iCent][1]));
+      if(!fEff){std::cout<<"No efficiency file!"<<std::endl;return;}
       TH1D *fTotal_Pt = fTotal->ProjectionY(TString::Format("f%sTotal_Pt", kAntimatterMatter[iMatt]), kCentBinsHe3[iCent][0], kCentBinsHe3[iCent][1]);
       TH1D *fITS_TPC_Pt = fITS_TPC->ProjectionY(TString::Format("f%sITS_TPC_Pt", kAntimatterMatter[iMatt]), kCentBinsHe3[iCent][0], kCentBinsHe3[iCent][1]);
       TH1D fEffPt(TString::Format("f%sEff_TPC_%.0f_%.0f", kAntimatterMatter[iMatt], kCentBinsLimitsHe3[iCent][0], kCentBinsLimitsHe3[iCent][1]), TString::Format("%s #it{f}_{#it{wd}}, %.0f-%.0f%%", kAntimatterMatterLabel[iMatt], kCentBinsLimitsHe3[iCent][0], kCentBinsLimitsHe3[iCent][1]), kNPtBins, pTbins);
@@ -55,11 +58,12 @@ void EfficiencySec(const float cutDCAz = 1.f, const int cutTPCcls = 89, const ch
       }
 
       int nUsedPtBins = 0;
-      (iCent == 0) ? nUsedPtBins = 12 : nUsedPtBins = 11;
+      (iCent <2) ? nUsedPtBins = 11 : nUsedPtBins = 10;
       for (int iPtBin = 1; iPtBin < nUsedPtBins + 1; ++iPtBin)
       {
         fEffPt.SetBinContent(iPtBin, kHyperTritonHe3BR * hyperTritonToHe3Ratio * Eff(fITS_TPC_Pt, fTotal_Pt, fEffPt.GetXaxis()->GetBinCenter(iPtBin)));
         fEffPt.SetBinError(iPtBin, kHyperTritonHe3BR * EffErr(&fEffPt, fTotal_Pt, fEffPt.GetXaxis()->GetBinCenter(iPtBin)));
+        fEffPt.SetBinContent(iPtBin, fEffPt.GetBinContent(iPtBin)/fEff->GetBinContent(iPtBin));
       }
       fEffPt.SetMarkerStyle(20);
       fEffPt.SetMarkerSize(0.8);

@@ -130,8 +130,8 @@ void SignalBinned(const char *cutSettings = "", const bool binCounting = false, 
         // build composite model
         RooRealVar mean("#mu", "mean", gaus.GetParameter(1), 0.0, gaus.GetParameter(1) + 0.5, "GeV^{2}/#it{c^{4}}");
         RooRealVar *sigma = new RooRealVar("#sigma", "sigma", gaus.GetParameter(2), gaus.GetParameter(2) - 0.05, gaus.GetParameter(2) + 0.2, "GeV^{2}/#it{c^{4}}");
-        RooRealVar *alpha1 = new RooRealVar("#alpha_{1}", "alpha1", -2.0, -0.5);
-        RooRealVar *alpha = new RooRealVar("#alpha", "alpha", 0.0, 10.);
+        RooRealVar *alpha1 = new RooRealVar("#alpha_{L}", "alpha1", -2.0, -0.5);
+        RooRealVar *alpha = new RooRealVar("#alpha_{R}", "alpha", 0.0, 10.);
         RooRealVar a1("a1","a1",1.,1.,2.);
         RooRealVar a2("a2","a2",1., 1.,2.);
         RooRealVar n1("n1","n1", 2.,10.);
@@ -179,16 +179,16 @@ void SignalBinned(const char *cutSettings = "", const bool binCounting = false, 
         { // expo
           if ((ptMin < 1.41) || (ptMin > 1.59 && ptMin < 1.61 && iCent == 1))
           {
-            slope1 = new RooRealVar("slope_{1}", "slope1", -0.2, -1., -0.1);
+            slope1 = new RooRealVar("#tau_{mismatch}", "slope1", -0.2, -1., -0.1);
             background = (RooAbsPdf *)new RooExponential("background", "background", tofSignal, *slope1);
           }
           else
           {
-            slope1 = new RooRealVar("slope_{1}", "slope1", -2.1, -5., -2.0);
-            slope2 = new RooRealVar("slope_{2}", "slope2", -0.2, -1.0, -0.1);
+            slope1 = new RooRealVar("#tau_{mismatch}", "slope1", -2.1, -5., -2.0);
+            slope2 = new RooRealVar("#tau_{p}", "slope2", -0.2, -1.0, -0.1);
             background1 = (RooAbsPdf *)new RooExponential("background1", "background1", tofSignal, *slope1);
             background2 = (RooAbsPdf *)new RooExponential("background2", "background2", tofSignal, *slope2);
-            nBackground1 = new RooRealVar("nBackground1", "nBackground1", 0., 1.);
+            nBackground1 = new RooRealVar("#it{f}_{Bkg,p}", "nBackground1", 0., 1.);
 
             background = new RooAddPdf("background", "background", RooArgList(*background1, *background2), RooArgList(*nBackground1));
           }

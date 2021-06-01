@@ -27,6 +27,8 @@ void Secondary(const char *cutSettings = "", const char *inFileDatName = "Analys
 {
   gStyle->SetPadTickX(1);
   gStyle->SetPadTickY(1);
+  gStyle->SetOptStat(0);
+  gStyle->SetOptFit(0);
   // make signal extraction plots directory
   system(Form("mkdir %s/primary_fraction", kPlotDir));
 
@@ -256,6 +258,8 @@ void Secondary(const char *cutSettings = "", const char *inFileDatName = "Analys
       system(Form("mkdir %s/primary_plots", kPlotDir));
       TCanvas cPrim("cPrim", "cPrim");
       cPrim.cd();
+      fPrimaryFrac.GetXaxis()->SetRangeUser(0.8, 1.6);
+      fPrimaryFrac.GetYaxis()->SetRangeUser(0.0, 1.1);
       fPrimaryFrac.Draw("");
       cPrim.Print(Form("%s/primary_plots/%s.png", kPlotDir, fPrimaryFrac.GetName()));
     }

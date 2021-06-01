@@ -124,7 +124,7 @@ void Spectra(const char *cutSettings = "", const bool binCounting = false, const
     fRatio[iCent]->Draw("");
     TLatex chi2(3.5, 1.15, Form("#chi^{2}/NDF = %.2f/%d", fRatio[iCent]->GetFunction("pol0")->GetChisquare(), fRatio[iCent]->GetFunction("pol0")->GetNDF()));
     chi2.SetTextSize(0.035);
-    TLatex p0(3.5, 1.3, Form("R = %.3f #pm %.3f", fRatio[iCent]->GetFunction("pol0")->GetParameter(0), fRatio[iCent]->GetFunction("pol0")->GetParError(0)));
+    TLatex p0(3.5, 1.3, Form("R = %.4f #pm %.4f", fRatio[iCent]->GetFunction("pol0")->GetParameter(0), fRatio[iCent]->GetFunction("pol0")->GetParError(0)));
     p0.SetTextSize(0.035);
     chi2.Draw("same");
     p0.Draw("same");
