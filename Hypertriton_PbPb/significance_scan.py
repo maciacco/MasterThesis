@@ -194,5 +194,30 @@ for split in SPLIT_LIST:
             plt.close('all')
 
             eff_cut_dict[bin] = cut_eff[0]
+            
+            # get the systematic variation range
+            i_eff = 1
+            while i_eff < 11:
+                tmp_eff_var_right = cut_eff[0] + i_eff/100
+                tmp_eff_var_left = cut_eff[0] - i_eff/100
+                
+                # get indices in efficiency array
+                i_eff_var_right = np.where(eff_array_reduced == tmp_eff_var_right)[0][0]
+                i_eff_var_left = np.where(eff_array_reduced == tmp_eff_var_left)[0][0]
+                
+                # find corresponding significance
+                tmp_signif_left = significance_array[i_eff_var_right] * tmp_eff_var_right
+                tmp_signif_right = significance_array[i_eff_var_left] * tmp_eff_var_left
+                
+                # if one of the two is smaller than 3, exit
+                if tmp_signif_left<3. or tmp_signif_right<3. :
+                    break
+                
+                else:
+                    i_eff += 1
+
+            bin_range = f'{split}_{cent_bins[0]}_{cent_bins[1]}_{ct_bins[0]}_{ct_bins[1]}_range'
+            eff_cut_dict[bin_range] = i_eff
+            print(f'BDT efficiency cut variation range: +/-{i_eff-1}%')
 
 pickle.dump(eff_cut_dict, open("file_eff_cut_dict", "wb"))
