@@ -202,12 +202,12 @@ for split in SPLIT_LIST:
                 tmp_eff_var_left = cut_eff[0] - i_eff/100
                 
                 # get indices in efficiency array
-                i_eff_var_right = np.where(eff_array_reduced == tmp_eff_var_right)[0][0]
-                i_eff_var_left = np.where(eff_array_reduced == tmp_eff_var_left)[0][0]
+                i_eff_var_right = np.where(eff_array_reduced == tmp_eff_var_right)[0]
+                i_eff_var_left = np.where(eff_array_reduced == tmp_eff_var_left)[0]
                 
                 # find corresponding significance
-                tmp_signif_left = significance_array[i_eff_var_right] * tmp_eff_var_right
-                tmp_signif_right = significance_array[i_eff_var_left] * tmp_eff_var_left
+                tmp_signif_left = significance_array[i_eff_var_right] / tmp_eff_var_right
+                tmp_signif_right = significance_array[i_eff_var_left] / tmp_eff_var_left
                 
                 # if one of the two is smaller than 3, exit
                 if tmp_signif_left<3. or tmp_signif_right<3. :

@@ -114,9 +114,12 @@ for i_cent_bins in range(len(CENTRALITY_LIST)):
                     eff_cut_sign *= -1
                     formatted_eff_cut = "{:.2f}".format(eff_cut_dict[bin]+eff_cut_increment*eff_cut_sign)
 
-                # random sample of cut
-                lower_limit = float(formatted_eff_cut) - 0.10
-                upper_limit = float(formatted_eff_cut) + 0.10
+                # random sample of cut (upper and lower limits from significance scan)
+                bin_range = f'{split}_{cent_bins[0]}_{cent_bins[1]}_{ct_bins[0]}_{ct_bins[1]}_range'
+                eff_cut_range = eff_cut_dict[bin_range]/100 - 0.01
+                #print(f"BDT efficiency cut variation range: {eff_cut_range}")
+                lower_limit = float(formatted_eff_cut) - eff_cut_range
+                upper_limit = float(formatted_eff_cut) + eff_cut_range
                 if float(formatted_eff_cut) > THRESH_EFF:
                     upper_limit = MAX_EFF
                 random_cut = lower_limit + ROOT.gRandom.Rndm()*(upper_limit-lower_limit)
