@@ -28,7 +28,7 @@ void Secondary(const char *cutSettings = "", const char *inFileDatName = "Analys
   gStyle->SetPadTickX(1);
   gStyle->SetPadTickY(1);
   gStyle->SetOptStat(0);
-  gStyle->SetOptFit(0);
+  gStyle->SetOptFit(111);
   // make signal extraction plots directory
   system(Form("mkdir %s/primary_fraction", kPlotDir));
 
@@ -93,9 +93,16 @@ void Secondary(const char *cutSettings = "", const char *inFileDatName = "Analys
         else
           continue;
         //fDCAMcProjSec = fDCAsecHighPt->ProjectionZ(TString::Format("f%sDCASecondary_%.0f_%.0f_%.2f_%.2f", kAntimatterMatter[iMatt], fDCAdat->GetXaxis()->GetBinLowEdge(kCentBinsDeuteron[iCent][0]), fDCAdat->GetXaxis()->GetBinUpEdge(kCentBinsDeuteron[iCent][1]), fDCAdat->GetYaxis()->GetBinLowEdge(pTbinsIndexMin), fDCAdat->GetYaxis()->GetBinUpEdge(pTbinsIndexMax)), kCentBinsDeuteron[0][0], kCentBinsDeuteron[iCent][1], pTbinsIndexMin, pTbinsIndexMax);
-        fDCAdatProj = (TH1D *)fDCAdatProj->Rebin(kNDCABinsLarge, fDCAdatProj->GetName(), kDCABinsLarge);
-        fDCAMcProjPrim = (TH1D *)fDCAMcProjPrim->Rebin(kNDCABinsLarge, fDCAMcProjPrim->GetName(), kDCABinsLarge);
-        fDCAMcProjSec = (TH1D *)fDCAMcProjSec->Rebin(kNDCABinsLarge, fDCAMcProjSec->GetName(), kDCABinsLarge);
+        
+        fDCAdatProj = (TH1D *)fDCAdatProj->Rebin(kNDCABinsMedium, fDCAdatProj->GetName(), kDCABinsMedium);
+        fDCAMcProjPrim = (TH1D *)fDCAMcProjPrim->Rebin(kNDCABinsMedium, fDCAMcProjPrim->GetName(), kDCABinsMedium);
+        fDCAMcProjSec = (TH1D *)fDCAMcProjSec->Rebin(kNDCABinsMedium, fDCAMcProjSec->GetName(), kDCABinsMedium);
+        
+        if (iPtBin > 5){
+          fDCAdatProj = (TH1D *)fDCAdatProj->Rebin(kNDCABinsLarge, fDCAdatProj->GetName(), kDCABinsLarge);
+          fDCAMcProjPrim = (TH1D *)fDCAMcProjPrim->Rebin(kNDCABinsLarge, fDCAMcProjPrim->GetName(), kDCABinsLarge);
+          fDCAMcProjSec = (TH1D *)fDCAMcProjSec->Rebin(kNDCABinsLarge, fDCAMcProjSec->GetName(), kDCABinsLarge);
+        }
 
         fDCAMcProjSec->SetTitle(projTitle);
         canvTitleTOF = TString::Format("%.2f#leq #it{p}_{T}<%.2f GeV/#it{c}, %.0f-%.0f%%", fDCAdat->GetYaxis()->GetBinLowEdge(pTbinsIndexMin), fDCAdat->GetYaxis()->GetBinUpEdge(pTbinsIndexMax), fDCAdat->GetXaxis()->GetBinLowEdge(kCentBinsDeuteron[iCent][0]), fDCAdat->GetXaxis()->GetBinUpEdge(kCentBinsDeuteron[iCent][1]));
@@ -239,7 +246,13 @@ void Secondary(const char *cutSettings = "", const char *inFileDatName = "Analys
       } // end of loop on centrality bin
 
       // primary fraction fit with fFitFunc function
+      gStyle->SetStatX(0.85);
+      gStyle->SetStatY(0.5);
+      gStyle->SetStatFontSize(0.035);
       TF1 fFitFunc(Form("f%sFunctionFit_%.0f_%.0f", kAntimatterMatter[iMatt], kCentBinsLimitsDeuteron[iCent][0], kCentBinsLimitsDeuteron[iCent][1]), "[0]+(1-[0])/(1+[1]*exp([2]*x))", 0.8f, 1.6f);
+      fFitFunc.SetParName(0, "a");
+      fFitFunc.SetParName(1, "b");
+      fFitFunc.SetParName(2, "c");
       fFitFunc.SetParLimits(0, 0., 1.);
       fFitFunc.SetParLimits(1, 0., 10000.);
       fFitFunc.SetParLimits(2, -100., 0.);
