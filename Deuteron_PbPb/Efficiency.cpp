@@ -40,8 +40,8 @@ void Efficiency(const char *cutSettings = "", const char *inFileNameMC = "mc", c
 
     for (int iCent = 0; iCent < kNCentClasses; ++iCent)
     { // loop over centrality
-      TH1D *fTotal_Pt = fTotal->ProjectionY(TString::Format("f%sTotal_Pt", kAntimatterMatter[iMatt]), 0, 10);
-      TH1D *fITS_TPC_TOF_Pt = fITS_TPC_TOF->ProjectionY(TString::Format("f%sITS_TPC_TOF_Pt", kAntimatterMatter[iMatt]), 0, 10);
+      TH1D *fTotal_Pt = fTotal->ProjectionY(TString::Format("f%sTotal_Pt", kAntimatterMatter[iMatt]), kCentBinsDeuteron[iCent][0], kCentBinsDeuteron[iCent][1]);
+      TH1D *fITS_TPC_TOF_Pt = fITS_TPC_TOF->ProjectionY(TString::Format("f%sITS_TPC_TOF_Pt", kAntimatterMatter[iMatt]), kCentBinsDeuteron[iCent][0], kCentBinsDeuteron[iCent][1]);
       fTotal_Pt = (TH1D *)fTotal_Pt->Rebin(kNPtBins, TString::Format("f%sTotal_Pt", kAntimatterMatter[iMatt]), kPtBins);
       fITS_TPC_TOF_Pt = (TH1D *)fITS_TPC_TOF_Pt->Rebin(kNPtBins, TString::Format("f%sITS_TPC_TOF_Pt", kAntimatterMatter[iMatt]), kPtBins);
       TH1D fEffPt(TString::Format("f%sEff_TOF_%.0f_%.0f", kAntimatterMatter[iMatt], kCentBinsLimitsDeuteron[iCent][0], kCentBinsLimitsDeuteron[iCent][1]), TString::Format("%s Efficiency #times Acceptance, %.0f-%.0f%%", kAntimatterMatterLabel[iMatt], kCentBinsLimitsDeuteron[iCent][0], kCentBinsLimitsDeuteron[iCent][1]), kNPtBins, kPtBins);
@@ -53,8 +53,8 @@ void Efficiency(const char *cutSettings = "", const char *inFileNameMC = "mc", c
       }
       fEffPt.SetMarkerStyle(20);
       fEffPt.SetMarkerSize(0.8);
-      fEffPt.GetYaxis()->SetRangeUser(0.,1.);
-      fEffPt.GetXaxis()->SetRangeUser(0.,8.);
+      fEffPt.GetYaxis()->SetRangeUser(0., 1.);
+      fEffPt.GetXaxis()->SetRangeUser(0., 8.);
       fEffPt.GetXaxis()->SetTitle("#it{p}_{T}");
       fEffPt.GetYaxis()->SetTitle("#epsilon #times Acc");
       fEffPt.SetOption("PE");
