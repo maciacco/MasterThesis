@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import ROOT
+import numpy as np
 
 path_he3 = './He3_PbPb/out'
 path_hyp = './Hypertriton_PbPb'
@@ -42,8 +43,7 @@ for i_cent, cent in enumerate(centrality_classes):
     syst_hyp = ratio_hyp_distribution.GetRMS()
 
     # final plot
-    ROOT.gStyle.SetOptStat(0)
-    ratios_vs_b = ROOT.TH1D(f'fRatio_vs_b_{cent[0]}_{cent[1]}',';B+S/3; Antimatter / Matter', 10, -0.5, 9.5)
+    ratios_vs_b = ROOT.TH1D(f'fRatio_vs_b_{cent[0]}_{cent[1]}', ';B+S/3; Antimatter / Matter', 10, -0.5, 9.5)
     ratios_vs_b.SetBinContent(10, ratio_he3)
     ratios_vs_b.SetBinError(10, ratio_he3_err)
     ratios_vs_b.SetBinContent(9, ratio_hyp)
@@ -52,10 +52,10 @@ for i_cent, cent in enumerate(centrality_classes):
     # set labels
     a = ratios_vs_b.GetXaxis()
     a.SetBit(ROOT.TAxis.kLabelsHori)
-    a.SetBinLabel(1,'0')
-    a.SetBinLabel(4,'1')
-    a.SetBinLabel(7,'2')
-    a.SetBinLabel(10,'3')
+    a.SetBinLabel(1, '0')
+    a.SetBinLabel(4, '1')
+    a.SetBinLabel(7, '2')
+    a.SetBinLabel(10, '3')
     a.SetLabelSize(0.062)
 
     # set histogram style
@@ -64,29 +64,78 @@ for i_cent, cent in enumerate(centrality_classes):
     ratios_vs_b.SetLineColor(centrality_colors[i_cent])
     ratios_vs_b.SetMarkerStyle(20)
     ratios_vs_b.SetMarkerSize(0.8)
-    ratios_vs_b.GetYaxis().SetRangeUser(0., 1.2)
+    ratios_vs_b.GetYaxis().SetRangeUser(0.6, 1.2)
 
     ratios_vs_b_graph = ROOT.TGraphErrors(ratios_vs_b)
     for _ in range(8):
         ratios_vs_b_graph.RemovePoint(0)
-    
+
     # set systematic errors
     ratios_vs_b_graph.SetPointError(0, 0.5, syst_hyp)
     ratios_vs_b_graph.SetPointError(1, 0.5, syst_he3)
-    
+
     ratios_vs_b_graph.SetFillColor(ROOT.kWhite)
     ratios_vs_b_graph.SetFillStyle(3000)
     ratios_vs_b_graph.SetLineColor(centrality_colors[i_cent])
     ratios_vs_b_graph.SetDrawOption("AP5")
 
+    # define histogram for fit
+    ratios_vs_b_fit = ROOT.TH1D(ratios_vs_b)
+    stat_hyp = ratios_vs_b.GetBinError(9)
+    stat_he3 = ratios_vs_b.GetBinError(10)
+    ratios_vs_b_fit.SetBinError(9, np.sqrt(syst_hyp*syst_hyp+stat_hyp*stat_hyp))
+    ratios_vs_b_fit.SetBinError(10, np.sqrt(syst_he3*syst_he3+stat_he3*stat_he3))
+
+    # fit to data (exponential)
+    fit_expo = ROOT.TF1(f"fit_expo_{cent[0]}_{cent[1]}", "TMath::Exp(-[0]*x)", -0.5, 9.5)
+    fit_expo.SetNpx(10000)
+    ratios_vs_b_fit.Fit(f"fit_expo_{cent[0]}_{cent[1]}")
+    
+    # chi2 and fit parameter
+    formatted_chi2 = "{:.2f}".format(fit_expo.GetChisquare())
+    print(f"chi2 = {formatted_chi2}")
+    fit_parameter = fit_expo.GetParameter(0)
+    fit_parameter_error = fit_expo.GetParError(0)
+    print(f"mu_B / T = {fit_parameter/2.} +/- {fit_parameter_error/2.}")
+    temperature = 155. # MeV
+    print(f"mu_B (T = 155 MeV) = {fit_parameter/2.*155} +/- {fit_parameter_error/2.*155}")
+    # text_chi2 = ROOT.TLatex(0, 0.9, "#chi^{2}/NDF = "+formatted_chi2+"/"+str(fit_expo.GetNDF()))
+    # text_chi2.SetTextSize(0.1)
+    # text_chi2.SetNDC(ROOT.kTRUE)
+    # text_chi2.SetTextColor(ROOT.kBlack)
+
     # write to file
     ratios_vs_b.Write()
-    
+
     # save plot
-    c = ROOT.TCanvas("c", "c")
+    c = ROOT.TCanvas(f"c_{cent[0]}_{cent[1]}", "c")
     c.cd()
     ratios_vs_b.Draw("pe")
+    fit_expo.Draw("same")
+    ratios_vs_b.Draw("same")
     ratios_vs_b_graph.Draw("P5 same")
+    # text_chi2.Draw("same")
+    c.Write()
+    fit_expo.Write()
     c.Print(f"Ratios_{cent[0]}_{cent[1]}.png")
 
 file_out.Close()
+
+# file_out = ROOT.TFile.Open('FinalPlot.root')
+
+# for i_cent, cent in enumerate(centrality_classes):
+
+#     # get canvas and fit function
+#     canv = file_out.Get(f"c_{cent[0]}_{cent[1]}")
+#     fit = file_out.Get(f"fit_expo_{cent[0]}_{cent[1]}")
+    
+#     # chi2 and fit parameter
+#     formatted_chi2 = "{:.2f}".format(fit.GetChisquare())
+#     text_chi2 = ROOT.TLatex(0, 0.9, "#chi^{2}/NDF = "+formatted_chi2+"/"+str(fit.GetNDF()))
+#     text_chi2.SetTextSize(0.1)
+#     text_chi2.SetNDC(ROOT.kTRUE)
+#     text_chi2.SetTextColor(ROOT.kBlack)
+    
+#     #canv.cd()
+#     #text_chi2.Draw("same")
+#     canv.Print(f"Ratios_{cent[0]}_{cent[1]}.png")
