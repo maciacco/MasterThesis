@@ -108,7 +108,7 @@ namespace deuteron{
 
   // antimatter / matter
   const char *kAntimatterMatterLabel[2] = {"#bar{d}", "d"};
-  const char *kAntimatterMatterLabelExtended[2] = {"anti-deuterons", "deuterons"};
+  const char *kAntimatterMatterLabelExtended[2] = {"antideuterons", "deuterons"};
 
   // DCAxy binning
   const int kNDCABins = 38;
