@@ -15,7 +15,7 @@
 using utils::TTList;
 using namespace deuteron;
 
-void Spectra(const char *cutSettings = "", const bool binCounting = false, const int bkg_shape = 1, const bool sigmoidCorrection = true, const char *histoNameDir = ".", const char *outFileName = "SpectraDeuteron", const char *outFileOption = "recreate", const char *dataFile = "AnalysisResults", const char *signalFile = "SignalDeuteron", const char *effFile = "EfficiencyDeuteron", const char *primFile = "PrimaryDeuteron")
+void Spectra(const char *cutSettings = "", const bool binCounting = false, const int bkg_shape = 1, const bool sigmoidCorrection = true, const char *histoNameDir = ".", const char *outFileName = "SpectraDeuteron1", const char *outFileOption = "recreate", const char *dataFile = "AnalysisResults", const char *signalFile = "SignalDeuteron", const char *effFile = "EfficiencyDeuteron", const char *primFile = "PrimaryDeuteron", const bool useEfficiencyMB = false)
 {
   gStyle->SetOptFit(0);
 
@@ -55,7 +55,12 @@ void Spectra(const char *cutSettings = "", const bool binCounting = false, const
     for (int iMatt = 0; iMatt < 2; ++iMatt)
     {
       outFile.cd(histoNameDir);
-      TH1D *eff = (TH1D *)inFileEff->Get(Form("f%sEff_TOF_%.0f_%.0f", kAntimatterMatter[iMatt], kCentBinsLimitsDeuteron[iCent][0], kCentBinsLimitsDeuteron[iCent][1]));
+      double cent_bin_lim_min = kCentBinsLimitsDeuteron[iCent][0], cent_bin_lim_max = kCentBinsLimitsDeuteron[iCent][1];
+      if (useEfficiencyMB){
+        cent_bin_lim_min = 0.;
+        cent_bin_lim_max = 90.;
+      }
+      TH1D *eff = (TH1D *)inFileEff->Get(Form("f%sEff_TOF_%.0f_%.0f", kAntimatterMatter[iMatt], cent_bin_lim_min, cent_bin_lim_max));
       TF1 *sec_f = (TF1 *)inFileSec->Get(Form("f%sFunctionFit_%.0f_%.0f", kAntimatterMatter[iMatt], kCentBinsLimitsDeuteron[iCent][0], kCentBinsLimitsDeuteron[iCent][1]));
       TH1D *sec = (TH1D *)inFileSec->Get(Form("f%sPrimFrac_%.0f_%.0f", kAntimatterMatter[iMatt], kCentBinsLimitsDeuteron[iCent][0], kCentBinsLimitsDeuteron[iCent][1]));
       TH1D *raw = (TH1D *)inFileRaw->Get(Form("%s_%d_%d/f%sTOFrawYield_%.0f_%.0f", cutSettings, binCounting, bkg_shape, kAntimatterMatter[iMatt], kCentBinsLimitsDeuteron[iCent][0], kCentBinsLimitsDeuteron[iCent][1]));
