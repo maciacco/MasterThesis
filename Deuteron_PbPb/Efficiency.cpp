@@ -38,13 +38,21 @@ void Efficiency(const char *cutSettings = "", const char *inFileNameMC = "mc", c
     TH2F *fTotal = (TH2F *)list->Get(TString::Format("f%sTotal", kAntimatterMatter[iMatt]).Data());
     TH2F *fITS_TPC_TOF = (TH2F *)list->Get(TString::Format("f%sITS_TPC_TOF", kAntimatterMatter[iMatt]).Data());
 
-    for (int iCent = 0; iCent < kNCentClasses; ++iCent)
+    for (int iCent = 0; iCent < kNCentClasses+1; ++iCent)
     { // loop over centrality
-      TH1D *fTotal_Pt = fTotal->ProjectionY(TString::Format("f%sTotal_Pt", kAntimatterMatter[iMatt]), kCentBinsDeuteron[iCent][0], kCentBinsDeuteron[iCent][1]);
-      TH1D *fITS_TPC_TOF_Pt = fITS_TPC_TOF->ProjectionY(TString::Format("f%sITS_TPC_TOF_Pt", kAntimatterMatter[iMatt]), kCentBinsDeuteron[iCent][0], kCentBinsDeuteron[iCent][1]);
+      int cent_bin_min = kCentBinsDeuteron[iCent][0], cent_bin_max = kCentBinsDeuteron[iCent][1];
+      double cent_bin_lim_min = kCentBinsLimitsDeuteron[iCent][0], cent_bin_lim_max = kCentBinsLimitsDeuteron[iCent][1];
+      if (iCent == kNCentClasses) {
+        cent_bin_min = 1;
+        cent_bin_max = 10;
+        cent_bin_lim_min = 0.;
+        cent_bin_lim_max = 90.;
+      }
+      TH1D *fTotal_Pt = fTotal->ProjectionY(TString::Format("f%sTotal_Pt", kAntimatterMatter[iMatt]), cent_bin_min, cent_bin_max);
+      TH1D *fITS_TPC_TOF_Pt = fITS_TPC_TOF->ProjectionY(TString::Format("f%sITS_TPC_TOF_Pt", kAntimatterMatter[iMatt]), cent_bin_min, cent_bin_max);
       fTotal_Pt = (TH1D *)fTotal_Pt->Rebin(kNPtBins, TString::Format("f%sTotal_Pt", kAntimatterMatter[iMatt]), kPtBins);
       fITS_TPC_TOF_Pt = (TH1D *)fITS_TPC_TOF_Pt->Rebin(kNPtBins, TString::Format("f%sITS_TPC_TOF_Pt", kAntimatterMatter[iMatt]), kPtBins);
-      TH1D fEffPt(TString::Format("f%sEff_TOF_%.0f_%.0f", kAntimatterMatter[iMatt], kCentBinsLimitsDeuteron[iCent][0], kCentBinsLimitsDeuteron[iCent][1]), TString::Format("%s Efficiency #times Acceptance, %.0f-%.0f%%", kAntimatterMatterLabel[iMatt], kCentBinsLimitsDeuteron[iCent][0], kCentBinsLimitsDeuteron[iCent][1]), kNPtBins, kPtBins);
+      TH1D fEffPt(TString::Format("f%sEff_TOF_%.0f_%.0f", kAntimatterMatter[iMatt], cent_bin_lim_min, cent_bin_lim_max), TString::Format("%s Efficiency #times Acceptance, %.0f-%.0f%%", kAntimatterMatterLabel[iMatt], kCentBinsLimitsDeuteron[iCent][0], kCentBinsLimitsDeuteron[iCent][1]), kNPtBins, kPtBins);
 
       for (int iPtBin = 1; iPtBin < fEffPt.GetNbinsX() + 1; ++iPtBin)
       {
@@ -64,7 +72,7 @@ void Efficiency(const char *cutSettings = "", const char *inFileNameMC = "mc", c
       // save plot image
       TCanvas canv;
       fEffPt.Draw("");
-      canv.Print(Form("%s/efficiency/%s_%s_/cent_%.0f_%.0f.png", kPlotDir, kAntimatterMatter[iMatt], cutSettings, kCentBinsLimitsDeuteron[iCent][0], kCentBinsLimitsDeuteron[iCent][1]));
+      canv.Print(Form("%s/efficiency/%s_%s_/cent_%.0f_%.0f.png", kPlotDir, kAntimatterMatter[iMatt], cutSettings, cent_bin_lim_min, cent_bin_lim_max));
     }
   }
   outFile.Close();
