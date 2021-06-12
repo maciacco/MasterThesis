@@ -142,8 +142,9 @@ for split in SPLIT_LIST:
                     formatted_chi2 = "{:.2f}".format(xframe.chiSquare('model', 'data'))
                     roo_model.paramOn(xframe, ROOT.RooFit.Label(
                         '#chi^{2}/NDF = '+formatted_chi2),
-                        ROOT.RooFit.Layout(0.60, 0.96, 0.92))
+                        ROOT.RooFit.Layout(0.55, 0.85, 0.88))
                     xframe.getAttText().SetTextSize(0.035)
+                    xframe.getAttLine().SetLineWidth(0)
 
                     print(f'chi2/NDF: {formatted_chi2}, edm: {r.edm()}')
                     if float(formatted_chi2) < 2 and r.edm() < 1:
@@ -195,13 +196,13 @@ for split in SPLIT_LIST:
                                 2.965, 0.74 * xframe.GetMaximum(),
                                 "#it{m}_{^{3}_{#Lambda}H} = " + "{:.6f}".format(mass_val) + " GeV/#it{c^{2}}")
                             text_mass.SetTextSize(0.035)
-                            text_signif = ROOT.TLatex(2.965, 0.95 * xframe.GetMaximum(),
+                            text_signif = ROOT.TLatex(2.965, 0.91 * xframe.GetMaximum(),
                                                     "S/#sqrt{S+B} (3#sigma) = " + "{:.3f}".format(significance_val) + " #pm " +
                                                     "{:.3f}".format(significance_err))
                             text_signif.SetTextSize(0.035)
-                            text_sig = ROOT.TLatex(2.965, 0.88 * xframe.GetMaximum(), "S (3#sigma) = " + "{:.1f}".format(sig) + " #pm " + "{:.1f}".format(signal_int*roo_n_signal.getError()))
+                            text_sig = ROOT.TLatex(2.965, 0.84 * xframe.GetMaximum(), "S (3#sigma) = " + "{:.1f}".format(sig) + " #pm " + "{:.1f}".format(signal_int*roo_n_signal.getError()))
                             text_sig.SetTextSize(0.035)
-                            text_bkg = ROOT.TLatex(2.965, 0.81 * xframe.GetMaximum(), "B (3#sigma) = " + "{:.1f}".format(bkg) + " #pm" + "{:.1f}".format(bkg_int*roo_n_background.getError()))
+                            text_bkg = ROOT.TLatex(2.965, 0.77 * xframe.GetMaximum(), "B (3#sigma) = " + "{:.1f}".format(bkg) + " #pm" + "{:.1f}".format(bkg_int*roo_n_background.getError()))
                             text_bkg.SetTextSize(0.035)
                             xframe.Draw("")
                             # text_mass.Draw("same")

@@ -42,6 +42,9 @@ if SPLIT:
 if not os.path.isdir("plots/cpt_and_lifetime"):
     os.mkdir("plots/cpt_and_lifetime")
 
+ROOT.gStyle.SetOptStat(0)
+ROOT.gStyle.SetOptFit(0)
+
 eff_cut_dict = pickle.load(open("file_eff_cut_dict", "rb"))
 presel_eff_file = uproot.open('PreselEff.root')
 signal_extraction_file = ROOT.TFile.Open('SignalExtraction.root')
