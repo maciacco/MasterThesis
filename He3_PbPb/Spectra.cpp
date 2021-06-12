@@ -17,7 +17,8 @@ using namespace he3;
 
 void Spectra(const float cutDCAz = 1.f, const int cutTPCcls = 89, const bool binCounting = true, const int bkg_shape = 1, const bool sigmoidCorrection = true, const char *histoNameDir = ".", const char *outFileName = "SpectraHe3", const char *outFileOption = "recreate", const char *dataFile = "AnalysisResults", const char *signalFile = "SignalHe3", const char *effFile = "EfficiencyHe3", const char *primFile = "PrimaryHe3")
 {
-  gStyle->SetOptFit(1111);
+  gStyle->SetOptStat(0);
+  gStyle->SetOptFit(0);
 
   TH2F *fNevents[kNDataFiles];
   for (int iD = 0; iD < kNDataFiles; ++iD)
@@ -115,7 +116,6 @@ void Spectra(const float cutDCAz = 1.f, const int cutTPCcls = 89, const bool bin
     }
     fRatio[iCent]->GetXaxis()->SetTitle(kAxisTitlePt);
     fRatio[iCent]->GetYaxis()->SetTitle(Form("Ratio %s / %s", kAntimatterMatterLabel[0], kAntimatterMatterLabel[1]));
-    gStyle->SetOptFit(1111);
     fRatio[iCent]->SetTitle(Form("%.0f-%.0f%%", kCentBinsLimitsHe3[iCent][0], kCentBinsLimitsHe3[iCent][1]));
     fRatio[iCent]->Fit("pol0");
     fRatio[iCent]->Write();

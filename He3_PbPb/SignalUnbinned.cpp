@@ -210,7 +210,8 @@ void SignalUnbinned(const float cutDCAz = 1.f, const int cutTPCcls = 89, const b
           model.plotOn(xframe, RooFit::Components("background"), RooFit::Name("background"), RooFit::LineStyle(kDashed), RooFit::LineColor(kGreen));
           model.plotOn(xframe, RooFit::Components("signal"), RooFit::Name("signal"), RooFit::LineStyle(kDashed), RooFit::LineColor(kRed));
           model.plotOn(xframe, RooFit::Name("model"), RooFit::LineColor(kBlue));
-          model.paramOn(xframe, RooFit::Label(TString::Format("#chi^{2}/NDF = %2.4f", xframe->chiSquare("model", "dataNsigma"))), RooFit::Layout(0.65, 0.96, 0.92));
+          model.paramOn(xframe, RooFit::Label(TString::Format("#chi^{2}/NDF = %2.4f", xframe->chiSquare("model", "dataNsigma"))), RooFit::Layout(0.70, 0.92, 0.86));
+          xframe->getAttLine()->SetLineWidth(0);
           xframe->getAttText()->SetTextSize(0.03);
         }
 

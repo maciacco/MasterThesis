@@ -116,7 +116,17 @@ void Secondary(const float cutDCAz = 1.f, const int cutTPCcls = 89, const char *
           fDCAMcProjSecWeak->GetYaxis()->SetTitle("Entries");
 
           // DCA rebin for low statistics bin
-          if ((iCent < kNCentClasses - 1) && rebinLowStatisticsBin)
+          if (rebinLowStatisticsBin && iPtBin == 3)
+          {
+            fDCAdatProj = (TH1D *)fDCAdatProj->Rebin(kNDCABinsMedium, fDCAdatProj->GetName(), kDCABinsMedium);
+            fDCAMcProjPrim = (TH1D *)fDCAMcProjPrim->Rebin(kNDCABinsMedium, fDCAMcProjPrim->GetName(), kDCABinsMedium);
+            fDCAMcProjSec = (TH1D *)fDCAMcProjSec->Rebin(kNDCABinsMedium, fDCAMcProjSec->GetName(), kDCABinsMedium);
+            fDCAMcProjSecWeak = (TH1D *)fDCAMcProjSecWeak->Rebin(kNDCABinsMedium, fDCAMcProjSecWeak->GetName(), kDCABinsMedium);
+            fRatioDCAPrim = *(TH1D *)fRatioDCAPrim.Rebin(kNDCABinsMedium, fRatioDCAPrim.GetName(), kDCABinsMedium);
+            fRatioDCASec = *(TH1D *)fRatioDCASec.Rebin(kNDCABinsMedium, fRatioDCASec.GetName(), kDCABinsMedium);
+          }
+
+          if (rebinLowStatisticsBin && iPtBin == 4)
           {
             fDCAdatProj = (TH1D *)fDCAdatProj->Rebin(kNDCABinsLarge, fDCAdatProj->GetName(), kDCABinsLarge);
             fDCAMcProjPrim = (TH1D *)fDCAMcProjPrim->Rebin(kNDCABinsLarge, fDCAMcProjPrim->GetName(), kDCABinsLarge);
@@ -126,6 +136,7 @@ void Secondary(const float cutDCAz = 1.f, const int cutTPCcls = 89, const char *
             fRatioDCASec = *(TH1D *)fRatioDCASec.Rebin(kNDCABinsLarge, fRatioDCASec.GetName(), kDCABinsLarge);
           }
 
+          fDCAMcProjSec->Write();
           // fit data distribution with TFractionFitter
           TObjArray *mc = new TObjArray(2); // MC histograms are put in this array
           mc->Add(fDCAMcProjPrim);
@@ -149,7 +160,7 @@ void Secondary(const float cutDCAz = 1.f, const int cutTPCcls = 89, const char *
           }
           fit->SetRangeX(fDCAdatProj->FindBin(-1.3), fDCAdatProj->FindBin(1.2));
           fit->Constrain(0, 0.0, 1.0); // constrain fraction 1 to be between 0 and 1
-          fit->Constrain(1, 0.0, 0.6);
+          fit->Constrain(1, 0.0, 1.0);
 
           Int_t status = fit->Fit(); // perform the fit
 
@@ -189,7 +200,7 @@ void Secondary(const float cutDCAz = 1.f, const int cutTPCcls = 89, const char *
             gStyle->SetOptStat(0);
             fDCAdatProj->Scale(1, "width");
             result->Scale(1, "width");
-            fDCAdatProj->GetYaxis()->SetRangeUser(1.,1.e5);
+            fDCAdatProj->GetYaxis()->SetRangeUser(1., 1.e5);
             fDCAdatProj->Draw("Ep");
             result->Draw("histosame");
             fDCAdatProj->Draw("Epsame");
@@ -260,14 +271,19 @@ void Secondary(const float cutDCAz = 1.f, const int cutTPCcls = 89, const char *
             {
               double primPrediction = mc1->GetBinContent(iDCA);
               double primMc = fDCAMcProjPrim->GetBinContent(iDCA);
+              double primPrediction_err = mc1->GetBinError(iDCA);
+              double primMc_err = fDCAMcProjPrim->GetBinError(iDCA);
               (primMc > 1.e-1) ? fRatioDCAPrim.SetBinContent(iDCA, primPrediction / primMc) : fRatioDCAPrim.SetBinContent(iDCA, 0);
-              (primMc > 1.e-1) ? fRatioDCAPrim.SetBinError(iDCA, 0.) : fRatioDCAPrim.SetBinError(iDCA, 0.);
+              (primMc > 1.e-1) ? fRatioDCAPrim.SetBinError(iDCA, TMath::Sqrt(primPrediction_err * primPrediction_err / primPrediction / primPrediction + primMc_err * primMc_err / primMc / primMc)) : fRatioDCAPrim.SetBinError(iDCA, 0.);
 
               double secPrediction = mc2->GetBinContent(iDCA);
               double secMc = fDCAMcProjSec->GetBinContent(iDCA);
+              double secPrediction_err = mc2->GetBinError(iDCA);
+              double secMc_err = fDCAMcProjSec->GetBinError(iDCA);
               (secMc > 1.e-1) ? fRatioDCASec.SetBinContent(iDCA, secPrediction / secMc) : fRatioDCASec.SetBinContent(iDCA, 0);
-              (secMc > 1.e-1) ? fRatioDCASec.SetBinError(iDCA, 0.) : fRatioDCASec.SetBinError(iDCA, 0.);
+              (secMc > 1.e-1) ? fRatioDCASec.SetBinError(iDCA, TMath::Sqrt(secPrediction_err * secPrediction_err / secPrediction / secPrediction + secMc_err * secMc_err / secMc / secMc)) : fRatioDCASec.SetBinError(iDCA, 0.);
             }
+
             fRatioDCAPrim.GetXaxis()->SetTitle(kAxisTitleDCA);
             fRatioDCAPrim.GetYaxis()->SetTitle("Prediction / MC");
             fRatioDCASec.GetXaxis()->SetTitle(kAxisTitleDCA);

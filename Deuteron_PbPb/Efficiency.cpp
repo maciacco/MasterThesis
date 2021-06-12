@@ -40,14 +40,11 @@ void Efficiency(const char *cutSettings = "", const char *inFileNameMC = "mc", c
 
     for (int iCent = 0; iCent < kNCentClasses+1; ++iCent)
     { // loop over centrality
-      int cent_bin_min = kCentBinsDeuteron[iCent][0], cent_bin_max = kCentBinsDeuteron[iCent][1];
-      double cent_bin_lim_min = kCentBinsLimitsDeuteron[iCent][0], cent_bin_lim_max = kCentBinsLimitsDeuteron[iCent][1];
-      if (iCent == kNCentClasses) {
-        cent_bin_min = 1;
-        cent_bin_max = 10;
-        cent_bin_lim_min = 0.;
-        cent_bin_lim_max = 90.;
-      }
+      int cent_bin_min = kCentBinsDeuteron[iCent][0];
+      int cent_bin_max = kCentBinsDeuteron[iCent][1];
+      double cent_bin_lim_min = kCentBinsLimitsDeuteron[iCent][0];
+      double cent_bin_lim_max = kCentBinsLimitsDeuteron[iCent][1];
+
       TH1D *fTotal_Pt = fTotal->ProjectionY(TString::Format("f%sTotal_Pt", kAntimatterMatter[iMatt]), cent_bin_min, cent_bin_max);
       TH1D *fITS_TPC_TOF_Pt = fITS_TPC_TOF->ProjectionY(TString::Format("f%sITS_TPC_TOF_Pt", kAntimatterMatter[iMatt]), cent_bin_min, cent_bin_max);
       fTotal_Pt = (TH1D *)fTotal_Pt->Rebin(kNPtBins, TString::Format("f%sTotal_Pt", kAntimatterMatter[iMatt]), kPtBins);

@@ -102,10 +102,20 @@ void Secondary(const char *cutSettings = "", const char *inFileDatName = "Analys
           fRatioDCASec = *(TH1D *)fRatioDCASec.Rebin(kNDCABinsLarge, fRatioDCASec.GetName(), kDCABinsLarge);
         }
 
+        else if (iPtBin > 3 && iPtBin < 7){
+          fDCAdatProj = (TH1D *)fDCAdatProj->Rebin(kNDCABinsMedium2, fDCAdatProj->GetName(), kDCABinsMedium2);
+          fDCAMcProjPrim = (TH1D *)fDCAMcProjPrim->Rebin(kNDCABinsMedium2, fDCAMcProjPrim->GetName(), kDCABinsMedium2);
+          fDCAMcProjSec = (TH1D *)fDCAMcProjSec->Rebin(kNDCABinsMedium2, fDCAMcProjSec->GetName(), kDCABinsMedium2);
+          fRatioDCAPrim = *(TH1D *)fRatioDCAPrim.Rebin(kNDCABinsMedium2, fRatioDCAPrim.GetName(), kDCABinsMedium2);
+          fRatioDCASec = *(TH1D *)fRatioDCASec.Rebin(kNDCABinsMedium2, fRatioDCASec.GetName(), kDCABinsMedium2);
+        }
+        
         else{
           fDCAdatProj = (TH1D *)fDCAdatProj->Rebin(kNDCABinsMedium, fDCAdatProj->GetName(), kDCABinsMedium);
           fDCAMcProjPrim = (TH1D *)fDCAMcProjPrim->Rebin(kNDCABinsMedium, fDCAMcProjPrim->GetName(), kDCABinsMedium);
           fDCAMcProjSec = (TH1D *)fDCAMcProjSec->Rebin(kNDCABinsMedium, fDCAMcProjSec->GetName(), kDCABinsMedium);
+          fRatioDCAPrim = *(TH1D *)fRatioDCAPrim.Rebin(kNDCABinsMedium, fRatioDCAPrim.GetName(), kDCABinsMedium);
+          fRatioDCASec = *(TH1D *)fRatioDCASec.Rebin(kNDCABinsMedium, fRatioDCASec.GetName(), kDCABinsMedium);
         }
 
         fDCAMcProjSec->SetTitle(projTitle);
@@ -222,13 +232,17 @@ void Secondary(const char *cutSettings = "", const char *inFileDatName = "Analys
           {
             double primPrediction = mc1->GetBinContent(iDCA);
             double primMc = fDCAMcProjPrim->GetBinContent(iDCA);
+            double primPrediction_err = mc1->GetBinError(iDCA);
+            double primMc_err = fDCAMcProjPrim->GetBinError(iDCA);
             (primMc > 1.e-1) ? fRatioDCAPrim.SetBinContent(iDCA, primPrediction / primMc) : fRatioDCAPrim.SetBinContent(iDCA, 0);
-            (primMc > 1.e-1) ? fRatioDCAPrim.SetBinError(iDCA, 0.) : fRatioDCAPrim.SetBinError(iDCA, 0.);
+            (primMc > 1.e-1) ? fRatioDCAPrim.SetBinError(iDCA, TMath::Sqrt(primPrediction_err * primPrediction_err / primPrediction / primPrediction + primMc_err * primMc_err / primMc / primMc)) : fRatioDCAPrim.SetBinError(iDCA, 0.);
 
             double secPrediction = mc2->GetBinContent(iDCA);
             double secMc = fDCAMcProjSec->GetBinContent(iDCA);
+            double secPrediction_err = mc2->GetBinError(iDCA);
+            double secMc_err = fDCAMcProjSec->GetBinError(iDCA);
             (secMc > 1.e-1) ? fRatioDCASec.SetBinContent(iDCA, secPrediction / secMc) : fRatioDCASec.SetBinContent(iDCA, 0);
-            (secMc > 1.e-1) ? fRatioDCASec.SetBinError(iDCA, 0.) : fRatioDCASec.SetBinError(iDCA, 0.);
+            (secMc > 1.e-1) ? fRatioDCASec.SetBinError(iDCA, TMath::Sqrt(secPrediction_err * secPrediction_err / secPrediction / secPrediction + secMc_err * secMc_err / secMc / secMc)) : fRatioDCASec.SetBinError(iDCA, 0.);
           }
           fRatioDCAPrim.GetXaxis()->SetTitle(kAxisTitleDCA);
           fRatioDCAPrim.GetYaxis()->SetTitle("Prediction / MC");

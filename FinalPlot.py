@@ -5,7 +5,7 @@ import numpy as np
 path_he3 = './He3_PbPb/out'
 path_hyp = './Hypertriton_PbPb'
 centrality_classes = [[0, 5], [5, 10], [30, 50]]
-centrality_colors = [ROOT.kOrange+7, ROOT.kAzure+7, ROOT.kTeal+2]
+centrality_colors = [ROOT.kOrange+7, ROOT.kAzure+7, ROOT.kTeal+4]
 
 ROOT.gStyle.SetPadTickY(1)
 ROOT.gStyle.SetPadTickX(1)
