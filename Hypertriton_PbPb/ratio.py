@@ -193,11 +193,13 @@ for i_cent_bins in range(len(CENTRALITY_LIST)):
     formatted_ratio_error = "{:.2f}".format(h_ratio.GetFunction("pol0").GetParError(0))
     text_x_position = 20
     ratio_text = ROOT.TLatex(text_x_position, 1.6, f"R = {formatted_ratio} #pm {formatted_ratio_error}")
-    ratio_text.SetTextSize(0.035)
+    ratio_text.SetTextFont(44)
+    ratio_text.SetTextSize(28)
     ratio_text.Draw("same")
     formatted_chi2 = "{:.2f}".format(h_ratio.GetFunction("pol0").GetChisquare())
     chi2_text = ROOT.TLatex(text_x_position, 1.45, "#chi^{2}/NDF = "+formatted_ratio+"/"+str(h_ratio.GetFunction("pol0").GetNDF()))
-    chi2_text.SetTextSize(0.035)
+    ratio_text.SetTextFont(44)
+    chi2_text.SetTextSize(28)
     chi2_text.Draw("same")
     c.Print(f"plots/{h_ratio.GetName()}.png")
 
