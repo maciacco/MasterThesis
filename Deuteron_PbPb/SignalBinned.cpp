@@ -277,8 +277,20 @@ void SignalBinned(const char *cutSettings = "", const bool binCounting = false, 
           model->plotOn(xframe, RooFit::Components("background"), RooFit::Name("background"), RooFit::LineStyle(kDashed), RooFit::LineColor(kGreen));
           model->plotOn(xframe, RooFit::Components("signal"), RooFit::Name("signal"), RooFit::LineStyle(kDashed), RooFit::LineColor(kRed));
           model->plotOn(xframe, RooFit::Name("model"), RooFit::LineColor(kBlue));
-          model->paramOn(xframe, RooFit::Label(TString::Format("#chi^{2}/NDF = %2.4f", xframe->chiSquare("model", "dataNsigma"))), RooFit::Layout(0.65, 0.96, 0.92));
+          xframe->remove("model",false);
+          xframe->remove("background",false);
+          xframe->remove("signal",false);
+          model->plotOn(xframe, RooFit::Components("background"), RooFit::Name("background"), RooFit::LineStyle(kDashed), RooFit::LineColor(kGreen));
+          model->plotOn(xframe, RooFit::Components("signal"), RooFit::Name("signal"), RooFit::LineStyle(kDashed), RooFit::LineColor(kRed));
+          model->plotOn(xframe, RooFit::Name("model"), RooFit::LineColor(kBlue));
+          double x_min = 0.62;
+          if(ptMax < 1.1) x_min = 0.12;
+          model->paramOn(xframe, RooFit::Label(TString::Format("#chi^{2}/NDF = %2.4f", xframe->chiSquare("model", "dataNsigma"))), RooFit::Layout(x_min, 0.99, 0.88));
           xframe->getAttText()->SetTextSize(0.03);
+          xframe->getAttLine()->SetLineWidth(0);
+          xframe->getAttFill()->SetFillColor(kWhite);
+          xframe->getAttFill()->SetFillStyle(4000);
+          xframe->GetYaxis()->SetMaxDigits(2);
         }
 
         tofSignalProjection->Write();

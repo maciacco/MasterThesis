@@ -18,6 +18,7 @@ using namespace deuteron;
 void Spectra(const char *cutSettings = "", const bool binCounting = false, const int bkg_shape = 1, const bool sigmoidCorrection = true, const char *histoNameDir = ".", const char *outFileName = "SpectraDeuteron1", const char *outFileOption = "recreate", const char *dataFile = "AnalysisResults", const char *signalFile = "SignalDeuteron", const char *effFile = "EfficiencyDeuteron", const char *primFile = "PrimaryDeuteron", const bool useEfficiencyMB = false)
 {
   gStyle->SetOptFit(0);
+  gStyle->SetTextFont(44);
 
   TH2F *fNevents;
   TFile *inFileDat = TFile::Open(Form("%s/%s.root", kDataDir, dataFile));
@@ -127,10 +128,10 @@ void Spectra(const char *cutSettings = "", const bool binCounting = false, const
     fRatio[iCent]->GetXaxis()->SetRangeUser(1.,5.);
     fRatio[iCent]->GetYaxis()->SetRangeUser(0., 1.4);
     fRatio[iCent]->Draw("");
-    TLatex chi2(3.5, 1.15, Form("#chi^{2}/NDF = %.2f/%d", fRatio[iCent]->GetFunction("pol0")->GetChisquare(), fRatio[iCent]->GetFunction("pol0")->GetNDF()));
-    chi2.SetTextSize(0.035);
-    TLatex p0(3.5, 1.3, Form("R = %.4f #pm %.4f", fRatio[iCent]->GetFunction("pol0")->GetParameter(0), fRatio[iCent]->GetFunction("pol0")->GetParError(0)));
-    p0.SetTextSize(0.035);
+    TLatex chi2(3.4, 1.14, Form("#chi^{2}/NDF = %.2f/%d", fRatio[iCent]->GetFunction("pol0")->GetChisquare(), fRatio[iCent]->GetFunction("pol0")->GetNDF()));
+    chi2.SetTextSize(28);
+    TLatex p0(3.4, 1.25, Form("R = %.4f #pm %.4f", fRatio[iCent]->GetFunction("pol0")->GetParameter(0), fRatio[iCent]->GetFunction("pol0")->GetParError(0)));
+    p0.SetTextSize(28);
     chi2.Draw("same");
     p0.Draw("same");
     cRatio.Print(Form("%s/%s.png", kPlotDir, fRatio[iCent]->GetName()));
