@@ -127,14 +127,14 @@ for i_cent, cent in enumerate(centrality_classes):
             ratios_vs_b_fit.SetBinError(7, deuteron_ratio_sigma)
             
             # fit to data
-            fit_expo_tmp = ROOT.TF1(f"fit_expo_tmp_{cent[0]}_{cent[1]}", "TMath::Exp(-[0]*x)", -0.5, 9.5)
+            fit_expo_tmp = ROOT.TF1(f"fit_expo_tmp_{cent[0]}_{cent[1]}", "TMath::Exp(-2./3.*[0]*x)", -0.5, 9.5)
             ratios_vs_b_fit.Fit(f"fit_expo_tmp_{cent[0]}_{cent[1]}","Q")
             
             # measure mu_b
             fit_parameter_tmp = fit_expo_tmp.GetParameter(0)
             fit_parameter_tmp_error = fit_expo_tmp.GetParError(0)
-            mu_b_tmp = fit_parameter_tmp/2.*155
-            mu_b_tmp_error = fit_parameter_tmp_error/2.*155
+            mu_b_tmp = fit_parameter_tmp*155
+            mu_b_tmp_error = fit_parameter_tmp_error*155
             # print(f"mu_B (T = 155 MeV) = {mu_b_tmp} +/- {fit_parameter_tmp_error/2.*155}")
         
             # fill mu_b histogram

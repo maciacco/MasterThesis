@@ -5,12 +5,14 @@ import numpy as np
 path_he3 = './He3_PbPb/out'
 path_hyp = './Hypertriton_PbPb'
 centrality_classes = [[0, 5], [5, 10], [30, 50]]
-centrality_colors = [ROOT.kOrange+7, ROOT.kAzure+7, ROOT.kTeal+4]
+centrality_colors = [ROOT.kOrange+7, ROOT.kAzure+4, ROOT.kTeal+4]
+
+TLATEX_TEXT_SIZE = 28
 
 ROOT.gStyle.SetPadTickY(1)
 ROOT.gStyle.SetPadTickX(1)
 ROOT.gStyle.SetOptStat(0)
-ROOT.gStyle.SetTextFont(4)
+ROOT.gStyle.SetTextFont(44)
 
 file_he3 = ROOT.TFile.Open(path_he3 + '/SpectraHe3.root')
 file_hyp = ROOT.TFile.Open(path_hyp + '/Ratio.root')
@@ -87,7 +89,7 @@ for i_cent, cent in enumerate(centrality_classes):
     ratios_vs_b_fit.SetBinError(10, np.sqrt(syst_he3*syst_he3+stat_he3*stat_he3))
 
     # fit to data (exponential)
-    fit_expo = ROOT.TF1(f"fit_expo_{cent[0]}_{cent[1]}", "TMath::Exp(-[0]*x)", -0.5, 9.5)
+    fit_expo = ROOT.TF1(f"fit_expo_{cent[0]}_{cent[1]}", "TMath::Exp(-2./3.*[0]*x)", -0.5, 9.5)
     fit_expo.SetNpx(10000)
     ratios_vs_b_fit.Fit(f"fit_expo_{cent[0]}_{cent[1]}")
     
@@ -96,13 +98,30 @@ for i_cent, cent in enumerate(centrality_classes):
     print(f"chi2 = {formatted_chi2}")
     fit_parameter = fit_expo.GetParameter(0)
     fit_parameter_error = fit_expo.GetParError(0)
-    print(f"mu_B / T = {fit_parameter/2.} +/- {fit_parameter_error/2.}")
+    print(f"mu_B / T = {fit_parameter} +/- {fit_parameter_error}")
     temperature = 155. # MeV
-    print(f"mu_B (T = 155 MeV) = {fit_parameter/2.*155} +/- {fit_parameter_error/2.*155}")
-    # text_chi2 = ROOT.TLatex(0, 0.9, "#chi^{2}/NDF = "+formatted_chi2+"/"+str(fit_expo.GetNDF()))
-    # text_chi2.SetTextSize(0.1)
-    # text_chi2.SetNDC(ROOT.kTRUE)
-    # text_chi2.SetTextColor(ROOT.kBlack)
+    print(f"mu_B (T = 155 MeV) = {fit_parameter*155} +/- {fit_parameter_error*155}")
+    
+    # format fit parameter and baryon chemical potential values and errors
+    formatted_fit_parameter = "{:.4f}".format(fit_parameter)
+    formatted_fit_parameter_error = "{:.4f}".format(fit_parameter_error)
+    formatted_mu_b = "{:.2f}".format(fit_parameter*155)
+    formatted_mu_b_error = "{:.2f}".format(fit_parameter_error*155)
+    
+    # chi2 text
+    text_chi2 = ROOT.TLatex(0.5, 0.85, "#chi^{2}/NDF = "+formatted_chi2+"/"+str(fit_expo.GetNDF()))
+    text_chi2.SetTextSize(TLATEX_TEXT_SIZE)
+    text_chi2.SetTextColor(ROOT.kBlack)
+    
+    # mu_b / T ratio
+    text_mu_b_over_T = ROOT.TLatex(0.5, 0.8, "#mu_{#it{B}}/#it{T} = "+formatted_fit_parameter+" #pm "+formatted_fit_parameter_error)
+    text_mu_b_over_T.SetTextSize(TLATEX_TEXT_SIZE)
+    text_mu_b_over_T.SetTextColor(ROOT.kBlack)
+    
+    # mu_b at T = 155 MeV
+    text_mu_b = ROOT.TLatex(0.5, 0.75, "#mu_{#it{B}} = "+formatted_mu_b+" #pm "+formatted_mu_b_error+" MeV, #it{T} = 155 MeV")
+    text_mu_b.SetTextSize(TLATEX_TEXT_SIZE)
+    text_mu_b.SetTextColor(ROOT.kBlack)
 
     # write to file
     ratios_vs_b.Write()
@@ -114,28 +133,11 @@ for i_cent, cent in enumerate(centrality_classes):
     fit_expo.Draw("same")
     ratios_vs_b.Draw("same")
     ratios_vs_b_graph.Draw("P5 same")
-    # text_chi2.Draw("same")
+    text_chi2.Draw("same")
+    text_mu_b_over_T.Draw("same")
+    text_mu_b.Draw("same")
     c.Write()
     fit_expo.Write()
     c.Print(f"Ratios_{cent[0]}_{cent[1]}.png")
 
 file_out.Close()
-
-# file_out = ROOT.TFile.Open('FinalPlot.root')
-
-# for i_cent, cent in enumerate(centrality_classes):
-
-#     # get canvas and fit function
-#     canv = file_out.Get(f"c_{cent[0]}_{cent[1]}")
-#     fit = file_out.Get(f"fit_expo_{cent[0]}_{cent[1]}")
-    
-#     # chi2 and fit parameter
-#     formatted_chi2 = "{:.2f}".format(fit.GetChisquare())
-#     text_chi2 = ROOT.TLatex(0, 0.9, "#chi^{2}/NDF = "+formatted_chi2+"/"+str(fit.GetNDF()))
-#     text_chi2.SetTextSize(0.1)
-#     text_chi2.SetNDC(ROOT.kTRUE)
-#     text_chi2.SetTextColor(ROOT.kBlack)
-    
-#     #canv.cd()
-#     #text_chi2.Draw("same")
-#     canv.Print(f"Ratios_{cent[0]}_{cent[1]}.png")
