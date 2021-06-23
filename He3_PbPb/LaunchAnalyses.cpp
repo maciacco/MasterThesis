@@ -35,7 +35,7 @@ void LaunchAnalyses(const bool analyse = false)
             snprintf(hname, 12, "%1.1f_0%d_%d_%d", kCutDCAz[iDCA], kCutTPCClusters[iCls], binCountingFlag, expFlag);
           else
             snprintf(hname, 12, "%1.1f_%d_%d_%d", kCutDCAz[iDCA], kCutTPCClusters[iCls], binCountingFlag, expFlag);
-          sprintf(par, "bash ./scripts/AnalysisSysEffPrim.sh %1.1f %d %s %s %s", kCutDCAz[iDCA], kCutTPCClusters[iCls], kBoolString[binCountingFlag], kBoolString[expFlag], hname);
+          sprintf(par, "bash ./scripts/AnalysisSysSignalEffPrim.sh %1.1f %d %s %s %s", kCutDCAz[iDCA], kCutTPCClusters[iCls], kBoolString[binCountingFlag], kBoolString[expFlag], hname);
 
           if (analyse)
             system(par);
@@ -52,10 +52,10 @@ void LaunchAnalyses(const bool analyse = false)
               snprintf(hname2, 14, "%1.1f_0%d_%d_%d_%d", kCutDCAz[iDCA], kCutTPCClusters[iCls], binCountingFlag, expFlag, sigmoidFlag);
             else
               snprintf(hname2, 14, "%1.1f_%d_%d_%d_%d", kCutDCAz[iDCA], kCutTPCClusters[iCls], binCountingFlag, expFlag, sigmoidFlag);
-            sprintf(par2, "bash ./scripts/AnalysisSysSpectra.sh %1.1f %d %s %s %s %s", kCutDCAz[iDCA], kCutTPCClusters[iCls], kBoolString[binCountingFlag], kBoolString[expFlag], kBoolString[sigmoidFlag], hname);
+            sprintf(par2, "bash ./scripts/AnalysisSysSpectra.sh %1.1f %d %s %s %s %s", kCutDCAz[iDCA], kCutTPCClusters[iCls], kBoolString[binCountingFlag], kBoolString[expFlag], kBoolString[sigmoidFlag], hname2);
 
-            std::cout << "|DCAz| < " << kCutDCAz[iDCA] << ", nClsTPC > " << kCutTPCClusters[iCls] << ", binCounting = " << kBoolString[binCountingFlag] << ", expBackground = " << kBoolString[expFlag] << ", sigmoidCorrection = " << kBoolString[sigmoidFlag] << "; processing treeHe3_" << hname << "..." << std::endl;
-            outFile << "|DCAz| < " << kCutDCAz[iDCA] << ", nClsTPC > " << kCutTPCClusters[iCls] << ", binCounting = " << kBoolString[binCountingFlag] << ", expBackground = " << kBoolString[expFlag] << ", sigmoidCorrection = " << kBoolString[sigmoidFlag] << "; processing treeHe3_" << hname << "..."
+            std::cout << "|DCAz| < " << kCutDCAz[iDCA] << ", nClsTPC > " << kCutTPCClusters[iCls] << ", binCounting = " << kBoolString[binCountingFlag] << ", expBackground = " << kBoolString[expFlag] << ", sigmoidCorrection = " << kBoolString[sigmoidFlag] << "; processing treeHe3_" << hname2 << "..." << std::endl;
+            outFile << "|DCAz| < " << kCutDCAz[iDCA] << ", nClsTPC > " << kCutTPCClusters[iCls] << ", binCounting = " << kBoolString[binCountingFlag] << ", expBackground = " << kBoolString[expFlag] << ", sigmoidCorrection = " << kBoolString[sigmoidFlag] << "; processing treeHe3_" << hname2 << "..."
                     << "\n";
 
             if (analyse)

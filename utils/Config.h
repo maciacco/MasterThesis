@@ -62,8 +62,10 @@ namespace he3{
   // DCAxy binning
   const int kNDCABins = 40;
   const int kNDCABinsLarge = 18;
+  const int kNDCABinsLarge2 = 14;
   const double kDCABins[kNDCABins + 1] = {-1.30, -1.20, -1.10, -1.00, -0.90, -0.80, -0.70, -0.60, -0.50, -0.40, -0.35, -0.30, -0.25, -0.20, -0.15, -0.10, -0.07, -0.05, -0.04, -0.02, 0.00, 0.02, 0.04, 0.05, 0.07, 0.10, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.50, 0.60, 0.70, 0.80, 0.90, 1.00, 1.10, 1.20, 1.30};
   const double kDCABinsLarge[kNDCABinsLarge + 1] = {-1.30, -1.10, -0.90, -0.70, -0.50, -0.40, -0.20, -0.10, -0.05, 0.00, 0.05, 0.10, 0.20, 0.40, 0.50, 0.70, 0.90, 1.10, 1.30};
+  const double kDCABinsLarge2[kNDCABinsLarge2 + 1] = {-1.30, -1.10, -0.90, -0.70, -0.50, -0.25, -0.10, 0.00, 0.10, 0.25, 0.50, 0.70, 0.90, 1.10, 1.30};
   const int kNDCABinsMedium = 22;
   const double kDCABinsMedium[kNDCABinsMedium + 1] = {-1.30, -1.10, -0.90, -0.70, -0.50, -0.40, -0.20, -0.10, -0.07, -0.04, -0.02, 0.00, 0.02, 0.04, 0.07, 0.10, 0.20, 0.40, 0.50, 0.70, 0.90, 1.10, 1.30};
 
@@ -113,15 +115,14 @@ namespace deuteron{
   const char *kAntimatterMatterLabelExtended[2] = {"antideuterons", "deuterons"};
 
   // DCAxy binning
-  const int kNDCABins = 22;
-  const int kNDCABinsLarge = 12;
-  const double kDCABins[kNDCABins + 1] = {-1.30f, -1.00f, -0.80f, -0.50f, -0.20f, -0.12f, -0.07f, -0.06f, -0.05f, -0.04f, -0.02f, 0.00f, 0.02f, 0.04f, 0.05f, 0.06f, 0.07f, 0.12f, 0.20f, 0.50f, 0.80f, 1.00f, 1.30f};
-  const double kDCABinsLarge[kNDCABinsLarge + 1] = {-1.30f, -1.00f, -0.80f, -0.50f, -0.20f, -0.12f, 0.00f, 0.12f, 0.20f, 0.50f, 0.80f, 1.00f, 1.30f};
+  const int kNDCABins = 26;
+  const int kNDCABinsLarge = 10;
+  const double kDCABins[kNDCABins + 1] = {-1.30f, -1.00f, -0.80f, -0.60f, -0.50f, -0.30f, -0.20f, -0.12f, -0.07f, -0.06f, -0.05f, -0.04f, -0.02f, 0.00f, 0.02f, 0.04f, 0.05f, 0.06f, 0.07f, 0.12f, 0.20f, 0.30f, 0.50f, 0.60f, 0.80f, 1.00f, 1.30f};
+  const double kDCABinsLarge[kNDCABinsLarge + 1] = {-1.30f, -1.00f, -0.80f, -0.40f, -0.12f, 0.00f, 0.12f, 0.40f, 0.80f, 1.00f, 1.30f};
   const int kNDCABinsMedium = 16;
   const double kDCABinsMedium[kNDCABinsMedium + 1] = {-1.30f, -1.00f, -0.80f, -0.50f, -0.20f, -0.12f, -0.06f, -0.03f, 0.00f, 0.03f, 0.06f, 0.12f, 0.20f, 0.50f, 0.80f, 1.00f, 1.30f};
   const int kNDCABinsMedium2 = 14;
   const double kDCABinsMedium2[kNDCABinsMedium2 + 1] = {-1.30f, -1.00f, -0.80f, -0.50f, -0.20f, -0.12f, -0.06f, 0.00f, 0.06f, 0.12f, 0.20f, 0.50f, 0.80f, 1.00f, 1.30f};
-
   /* const int kNDCABinsMedium = 26;
   const double kDCABinsMedium[kNDCABinsMedium + 1] = {-1.30f, -1.10f, -0.90f, -0.70f, -0.50f, -0.40f, -0.30f, -0.20f, -0.15f, -0.10f, -0.07f, -0.04f, -0.02f, 0.00f, 0.02f, 0.04f, 0.07f, 0.10f, 0.15f, 0.20f, 0.30f, 0.40f, 0.50f, 0.70f, 0.90f, 1.10f, 1.30f};
  */

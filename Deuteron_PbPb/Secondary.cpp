@@ -16,12 +16,19 @@
 #include <Fit/Fitter.h>
 #include <TCanvas.h>
 #include <TLegend.h>
+#include <RooHistPdf.h>
+#include <RooDataHist.h>
+#include <RooAddPdf.h>
+#include <RooPlot.h>
 
 #include "../utils/Utils.h"
 #include "../utils/Config.h"
 
 using namespace utils;
 using namespace deuteron;
+
+bool use_uniform = false;
+bool use_roofit = false;
 
 void Secondary(const char *cutSettings = "", const char *inFileDatName = "AnalysisResults", const char *inFileMCName = "mc", const char *outFileName = "PrimaryDeuteron")
 {
@@ -132,6 +139,50 @@ void Secondary(const char *cutSettings = "", const char *inFileDatName = "Analys
         TObjArray *mc = new TObjArray(2); // MC histograms are put in this array
         mc->Add(fDCAMcProjPrim);
         mc->Add(fDCAMcProjSec);
+
+        // check with constant
+        if (use_uniform) {
+          TH1D *hWeight = (TH1D*)fDCAdatProj->Clone();
+          hWeight->Clear();
+          for(int i = 1; i < hWeight->GetNbinsX()+1; ++i)
+            hWeight->SetBinContent(i, 1.);
+          mc->Pop();
+          mc->Add(hWeight);
+        }
+
+        // check primary fraction with roofit
+        double prim_frac_roofit = 1., prim_frac_roofit_err = 0.;
+        if (use_roofit) {
+          RooRealVar *dca = new RooRealVar("DCA_{xy}", "DCAxy", -1.3, 1.3, "cm");
+          RooDataHist *data = new RooDataHist("data", "data", *dca, fDCAdatProj);
+          RooDataHist *prim_tmp = new RooDataHist("prim_tmp", "prim_tmp", *dca, fDCAMcProjPrim);
+          RooHistPdf *prim = new RooHistPdf("prim", "prim", *dca, *prim_tmp);
+          RooDataHist *sec_tmp = new RooDataHist("sec_tmp", "sec_tmp", *dca, fDCAMcProjSec);
+          RooHistPdf *sec = new RooHistPdf("sec", "sec", *dca, *sec_tmp);
+          RooRealVar *primfrac = new RooRealVar("#it{f_{prim}}","primfrac",0.,1.);
+          RooAddPdf *model = new RooAddPdf("model", "model", RooArgList(*prim, *sec), RooArgList(*primfrac));
+          model->fitTo(*data);
+          RooPlot *xframe = dca->frame(RooFit::Title("dca"), RooFit::Name(fDCAdatProj->GetName()));
+          data->plotOn(xframe);
+          model->plotOn(xframe, RooFit::Components("prim"), RooFit::LineColor(kBlue));
+          model->plotOn(xframe, RooFit::Components("sec"), RooFit::LineColor(kRed));
+          model->plotOn(xframe, RooFit::LineColor(kGreen));
+          xframe->Write();
+
+          // integrate primaries (-0.12,0.12)
+          dca->setRange("intRange",-0.12,0.12);
+          Double_t prim_integral = (prim->createIntegral(*dca,RooFit::NormSet(*dca),RooFit::Range("intRange")))->getVal();
+          //std::cout << setprecision(8) << prim_integral << std::endl;
+          // integrate model
+          Double_t tot_integral = (model->createIntegral(*dca,RooFit::NormSet(*dca),RooFit::Range("intRange")))->getVal();
+          Double_t ratio = primfrac->getVal()*prim_integral/tot_integral;
+          Double_t ratio_err = TMath::Sqrt(ratio * (1. - ratio) / (tot_integral*fDCAdatProj->Integral()));
+          
+          // save primary fraction and its uncertainty
+          prim_frac_roofit = ratio;
+          prim_frac_roofit_err = ratio_err;
+        }
+
         TFractionFitter *fit = new TFractionFitter(fDCAdatProj, mc, "Q"); // initialise
         ROOT::Fit::Fitter *fitter = fit->GetFitter();
 
@@ -181,7 +232,7 @@ void Secondary(const char *cutSettings = "", const char *inFileDatName = "Analys
           gStyle->SetOptStat(0);
           fDCAdatProj->Scale(1, "width");
           result->Scale(1, "width");
-          fDCAdatProj->GetYaxis()->SetRangeUser(1.e3, 1.e6);
+          // fDCAdatProj->GetYaxis()->SetRangeUser(1.e3, 1.e6);
           fDCAdatProj->Draw("Ep");
           result->Draw("histosame");
           fDCAdatProj->Draw("Epsame");
@@ -198,21 +249,30 @@ void Secondary(const char *cutSettings = "", const char *inFileDatName = "Analys
           //prob.Draw("same");
 
           // compute fraction of primaries and material secondaries
-          double intPrimDCAcut = mc1->Integral(result->FindBin(-0.12), result->FindBin(0.115));
+          double intPrimDCAcutError = 0.;
+          double intPrimDCAcut = mc1->IntegralAndError(result->FindBin(-0.12), result->FindBin(0.115), intPrimDCAcutError);
           double intSecDCAcut = mc2->Integral(result->FindBin(-0.12), result->FindBin(0.115));
-          double intResDCAcut = result->Integral(result->FindBin(-0.12), result->FindBin(0.115));
+          double intResDCAcutError = 0.;
+          double intResDCAcut = result->IntegralAndError(result->FindBin(-0.12), result->FindBin(0.115), intResDCAcutError);
           double primaryRatio = intPrimDCAcut / intResDCAcut;
-          double primaryRatioError = /*errFracMc1/fracMc1;*/ TMath::Sqrt(primaryRatio * (1.f - primaryRatio) / intResDCAcut);
+          double primaryRatioError = primaryRatio*TMath::Sqrt(intPrimDCAcutError*intPrimDCAcutError/intPrimDCAcut/intPrimDCAcut+intResDCAcutError*intResDCAcutError/intResDCAcut/intResDCAcut); // TMath::Sqrt(primaryRatio * (1.f - primaryRatio) / intResDCAcut);
           if (primaryRatio < 1.e-7)
             primaryRatioError = 1. / intResDCAcut;
           double secondaryRatio = intSecDCAcut / intResDCAcut;
           double secondaryRatioError = TMath::Sqrt(secondaryRatio * (1.f - secondaryRatio) / intResDCAcut);
           fPrimaryFrac.SetBinContent(fPrimaryFrac.FindBin(ptMin + 0.005f), primaryRatio);
           fPrimaryFrac.SetBinError(fPrimaryFrac.FindBin(ptMin + 0.005f), primaryRatioError);
+          
+          // roofit check
+          if (use_roofit) {
+            fPrimaryFrac.SetBinContent(fPrimaryFrac.FindBin(ptMin + 0.005f), prim_frac_roofit);
+            fPrimaryFrac.SetBinError(fPrimaryFrac.FindBin(ptMin + 0.005f), prim_frac_roofit_err);
+          }
+
           fSecondaryFrac.SetBinContent(fSecondaryFrac.FindBin(ptMin + 0.005f), secondaryRatio);
           fSecondaryFrac.SetBinError(fSecondaryFrac.FindBin(ptMin + 0.005f), secondaryRatioError);
 
-          canv.SetLogy();
+          // canv.SetLogy();
           canv.Write();
 
           // write fitted histograms
