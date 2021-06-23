@@ -85,7 +85,7 @@ void Secondary(const float cutDCAz = 1.f, const int cutTPCcls = 89, const char *
         double maxPt = fDCAdat->GetYaxis()->GetBinUpEdge(upperPtBinIndex);
         outFile->cd();
 
-        if ((iMatt == 1) && (minPt < 2.95f))
+        if ((iMatt == 1) && ( (minPt < 3.45f && iCent < 2) || (minPt < 2.95f && iCent > 1 ) ))
         {
           // project TH3 histogram
           TH1D *fDCAdatProj;
@@ -134,6 +134,16 @@ void Secondary(const float cutDCAz = 1.f, const int cutTPCcls = 89, const char *
             fDCAMcProjSecWeak = (TH1D *)fDCAMcProjSecWeak->Rebin(kNDCABinsLarge, fDCAMcProjSecWeak->GetName(), kDCABinsLarge);
             fRatioDCAPrim = *(TH1D *)fRatioDCAPrim.Rebin(kNDCABinsLarge, fRatioDCAPrim.GetName(), kDCABinsLarge);
             fRatioDCASec = *(TH1D *)fRatioDCASec.Rebin(kNDCABinsLarge, fRatioDCASec.GetName(), kDCABinsLarge);
+          }
+
+          if (rebinLowStatisticsBin && iPtBin > 4)
+          {
+            fDCAdatProj = (TH1D *)fDCAdatProj->Rebin(kNDCABinsLarge2, fDCAdatProj->GetName(), kDCABinsLarge2);
+            fDCAMcProjPrim = (TH1D *)fDCAMcProjPrim->Rebin(kNDCABinsLarge2, fDCAMcProjPrim->GetName(), kDCABinsLarge2);
+            fDCAMcProjSec = (TH1D *)fDCAMcProjSec->Rebin(kNDCABinsLarge2, fDCAMcProjSec->GetName(), kDCABinsLarge2);
+            fDCAMcProjSecWeak = (TH1D *)fDCAMcProjSecWeak->Rebin(kNDCABinsLarge2, fDCAMcProjSecWeak->GetName(), kDCABinsLarge2);
+            fRatioDCAPrim = *(TH1D *)fRatioDCAPrim.Rebin(kNDCABinsLarge2, fRatioDCAPrim.GetName(), kDCABinsLarge2);
+            fRatioDCASec = *(TH1D *)fRatioDCASec.Rebin(kNDCABinsLarge2, fRatioDCASec.GetName(), kDCABinsLarge2);
           }
 
           fDCAMcProjSec->Write();
@@ -234,11 +244,13 @@ void Secondary(const float cutDCAz = 1.f, const int cutTPCcls = 89, const char *
             //   frac3.Draw("same");
 
             // compute fraction of primaries and material secondaries
-            double intPrimDCAcut = mc1->Integral(result->FindBin(-0.1), result->FindBin(0.9));
+            double intPrimDCAcutError = 0.;
+            double intPrimDCAcut = mc1->IntegralAndError(result->FindBin(-0.1), result->FindBin(0.9), intPrimDCAcutError);
             double intSecDCAcut = mc2->Integral(result->FindBin(-0.1), result->FindBin(0.9));
-            double intResDCAcut = result->Integral(result->FindBin(-0.1), result->FindBin(0.9));
+            double intResDCAcutError = 0.;
+            double intResDCAcut = result->IntegralAndError(result->FindBin(-0.1), result->FindBin(0.9), intResDCAcutError);
             double primaryRatio = intPrimDCAcut / intResDCAcut;
-            double primaryRatioError = TMath::Sqrt(primaryRatio * (1.f - primaryRatio) / intResDCAcut);
+            double primaryRatioError = primaryRatio*TMath::Sqrt(intPrimDCAcutError*intPrimDCAcutError/intPrimDCAcut/intPrimDCAcut+intResDCAcutError*intResDCAcutError/intResDCAcut/intResDCAcut);//TMath::Sqrt(primaryRatio * (1.f - primaryRatio) / intResDCAcut);
             double secondaryRatio = intSecDCAcut / intResDCAcut;
             double secondaryRatioError = TMath::Sqrt(secondaryRatio * (1.f - secondaryRatio) / intResDCAcut);
             if (useWdInFit)
@@ -319,18 +331,21 @@ void Secondary(const float cutDCAz = 1.f, const int cutTPCcls = 89, const char *
       fSigmoid.SetParName(0, "a");
       fSigmoid.SetParName(1, "b");
       fSigmoid.SetParName(2, "c");
-      fSigmoid.SetParameter(0, 0.9f);
+      fSigmoid.SetParameter(0, 0.9);
       if (iMatt == 1)
       {
-        fSigmoid.SetParLimits(1, -10., 0.);
-        fSigmoid.SetParLimits(2, 0.f, 100.f);
+        fSigmoid.SetParLimits(1, -100., 0.);
+        fSigmoid.SetParameter(1, -6.5);
+        fSigmoid.SetParLimits(2, 0., 100.);
+        fSigmoid.SetParameter(2, 12.0);
       }
       else
       {
-        fSigmoid.FixParameter(1, 0.f);
-        fSigmoid.FixParameter(2, 0.f);
+        fSigmoid.FixParameter(1, 0.);
+        fSigmoid.FixParameter(2, 0.);
       }
-      fPrimaryFrac.Fit(&fSigmoid, "RQ");
+      fPrimaryFrac.Fit(&fSigmoid, "RMQ", "", 2.0, 3.0);
+      fPrimaryFrac.Fit(&fSigmoid, "RMQ");
       fSigmoid.Write();
 
       fPrimaryFrac.SetMarkerStyle(20);

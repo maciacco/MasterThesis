@@ -30,15 +30,7 @@ argumentCuts="$cutDCAz,$cutTPCcls"
 argumentSignal="$binCountingFlag,$expFlag"
 
 root -b -l <<EOF
-.L SignalUnbinned.cpp+
-.L Efficiency.cpp+
-.L EfficiencySec.cpp+
-.L Secondary.cpp+
 .L Spectra.cpp+
-SignalUnbinned($argumentCuts,$argumentSignal,"TreeOutDataSys","SignalHe3Sys","update")
-Efficiency($argumentCuts,"TreeOutMCSys")
-EfficiencySec($argumentCuts,"TreeOutMCSys")
-Secondary($argumentCuts,"TreeOutDataSys","TreeOutMCSys")
 Spectra($argumentCuts,$argumentSignal,$sigmoidFlag,"$spectraHistNameId","SpectraHe3Syst","update","AnalysisResults","SignalHe3Sys")
 .q
 EOF
