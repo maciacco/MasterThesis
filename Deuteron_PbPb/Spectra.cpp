@@ -17,6 +17,7 @@ using namespace deuteron;
 
 void Spectra(const char *cutSettings = "", const bool binCounting = false, const int bkg_shape = 1, const bool sigmoidCorrection = true, const char *histoNameDir = ".", const char *outFileName = "SpectraDeuteron1", const char *outFileOption = "recreate", const char *dataFile = "AnalysisResults", const char *signalFile = "SignalDeuteron", const char *effFile = "EfficiencyDeuteron", const char *primFile = "PrimaryDeuteron", const bool useEfficiencyMB = false)
 {
+  std::cout << "cutSettings = " << cutSettings << std::endl;
   gStyle->SetOptFit(0);
   gStyle->SetTextFont(44);
 
@@ -40,6 +41,7 @@ void Spectra(const char *cutSettings = "", const bool binCounting = false, const
   TH1D *fRatio[kNCentClasses];
   for (int iCent = 0; iCent < kNCentClasses; ++iCent)
   {
+    // std::cout << "read: " << Form("%s_%d_%d/fATOFrawYield_%.0f_%.0f", cutSettings, binCounting, bkg_shape, kCentBinsLimitsDeuteron[iCent][0], kCentBinsLimitsDeuteron[iCent][1]) << std::endl;
     fRatio[iCent] = new TH1D(*(TH1D *)inFileRaw->Get(Form("%s_%d_%d/fATOFrawYield_%.0f_%.0f", cutSettings, binCounting, bkg_shape, kCentBinsLimitsDeuteron[iCent][0], kCentBinsLimitsDeuteron[iCent][1])));
     fRatio[iCent]->Reset();
     fRatio[iCent]->SetName(Form("fRatio_%.0f_%.0f", kCentBinsLimitsDeuteron[iCent][0], kCentBinsLimitsDeuteron[iCent][1]));
@@ -80,9 +82,12 @@ void Spectra(const char *cutSettings = "", const bool binCounting = false, const
         double primary = 1.;
         double primaryError = 0.;
         if(iMatt == 1){
-          primary = sec->GetBinContent(iPtBin);
-          primaryError = sec->GetBinError(iPtBin);
-          //primary = sec_f->Eval(raw->GetXaxis()->GetBinCenter(iPtBin));
+          if (sigmoidCorrection)
+            primary = sec_f->Eval(raw->GetXaxis()->GetBinCenter(iPtBin));
+          else {
+            primary = sec->GetBinContent(iPtBin);
+            primaryError = sec->GetBinError(iPtBin);
+          }
         }
         fSpectra[iMatt]->SetBinContent(iPtBin, rawYield * primary / efficiency );
         fSpectra[iMatt]->SetBinError(iPtBin, (rawYield * primary / efficiency) * TMath::Sqrt(primaryError * primaryError / primary / primary + effError * effError / efficiency / efficiency + rawYieldError * rawYieldError / rawYield / rawYield));

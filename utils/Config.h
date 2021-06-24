@@ -24,6 +24,9 @@ const int kNCentClasses = 3;
 const char *kAxisTitleDCA = "DCA_{xy} (cm)";
 const char *kAxisTitlePt = "#it{p}_{T} (GeV/#it{c})";
 
+const char *kBoolString[] = {"false", "true"};
+const int kNPoints = 1e4;
+
 //////////////////////////////////////////////////////////////
 // He3 analysis
 //////////////////////////////////////////////////////////////
@@ -81,13 +84,12 @@ namespace he3{
   const char *kTrackSelectionsDCAxy = "std::abs(dcaxy)<0.1f";
   
   // cuts with variations (systematics computation)
-  const int kNCutDCAz = 12;
-  const double kCutDCAz[] = {0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5};
+  const int kNCutDCAz = 11;
+  const double kCutDCAz[] = {0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5};
   const int kNCutTPCClusters = 31;
   const int kCutTPCClusters[] = {74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104};
-  const char *kBoolString[] = {"false", "true"};
+
   const int kNAnalyses = 2976;
-  const int kNPoints = 1e4;
 }
 
 //////////////////////////////////////////////////////////////
@@ -126,6 +128,15 @@ namespace deuteron{
   /* const int kNDCABinsMedium = 26;
   const double kDCABinsMedium[kNDCABinsMedium + 1] = {-1.30f, -1.10f, -0.90f, -0.70f, -0.50f, -0.40f, -0.30f, -0.20f, -0.15f, -0.10f, -0.07f, -0.04f, -0.02f, 0.00f, 0.02f, 0.04f, 0.07f, 0.10f, 0.15f, 0.20f, 0.30f, 0.40f, 0.50f, 0.70f, 0.90f, 1.10f, 1.30f};
  */
+
+  // systematics variations
+  const int kNCutDCAz = 4;
+  const double kCutDCAz[] = {0.5, 0.75, 1.5, 2.0};
+  const int kNCutTPCClusters = 4;
+  const double kCutTPCClusters[] = {59., 64., 74., 79.};
+  const int kNTPCPidSigmas = 2;
+  const double kTPCPidSigmas[] = {3.25, 3.50};
+  const char *cutSettings[] = {"dcaz", "pid", "tpc"};
 }
 
 #endif // CONFIGFILE_H
