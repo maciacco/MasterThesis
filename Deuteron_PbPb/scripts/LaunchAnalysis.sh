@@ -3,15 +3,15 @@
 # parameters
 cutSettings=""
 binCountingFlag=0
-expFlag=1 # 1->sum of 2 exp, 0 -> sum of exp and straight line
+expFlag=0 # 1->sum of 2 exp, 0 -> sum of exp and pol2
 sigmoidFlag=1
 spectraHistNameId="_1_1_1"
 extractRatios=1
 
 fileData="AnalysisResults"
 fileMC="mc"
-signalName="SignalDeuteron"
-spectraName="SpectraDeuteron"
+signalName="SignalDeuteronPol2"
+spectraName="SpectraDeuteronPol2"
 EfficiencyHe3="EfficiencyDeuteron"
 PrimaryHe3="PrimaryDeuteron"
 

@@ -38,27 +38,28 @@ void LaunchAnalyses(const bool analyse = false)
       cutIndex -= (kNCutDCAz + kNTPCPidSigmas);
     }
     auto fullCutSettings = Form("%s%d", cutSettings[cutVariable], cutIndex);
-
     std::cout << "fullCutSettings = " << fullCutSettings << std::endl;
-    if (analyse)
-    { 
-      gSystem->Exec(Form("bash ~/Code/MasterThesis/Deuteron_PbPb/scripts/LaunchAnalysisSignEffPrim.sh %s 0 1", fullCutSettings));
-    }
 
-    for (int iSgm = 0; iSgm < 2; ++iSgm)
+    for (int iBkg = 0; iBkg < 2; ++iBkg)
     {
-      char hname2[100];
-
-      // bool binCountingFlag = 1 - iBin;
-      bool sigmoidFlag = 1 - iSgm;
-      auto spectraNameId = Form("%s_%d",fullCutSettings, sigmoidFlag);
-      std::cout << "SigmoidCorrection = " << kBoolString[sigmoidFlag] << "; cutSettings = " << fullCutSettings << "..." << std::endl;
-      outFile << "SigmoidCorrection = " << kBoolString[sigmoidFlag] << "; cutSettings = " << fullCutSettings << "..."
-              << "\n";
-
       if (analyse)
       {
-        gSystem->Exec(Form("bash ~/Code/MasterThesis/Deuteron_PbPb/scripts/LaunchAnalysisSpec.sh %s 0 1 %d %s", fullCutSettings, sigmoidFlag, spectraNameId));
+        gSystem->Exec(Form("bash ~/Code/MasterThesis/Deuteron_PbPb/scripts/LaunchAnalysisSignEffPrim.sh %s 0 %d", fullCutSettings, iBkg));
+      }
+
+      for (int iSgm = 0; iSgm < 2; ++iSgm)
+      {
+        // bool binCountingFlag = 1 - iBin;
+        bool sigmoidFlag = 1 - iSgm;
+        auto spectraNameId = Form("%s_%d_%d",fullCutSettings, iBkg, sigmoidFlag);
+        std::cout << "SigmoidCorrection = " << kBoolString[sigmoidFlag] << "; cutSettings = " << fullCutSettings << "..." << std::endl;
+        outFile << "SigmoidCorrection = " << kBoolString[sigmoidFlag] << "; cutSettings = " << fullCutSettings << "..."
+                << "\n";
+
+        if (analyse)
+        {
+          gSystem->Exec(Form("bash ~/Code/MasterThesis/Deuteron_PbPb/scripts/LaunchAnalysisSpec.sh %s 0 %d %d %s", fullCutSettings, iBkg, sigmoidFlag, spectraNameId));
+        }
       }
     }
   }

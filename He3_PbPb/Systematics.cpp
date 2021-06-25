@@ -129,7 +129,7 @@ void Systematics(const int points = kNPoints, const bool cutVar = true, const bo
     TCanvas cFitPar("cFitPar", "cFitPar");
     cFitPar.cd();
     cFitPar.SetTicks(1, 1);
-    fFitPar.GetXaxis()->SetRangeUser(0.92,0.99);
+    fFitPar.GetXaxis()->SetRangeUser(fFitPar.GetMean()-5*fFitPar.GetRMS(),fFitPar.GetMean()+5*fFitPar.GetRMS());
     fFitPar.Draw("");
     cFitPar.Print(Form("%s/Systematics_%s.png", kPlotDir, fFitPar.GetName()));
 
