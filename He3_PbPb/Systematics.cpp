@@ -70,20 +70,20 @@ void Systematics(const int points = kNPoints, const bool cutVar = true, const bo
 
         int binCountingFlagRnd = 1;
         if (binCountingVar)
-          (gRandom->Rndm() > .4999f) ? binCountingFlagRnd = 1 : binCountingFlagRnd = 0;
+          (gRandom->Rndm() > .5) ? binCountingFlagRnd = 1 : binCountingFlagRnd = 0;
 
-        // EXPO AND POL1 SAMPLES ARE SPLIT
+        // EXPO AND POL1 SAMPLES ARE MERGED
         int expFlag = 1;
-        if (expVar)
-          expFlag = 0;
-        //(gRandom->Rndm() > .4999f) ? expFlag = 1 : expFlag = 0;
+        // if (expVar)
+        //   expFlag = 0;
+        (gRandom->Rndm() > .5) ? expFlag = 1 : expFlag = 0;
 
         int sigmoidFlagRnd = 1;
         if (sigmoidVar)
         {
           if (fRatio.GetBinCenter(iPtBin) < 6.3)
           {
-            (gRandom->Rndm() > .4999f) ? sigmoidFlagRnd = 1 : sigmoidFlagRnd = 0;
+            (gRandom->Rndm() > .5) ? sigmoidFlagRnd = 1 : sigmoidFlagRnd = 0;
           }
         }
 
