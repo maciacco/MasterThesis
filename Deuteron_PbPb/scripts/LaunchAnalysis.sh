@@ -3,7 +3,7 @@
 # parameters
 cutSettings=""
 binCountingFlag=0
-expFlag=1 # 1->sum of 2 exp
+expFlag=1 # 1->sum of 2 exp, 0 -> sum of exp and straight line
 sigmoidFlag=1
 spectraHistNameId="_1_1_1"
 extractRatios=1

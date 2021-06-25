@@ -109,7 +109,7 @@ void Spectra(const char *cutSettings = "", const bool binCounting = false, const
 
     // compute ratios
     int pTbinMax = 22;
-    for (int iPtBin = 1; iPtBin < pTbinMax + 1; ++iPtBin)
+    for (int iPtBin = 4; iPtBin < pTbinMax + 1; ++iPtBin)
     {
       double antiSpec = fSpectra[0]->GetBinContent(iPtBin);
       double spec = fSpectra[1]->GetBinContent(iPtBin);

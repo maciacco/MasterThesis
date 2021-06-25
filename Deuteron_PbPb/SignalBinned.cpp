@@ -33,7 +33,7 @@
 using namespace utils;
 using namespace deuteron;
 
-const double kNSigma = 5; // define interval for bin counting
+const double kNSigma = 3; // define interval for bin counting
 
 void SignalBinned(const char *cutSettings = "", const bool binCounting = false, const int bkg_shape = 1, const char *inFileDat = "AnalysisResults", const char *outFileName = "SignalDeuteron", const char *outFileOption = "recreate", const bool extractSignal = true, const bool useDSCB = false, const bool binCountingNoFit = false)
 {
@@ -194,7 +194,7 @@ void SignalBinned(const char *cutSettings = "", const bool binCounting = false, 
           }
         }
         else
-        {
+        { // TODO: sum of expo + straight line
           std::cout << "No background shape with bkg_shape = 0!" << std::endl;
           return;
         }
