@@ -63,10 +63,10 @@ void Systematics(const int points = kNPoints, const bool cutVar = true, const bo
         char hname[100];
         double cutDCAzRnd = 1.;
         if (cutVar)
-          cutDCAzRnd = gRandom->Rndm() * 11 * 0.1 + kCutDCAz[0];
+          cutDCAzRnd = gRandom->Rndm() * (kNCutDCAz-1) * 0.1 + kCutDCAz[0];
         double cutTPCclsRnd = 89;
         if (cutVar)
-          cutTPCclsRnd = gRandom->Rndm() * 30 + kCutTPCClusters[0];
+          cutTPCclsRnd = gRandom->Rndm() * (kNCutTPCClusters-1) + kCutTPCClusters[0];
 
         int binCountingFlagRnd = 1;
         if (binCountingVar)
