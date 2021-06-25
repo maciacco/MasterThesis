@@ -109,7 +109,7 @@ void Systematics(const int points = kNPoints, const bool cutVar = true, const bo
         fFitPar.Fill(fitFunc.GetParameter(0));
         fProb.Fill(fitFunc.GetProb());
         cdFits->cd();
-        fRatio.Write();
+        // fRatio.Write();
         fRatio.Reset();
         ++iP;
       }
