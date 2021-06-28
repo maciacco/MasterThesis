@@ -195,15 +195,15 @@ void SignalBinned(const char *cutSettings = "", const bool binCounting = false, 
         }
         else
         { // sum of expo + pol2
-          parameter = new RooRealVar("b_{mismatch}", "b", -100., 100.);
+          parameter = new RooRealVar("b_{mismatch}", "b", 0., 5.);
+          slope1 = new RooRealVar("a_{mismatch}", "a", -0.2, -1., -0.01);
+
           if ((ptMin < 1.11))
           {
-            slope1 = new RooRealVar("a_{mismatch}", "a", -0.2, -1., -0.01);
             background = (RooAbsPdf *)new RooPolynomial("background", "background", tofSignal, RooArgList(*slope1, *parameter));
           }
           else
           {
-            slope1 = new RooRealVar("a_{mismatch}", "a", -0.2, -1.0, -0.01);
             slope2 = new RooRealVar("#tau_{p}", "slope2", -2.1, -5., -2.0);
             background1 = (RooAbsPdf *)new RooPolynomial("background1", "background1", tofSignal, RooArgList(*slope1, *parameter));
             background2 = (RooAbsPdf *)new RooExponential("background2", "background2", tofSignal, *slope2);

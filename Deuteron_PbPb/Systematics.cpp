@@ -41,7 +41,7 @@ void Systematics(const int points = kNPoints, const bool cutVar = true, const bo
   for (int iC = 0; iC < kNCentClasses-1; ++iC) // TODO: extend the analysis to the third centrality class as well
   {
     TDirectory *cdFits = outFile->mkdir(Form("fits_%.0f_%.0f", kCentBinsLimitsDeuteron[iC][0], kCentBinsLimitsDeuteron[iC][1]));
-    TH1D fFitPar(Form("fFitPar_%.0f_%.0f", kCentBinsLimitsDeuteron[iC][0], kCentBinsLimitsDeuteron[iC][1]), Form("%.0f-%.0f%%", kCentBinsLimitsDeuteron[iC][0], kCentBinsLimitsDeuteron[iC][1]), 4000, 0.8, 1.);
+    TH1D fFitPar(Form("fFitPar_%.0f_%.0f", kCentBinsLimitsDeuteron[iC][0], kCentBinsLimitsDeuteron[iC][1]), Form("%.0f-%.0f%%", kCentBinsLimitsDeuteron[iC][0], kCentBinsLimitsDeuteron[iC][1]), 3000, 0.8, 1.);
     TH1D fProb(Form("fProb_%.0f_%.0f", kCentBinsLimitsDeuteron[iC][0], kCentBinsLimitsDeuteron[iC][1]), Form("%.0f-%.0f%%", kCentBinsLimitsDeuteron[iC][0], kCentBinsLimitsDeuteron[iC][1]), 1000., 0., 1.0);
     TH1D fRatio("fRatio", "fRatio", kNPtBins, kPtBins);
 
@@ -61,7 +61,6 @@ void Systematics(const int points = kNPoints, const bool cutVar = true, const bo
         else if (cutVariable == 1)
         {
           cutIndex = gRandom->Rndm() * kNTPCPidSigmas;
-          if (iPtBin == 22 && iC == 0) cutIndex = 1; // exception -> under investigation
         }
         else cutIndex = gRandom->Rndm() * kNCutTPCClusters;
 
