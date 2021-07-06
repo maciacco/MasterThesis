@@ -15,7 +15,7 @@
 using utils::TTList;
 using namespace deuteron;
 
-void Spectra(const char *cutSettings = "", const bool binCounting = false, const int bkg_shape = 1, const bool sigmoidCorrection = true, const char *histoNameDir = ".", const char *outFileName = "SpectraDeuteron1", const char *outFileOption = "recreate", const char *dataFile = "AnalysisResults", const char *signalFile = "SignalDeuteron", const char *effFile = "EfficiencyDeuteron", const char *primFile = "PrimaryDeuteron", const bool useEfficiencyMB = false)
+void Spectra(const char *cutSettings = "", const bool binCounting = false, const int bkg_shape = 1, const bool sigmoidCorrection = true, const char *histoNameDir = ".", const char *outFileName = "SpectraDeuteron1", const char *outFileOption = "recreate", const char *dataFile = "AnalysisResults", const char *signalFile = "SignalDeuteron", const char *effFile = "EfficiencyDeuteron", const char *primFile = "PrimaryDeuteron", const bool useEfficiencyMB = true)
 {
   std::cout << "cutSettings = " << cutSettings << std::endl;
   gStyle->SetOptFit(0);

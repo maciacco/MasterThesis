@@ -41,8 +41,8 @@ void Secondary(const char *cutSettings = "", const char *inFileDatName = "Analys
 
   // open files
   TFile *inFileDat = TFile::Open(Form("%s/%s.root", kDataDir, inFileDatName));
-  TFile *inFileMC = TFile::Open(Form("%s/%s.root", kDataDir, inFileMCName));
-  TFile *inFileMCsec = TFile::Open(Form("%s/%s_sec.root", kDataDir, inFileMCName));
+  TFile *inFileMC = TFile::Open(Form("%s/%s.root", kDataDir, "mc"));
+  TFile *inFileMCsec = TFile::Open(Form("%s/%s_sec.root", kDataDir, "mc"));
   TFile *outFile = TFile::Open(Form("%s/%s.root", kOutDir, outFileName), "recreate");
 
   for (int iMatt = 1; iMatt < 2; ++iMatt)

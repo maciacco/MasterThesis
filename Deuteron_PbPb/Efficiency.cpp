@@ -38,7 +38,7 @@ void Efficiency(const char *cutSettings = "", const char *inFileNameMC = "mc", c
     TH2F *fTotal = (TH2F *)list->Get(TString::Format("f%sTotal", kAntimatterMatter[iMatt]).Data());
     TH2F *fITS_TPC_TOF = (TH2F *)list->Get(TString::Format("f%sITS_TPC_TOF", kAntimatterMatter[iMatt]).Data());
 
-    for (int iCent = 0; iCent < kNCentClasses+1; ++iCent)
+    for (int iCent = 3; iCent < kNCentClasses+1; ++iCent)
     { // loop over centrality
       int cent_bin_min = kCentBinsDeuteron[iCent][0];
       int cent_bin_max = kCentBinsDeuteron[iCent][1];

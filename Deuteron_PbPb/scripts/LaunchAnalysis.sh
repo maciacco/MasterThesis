@@ -9,7 +9,7 @@ spectraHistNameId="_1_1_1"
 extractRatios=1
 
 fileData="AnalysisResults"
-fileMC="mc"
+fileMC="mc_old_G4"
 signalName="SignalDeuteron"
 spectraName="SpectraDeuteron"
 EfficiencyHe3="EfficiencyDeuteron"

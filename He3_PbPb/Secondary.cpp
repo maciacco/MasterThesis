@@ -85,7 +85,7 @@ void Secondary(const float cutDCAz = 1.f, const int cutTPCcls = 89, const char *
         double maxPt = fDCAdat->GetYaxis()->GetBinUpEdge(upperPtBinIndex);
         outFile->cd();
 
-        if ((iMatt == 1) && ( (minPt < 3.45f && iCent < 2) || (minPt < 2.95f && iCent > 1 ) ))
+        if (/* (iMatt == 1) && ( (minPt < 3.45f && iCent < 2) ||  */(minPt < 2.95f /* && iCent > 1 ) */ ))
         {
           // project TH3 histogram
           TH1D *fDCAdatProj;
@@ -250,7 +250,7 @@ void Secondary(const float cutDCAz = 1.f, const int cutTPCcls = 89, const char *
             double intResDCAcutError = 0.;
             double intResDCAcut = result->IntegralAndError(result->FindBin(-0.1), result->FindBin(0.9), intResDCAcutError);
             double primaryRatio = intPrimDCAcut / intResDCAcut;
-            double primaryRatioError = primaryRatio*TMath::Sqrt(intPrimDCAcutError*intPrimDCAcutError/intPrimDCAcut/intPrimDCAcut+intResDCAcutError*intResDCAcutError/intResDCAcut/intResDCAcut);//TMath::Sqrt(primaryRatio * (1.f - primaryRatio) / intResDCAcut);
+            double primaryRatioError = /* primaryRatio*TMath::Sqrt(intPrimDCAcutError*intPrimDCAcutError/intPrimDCAcut/intPrimDCAcut+intResDCAcutError*intResDCAcutError/intResDCAcut/intResDCAcut); */TMath::Sqrt(primaryRatio * (1.f - primaryRatio) / intResDCAcut);
             double secondaryRatio = intSecDCAcut / intResDCAcut;
             double secondaryRatioError = TMath::Sqrt(secondaryRatio * (1.f - secondaryRatio) / intResDCAcut);
             if (useWdInFit)
