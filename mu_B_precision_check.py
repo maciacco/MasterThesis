@@ -2,7 +2,7 @@
 import ROOT
 import numpy as np
 
-N_TRIALS = 10000
+N_TRIALS = 1000
 N_UNCERTAINTIES = 30
 
 path_he3 = './He3_PbPb/out'
@@ -12,7 +12,7 @@ centrality_colors = [ROOT.kOrange+7, ROOT.kAzure+7, ROOT.kTeal+4]
 
 ROOT.gStyle.SetPadTickY(1)
 ROOT.gStyle.SetPadTickX(1)
-ROOT.gStyle.SetOptStat(1111)
+ROOT.gStyle.SetOptStat(0)
 ROOT.gStyle.SetOptFit(1111)
 ROOT.gStyle.SetTextFont(4)
 
@@ -70,7 +70,7 @@ for i_cent, cent in enumerate(centrality_classes):
     ratios_vs_b_fit.SetBinError(10, np.sqrt(syst_he3*syst_he3+stat_he3*stat_he3))
 
     # fit to data (exponential)
-    fit_expo = ROOT.TF1(f"fit_expo_{cent[0]}_{cent[1]}", "TMath::Exp(-[0]*x)", -0.5, 9.5)
+    fit_expo = ROOT.TF1(f"fit_expo_{cent[0]}_{cent[1]}", "TMath::Exp(-2./3.*[0]*x)", -0.5, 9.5)
     fit_expo.SetNpx(10000)
     ratios_vs_b_fit.Fit(f"fit_expo_{cent[0]}_{cent[1]}", "Q")
     
@@ -79,24 +79,24 @@ for i_cent, cent in enumerate(centrality_classes):
     print(f"chi2 = {formatted_chi2}")
     fit_parameter = fit_expo.GetParameter(0)
     fit_parameter_error = fit_expo.GetParError(0)
-    print(f"mu_B / T = {fit_parameter/2.} +/- {fit_parameter_error/2.}")
+    print(f"mu_B / T = {fit_parameter} +/- {fit_parameter_error}")
     temperature = 155. # MeV
-    print(f"mu_B (T = 155 MeV) = {fit_parameter/2.*155} +/- {fit_parameter_error/2.*155}")
+    print(f"mu_B (T = 155 MeV) = {fit_parameter*155} +/- {fit_parameter_error*155}")
 
-    # get deuteron ratio expected from exponential fit
-    deuteron_ratio_fit = fit_expo.Eval(ratios_vs_b_fit.GetBinCenter(7))
-    print(f"Deuteron ratio from fit = {deuteron_ratio_fit}")
+    # get proton ratio expected from exponential fit
+    proton_ratio_fit = fit_expo.Eval(ratios_vs_b_fit.GetBinCenter(4))
+    print(f"Proton ratio from fit = {proton_ratio_fit}")
 
     # mu_b histogram
-    h_mu_b = ROOT.TH1D(f"mu_b_{cent[0]}_{cent[1]}", ";#sigma(^{3} #bar{He}/^{3} He) / #sigma(#bar{d}/d);#mu_{B} (MeV)",30, 0.5, 15.5)
+    h_mu_b = ROOT.TH1D(f"mu_b_{cent[0]}_{cent[1]}", ";#sigma(^{3} #bar{He}/^{3} He) / #sigma(#bar{p}/p);#mu_{B} (MeV)",30, 0.5, 15.5)
     h_mu_b.SetTitle(f"{cent[0]}-{cent[1]}%")
     
     # mu_b uncertainty histogram
-    h_mu_b_sigma = ROOT.TH1D(f"mu_b_sigma_{cent[0]}_{cent[1]}", ";#sigma(^{3} #bar{He}/^{3} He) / #sigma(#bar{d}/d);#sigma(#mu_{B}) (MeV)",30, 0.5, 15.5)
+    h_mu_b_sigma = ROOT.TH1D(f"mu_b_sigma_{cent[0]}_{cent[1]}", ";#sigma(^{3} #bar{He}/^{3} He) / #sigma(#bar{p}/p);#sigma(#mu_{B}) (MeV)",30, 0.5, 15.5)
     h_mu_b_sigma.SetTitle(f"{cent[0]}-{cent[1]}%")
 
     # mu_b uncertainty histogram
-    h_mu_b_uncertainty = ROOT.TH1D(f"mu_b_uncertainty_{cent[0]}_{cent[1]}", ";#sigma(^{3} #bar{He}/^{3} He) / #sigma(#bar{d}/d);error(#mu_{B}) (MeV)",30, 0.5, 15.5)
+    h_mu_b_uncertainty = ROOT.TH1D(f"mu_b_uncertainty_{cent[0]}_{cent[1]}", ";#sigma(^{3} #bar{He}/^{3} He) / #sigma(#bar{p}/p);error(#mu_{B}) (MeV)",30, 0.5, 15.5)
     h_mu_b_uncertainty.SetTitle(f"{cent[0]}-{cent[1]}%")
 
     for i_uncertainties in range(N_UNCERTAINTIES):
@@ -104,12 +104,12 @@ for i_cent, cent in enumerate(centrality_classes):
         # define mu_b histogram
         h_mu_b_tmp = ROOT.TH1D(f"mu_b_tmp_n_{i_uncertainties+1}_{cent[0]}_{cent[1]}", ";#mu_{B} (MeV);Entries",400,-4.,4.)
         h_mu_b_tmp.SetDrawOption("pe")
-        h_mu_b_tmp_error = ROOT.TH1D(f"mu_b_tmp_error_n_{i_uncertainties+1}_{cent[0]}_{cent[1]}", ";error(#mu_{B}) (MeV);Entries",9000,0.,0.3)
+        h_mu_b_tmp_error = ROOT.TH1D(f"mu_b_tmp_error_n_{i_uncertainties+1}_{cent[0]}_{cent[1]}", ";error(#mu_{B}) (MeV);Entries",24000,0.,0.8)
         h_mu_b_tmp_error.SetDrawOption("pe")
         
         # deuteron ratio uncertainty (starting from that of he3)
-        deuteron_ratio_sigma = ratios_vs_b_fit.GetBinError(10)*2./(i_uncertainties+1)
-        print(f"Deuteron ratio uncertainty = {deuteron_ratio_sigma}; scale factor = {i_uncertainties}")
+        proton_ratio_sigma = ratios_vs_b_fit.GetBinError(10)*2./(i_uncertainties+1)
+        print(f"Proton ratio uncertainty = {proton_ratio_sigma}; scale factor = {i_uncertainties}")
         
         # make direcotry in output file
         file_out.mkdir(f"{i_uncertainties+1}_scale_factor")
@@ -119,12 +119,12 @@ for i_cent, cent in enumerate(centrality_classes):
             ratios_vs_b_fit.SetName(f"ratio_vs_b_fit_trial_{i_trial}_{cent[0]}_{cent[1]}")
             
             # generate deuteron ratio measurement
-            deuteron_ratio_gen = ROOT.gRandom.Gaus(deuteron_ratio_fit, deuteron_ratio_sigma)
-            # print(f"generated deuteron ratio = {deuteron_ratio_gen}")
+            proton_ratio_gen = ROOT.gRandom.Gaus(proton_ratio_fit, proton_ratio_sigma)
+            # print(f"generated deuteron ratio = {proton_ratio_gen}")
 
             # set generated points in histogram
-            ratios_vs_b_fit.SetBinContent(7, deuteron_ratio_gen)
-            ratios_vs_b_fit.SetBinError(7, deuteron_ratio_sigma)
+            ratios_vs_b_fit.SetBinContent(4, proton_ratio_gen)
+            ratios_vs_b_fit.SetBinError(4, proton_ratio_sigma)
             
             # fit to data
             fit_expo_tmp = ROOT.TF1(f"fit_expo_tmp_{cent[0]}_{cent[1]}", "TMath::Exp(-2./3.*[0]*x)", -0.5, 9.5)
@@ -135,7 +135,7 @@ for i_cent, cent in enumerate(centrality_classes):
             fit_parameter_tmp_error = fit_expo_tmp.GetParError(0)
             mu_b_tmp = fit_parameter_tmp*155
             mu_b_tmp_error = fit_parameter_tmp_error*155
-            # print(f"mu_B (T = 155 MeV) = {mu_b_tmp} +/- {fit_parameter_tmp_error/2.*155}")
+            # print(f"mu_B (T = 155 MeV) = {mu_b_tmp} +/- {fit_parameter_tmp_error*155}")
         
             # fill mu_b histogram
             if fit_expo_tmp.GetProb() < 0.975 and fit_expo_tmp.GetProb() > 0.025:
@@ -154,7 +154,7 @@ for i_cent, cent in enumerate(centrality_classes):
         mu_b_error_error = h_mu_b_tmp_error.GetFunction("gaus").GetParError(1)
         
         h_mu_b.SetBinContent(i_uncertainties+1, mu_b_mean)
-        h_mu_b.SetBinError(i_uncertainties+1, mu_b_sigma)
+        h_mu_b.SetBinError(i_uncertainties+1, mu_b_error)
         h_mu_b_sigma.SetBinContent(i_uncertainties+1, mu_b_sigma)
         h_mu_b_sigma.SetBinError(i_uncertainties+1, mu_b_sigma_error)
         h_mu_b_uncertainty.SetBinContent(i_uncertainties+1, mu_b_error)
@@ -166,6 +166,14 @@ for i_cent, cent in enumerate(centrality_classes):
     file_out.cd()    
     h_mu_b.Write()
     h_mu_b_sigma.Write()
-    h_mu_b_uncertainty.Write()    
+    h_mu_b_uncertainty.Write()
+    
+    # write to PNG
+    
+    # write png (uncertainty)
+    c = ROOT.TCanvas("c", "c")
+    h_mu_b_uncertainty.Draw()
+    print_name = "./"+h_mu_b_uncertainty.GetName()+".png"
+    c.Print(print_name)   
 
 file_out.Close()

@@ -31,7 +31,8 @@ const int kNPoints = 1e4;
 // He3 analysis
 //////////////////////////////////////////////////////////////
 
-namespace he3{
+namespace he3
+{
   // directories
   const char *kDataDir = "../data/He3_PbPb";
 
@@ -40,8 +41,8 @@ namespace he3{
 
   // data files
   const int kNDataFiles = 2;
-    const char *kDataFileLabel[kNDataFiles] = {"LHC18q", "LHC18r"};
-  
+  const char *kDataFileLabel[kNDataFiles] = {"LHC18q", "LHC18r"};
+
   // pt binning
   const int kNPtBins = 14; // analysis binning
   const double kDeltaPt = 0.5f;
@@ -49,13 +50,13 @@ namespace he3{
   const int kNPtBinsFine = 36; // finer pt binning
   const double kDeltaPtFine = 0.25f;
   const int kNPt[2] = {12, 9};
-  
+
   // centrality binning
   const int kNCentBins = 11; // total number of V0M multiplicity classes
   const double kCentBins[kNCentBins + 1] = {0.f, 5.f, 7.5f, 10.f, 20.f, 30.f, 40.f, 50.f, 60.f, 70.f, 80.f, 90.f};
   const int kCentBinsHe3[][2] = {{1, 1}, {2, 3}, {6, 7}};             // centrality classes bin indexes in He3 analysis
   const double kCentBinsLimitsHe3[][2] = {{0, 5}, {5, 10}, {30, 50}}; // centrality classes bin limits in He3 analysis
-  
+
   // TPC nsigma binning
   const int kNSigmaBins = 240;
   const double kDeltaNSigma = 0.05f;
@@ -74,15 +75,15 @@ namespace he3{
 
   // antimatter/matter
   const char *kAntimatterMatterLabel[2] = {"^{3}#bar{He}", "^{3}He"};
-  
+
   // axis labels
   const char *kAxisTitleCent = "Centrality (%)";
   const char *kAxisTitleNSigma = "^{3}He n#sigma (a.u.)";
-  
+
   // track selections
   const char *kTrackSelectionsEta = "(std::abs(eta)<0.8)";
   const char *kTrackSelectionsDCAxy = "std::abs(dcaxy)<0.1f";
-  
+
   // cuts with variations (systematics computation)
   const int kNCutDCAz = 11;
   const double kCutDCAz[] = {0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5};
@@ -96,7 +97,8 @@ namespace he3{
 // deuteron analysis
 //////////////////////////////////////////////////////////////
 
-namespace deuteron{
+namespace deuteron
+{
   // directories
   const char *kDataDir = "../data/Deuteron_PbPb";
 
@@ -110,7 +112,7 @@ namespace deuteron{
 
   // centrality binning
   const double kCentBinsLimitsDeuteron[][2] = {{0, 5}, {5, 10}, {30, 50}, {0, 90}};
-  const int kCentBinsDeuteron[][2] = {{1, 1}, {2, 2}, {5, 6}, {1, 10}};             // centrality classes bin indexes in He3 analysis
+  const int kCentBinsDeuteron[][2] = {{1, 1}, {2, 2}, {5, 6}, {1, 10}}; // centrality classes bin indexes in He3 analysis
 
   // antimatter / matter
   const char *kAntimatterMatterLabel[2] = {"#bar{d}", "d"};
@@ -139,5 +141,45 @@ namespace deuteron{
   const char *cutSettings[] = {"dcaz", "pid", "tpc"};
 }
 
+//////////////////////////////////////////////////////////////
+// proton analysis
+//////////////////////////////////////////////////////////////
+
+namespace proton
+{
+  // directories
+  const char *kDataDir = "../data/Proton_PbPb";
+
+  // TOF signal binning
+  const double kTOFnSigmaMin = -6.;
+  const double kTOFnSigmaMax = 12.;
+
+  // pt binning
+  const int kNPtBins = 84; // analysis binning
+  //double kPtBins[20] = {0.5f, 0.6f, 0.7f, 0.8f, 0.9f, 1.0f, 1.1f, 1.2f, 1.4f, 1.6f, 1.8f, 2.0f, 2.2f, 2.6f, 3.0f, 3.4f, 3.8f, 4.4f, 5.0f, 6.0f};
+  double kPtBins[85]={0.8f, 0.85f, 0.9f, 0.95f, 1.00f, 1.05f, 1.1f, 1.15f, 1.2f, 1.25f, 1.3f, 1.35f, 1.4f, 1.45f, 1.5f, 1.55f, 1.6f, 1.65f, 1.7f, 1.75f, 1.8f, 1.85f, 1.9f, 1.95f, 2.00f, 2.05f, 2.1f, 2.15f, 2.2f, 2.25f, 2.3f, 2.35f, 2.4f, 2.45f, 2.5f, 2.55f, 2.6f, 2.65f, 2.7f, 2.75f, 2.8f, 2.85f, 2.9f, 2.95f, 3.00f, 3.05f, 3.1f, 3.15f, 3.2f, 3.25f, 3.3f, 3.35f, 3.4f, 3.45f, 3.5f, 3.55f, 3.6f, 3.65f, 3.7f, 3.75f, 3.8f, 3.85f, 3.9f, 3.95f, 4.00f, 4.05f, 4.1f, 4.15f, 4.2f, 4.25f, 4.3f, 4.35f, 4.4f, 4.45f, 4.5f, 4.55f, 4.6f, 4.65f, 4.7f, 4.75f, 4.8f, 4.85f, 4.9f, 4.95f, 5.00f};
+
+  // centrality binning
+  const double kCentBinsLimitsProton[][2] = {{0, 5}, {5, 10}, {30, 50}, {0, 90}};
+  const int kCentBinsProton[][2] = {{1, 1}, {2, 2}, {5, 6}, {1, 10}}; // centrality classes bin indexes in He3 analysis
+
+  // antimatter / matter
+  const char *kAntimatterMatterLabel[2] = {"#bar{p}", "p"};
+  const char *kAntimatterMatterLabelExtended[2] = {"antiprotons", "protons"};
+
+  // DCAxy binning
+  const int kNDCABinsMedium = 26;
+  const double kDCABinsMedium[kNDCABinsMedium + 1] = {-1.30f, -1.10f, -0.90f, -0.70f, -0.50f, -0.35f, -0.25f, -0.15f, -0.10f, -0.08f, -0.06f, -0.04f, -0.02f, -0.0f, 0.02f, 0.04f, 0.06f, 0.08f, 0.10f, 0.15f, 0.25f, 0.35f, 0.50f, 0.70f, 0.90f, 1.10f, 1.30f};
+
+
+  // systematics variations
+  const int kNCutDCAz = 4;
+  const double kCutDCAz[] = {0.5, 0.75, 1.5, 2.0};
+  const int kNCutTPCClusters = 4;
+  const double kCutTPCClusters[] = {59., 64., 74., 79.};
+  const int kNTPCPidSigmas = 2;
+  const double kTPCPidSigmas[] = {3.25, 3.50};
+  const char *cutSettings[] = {"dcaz", "pid", "tpc"};
+}
+
 #endif // CONFIGFILE_H
-  
