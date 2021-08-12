@@ -3,7 +3,7 @@ import ROOT
 import numpy as np
 
 N_TRIALS = 1000
-N_UNCERTAINTIES = 30
+N_UNCERTAINTIES = 150
 
 path_he3 = './He3_PbPb/out'
 path_hyp = './Hypertriton_PbPb'
@@ -88,15 +88,15 @@ for i_cent, cent in enumerate(centrality_classes):
     print(f"Proton ratio from fit = {proton_ratio_fit}")
 
     # mu_b histogram
-    h_mu_b = ROOT.TH1D(f"mu_b_{cent[0]}_{cent[1]}", ";#sigma(^{3} #bar{He}/^{3} He) / #sigma(#bar{p}/p);#mu_{B} (MeV)",30, 0.5, 15.5)
+    h_mu_b = ROOT.TH1D(f"mu_b_{cent[0]}_{cent[1]}", ";#sigma(^{3} #bar{He}/^{3} He) / #sigma(#bar{p}/p);#mu_{B} (MeV)",150, 0.5, 75.5)
     h_mu_b.SetTitle(f"{cent[0]}-{cent[1]}%")
     
     # mu_b uncertainty histogram
-    h_mu_b_sigma = ROOT.TH1D(f"mu_b_sigma_{cent[0]}_{cent[1]}", ";#sigma(^{3} #bar{He}/^{3} He) / #sigma(#bar{p}/p);#sigma(#mu_{B}) (MeV)",30, 0.5, 15.5)
+    h_mu_b_sigma = ROOT.TH1D(f"mu_b_sigma_{cent[0]}_{cent[1]}", ";#sigma(^{3} #bar{He}/^{3} He) / #sigma(#bar{p}/p);#sigma(#mu_{B}) (MeV)",150, 0.5, 75.5)
     h_mu_b_sigma.SetTitle(f"{cent[0]}-{cent[1]}%")
 
     # mu_b uncertainty histogram
-    h_mu_b_uncertainty = ROOT.TH1D(f"mu_b_uncertainty_{cent[0]}_{cent[1]}", ";#sigma(^{3} #bar{He}/^{3} He) / #sigma(#bar{p}/p);error(#mu_{B}) (MeV)",30, 0.5, 15.5)
+    h_mu_b_uncertainty = ROOT.TH1D(f"mu_b_uncertainty_{cent[0]}_{cent[1]}", ";#sigma(^{3} #bar{He}/^{3} He) / #sigma(#bar{p}/p);error(#mu_{B}) (MeV)",150, 0.5, 75.5)
     h_mu_b_uncertainty.SetTitle(f"{cent[0]}-{cent[1]}%")
 
     for i_uncertainties in range(N_UNCERTAINTIES):

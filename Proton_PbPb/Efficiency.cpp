@@ -20,9 +20,9 @@ void Efficiency(const char *cutSettings = "", const char *inFileNameMC = "mc", c
   // make signal extraction plots directory
   system(Form("mkdir %s/efficiency", kPlotDir));
 
-  TFile inFile1(Form("%s/%s_proton_1.root", kDataDir, inFileNameMC));
-  TFile inFile2(Form("%s/%s_proton_2.root", kDataDir, inFileNameMC));
-  TFile inFile3(Form("%s/%s_proton_3.root", kDataDir, inFileNameMC));
+  TFile inFile1(Form("%s/%s_finePtBinning1.root", kDataDir, inFileNameMC));
+  TFile inFile2(Form("%s/%s_finePtBinning2.root", kDataDir, inFileNameMC));
+  TFile inFile3(Form("%s/%s_finePtBinning3.root", kDataDir, inFileNameMC));
   TFile outFile(Form("%s/%s.root", kOutDir, outFileNameEff), "RECREATE");
 
   gStyle->SetOptStat(0);

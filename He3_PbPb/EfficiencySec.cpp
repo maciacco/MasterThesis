@@ -68,6 +68,7 @@ void EfficiencySec(const float cutDCAz = 1.f, const int cutTPCcls = 89, const ch
       fEffPt.SetMarkerStyle(20);
       fEffPt.SetMarkerSize(0.8);
       fEffPt.GetXaxis()->SetTitle(kAxisTitlePt);
+      fEffPt.GetYaxis()->SetRangeUser(0., 0.03);
       fEffPt.GetYaxis()->SetTitle("#it{f}_{#it{wd}}");
       fEffPt.SetOption("PE");
       outFile.cd();

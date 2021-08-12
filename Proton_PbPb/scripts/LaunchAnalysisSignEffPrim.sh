@@ -44,8 +44,8 @@ if [ $extractRatios -eq 1 ]; then
 .L Secondary.cpp+
 .L Spectra.cpp+
 SignalBinned("$cutSettings",$argumentSignal,"$fileData","$signalName","update")
-Efficiency("$cutSettings","$fileMC","$EfficiencyHe3")
-Secondary("$cutSettings","$fileData","$fileMC","$PrimaryHe3")
+//Efficiency("$cutSettings","$fileMC","$EfficiencyHe3")
+//Secondary("$cutSettings","$fileData","$fileMC","$PrimaryHe3")
 .q
 EOF
 fi

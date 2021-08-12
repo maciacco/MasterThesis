@@ -22,7 +22,7 @@ void Spectra(const char *cutSettings = "", const bool binCounting = false, const
   gStyle->SetTextFont(44);
 
   TH2F *fNevents;
-  TFile *inFileDat = TFile::Open(Form("%s/%s.root", kDataDir, dataFile));
+  TFile *inFileDat = TFile::Open(Form("%s/%s_finePtBinning.root", kDataDir, dataFile));
   TTList *fMultList = (TTList *)inFileDat->Get("nuclei_proton_");
   fNevents = (TH2F *)fMultList->Get("fNormalisationHist");
   TFile *inFileRaw = TFile::Open(Form("%s/%s.root", kOutDir, signalFile));
@@ -69,10 +69,10 @@ void Spectra(const char *cutSettings = "", const bool binCounting = false, const
       TH1D *raw = (TH1D *)inFileRaw->Get(Form("%s_%d_%d/f%sTOFrawYield_%.0f_%.0f", cutSettings, binCounting, bkg_shape, kAntimatterMatter[iMatt], kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1]));
 
       //sec->Fit(&fitFuncSec,"R");
-      fSpectra[iMatt] = new TH1D(*eff);
-      int pTbinMax = 17;
+      fSpectra[iMatt] = new TH1D(*raw);
+      int pTbinMax = 29;
       std::cout<<"entering pt loop..."<<std::endl;
-      for (int iPtBin = 6; iPtBin < pTbinMax + 1; ++iPtBin)
+      for (int iPtBin = 5; iPtBin < pTbinMax + 1; ++iPtBin)
       {
         double rawYield = raw->GetBinContent(iPtBin);
         double rawYieldError = raw->GetBinError(iPtBin);
@@ -90,7 +90,7 @@ void Spectra(const char *cutSettings = "", const bool binCounting = false, const
         fSpectra[iMatt]->SetBinContent(iPtBin, rawYield * primary / efficiency );
         fSpectra[iMatt]->SetBinError(iPtBin, (rawYield * primary / efficiency) * TMath::Sqrt(primaryError * primaryError / primary / primary + effError * effError / efficiency / efficiency + rawYieldError * rawYieldError / rawYield / rawYield));
 
-        std::cout<<"eff="<<efficiency<<"; raw="<<rawYield<<"; rawError="<<rawYieldError<<"; primary="<<primary<<std::endl;
+        //std::cout<<"eff="<<efficiency<<"; raw="<<rawYield<<"; rawError="<<rawYieldError<<"; primary="<<primary<<std::endl;
       }
       fSpectra[iMatt]->SetName(Form("f%sSpectra_%.0f_%.0f", kAntimatterMatter[iMatt], kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1]));
       fSpectra[iMatt]->SetTitle(Form("%s, %.0f-%.0f%%", kAntimatterMatterLabel[iMatt], kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1]));
@@ -106,8 +106,8 @@ void Spectra(const char *cutSettings = "", const bool binCounting = false, const
     }
 
     // compute ratios
-    int pTbinMax = 17;
-    for (int iPtBin = 6; iPtBin < pTbinMax + 1; ++iPtBin)
+    int pTbinMax = 29;
+    for (int iPtBin = 5; iPtBin < pTbinMax + 1; ++iPtBin)
     {
       double antiSpec = fSpectra[0]->GetBinContent(iPtBin);
       double spec = fSpectra[1]->GetBinContent(iPtBin);
@@ -128,7 +128,7 @@ void Spectra(const char *cutSettings = "", const bool binCounting = false, const
     TCanvas cRatio(Form("cRatio_%.0f_%.0f", kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1]), "cRatio");
     cRatio.SetTicks(1, 1);
     cRatio.cd();
-    fRatio[iCent]->GetXaxis()->SetRangeUser(1.0,4.4);
+    fRatio[iCent]->GetXaxis()->SetRangeUser(1.0,4.0);
     fRatio[iCent]->GetYaxis()->SetRangeUser(0.92, 1.03);
     fRatio[iCent]->Draw("");
     TLatex chi2(2.8, 1.14, Form("#chi^{2}/NDF = %.2f/%d", fRatio[iCent]->GetFunction("pol0")->GetChisquare(), fRatio[iCent]->GetFunction("pol0")->GetNDF()));

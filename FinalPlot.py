@@ -106,6 +106,7 @@ for i_cent, cent in enumerate(centrality_classes):
     formatted_fit_parameter = "{:.4f}".format(fit_parameter)
     formatted_fit_parameter_error = "{:.4f}".format(fit_parameter_error)
     formatted_mu_b = "{:.2f}".format(fit_parameter*155)
+    mu_b_error = np.sqrt(fit_parameter_error*fit_parameter_error/fit_parameter/fit_parameter+2*2/155/155)*fit_parameter*155
     formatted_mu_b_error = "{:.2f}".format(fit_parameter_error*155)
     
     # chi2 text

@@ -10,8 +10,8 @@ extractRatios=1
 
 fileData="AnalysisResults"
 fileMC="mc"
-signalName="SignalProton"
-spectraName="SpectraProton"
+signalName="SignalProtonGausDExpSignal1"
+spectraName="SpectraProtonGausDExpSignal1"
 EfficiencyHe3="EfficiencyProton"
 PrimaryHe3="PrimaryProton"
 
@@ -46,9 +46,9 @@ if [ $extractRatios -eq 1 ]; then
 .L Secondary.cpp+
 .L Spectra.cpp+
 SignalBinned("$cutSettings",$argumentSignal,"$fileData","$signalName","recreate")
-// Efficiency("$cutSettings","$fileMC","$EfficiencyHe3")
-// Secondary("$cutSettings","$fileData","$fileMC","$PrimaryHe3")
-// Spectra("$cutSettings",$argumentSignal,$sigmoidFlag,"$spectraHistNameId","$spectraName","recreate","AnalysisResults","$signalName","$EfficiencyHe3","$PrimaryHe3")
+Efficiency("$cutSettings","$fileMC","$EfficiencyHe3")
+Secondary("$cutSettings","$fileData","$fileMC","$PrimaryHe3")
+Spectra("$cutSettings",$argumentSignal,$sigmoidFlag,"$spectraHistNameId","$spectraName","recreate","AnalysisResults","$signalName","$EfficiencyHe3","$PrimaryHe3")
 .q
 EOF
 fi

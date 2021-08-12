@@ -40,15 +40,15 @@ void Secondary(const char *cutSettings = "", const char *inFileDatName = "Analys
   system(Form("mkdir %s/primary_fraction", kPlotDir));
 
   // open files
-  TFile *inFileDat = TFile::Open(Form("%s/%s.root", kDataDir, inFileDatName));
-  TFile *inFileMC1 = TFile::Open(Form("%s/%s_proton_1.root", kDataDir, inFileMCName));
-  TFile *inFileMC2 = TFile::Open(Form("%s/%s_proton_2.root", kDataDir, inFileMCName));
-  TFile *inFileMC3 = TFile::Open(Form("%s/%s_proton_3.root", kDataDir, inFileMCName));
+  TFile *inFileDat = TFile::Open(Form("%s/%s_finePtBinning.root", kDataDir, inFileDatName));
+  TFile *inFileMC1 = TFile::Open(Form("%s/%s_finePtBinning1.root", kDataDir, inFileMCName));
+  TFile *inFileMC2 = TFile::Open(Form("%s/%s_finePtBinning2.root", kDataDir, inFileMCName));
+  TFile *inFileMC3 = TFile::Open(Form("%s/%s_finePtBinning3.root", kDataDir, inFileMCName));
   TFile *outFile = TFile::Open(Form("%s/%s.root", kOutDir, outFileName), "recreate");
 
   for (int iMatt = 0; iMatt < 2; ++iMatt)
   {
-    double noSecMaterialThreshold = 5.0f;
+    double noSecMaterialThreshold = 1.79f;
     if (iMatt == 0)noSecMaterialThreshold = 0.f;
 
     // make plot subdirectory
@@ -93,9 +93,9 @@ void Secondary(const char *cutSettings = "", const char *inFileDatName = "Analys
       TH1D fPrimaryFrac(Form("f%sPrimFrac_%.0f_%.0f", kAntimatterMatter[iMatt], kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1]), Form("%.0f-%.0f%%", kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1]), kNPtBins, kPtBins);
       TH1D fSecondaryFrac(Form("f%sSecFrac_%.0f_%.0f", kAntimatterMatter[iMatt], kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1]), Form("%.0f-%.0f%%", kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1]), kNPtBins, kPtBins);
 
-      int nUsedPtBins = 14;
+      int nUsedPtBins = 20;
 
-      for (int iPtBin = 6; iPtBin < nUsedPtBins + 1; ++iPtBin)
+      for (int iPtBin = 5; iPtBin < nUsedPtBins + 1; ++iPtBin)
       { // loop on pT bins
         fPrimaryFrac.SetBinContent(iPtBin, 1.);
 
@@ -269,6 +269,8 @@ void Secondary(const char *cutSettings = "", const char *inFileDatName = "Analys
 
           leg.Draw("same");
           TLatex chiSq(0.28, 1.e7, Form("#chi^{2}/NDF=%.2f", chi2 / fit->GetNDF()));
+          chiSq.SetNDC();
+          chiSq.SetY(0.55);
           TLatex prob(-1., 0.1 * result->GetMaximum(), Form("prob=%.7f", fit->GetProb()));
           chiSq.SetTextSize(0.035);
           prob.SetTextSize(0.035);
