@@ -40,7 +40,7 @@ void Secondary(const char *cutSettings = "", const char *inFileDatName = "Analys
   system(Form("mkdir %s/primary_fraction", kPlotDir));
 
   // open files
-  TFile *inFileDat = TFile::Open(Form("%s/%s_finePtBinning.root", kDataDir, inFileDatName));
+  TFile *inFileDat = TFile::Open(Form("%s/%s_largeNsigma.root", kDataDir, inFileDatName));
   TFile *inFileMC1 = TFile::Open(Form("%s/%s_finePtBinning1.root", kDataDir, inFileMCName));
   TFile *inFileMC2 = TFile::Open(Form("%s/%s_finePtBinning2.root", kDataDir, inFileMCName));
   TFile *inFileMC3 = TFile::Open(Form("%s/%s_finePtBinning3.root", kDataDir, inFileMCName));

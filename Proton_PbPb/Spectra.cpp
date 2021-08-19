@@ -22,7 +22,7 @@ void Spectra(const char *cutSettings = "", const bool binCounting = false, const
   gStyle->SetTextFont(44);
 
   TH2F *fNevents;
-  TFile *inFileDat = TFile::Open(Form("%s/%s_finePtBinning.root", kDataDir, dataFile));
+  TFile *inFileDat = TFile::Open(Form("%s/%s_largeNsigma.root", kDataDir, dataFile));
   TTList *fMultList = (TTList *)inFileDat->Get("nuclei_proton_");
   fNevents = (TH2F *)fMultList->Get("fNormalisationHist");
   TFile *inFileRaw = TFile::Open(Form("%s/%s.root", kOutDir, signalFile));
