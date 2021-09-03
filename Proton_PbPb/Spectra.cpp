@@ -15,7 +15,7 @@
 using utils::TTList;
 using namespace proton;
 
-void Spectra(const char *cutSettings = "", const bool binCounting = false, const int bkg_shape = 1, const bool sigmoidCorrection = true, const char *histoNameDir = ".", const char *outFileName = "SpectraProton1", const char *outFileOption = "recreate", const char *dataFile = "AnalysisResults", const char *signalFile = "SignalProton", const char *effFile = "EfficiencyProton", const char *primFile = "PrimaryProton", const bool useEfficiencyMB = true)
+void Spectra(const char *cutSettings = "", const bool binCounting = false, const int bkg_shape = 1, const bool sigmoidCorrection = true, const char *histoNameDir = ".", const char *outFileName = "SpectraProton1", const char *outFileOption = "recreate", const char *dataFile = "AnalysisResults", const char *signalFile = "SignalProton", const char *effFile = "EfficiencyProton", const char *primFile = "PrimaryProton", const bool useEfficiencyMB =false)
 {
   std::cout << "cutSettings = " << cutSettings << std::endl;
   gStyle->SetOptFit(0);
@@ -70,7 +70,7 @@ void Spectra(const char *cutSettings = "", const bool binCounting = false, const
 
       //sec->Fit(&fitFuncSec,"R");
       fSpectra[iMatt] = new TH1D(*raw);
-      int pTbinMax = 29;
+      int pTbinMax = 24;
       std::cout<<"entering pt loop..."<<std::endl;
       for (int iPtBin = 5; iPtBin < pTbinMax + 1; ++iPtBin)
       {
@@ -88,7 +88,7 @@ void Spectra(const char *cutSettings = "", const bool binCounting = false, const
           primaryError = sec->GetBinError(iPtBin);
         }
         fSpectra[iMatt]->SetBinContent(iPtBin, rawYield * primary / efficiency );
-        fSpectra[iMatt]->SetBinError(iPtBin, (rawYield * primary / efficiency) * TMath::Sqrt(primaryError * primaryError / primary / primary + effError * effError / efficiency / efficiency + rawYieldError * rawYieldError / rawYield / rawYield));
+        fSpectra[iMatt]->SetBinError(iPtBin, /* rawYieldError */(rawYield * primary / efficiency) * TMath::Sqrt(primaryError * primaryError / primary / primary + effError * effError / efficiency / efficiency + rawYieldError * rawYieldError / rawYield / rawYield));
 
         //std::cout<<"eff="<<efficiency<<"; raw="<<rawYield<<"; rawError="<<rawYieldError<<"; primary="<<primary<<std::endl;
       }
@@ -106,7 +106,7 @@ void Spectra(const char *cutSettings = "", const bool binCounting = false, const
     }
 
     // compute ratios
-    int pTbinMax = 29;
+    int pTbinMax = 24;
     for (int iPtBin = 5; iPtBin < pTbinMax + 1; ++iPtBin)
     {
       double antiSpec = fSpectra[0]->GetBinContent(iPtBin);

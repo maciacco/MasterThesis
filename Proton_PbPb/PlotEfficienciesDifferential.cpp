@@ -16,7 +16,7 @@
 using utils::TTList;
 using namespace proton;
 
-void PlotEfficienciesDifferential(const char *cutSettings="", const char *outFileName = "EfficiencyPlotsDifferential", const char *histoNameDir = "", const char *outFileOption = "recreate", const char *inFile = "EfficiencyProton")
+void PlotEfficienciesDifferential(const char *cutSettings="", const char *outFileName = "EfficiencyPlotsDifferential_15", const char *histoNameDir = "", const char *outFileOption = "recreate", const char *inFile = "EfficiencyProton_15")
 {
   gStyle->SetOptStat(0);
 

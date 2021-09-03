@@ -2,18 +2,18 @@
 
 # parameters
 cutSettings=""
-binCountingFlag=0
+binCountingFlag=1
 expFlag=1 # 1->sum of 2 exp, 0 -> sum of exp and pol
 sigmoidFlag=1
 spectraHistNameId=""
 extractRatios=1
 
-fileData="AnalysisResults"
-fileMC="mc"
-signalName="SignalProtonGausDExpSignal1"
-spectraName="SpectraProtonGausDExpSignal1"
-EfficiencyHe3="EfficiencyProton"
-PrimaryHe3="PrimaryProton"
+fileData="AnalysisResults_15o"
+fileMC="mc_15Injected"
+signalName="SignalProtonGausDExpSignal1_15"
+spectraName="SpectraProtonGausDExpSignal1_Corrected_noMB_15"
+EfficiencyHe3="EfficiencyProton_15"
+PrimaryHe3="PrimaryProton_15"
 
 # create output directories
 DIR_OUT=out
@@ -45,10 +45,10 @@ if [ $extractRatios -eq 1 ]; then
 .L Efficiency.cpp+
 .L Secondary.cpp+
 .L Spectra.cpp+
-SignalBinned("$cutSettings",$argumentSignal,"$fileData","$signalName","recreate")
+//SignalBinned("$cutSettings",$argumentSignal,"$fileData","$signalName","recreate")
 //Efficiency("$cutSettings","$fileMC","$EfficiencyHe3")
-//Secondary("$cutSettings","$fileData","$fileMC","$PrimaryHe3")
-//Spectra("$cutSettings",$argumentSignal,$sigmoidFlag,"$spectraHistNameId","$spectraName","recreate","AnalysisResults","$signalName","$EfficiencyHe3","$PrimaryHe3")
+Secondary("$cutSettings","$fileData","$fileMC","$PrimaryHe3")
+Spectra("$cutSettings",$argumentSignal,$sigmoidFlag,"$spectraHistNameId","$spectraName","recreate","AnalysisResults","$signalName","$EfficiencyHe3","$PrimaryHe3")
 .q
 EOF
 fi

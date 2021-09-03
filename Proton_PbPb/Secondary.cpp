@@ -40,10 +40,12 @@ void Secondary(const char *cutSettings = "", const char *inFileDatName = "Analys
   system(Form("mkdir %s/primary_fraction", kPlotDir));
 
   // open files
-  TFile *inFileDat = TFile::Open(Form("%s/%s_largeNsigma.root", kDataDir, inFileDatName));
+  TFile *inFileDat = TFile::Open(Form("%s/%s.root", kDataDir, inFileDatName)); 
+  /*TFile *inFileDat = TFile::Open(Form("%s/%s_largeNsigma.root", kDataDir, inFileDatName)); 
   TFile *inFileMC1 = TFile::Open(Form("%s/%s_finePtBinning1.root", kDataDir, inFileMCName));
   TFile *inFileMC2 = TFile::Open(Form("%s/%s_finePtBinning2.root", kDataDir, inFileMCName));
-  TFile *inFileMC3 = TFile::Open(Form("%s/%s_finePtBinning3.root", kDataDir, inFileMCName));
+  TFile *inFileMC3 = TFile::Open(Form("%s/%s_finePtBinning3.root", kDataDir, inFileMCName)); */
+  TFile *inFileMC1 = TFile::Open(Form("%s/%s.root", kDataDir, inFileMCName));
   TFile *outFile = TFile::Open(Form("%s/%s.root", kOutDir, outFileName), "recreate");
 
   for (int iMatt = 0; iMatt < 2; ++iMatt)
@@ -58,8 +60,8 @@ void Secondary(const char *cutSettings = "", const char *inFileDatName = "Analys
     std::string listName = Form("nuclei_proton_%s", cutSettings);
     TTList *listData = (TTList *)inFileDat->Get(listName.data());
     TTList *listMc1 = (TTList *)inFileMC1->Get(listName.data());
-    TTList *listMc2 = (TTList *)inFileMC2->Get(listName.data());
-    TTList *listMc3 = (TTList *)inFileMC3->Get(listName.data());
+    /* TTList *listMc2 = (TTList *)inFileMC2->Get(listName.data());
+    TTList *listMc3 = (TTList *)inFileMC3->Get(listName.data()); */
 
     // get histograms from files
     TH3F *fDCAdat = (TH3F *)listData->Get(Form("f%sDCAxyTOF", kAntimatterMatter[iMatt]));
@@ -69,24 +71,24 @@ void Secondary(const char *cutSettings = "", const char *inFileDatName = "Analys
     }
     else{
       fDCAprim1 = (TH3F *)listMc1->Get(Form("f%sDCAPrimaryTOF", kAntimatterMatter[0]));
-      fDCAprim2 = (TH3F *)listMc2->Get(Form("f%sDCAPrimaryTOF", kAntimatterMatter[0]));
-      fDCAprim3 = (TH3F *)listMc3->Get(Form("f%sDCAPrimaryTOF", kAntimatterMatter[0]));
+      /* fDCAprim2 = (TH3F *)listMc2->Get(Form("f%sDCAPrimaryTOF", kAntimatterMatter[0]));
+      fDCAprim3 = (TH3F *)listMc3->Get(Form("f%sDCAPrimaryTOF", kAntimatterMatter[0])); */
       fDCAprim = (TH3F *)fDCAprim1->Clone(fDCAprim1->GetName());
-      fDCAprim->Add(fDCAprim2);
-      fDCAprim->Add(fDCAprim3);
+      //fDCAprim->Add(fDCAprim2);
+      //fDCAprim->Add(fDCAprim3);
     }
     TH3F *fDCAsec1 = (TH3F *)listMc1->Get(Form("f%sDCASecondaryTOF", kAntimatterMatter[iMatt]));
-    TH3F *fDCAsec2 = (TH3F *)listMc2->Get(Form("f%sDCASecondaryTOF", kAntimatterMatter[iMatt]));
-    TH3F *fDCAsec3 = (TH3F *)listMc3->Get(Form("f%sDCASecondaryTOF", kAntimatterMatter[iMatt]));
+    /* TH3F *fDCAsec2 = (TH3F *)listMc2->Get(Form("f%sDCASecondaryTOF", kAntimatterMatter[iMatt]));
+    TH3F *fDCAsec3 = (TH3F *)listMc3->Get(Form("f%sDCASecondaryTOF", kAntimatterMatter[iMatt])); */
     TH3F *fDCAsec = (TH3F *)fDCAsec1->Clone(fDCAsec1->GetName());
-    fDCAsec->Add(fDCAsec2);
-    fDCAsec->Add(fDCAsec3);
+    //fDCAsec->Add(fDCAsec2);
+    //fDCAsec->Add(fDCAsec3);
     TH3F *fDCAsecWD1 = (TH3F *)listMc1->Get(Form("f%sDCASecondaryWeakTOF", kAntimatterMatter[iMatt]));
-    TH3F *fDCAsecWD2 = (TH3F *)listMc2->Get(Form("f%sDCASecondaryWeakTOF", kAntimatterMatter[iMatt]));
-    TH3F *fDCAsecWD3 = (TH3F *)listMc3->Get(Form("f%sDCASecondaryWeakTOF", kAntimatterMatter[iMatt]));
+    /* TH3F *fDCAsecWD2 = (TH3F *)listMc2->Get(Form("f%sDCASecondaryWeakTOF", kAntimatterMatter[iMatt]));
+    TH3F *fDCAsecWD3 = (TH3F *)listMc3->Get(Form("f%sDCASecondaryWeakTOF", kAntimatterMatter[iMatt])); */
     TH3F *fDCAsecWD = (TH3F *)fDCAsecWD1->Clone(fDCAsecWD1->GetName());
-    fDCAsecWD->Add(fDCAsecWD2);
-    fDCAsecWD->Add(fDCAsecWD3);
+    //fDCAsecWD->Add(fDCAsecWD2);
+    //fDCAsecWD->Add(fDCAsecWD3);
 
     for (int iCent = 0; iCent < kNCentClasses; ++iCent)
     {
