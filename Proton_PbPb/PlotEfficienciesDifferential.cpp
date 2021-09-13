@@ -18,7 +18,7 @@ using namespace proton;
 
 void PlotEfficienciesDifferential(const char *cutSettings="", const char *outFileName = "EfficiencyPlotsDifferential_15", const char *histoNameDir = "", const char *outFileOption = "recreate", const char *inFile = "EfficiencyProton_15")
 {
-  gStyle->SetOptStat(0);
+  gStyle->SetOptStat(0000000000000);
 
   gSystem->Exec(Form("mkdir %s/efficiency_plots", kPlotDir));
 
@@ -82,6 +82,8 @@ void PlotEfficienciesDifferential(const char *cutSettings="", const char *outFil
         hTemp->Draw("pe");
       else
         hTemp->Draw("pesame");
+      hTemp->GetYaxis()->SetTitle("Efficiency ratio to MB");
+      hTemp->SetTitle("LHC16h7_nucleiInjected_LHC15o");
       lEffCompare.AddEntry(hTemp, Form("%0.f - %0.f %%", kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1]));
     }
     

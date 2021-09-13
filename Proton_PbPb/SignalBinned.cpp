@@ -177,7 +177,7 @@ void SignalBinned(const char *cutSettings = "", const bool binCounting = false, 
           tofSignalProjectionAll->GetXaxis()->SetRangeUser(nSigmaLeft, nSigmaRight);
           tofSignalProjection->GetXaxis()->SetRangeUser(nSigmaLeft, nSigmaRight);
           double maximum = tofSignalProjectionAll->GetBinCenter(tofSignalProjectionAll->GetMaximumBin());
-          nSigmaLeft = maximum + 1.5; /*tofSignalProjection->GetFunction("gaus")->GetParameter(1)+1.*tofSignalProjection->GetFunction("gaus")->GetParameter(2) */
+          nSigmaLeft = maximum + 2.; /*tofSignalProjection->GetFunction("gaus")->GetParameter(1)+1.*tofSignalProjection->GetFunction("gaus")->GetParameter(2) */
           ;
           //if (ptMin > 2.09) nSigmaLeft = maximum - 1.;
           nSigmaRight = nSigmaLeft + 3.;
@@ -395,10 +395,10 @@ void SignalBinned(const char *cutSettings = "", const bool binCounting = false, 
         RooRealVar nSignal("N_{sig}", "nSignal", 1., 1.e13);
 
         slope1 = new RooRealVar("#tau_{mismatch}", "slope1", /* expMismatchDecayConstant2, */-0.05 -0.1, -0.0001);
-        slope2 = new RooRealVar("#tau_{2}", "slope2", /* powerLawKtail2.GetParameter(1) */ /* -1.0,  */-1.1, -0.9);
+        slope2 = new RooRealVar("#tau_{2}", "slope2", /* powerLawKtail2.GetParameter(1) */ /* -1.0,  */0.91,-1.1, -0.5);
         std::cout << "slope1 value = " << slope1->getVal() << std::endl;
         //slope2->setConstant(true);
-        nBackground1 = new RooRealVar("#it{N}_{Bkg,1}", "nBackground1", normRooFit2, 1., 1.e9);
+        nBackground1 = new RooRealVar("#it{N}_{Bkg,1}", "nBackground1", /* normRooFit2, */ 1., 1.e6);
         std::cout << "nBackground1 value = " << nBackground1->getVal() << std::endl;
         //slope1->setConstant();
         //nBackground1->setConstant();
@@ -420,8 +420,7 @@ void SignalBinned(const char *cutSettings = "", const bool binCounting = false, 
             background1 = (RooAbsPdf *)new RooExponential("background1", "background1", tofSignal, *slope1);
             background2 = (RooAbsPdf *)new RooExponential("background2", "background2", tofSignal, *slope2);
             //background2 = (RooAbsPdf *)new RooGenericPdf("background2", "TMath::Power(x[0]+x[1],x[2])", RooArgList(tofSignal, par0, par1));
-            nBackground2 = new RooRealVar("#it{N}_{Bkg,2}", "nBackground2", 0., 1., 1.e15);
-            nBackground2->setConstant();
+            nBackground2 = new RooRealVar("#it{N}_{Bkg,2}", "nBackground2", 0., 1., 1.e6);
             model = new RooAddPdf("model", "model", RooArgList(*background1 /* , *background2 */), RooArgList(*nBackground1 /* , *nBackground2 */));
           }
           else //if (ptMin < 2.09)
@@ -429,7 +428,7 @@ void SignalBinned(const char *cutSettings = "", const bool binCounting = false, 
             background1 = (RooAbsPdf *)new RooExponential("background1", "background1", tofSignal, *slope1);
             background2 = (RooAbsPdf *)new RooExponential("background2", "background2", tofSignal, *slope2);
             //background2 = (RooAbsPdf *)new RooGenericPdf("background2", "TMath::Power(x[0]+x[1],x[2])", RooArgList(tofSignal, par0, par1));
-            nBackground2 = new RooRealVar("#it{N}_{Bkg,2}", "nBackground2", /* normRooFitTail2,  */1., 1.e15);
+            nBackground2 = new RooRealVar("#it{N}_{Bkg,2}", "nBackground2", /* normRooFitTail2,  */1., 1.e6);
             //nBackground2->setConstant();
             model = new RooAddPdf("model", "model", RooArgList(*background1, *background2), RooArgList(*nBackground1, *nBackground2));
           }
@@ -625,8 +624,8 @@ void SignalBinned(const char *cutSettings = "", const bool binCounting = false, 
           //model->plotOn(xframe, RooFit::Components("signal"), RooFit::Name("signal"), RooFit::LineStyle(kDashed), RooFit::LineColor(kRed), RooFit::NormRange("leftSideband"), RooFit::Range("full"));
           model->plotOn(xframe, RooFit::Name("model"), RooFit::LineColor(kBlue), RooFit::NormRange("leftSideband,rightSideband"), RooFit::Range("model"));
           //double x_min = 0.12;
-          model->paramOn(xframe, RooFit::Label(TString::Format("#chi^{2}/NDF = %2.4f", xframe->chiSquare("model", "dataNsigma")))/* , RooFit::Layout(x_min, 0.99, 0.88)*/);
-          xframe->getAttText()->SetTextSize(0.03);
+          //model->paramOn(xframe, RooFit::Label(TString::Format("#chi^{2}/NDF = %2.4f", xframe->chiSquare("model", "dataNsigma")))/* , RooFit::Layout(x_min, 0.99, 0.88)*/);
+          //xframe->getAttText()->SetTextSize(0.03);
           xframe->GetYaxis()->SetMaxDigits(2);
         }
         // save to png

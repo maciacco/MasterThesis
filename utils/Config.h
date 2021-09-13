@@ -19,7 +19,7 @@ const char *kPlotDir = "./plots";
 const char *kAntimatterMatter[2] = {"A", "M"};
 
 // centrality binning
-const int kNCentClasses = 1; // 3
+const int kNCentClasses = 3; // 3
 
 const char *kAxisTitleDCA = "DCA_{xy} (cm)";
 const char *kAxisTitlePt = "#it{p}_{T} (GeV/#it{c})";
