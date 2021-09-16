@@ -62,7 +62,7 @@ void PlotEfficiencies(const float cutDCAz = 1.f, const int cutTPCcls = 89, const
     }
     lEff.Draw("same");
     cEff.Write();
-    cEff.Print(Form("%s/efficiency_plots/%s.png", kPlotDir, cEff.GetName()));
+    cEff.Print(Form("%s/efficiency_plots/%s.pdf", kPlotDir, cEff.GetName()));
   }
 
   outFile.Close();

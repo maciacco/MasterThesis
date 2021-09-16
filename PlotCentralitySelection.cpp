@@ -35,6 +35,7 @@ void PlotCentralitySelection(const char *outFileName = "CentralitySelectionPlot"
   cCent.SetTicks(1, 1);
   fCent->SetDrawOption("histo");
   fCent->GetXaxis()->SetTitle("Centrality (%)");
+  fCent->GetXaxis()->SetTitleSize(0.05);
   fCent->GetXaxis()->SetRangeUser(0,100);
   fCent->GetYaxis()->SetTitle("Events");
   fCent->SetLineWidth(2);
@@ -43,7 +44,7 @@ void PlotCentralitySelection(const char *outFileName = "CentralitySelectionPlot"
   fCent->SetFillColor(kRed);
   fCent->Draw("");
   cCent.Write();
-  cCent.Print("cCent_LHC18qr.png");
+  cCent.Print("cCent_LHC18qr.pdf");
 
   outFile.Close();
 }

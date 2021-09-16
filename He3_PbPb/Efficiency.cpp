@@ -71,7 +71,7 @@ void Efficiency(const float cutDCAz = 1.f, const int cutTPCcls = 89, const char 
       // save plot image
       TCanvas canv;
       fEffPt.Draw("");
-      canv.Print(Form("%s/efficiency/%s_%1.1f_%d/cent_%.0f_%.0f.png", kPlotDir, kAntimatterMatter[iMatt], cutDCAz, cutTPCcls, kCentBinsLimitsHe3[iCent][0], kCentBinsLimitsHe3[iCent][1]));
+      canv.Print(Form("%s/efficiency/%s_%1.1f_%d/cent_%.0f_%.0f.pdf", kPlotDir, kAntimatterMatter[iMatt], cutDCAz, cutTPCcls, kCentBinsLimitsHe3[iCent][0], kCentBinsLimitsHe3[iCent][1]));
     }
   }
   outFile.Close();

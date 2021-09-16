@@ -48,7 +48,7 @@ void PlotEfficiencies(const float cutDCAz = 1.f, const int cutTPCcls = 89, const
     fEff[iMatt] = (TH1D *)inFileEff->Get(Form("f%sEff_TOF_0_90", kAntimatterMatter[iMatt]));
     fEff[iMatt]->SetTitle("");
     fEff[iMatt]->GetYaxis()->SetRangeUser(0., 1.1);
-    fEff[iMatt]->GetXaxis()->SetRangeUser(0.0, 6.0);
+    fEff[iMatt]->GetXaxis()->SetRangeUser(1., 5.0);
     fEff[iMatt]->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
     fEff[iMatt]->SetMarkerStyle(20);
     fEff[iMatt]->SetMarkerSize(0.8);
@@ -62,7 +62,7 @@ void PlotEfficiencies(const float cutDCAz = 1.f, const int cutTPCcls = 89, const
   }
   lEff.Draw("same");
   cEff.Write();
-  cEff.Print(Form("%s/efficiency_plots/%s.png", kPlotDir, cEff.GetName()));
+  cEff.Print(Form("%s/efficiency_plots/%s.pdf", kPlotDir, cEff.GetName()));
 
   outFile.Close();
 }

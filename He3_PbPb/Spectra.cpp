@@ -133,7 +133,7 @@ void Spectra(const float cutDCAz = 1.f, const int cutTPCcls = 89, const bool bin
     p0.SetTextSize(28);
     chi2.Draw("same");
     p0.Draw("same");
-    cRatio.Print(Form("%s/%s.png", kPlotDir, fRatio[iCent]->GetName()));
+    cRatio.Print(Form("%s/%s.pdf", kPlotDir, fRatio[iCent]->GetName()));
   }
   outFile.Close();
 }

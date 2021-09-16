@@ -212,7 +212,8 @@ void SignalUnbinned(const float cutDCAz = 1.f, const int cutTPCcls = 89, const b
           model.plotOn(xframe, RooFit::Name("model"), RooFit::LineColor(kBlue));
           model.paramOn(xframe, RooFit::Label(TString::Format("#chi^{2}/NDF = %2.4f", xframe->chiSquare("model", "dataNsigma"))), RooFit::Layout(0.70, 0.92, 0.86));
           xframe->getAttLine()->SetLineWidth(0);
-          xframe->getAttText()->SetTextSize(0.03);
+          xframe->getAttText()->SetTextFont(44);
+          xframe->getAttText()->SetTextSize(20);
         }
 
         xframe->Write();
@@ -221,7 +222,7 @@ void SignalUnbinned(const float cutDCAz = 1.f, const int cutTPCcls = 89, const b
         TCanvas canv;
         canv.SetName(plotTitle);
         xframe->Draw("");
-        canv.Print(Form("%s/signal_extraction/%s_%1.1f_%d_%d_%d/cent_%.0f_%.0f_pt_%.2f_%.2f.png", kPlotDir, kAntimatterMatter[iMatt], cutDCAz, cutTPCcls, binCounting, bkg_shape, kCentBinsLimitsHe3[iCent][0], kCentBinsLimitsHe3[iCent][1], minPt, maxPt));
+        canv.Print(Form("%s/signal_extraction/%s_%1.1f_%d_%d_%d/cent_%.0f_%.0f_pt_%.2f_%.2f.pdf", kPlotDir, kAntimatterMatter[iMatt], cutDCAz, cutTPCcls, binCounting, bkg_shape, kCentBinsLimitsHe3[iCent][0], kCentBinsLimitsHe3[iCent][1], minPt, maxPt));
 
       } // end of loop on pt bins
 

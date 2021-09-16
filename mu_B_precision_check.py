@@ -173,7 +173,7 @@ for i_cent, cent in enumerate(centrality_classes):
     # write png (uncertainty)
     c = ROOT.TCanvas("c", "c")
     h_mu_b_uncertainty.Draw()
-    print_name = "./"+h_mu_b_uncertainty.GetName()+".png"
+    print_name = "./"+h_mu_b_uncertainty.GetName()+".pdf"
     c.Print(print_name)   
 
 file_out.Close()

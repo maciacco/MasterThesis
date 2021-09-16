@@ -78,7 +78,7 @@ void EfficiencySec(const float cutDCAz = 1.f, const int cutTPCcls = 89, const ch
       TCanvas cEffPt("cEffPt", "cEffPt");
       cEffPt.cd();
       fEffPt.Draw("");
-      cEffPt.Print(Form("%s/efficiency_wd/%s.png", kPlotDir, fEffPt.GetName()));
+      cEffPt.Print(Form("%s/efficiency_wd/%s.pdf", kPlotDir, fEffPt.GetName()));
 
       fTotal_Pt->Write();
       fITS_TPC_Pt->Write();

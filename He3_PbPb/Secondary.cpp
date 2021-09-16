@@ -26,6 +26,7 @@ void Secondary(const float cutDCAz = 1.f, const int cutTPCcls = 89, const char *
 {
   gStyle->SetPadTickX(1);
   gStyle->SetPadTickY(1);
+  gStyle->SetTextFont(44);
   // make signal extraction plots directory
   system(Form("mkdir %s/primary_fraction", kPlotDir));
 
@@ -231,7 +232,7 @@ void Secondary(const float cutDCAz = 1.f, const int cutTPCcls = 89, const char *
             leg.SetBorderSize(0);
             leg.Draw("same");
             TLatex chiSq(0.28, 500, Form("#chi^{2}/NDF=%.2f", chi2 / fit->GetNDF()));
-            chiSq.SetTextSize(0.035);
+            chiSq.SetTextSize(22);
             TLatex prob(-1., 0.1 * result->GetMaximum(), Form("prob=%.7f", fit->GetProb()));
             // TLatex frac1(-1, 0.75 * result->GetMaximum(), Form("%.3f +- %.3f", fracMc1, errFracMc1));
             // TLatex frac2(-1, 0.3 * result->GetMaximum(), Form("%.3f +- %.3f", fracMc2, errFracMc2));
@@ -313,7 +314,7 @@ void Secondary(const float cutDCAz = 1.f, const int cutTPCcls = 89, const char *
               fDCAMcProjSecWeak->Write();
 
             // save canvas plot
-            canv.Print(Form("%s/primary_fraction/%s_%1.1f_%d/cent_%.0f_%.0f_pt_%.2f_%.2f.png", kPlotDir, kAntimatterMatter[iMatt], cutDCAz, cutTPCcls, kCentBinsLimitsHe3[iCent][0], kCentBinsLimitsHe3[iCent][1], minPt, maxPt));
+            canv.Print(Form("%s/primary_fraction/%s_%1.1f_%d/cent_%.0f_%.0f_pt_%.2f_%.2f.pdf", kPlotDir, kAntimatterMatter[iMatt], cutDCAz, cutTPCcls, kCentBinsLimitsHe3[iCent][0], kCentBinsLimitsHe3[iCent][1], minPt, maxPt));
           }
         }
         else
@@ -360,7 +361,7 @@ void Secondary(const float cutDCAz = 1.f, const int cutTPCcls = 89, const char *
       TCanvas cPrim("cPrim", "cPrim");
       cPrim.cd();
       fPrimaryFrac.Draw("");
-      cPrim.Print(Form("%s/primary_plots/%s.png", kPlotDir, fPrimaryFrac.GetName()));
+      cPrim.Print(Form("%s/primary_plots/%s.pdf", kPlotDir, fPrimaryFrac.GetName()));
 
       if (iMatt == 1)
       {

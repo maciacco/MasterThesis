@@ -40,8 +40,8 @@
 using namespace utils;
 using namespace proton;
 
-double roi_nsigma_up = 8.;
-double roi_nsigma_down = 8.;
+double roi_nsigma_up = 6.;
+double roi_nsigma_down = 5.;
 
 double computeExponentialNormalisation(double, double, double);
 
@@ -149,16 +149,36 @@ void SignalBinned(const char *cutSettings = "", const bool binCounting = false, 
         double nSigmaRight = -15.;
         if (ptMin > 1.)
         {
-          if (ptMin > 1.81)
+          if (ptMin > 1.59)
           {
-            nSigmaLeft = -17.;
-            nSigmaRight = -12.;
+            nSigmaLeft = -18.;
+            nSigmaRight = -10.;
+          };
+          if (ptMin > 1.69)
+          {
+            nSigmaLeft = -15.;
+            nSigmaRight = -10.;
+          };
+          if (ptMin > 1.89)
+          {
+            nSigmaLeft = -12.;
+            nSigmaRight = -5.;
+          };
+          if (ptMin > 2.29)
+          {
+            nSigmaLeft = -12.;
+            nSigmaRight = -5.;
+          };
+          if (ptMin > 3.01)
+          {
+            nSigmaLeft = -8.;
+            nSigmaRight = -5.;
           };
           tofSignalProjectionAll->GetXaxis()->SetRangeUser(nSigmaLeft, nSigmaRight);
           tofSignalProjection->GetXaxis()->SetRangeUser(nSigmaLeft, nSigmaRight);
           double maximum = tofSignalProjectionAll->GetBinCenter(tofSignalProjectionAll->GetMaximumBin());
-          nSigmaLeft = maximum + 2.5; /*tofSignalProjection->GetFunction("gaus")->GetParameter(1)+1.*tofSignalProjection->GetFunction("gaus")->GetParameter(2) */
-
+          nSigmaLeft = maximum + 2.; /*tofSignalProjection->GetFunction("gaus")->GetParameter(1)+1.*tofSignalProjection->GetFunction("gaus")->GetParameter(2) */
+          ;
           //if (ptMin > 2.09) nSigmaLeft = maximum - 1.;
           nSigmaRight = nSigmaLeft + 3.;
           std::cout << "nSigmaLeft = " << nSigmaLeft << std::endl;
@@ -374,11 +394,11 @@ void SignalBinned(const char *cutSettings = "", const bool binCounting = false, 
         RooAddPdf *model;
         RooRealVar nSignal("N_{sig}", "nSignal", 1., 1.e13);
 
-        slope1 = new RooRealVar("#tau_{mismatch}", "slope1", /* expMismatchDecayConstant2, */ -0.05 - 0.1, -0.0001);
-        slope2 = new RooRealVar("#tau_{2}", "slope2", /* powerLawKtail2.GetParameter(1) */ /* -1.0,  */0.9,  -1.1, -0.5);
+        slope1 = new RooRealVar("#tau_{mismatch}", "slope1", /* expMismatchDecayConstant2, */-0.05 -0.1, -0.0001);
+        slope2 = new RooRealVar("#tau_{2}", "slope2", /* powerLawKtail2.GetParameter(1) */ /* -1.0,  */0.91,-1.1, -0.5);
         std::cout << "slope1 value = " << slope1->getVal() << std::endl;
         //slope2->setConstant(true);
-        nBackground1 = new RooRealVar("#it{N}_{Bkg,1}", "nBackground1", /* normRooFit2, */ 1., 1.e7);
+        nBackground1 = new RooRealVar("#it{N}_{Bkg,1}", "nBackground1", /* normRooFit2, */ 1., 1.e6);
         std::cout << "nBackground1 value = " << nBackground1->getVal() << std::endl;
         //slope1->setConstant();
         //nBackground1->setConstant();
@@ -400,7 +420,7 @@ void SignalBinned(const char *cutSettings = "", const bool binCounting = false, 
             background1 = (RooAbsPdf *)new RooExponential("background1", "background1", tofSignal, *slope1);
             background2 = (RooAbsPdf *)new RooExponential("background2", "background2", tofSignal, *slope2);
             //background2 = (RooAbsPdf *)new RooGenericPdf("background2", "TMath::Power(x[0]+x[1],x[2])", RooArgList(tofSignal, par0, par1));
-            nBackground2 = new RooRealVar("#it{N}_{Bkg,2}", "nBackground2", 0., 1., 1.e9);
+            nBackground2 = new RooRealVar("#it{N}_{Bkg,2}", "nBackground2", 0., 1., 1.e6);
             model = new RooAddPdf("model", "model", RooArgList(*background1 /* , *background2 */), RooArgList(*nBackground1 /* , *nBackground2 */));
           }
           else //if (ptMin < 2.09)
@@ -408,7 +428,7 @@ void SignalBinned(const char *cutSettings = "", const bool binCounting = false, 
             background1 = (RooAbsPdf *)new RooExponential("background1", "background1", tofSignal, *slope1);
             background2 = (RooAbsPdf *)new RooExponential("background2", "background2", tofSignal, *slope2);
             //background2 = (RooAbsPdf *)new RooGenericPdf("background2", "TMath::Power(x[0]+x[1],x[2])", RooArgList(tofSignal, par0, par1));
-            nBackground2 = new RooRealVar("#it{N}_{Bkg,2}", "nBackground2", /* normRooFitTail2,  */ 1., 1.e9);
+            nBackground2 = new RooRealVar("#it{N}_{Bkg,2}", "nBackground2", /* normRooFitTail2,  */1., 1.e6);
             //nBackground2->setConstant();
             model = new RooAddPdf("model", "model", RooArgList(*background1, *background2), RooArgList(*nBackground1, *nBackground2));
           }
@@ -670,17 +690,17 @@ void SignalBinned(const char *cutSettings = "", const bool binCounting = false, 
         frame2->GetXaxis()->SetTitleSize(0.11);
         frame2->GetXaxis()->SetLabelSize(0.095);
         frame2->GetYaxis()->SetLabelSize(0.095);
-        frame2->GetYaxis()->SetRangeUser(-1.e4, 2.e4);
+        frame2->GetYaxis()->SetRangeUser(-1.e3, 2.e3);
         frame2->GetYaxis()->SetTitleSize(0.1);
         frame2->GetYaxis()->SetTitleOffset(0.52);
         frame2->GetYaxis()->SetTitle(Form("#frac{ Ev. - Bg. }{ %.1f a.u. }", tofSignalProjection->GetXaxis()->GetBinWidth(2)));
         frame2->SetTitle("   ");
         //covarianceQuality.Draw("same");
         //canv.SetLogy();
-        TLine lsx1(mean_tmp - roi_nsigma_down * rms_tmp, -1.e4, mean_tmp - roi_nsigma_down * rms_tmp, 2.e4);
+        TLine lsx1(mean_tmp - roi_nsigma_down * rms_tmp, -1.e3, mean_tmp - roi_nsigma_down * rms_tmp, 2.e3);
         lsx1.SetLineStyle(kDashed);
         lsx1.Draw("same");
-        TLine ldx1(mean_tmp + roi_nsigma_up * rms_tmp, -1.e4, mean_tmp + roi_nsigma_up * rms_tmp, 2.e4);
+        TLine ldx1(mean_tmp + roi_nsigma_up * rms_tmp, -1.e3, mean_tmp + roi_nsigma_up * rms_tmp, 2.e3);
         ldx1.SetLineStyle(kDashed);
         ldx1.Draw("same");
         TLine zero(nSigmaLeft, 0, maxNsigma, 0);
@@ -688,12 +708,12 @@ void SignalBinned(const char *cutSettings = "", const bool binCounting = false, 
         zero.Draw("same");
         pad2->Update();
         canv.Write(Form("%s_%s_%d_%d_cent_%.0f_%.0f_pt_%.2f_%.2f", kAntimatterMatter[iMatt], cutSettings, binCounting, bkg_shape, kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1], ptMin, ptMax));
-        canv.Print(Form("%s/signal_extraction/%s_%s_%d_%d/cent_%.0f_%.0f_pt_%.2f_%.2f.pdf", kPlotDir, kAntimatterMatter[iMatt], cutSettings, binCounting, bkg_shape, kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1], ptMin, ptMax));
+        canv.Print(Form("%s/signal_extraction/%s_%s_%d_%d/cent_%.0f_%.0f_pt_%.2f_%.2f.png", kPlotDir, kAntimatterMatter[iMatt], cutSettings, binCounting, bkg_shape, kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1], ptMin, ptMax));
         tofSignalProjection->SetMarkerStyle(20);
         tofSignalProjection->SetMarkerSize(0.8);
         TCanvas canv1("c1", "c1");
         tofSignalProjection->Draw("pe");
-        canv1.Print(Form("%s/signal_extraction_preliminary/%s_%s_%d_%d/cent_%.0f_%.0f_pt_%.2f_%.2f.pdf", kPlotDir, kAntimatterMatter[iMatt], cutSettings, binCounting, bkg_shape, kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1], ptMin, ptMax));
+        canv1.Print(Form("%s/signal_extraction_preliminary/%s_%s_%d_%d/cent_%.0f_%.0f_pt_%.2f_%.2f.png", kPlotDir, kAntimatterMatter[iMatt], cutSettings, binCounting, bkg_shape, kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1], ptMin, ptMax));
       } // end of loop on pt bins
 
       // set raw yield histogram style and write to file
