@@ -131,7 +131,7 @@ void Systematics(const int points = kNPoints, const bool cutVar = true, const bo
     cFitPar.SetTicks(1, 1);
     fFitPar.GetXaxis()->SetRangeUser(fFitPar.GetMean()-5*fFitPar.GetRMS(),fFitPar.GetMean()+5*fFitPar.GetRMS());
     fFitPar.Draw("");
-    cFitPar.Print(Form("%s/Systematics_%s.png", kPlotDir, fFitPar.GetName()));
+    cFitPar.Print(Form("%s/Systematics_%s.pdf", kPlotDir, fFitPar.GetName()));
 
     fProb.GetYaxis()->SetTitle("Entries");
     fProb.GetXaxis()->SetTitle("#it{P}( #chi^{2} > #chi^{2}_{#it{obs}} )");
