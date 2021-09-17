@@ -39,7 +39,7 @@ cent_dist = centfile.Get("Centrality_selected")
 cent_dist_max = cent_dist.GetMaximum()
 
 # functions
-n_fun = [1, 1, 1, 1]  # [5, 5, 5, 4]
+n_fun = [1, 1, 1, 1, 1]  # [5, 5, 5, 4, 4]
 func = [[] for _ in range(len(CENTRALITY_LIST)-1)]
 funcMB = [[] for _ in range(3)]
 func_max = [[] for _ in range(len(CENTRALITY_LIST)-1)]
@@ -55,15 +55,22 @@ input_func_file_MB = ROOT.TFile("BlastWaveFits.root")
 
 # get functions and maxima from file
 cent_index = [1, 2, 4]
-for i_cent in range(len(CENTRALITY_LIST)-1):
+for i_cent in range(len(CENTRALITY_LIST)-2):
     for i_fun in range(n_fun[i_cent]):
         func[i_cent].append(input_func_file.Get(
             f"{func_names[i_fun]}/{cent_index[i_cent]}/{func_names[i_fun]}{cent_index[i_cent]}"))
         func_max[i_cent].append(func[i_cent][i_fun].GetMaximum())
+
 for i_cent in range(3):
     for i_fun in range(n_fun[-1]):
         funcMB[i_cent].append(input_func_file_MB.Get(f"{func_names_MB[i_fun]}/{func_names_MB[i_fun]}{i_cent}"))
         func_max_MB[i_cent].append(funcMB[i_cent][i_fun].GetMaximum())
+
+# 0-10%
+i_cent = 0
+for i_fun in range(n_fun[-2]):
+    func[3].append(input_func_file_MB.Get(f"{func_names_MB[i_fun]}/{func_names_MB[i_fun]}{i_cent}"))
+    func_max[3].append(funcMB[i_cent][i_fun].GetMaximum())
 
 # book histograms
 cent_len = len(CENTRALITY_LIST)
@@ -80,7 +87,9 @@ for i_cent in range(cent_len):
         ct_bins = np.asarray(CT_BINS_CENT[i_cent], dtype="float")
         cent_bins = CENTRALITY_LIST[i_cent]
         f_name = func_names[i_fun]
-        if cent_bins[1] == 90:
+        if (cent_bins[1] == 90):
+            f_name = func_names_MB[i_fun]
+        if (cent_bins[0] == 0) and (cent_bins[1] == 10):
             f_name = func_names_MB[i_fun]
         h_abs_radius[i_cent].append([])
         h_abs_ct[i_cent].append([])
@@ -180,11 +189,11 @@ for he3 in zip(np_he3['pt'], np_he3['pdg'], np_he3['absCt'], np_he3['eta']):
 
         # sample decay ct and ckeck for absorption
         decCt = ROOT.gRandom.Exp(7.6)
-        h_gen_ct[3][i_fun][i_matt].Fill(decCt)
-        h_gen_pt[3][i_fun][i_matt].Fill(he3[0])
+        h_gen_ct[4][i_fun][i_matt].Fill(decCt)
+        h_gen_pt[4][i_fun][i_matt].Fill(he3[0])
         if (decCt < absCt) or (absCt < -0.5):  # decCt < absCt
-            h_rec_ct[3][i_fun][i_matt].Fill(decCt)
-            h_rec_pt[3][i_fun][i_matt].Fill(he3[0])
+            h_rec_ct[4][i_fun][i_matt].Fill(decCt)
+            h_rec_pt[4][i_fun][i_matt].Fill(he3[0])
 
 # write histograms and compute efficiency
 for i_cent in range(cent_len):
@@ -194,6 +203,8 @@ for i_cent in range(cent_len):
     for i_fun in range(n_fun[i_cent]):
         func_name = func_names[i_fun]
         if cent_bins[1] == 90:
+            func_name = func_names_MB[i_fun]
+        if (cent_bins[0] == 0) and  (cent_bins[1] == 10):
             func_name = func_names_MB[i_fun]
         outfile.mkdir(f"{cent_bins[0]}_{cent_bins[1]}/{func_name}")
         outfile.cd(f"{cent_bins[0]}_{cent_bins[1]}/{func_name}")
@@ -220,7 +231,7 @@ for i_cent in range(cent_len):
             canv.cd()
             canv.SetTicks(1, 1)
             eff_ct.Draw()
-            canv.Print(f"plots/absorption_correction/fEffCt_{split_list[i_matt]}_{cent_bins[0]}_{cent_bins[1]}_{func_name}.png")
+            canv.Print(f"plots/absorption_correction/fEffCt_{split_list[i_matt]}_{cent_bins[0]}_{cent_bins[1]}_{func_name}.pdf")
 
             h_rec_pt[i_cent][i_fun][i_matt].Write()
             h_gen_pt[i_cent][i_fun][i_matt].Write()

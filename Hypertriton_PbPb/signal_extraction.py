@@ -92,7 +92,7 @@ for split in SPLIT_LIST:
                 # declare fit model
                 # kde
                 roo_n_signal = ROOT.RooRealVar('N_{signal}', 'Nsignal', 0., 1.e3)
-                delta_mass = ROOT.RooRealVar("#Deltam", 'deltaM', -0.004, 0.004, 'GeV/c^{2}')
+                delta_mass = ROOT.RooRealVar("#deltam", 'deltaM', -0.004, 0.004, 'GeV/c^{2}')
                 shifted_mass = ROOT.RooAddition("mPrime", "m + #Deltam", ROOT.RooArgList(roo_m, delta_mass))
                 roo_signal = ROOT.RooKeysPdf("signal", "signal", shifted_mass, roo_m,
                                              roo_mc_signal, ROOT.RooKeysPdf.NoMirror, 2)
@@ -143,7 +143,8 @@ for split in SPLIT_LIST:
                     roo_model.paramOn(xframe, ROOT.RooFit.Label(
                         '#chi^{2}/NDF = '+formatted_chi2),
                         ROOT.RooFit.Layout(0.55, 0.85, 0.88))
-                    xframe.getAttText().SetTextSize(0.035)
+                    xframe.getAttText().SetTextFont(44)
+                    xframe.getAttText().SetTextSize(20)
                     xframe.getAttLine().SetLineWidth(0)
 
                     print(f'chi2/NDF: {formatted_chi2}, edm: {r.edm()}')
@@ -195,15 +196,19 @@ for split in SPLIT_LIST:
                             text_mass = ROOT.TLatex(
                                 2.965, 0.74 * xframe.GetMaximum(),
                                 "#it{m}_{^{3}_{#Lambda}H} = " + "{:.6f}".format(mass_val) + " GeV/#it{c^{2}}")
-                            text_mass.SetTextSize(0.035)
+                            text_mass.SetTextFont(44)
+                            text_mass.SetTextSize(20)
                             text_signif = ROOT.TLatex(2.965, 0.91 * xframe.GetMaximum(),
                                                     "S/#sqrt{S+B} (3#sigma) = " + "{:.3f}".format(significance_val) + " #pm " +
                                                     "{:.3f}".format(significance_err))
-                            text_signif.SetTextSize(0.035)
+                            text_signif.SetTextFont(44)
+                            text_signif.SetTextSize(20)
                             text_sig = ROOT.TLatex(2.965, 0.84 * xframe.GetMaximum(), "S (3#sigma) = " + "{:.1f}".format(sig) + " #pm " + "{:.1f}".format(signal_int*roo_n_signal.getError()))
-                            text_sig.SetTextSize(0.035)
+                            text_sig.SetTextFont(44)
+                            text_sig.SetTextSize(20)
                             text_bkg = ROOT.TLatex(2.965, 0.77 * xframe.GetMaximum(), "B (3#sigma) = " + "{:.1f}".format(bkg) + " #pm" + "{:.1f}".format(bkg_int*roo_n_background.getError()))
-                            text_bkg.SetTextSize(0.035)
+                            text_bkg.SetTextFont(44)
+                            text_bkg.SetTextSize(20)
                             xframe.Draw("")
                             # text_mass.Draw("same")
                             text_signif.Draw("same")
@@ -215,7 +220,7 @@ for split in SPLIT_LIST:
                                 os.mkdir('plots/signal_extraction')
                             if not os.path.isdir(f'plots/signal_extraction/{bin}_{bkg_shape}'):
                                 os.mkdir(f'plots/signal_extraction/{bin}_{bkg_shape}')
-                            canv.Print(f'plots/signal_extraction/{bin}_{bkg_shape}/{eff_score[0]:.2f}_{bin}.png')
+                            canv.Print(f'plots/signal_extraction/{bin}_{bkg_shape}/{eff_score[0]:.2f}_{bin}.pdf')
 
                             # plot kde and mc
                             frame = roo_m.frame(2.96, 3.025, 130)
@@ -229,13 +234,15 @@ for split in SPLIT_LIST:
                             if not os.path.isdir(f'plots/kde_signal/{bin}'):
                                 os.mkdir(f'plots/kde_signal/{bin}')
                             frame.Draw()
-                            leg_mc = ROOT.TLegend(0.6, 0.8, 0.85, 0.7)
+                            leg_mc = ROOT.TLegend(0.7, 0.8, 0.85, 0.7)
                             leg_mc.AddEntry(frame.findObject("KDE"), "KDE")
                             leg_mc.AddEntry(frame.findObject("gaussian"), "Gaussian")
+                            leg_mc.SetTextFont(44)
+                            leg_mc.SetTextSize(20)
                             leg_mc.SetBorderSize(0)
                             leg_mc.Draw("same")
                             cc.SetLogy(ROOT.kTRUE)
-                            cc.Print(f'plots/kde_signal/{bin}/{formatted_eff}_{bin}.png')
+                            cc.Print(f'plots/kde_signal/{bin}/{formatted_eff}_{bin}.pdf')
 
             h_raw_yields.GetXaxis().SetTitle("BDT efficiency")
             h_raw_yields.GetYaxis().SetTitle("#it{N_{raw}}")

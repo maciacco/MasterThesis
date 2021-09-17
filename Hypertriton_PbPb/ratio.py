@@ -49,12 +49,23 @@ eff_cut_dict = pickle.load(open("file_eff_cut_dict", "rb"))
 presel_eff_file = uproot.open('PreselEff.root')
 signal_extraction_file = ROOT.TFile.Open('SignalExtraction.root')
 signal_extraction_keys = uproot.open('SignalExtraction.root').keys()
+analysis_results_file = uproot.open(os.path.expandvars(ANALYSIS_RESULTS_PATH))
+
+# get centrality selected histogram
+cent_counts, cent_edges = analysis_results_file['Centrality_selected;1'].to_numpy()
+cent_bin_centers = (cent_edges[:-1]+cent_edges[1:])/2
 
 abs_correction_file = ROOT.TFile.Open('He3_abs.root')
 ratio_file = ROOT.TFile.Open('Ratio.root', 'recreate')
 
 for i_cent_bins in range(len(CENTRALITY_LIST)):
     cent_bins = CENTRALITY_LIST[i_cent_bins]
+
+    # get number of events
+    cent_range_map = np.logical_and(cent_bin_centers > cent_bins[0], cent_bin_centers < cent_bins[1])
+    counts_cent_range = cent_counts[cent_range_map]
+    evts = np.sum(counts_cent_range)
+    print(f'Number of events: {evts}')
 
     h_corrected_yields = [ROOT.TH1D(), ROOT.TH1D()]
     for i_split, split in enumerate(SPLIT_LIST):
@@ -65,7 +76,7 @@ for i_cent_bins in range(len(CENTRALITY_LIST)):
         presel_eff_bin_centers = (presel_eff_edges[1:]+presel_eff_edges[:-1])/2
 
         func_name = 'BGBW'
-        if cent_bins[1] == 90:
+        if (cent_bins[1] == 90) or (cent_bins[0] == 0 and cent_bins[1] == 10):
             func_name = 'BlastWave'
         g_abs_correction = ROOT.TGraphAsymmErrors()
         g_abs_correction = abs_correction_file.Get(f"{cent_bins[0]}_{cent_bins[1]}/{func_name}/fEffCt_{split}_{cent_bins[0]}_{cent_bins[1]}_{func_name}")
@@ -143,18 +154,29 @@ for i_cent_bins in range(len(CENTRALITY_LIST)):
             fit_function_expo = ROOT.TF1("expo", "expo", 2, 14)
         elif cent_bins[1] == 90:
             fit_function_expo = ROOT.TF1("expo", "expo", 0, 35)
-        h_corrected_yields[i_split].Fit(fit_function_expo, "RMIS+")
+        res_expo = h_corrected_yields[i_split].Fit(fit_function_expo, "RMIS+")
 
         # compute and display lifetime
         tau = -1/fit_function_expo.GetParameter(1)*100/SPEED_OF_LIGHT # ps
         tau_error = fit_function_expo.GetParError(1)*100/SPEED_OF_LIGHT/fit_function_expo.GetParameter(1)/fit_function_expo.GetParameter(1) # ps
         tau_text = ROOT.TLatex(20, 100, '#tau = ' + "{:.0f}".format(tau) + '#pm' + "{:.0f}".format(tau_error) + ' ps')
-        tau_text.SetTextSize(0.035)
+        tau_text.SetTextSize(0.05)
         
         # display chi2
         formatted_chi2_lifetime = "{:.2f}".format(fit_function_expo.GetChisquare())
         chi2_lifetime_text = ROOT.TLatex(20, 70, "#chi^{2}/NDF = "+formatted_chi2_lifetime+"/"+str(fit_function_expo.GetNDF()))
-        chi2_lifetime_text.SetTextSize(0.035)
+        chi2_lifetime_text.SetTextSize(0.05)
+
+        # compute yield
+        integral = float()
+        integral_error = float()
+        integral = fit_function_expo.Integral(0, 1.e9)
+        integral_error = fit_function_expo.IntegralError(0, 1.e9, res_expo.GetParams(), res_expo.GetCovarianceMatrix().GetMatrixArray())
+        formatted_integral = "{:.10f}".format(integral/2./evts)
+        formatted_integral_error = "{:.10f}".format(integral_error/evts/2.)
+        print(f"N_ev = {evts}")
+        integral_yield = ROOT.TLatex(20, 40, "1/#it{N_{ev}} #times BR #times d#it{N}/d#it{y} = "+formatted_integral+" #pm "+formatted_integral_error)
+        integral_yield.SetTextSize(0.05)
 
         # draw on canvas
         canv = ROOT.TCanvas()
@@ -166,9 +188,10 @@ for i_cent_bins in range(len(CENTRALITY_LIST)):
         h_corrected_yields[i_split].Draw("")
         tau_text.Draw("same")
         chi2_lifetime_text.Draw("same")
+        integral_yield.Draw("same")
         canv.SetLogy()
         canv.Write() # write to file
-        canv.Print(f'plots/cpt_and_lifetime/{h_corrected_yields[i_split].GetName()}.png')
+        canv.Print(f'plots/cpt_and_lifetime/{h_corrected_yields[i_split].GetName()}.pdf')
 
     # ratios
     ROOT.gStyle.SetOptStat(0)
@@ -176,7 +199,7 @@ for i_cent_bins in range(len(CENTRALITY_LIST)):
     h_ratio.SetName(f'fRatio_{cent_bins[0]}_{cent_bins[1]}')
     h_ratio.SetTitle(f'{cent_bins[0]}-{cent_bins[1]}%')
     h_ratio.Divide(h_corrected_yields[0], h_corrected_yields[1], 1, 1)
-    h_ratio.GetYaxis().SetTitle("ratio ^{3}_{#bar{#Lambda}}#bar{H} / ^{3}_{#Lambda}H")
+    h_ratio.GetYaxis().SetTitle("Ratio ^{3}_{#bar{#Lambda}}#overline{H} / ^{3}_{#Lambda}H")
     h_ratio.GetYaxis().SetRangeUser(0., 1.8)
     h_ratio.GetXaxis().SetRangeUser(0., 35.)
     h_ratio.SetMarkerStyle(20)
@@ -201,7 +224,7 @@ for i_cent_bins in range(len(CENTRALITY_LIST)):
     chi2_text.SetTextFont(44)
     chi2_text.SetTextSize(28)
     chi2_text.Draw("same")
-    c.Print(f"plots/{h_ratio.GetName()}.png")
+    c.Print(f"plots/{h_ratio.GetName()}.pdf")
 
     del h_corrected_yields
     del h_ratio

@@ -47,13 +47,13 @@ signal_extraction_file = ROOT.TFile.Open('SignalExtraction.root')
 signal_extraction_keys = uproot.open('SignalExtraction.root').keys()
 
 abs_correction_file = ROOT.TFile.Open('He3_abs.root')
-systematics_file = ROOT.TFile.Open('SystematicsRatio.root', 'recreate')
+systematics_file = ROOT.TFile.Open('SystematicsYield.root', 'recreate')
 
 for i_cent_bins in range(len(CENTRALITY_LIST)):
     cent_bins = CENTRALITY_LIST[i_cent_bins]
 
-    h_parameter_distribution = ROOT.TH1D(f'fParameterDistribution_{cent_bins[0]}_{cent_bins[1]}', f'{cent_bins[0]}-{cent_bins[1]}%', 200, 0, 2)
-    h_prob_distribution = ROOT.TH1D(f'fProbDistribution_{cent_bins[0]}_{cent_bins[1]}', f'{cent_bins[0]}-{cent_bins[1]}%', 100, 0, 1)
+    h_parameter_distribution = [ROOT.TH1D(f'fParameterDistribution_A_{cent_bins[0]}_{cent_bins[1]}', f'{cent_bins[0]}-{cent_bins[1]}%', 200, 0, 2), ROOT.TH1D(f'fParameterDistribution_M_{cent_bins[0]}_{cent_bins[1]}', f'{cent_bins[0]}-{cent_bins[1]}%', 200, 0, 2)]
+    h_prob_distribution = [ROOT.TH1D(f'fProbDistribution_A_{cent_bins[0]}_{cent_bins[1]}', f'{cent_bins[0]}-{cent_bins[1]}%', 100, 0, 1),ROOT.TH1D(f'fProbDistribution_M_{cent_bins[0]}_{cent_bins[1]}', f'{cent_bins[0]}-{cent_bins[1]}%', 100, 0, 1)]
 
     systematics_file.mkdir(f'{cent_bins[0]}_{cent_bins[1]}')
     ####################################################
@@ -138,55 +138,87 @@ for i_cent_bins in range(len(CENTRALITY_LIST)):
 
             # set labels
             h_corrected_yields[i_split].GetXaxis().SetTitle("#it{c}t (cm)")
+
             #h_corrected_yields[i_split].Scale(1., "width")
+            for i_bin in range(len(bins))[2:]:
+                bin_width = h_corrected_yields[i_split].GetBinWidth(i_bin)
+                print(f"bin: {h_corrected_yields[i_split].GetBinLowEdge(i_bin)}; bin width: {bin_width}")
+                bin_content = h_corrected_yields[i_split].GetBinContent(i_bin)
+                bin_error = h_corrected_yields[i_split].GetBinError(i_bin)
+                h_corrected_yields[i_split].SetBinContent(i_bin, bin_content/bin_width)
+                h_corrected_yields[i_split].SetBinError(i_bin, bin_error/bin_width)
+            h_corrected_yields[i_split].GetYaxis().SetRangeUser(1., 450.)
+            h_corrected_yields[i_split].SetMarkerStyle(20)
+            h_corrected_yields[i_split].SetMarkerSize(0.8)
+            h_corrected_yields[i_split].Write()
 
-        # ratios
-        h_ratio = ROOT.TH1D(h_corrected_yields[0])
-        h_ratio.SetName(f'fRatio_{cent_bins[0]}_{cent_bins[1]}')
-        h_ratio.SetTitle(f'{cent_bins[0]}-{cent_bins[1]}%')
-        h_ratio.Divide(h_corrected_yields[0], h_corrected_yields[1], 1, 1)
-        h_ratio.GetYaxis().SetTitle("^{3}_{#bar{#Lambda}}#bar{H}/^{3}_{#Lambda}H")
-        fit_function = ROOT.TF1('plo0', 'pol0', CT_BINS_CENT[i_cent_bins][0], CT_BINS_CENT[i_cent_bins][-1])
-        res = h_ratio.Fit(fit_function, 'SQ')
-        systematics_file.cd(f'{cent_bins[0]}_{cent_bins[1]}')
+            fit_function_expo = ROOT.TF1("expo", "expo", 2, 35)
+            if cent_bins[0] == 30:
+                fit_function_expo = ROOT.TF1("expo", "expo", 2, 14)
+            elif cent_bins[1] == 90:
+                fit_function_expo = ROOT.TF1("expo", "expo", 0, 35)
+            res = h_corrected_yields[i_split].Fit(fit_function_expo, "RMIS+")
 
-        if fit_function.GetProb() > 0.025 and fit_function.GetProb() < 0.975 and res.Status() == 0 and res.Ndf() > 1:
-            # h_ratio.Write()
-            h_parameter_distribution.Fill(fit_function.GetParameter(0))
-            h_prob_distribution.Fill(res.Prob())
-            i_trial += 1
+            # compute and display lifetime
+            tau = -1/fit_function_expo.GetParameter(1)*100/SPEED_OF_LIGHT # ps
+            tau_error = fit_function_expo.GetParError(1)*100/SPEED_OF_LIGHT/fit_function_expo.GetParameter(1)/fit_function_expo.GetParameter(1) # ps
+            tau_text = ROOT.TLatex(20, 100, '#tau = ' + "{:.0f}".format(tau) + '#pm' + "{:.0f}".format(tau_error) + ' ps')
+            tau_text.SetTextSize(0.05)
+            
+            # display chi2
+            formatted_chi2_lifetime = "{:.2f}".format(fit_function_expo.GetChisquare())
+            chi2_lifetime_text = ROOT.TLatex(20, 70, "#chi^{2}/NDF = "+formatted_chi2_lifetime+"/"+str(fit_function_expo.GetNDF()))
+            chi2_lifetime_text.SetTextSize(0.05)
+
+            # compute yield
+            integral = float()
+            integral_error = float()
+            integral = fit_function_expo.IntegralError(0, 1.e9)
+            integral_error = fit_function_expo.IntegralError(0, 1.e9)
+            formatted_integral = "{:.7f}".format(integral/2./evts*1.e9)
+            formatted_integral_error = "{:.7f}".format(integral_error/2./evts*1.e9)
+            integral_yield = ROOT.TLatex(20, 40, "1/#it{N_{ev}} d#it{N}/d#it{y} = "+formatted_integral+" #pm "+formatted_integral_error)
+            integral_yield.SetTextSize(0.05)
+
+            systematics_file.cd(f'{cent_bins[0]}_{cent_bins[1]}')
+
+            if fit_function_expo.GetProb() > 0.025 and fit_function_expo.GetProb() < 0.975 and res.Status() == 0 and res.Ndf() > 1:
+                # h_ratio.Write()
+                h_parameter_distribution[i_split].Fill(integral)
+                h_prob_distribution[i_split].Fill(res.Prob())
+                i_trial += 0.5
+
         del h_corrected_yields
-        del h_ratio
 
     systematics_file.cd()
-    h_parameter_distribution.GetXaxis().SetTitle("p_{0}")
-    h_parameter_distribution.GetXaxis().SetRangeUser(0.4, 1.4)
-    h_parameter_distribution.GetYaxis().SetTitle("Entries")
-    h_parameter_distribution.GetXaxis().SetTitle("R ( ^{3}_{#bar{#Lambda}}#bar{H} / ^{3}_{#Lambda}H)")
-    h_parameter_distribution.SetDrawOption("histo")
-    h_parameter_distribution.SetLineWidth(2)
-    h_parameter_distribution.SetFillStyle(3345)
-    h_parameter_distribution.SetFillColor(ROOT.kBlue)
-    h_parameter_distribution.Write()
-    h_prob_distribution.GetXaxis().SetTitle("Prob")
-    h_prob_distribution.GetYaxis().SetTitle("Entries")
-    h_prob_distribution.Write()
+    for i_split in range(2):
+        h_parameter_distribution[i_split].GetXaxis().SetRangeUser(0., 2.)
+        h_parameter_distribution[i_split].GetYaxis().SetTitle("Entries")
+        h_parameter_distribution[i_split].GetXaxis().SetTitle("yield")
+        h_parameter_distribution[i_split].SetDrawOption("histo")
+        h_parameter_distribution[i_split].SetLineWidth(2)
+        h_parameter_distribution[i_split].SetFillStyle(3345)
+        h_parameter_distribution[i_split].SetFillColor(ROOT.kBlue)
+        h_parameter_distribution[i_split].Write()
+        h_prob_distribution[i_split].GetXaxis().SetTitle("Prob")
+        h_prob_distribution[i_split].GetYaxis().SetTitle("Entries")
+        h_prob_distribution[i_split].Write()
 
-    # plot systematics distribution
-    c = ROOT.TCanvas("c", "c")
-    ROOT.gStyle.SetOptStat(110001110)
-    ROOT.gStyle.SetStatX(0.85);
-    ROOT.gStyle.SetStatY(0.85);
-    c.cd()
-    c.SetTicks(1, 1)
-    mean = h_parameter_distribution.GetMean()
-    std_dev = h_parameter_distribution.GetRMS()
-    h_parameter_distribution.Rebin(2)
-    h_parameter_distribution.GetXaxis().SetRangeUser(mean-5*std_dev, mean+5*std_dev)
-    h_parameter_distribution.Draw("histo")
-    c.Print(f"plots/{h_parameter_distribution.GetName()}.pdf")
+        # plot systematics distribution
+        c = ROOT.TCanvas("c", "c")
+        ROOT.gStyle.SetOptStat(110001110)
+        ROOT.gStyle.SetStatX(0.85);
+        ROOT.gStyle.SetStatY(0.85);
+        c.cd()
+        c.SetTicks(1, 1)
+        mean = h_parameter_distribution[i_split].GetMean()
+        std_dev = h_parameter_distribution[i_split].GetRMS()
+        h_parameter_distribution[i_split].Rebin(2)
+        h_parameter_distribution[i_split].GetXaxis().SetRangeUser(mean-5*std_dev, mean+5*std_dev)
+        h_parameter_distribution[i_split].Draw("histo")
+        c.Print(f"plots/{h_parameter_distribution[i_split].GetName()}.png")
 
-    del h_parameter_distribution
-    del h_prob_distribution
+        del h_parameter_distribution[i_split]
+        del h_prob_distribution[i_split]
 
 systematics_file.Close()
