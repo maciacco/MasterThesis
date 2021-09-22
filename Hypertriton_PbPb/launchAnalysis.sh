@@ -20,7 +20,7 @@
 # python3 signal_extraction.py -b
 
 # absorption correction
-# python3 he3_absorption_analysis.py
+python3 he3_absorption_analysis.py
 
 # lifetime fits + ratio
 #python3 ratio.py

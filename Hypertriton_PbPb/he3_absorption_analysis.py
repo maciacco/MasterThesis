@@ -224,6 +224,7 @@ for i_cent in range(cent_len):
             eff_ct = ROOT.TGraphAsymmErrors(h_rec_ct[i_cent][i_fun][i_matt], h_gen_ct[i_cent][i_fun][i_matt])
             eff_ct.GetXaxis().SetTitle("#it{c}t (cm)")
             eff_ct.GetYaxis().SetTitle("1 - #it{f}_{abs}")
+            eff_ct.SetTitle(f"{cent_bins[0]}-{cent_bins[1]}%")
             eff_ct.Write(f"fEffCt_{split_list[i_matt]}_{cent_bins[0]}_{cent_bins[1]}_{func_name}")
             
             # plot the absorption correction (as a function of ct)
