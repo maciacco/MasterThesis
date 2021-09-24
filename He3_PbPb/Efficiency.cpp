@@ -63,7 +63,7 @@ void Efficiency(const float cutDCAz = 1.f, const int cutTPCcls = 89, const char 
       fEffPt.SetMarkerStyle(20);
       fEffPt.SetMarkerSize(0.8);
       fEffPt.GetXaxis()->SetTitle(kAxisTitlePt);
-      fEffPt.GetYaxis()->SetTitle("#epsilon #times Acc");
+      fEffPt.GetYaxis()->SetTitle("#epsilon #times A");
       fEffPt.SetOption("PE");
       outFile.cd();
       fEffPt.Write();

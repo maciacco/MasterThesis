@@ -88,9 +88,9 @@ void Spectra(const char *cutSettings = "", const bool binCounting = false, const
           primaryError = sec->GetBinError(iPtBin);
         }
         fSpectra[iMatt]->SetBinContent(iPtBin, rawYield * primary / efficiency );
-        fSpectra[iMatt]->SetBinError(iPtBin, /* rawYieldError */(rawYield * primary / efficiency) * TMath::Sqrt(primaryError * primaryError / primary / primary + effError * effError / efficiency / efficiency + rawYieldError * rawYieldError / rawYield / rawYield));
+        fSpectra[iMatt]->SetBinError(iPtBin, /* effError */(rawYield * primary / efficiency) * TMath::Sqrt(primaryError * primaryError / primary / primary + effError * effError / efficiency / efficiency + rawYieldError * rawYieldError / rawYield / rawYield));
 
-        //std::cout<<"eff="<<efficiency<<"; raw="<<rawYield<<"; rawError="<<rawYieldError<<"; primary="<<primary<<std::endl;
+        std::cout<<"eff="<<efficiency<<"; raw="<<rawYield<<"; rawError="<<rawYieldError<<"; primary="<<primary<<std::endl;
       }
       fSpectra[iMatt]->SetName(Form("f%sSpectra_%.0f_%.0f", kAntimatterMatter[iMatt], kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1]));
       fSpectra[iMatt]->SetTitle(Form("%s, %.0f-%.0f%%", kAntimatterMatterLabel[iMatt], kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1]));
@@ -113,7 +113,7 @@ void Spectra(const char *cutSettings = "", const bool binCounting = false, const
       double spec = fSpectra[1]->GetBinContent(iPtBin);
       double antiSpecErr = fSpectra[0]->GetBinError(iPtBin);
       double specErr = fSpectra[1]->GetBinError(iPtBin);
-      if (spec > 1.e-7 && antiSpec > 1.e-7)
+      if (spec > 1.e-8 && antiSpec > 1.e-8)
       {
         fRatio[iCent]->SetBinContent(iPtBin, antiSpec / spec);
         fRatio[iCent]->SetBinError(iPtBin, antiSpec / spec * TMath::Sqrt(antiSpecErr * antiSpecErr / antiSpec / antiSpec + specErr * specErr / spec / spec));
@@ -129,7 +129,7 @@ void Spectra(const char *cutSettings = "", const bool binCounting = false, const
     cRatio.SetTicks(1, 1);
     cRatio.cd();
     fRatio[iCent]->GetXaxis()->SetRangeUser(1.0,4.0);
-    fRatio[iCent]->GetYaxis()->SetRangeUser(0.92, 1.03);
+    fRatio[iCent]->GetYaxis()->SetRangeUser(0.92, 1.2);
     fRatio[iCent]->Draw("");
     TLatex chi2(2.8, 1.14, Form("#chi^{2}/NDF = %.2f/%d", fRatio[iCent]->GetFunction("pol0")->GetChisquare(), fRatio[iCent]->GetFunction("pol0")->GetNDF()));
     chi2.SetTextSize(28);

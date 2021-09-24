@@ -19,6 +19,7 @@ using namespace he3;
 void PlotEfficiencies(const float cutDCAz = 1.f, const int cutTPCcls = 89, const char *outFileName = "EfficiencyPlots", const char *histoNameDir = "", const char *outFileOption = "recreate", const char *inFile = "EfficiencyHe3")
 {
   gStyle->SetOptFit(1111);
+  gStyle->SetOptStat(0);
 
   gSystem->Exec(Form("mkdir %s/efficiency_plots", kPlotDir));
 

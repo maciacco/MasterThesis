@@ -10,9 +10,9 @@ extractRatios=1
 
 fileData="AnalysisResults_largeNsigma"
 fileMC="mc"
-signalName="SignalProtonGausDExpSignal1_finePtBinning"
-spectraName="SpectraProtonGausDExpSignal1"
-EfficiencyHe3="EfficiencyProton"
+signalName="SignalProtonGausDExpSignal1_LongMCTracks"
+spectraName="SpectraProtonGausDExpSignal1_LongMCTracks"
+EfficiencyHe3="EfficiencyProton_LongMCTracks"
 PrimaryHe3="PrimaryProton"
 
 # create output directories

@@ -15,14 +15,14 @@
 using namespace utils;
 using namespace proton;
 
-void Efficiency(const char *cutSettings = "", const char *inFileNameMC = "mc", const char *outFileNameEff = "EfficiencyProton")
+void Efficiency(const char *cutSettings = "", const char *inFileNameMC = "mc", const char *outFileNameEff = "EfficiencyProton_LongMCTracks")
 {
   // make signal extraction plots directory
   system(Form("mkdir %s/efficiency", kPlotDir));
 
   TFile inFile1(Form("%s/%s_finePtBinning2.root", kDataDir, inFileNameMC));
-  TFile inFile2(Form("%s/%s_finePtBinning3.root", kDataDir, inFileNameMC));
-  TFile inFile3(Form("%s/%s_finePtBinning1.root", kDataDir, inFileNameMC));
+  TFile inFile2(Form("%s/%s_dataSet1.root", kDataDir, inFileNameMC));
+  TFile inFile3(Form("%s/%s_dataSet2.root", kDataDir, inFileNameMC));
   //TFile inFile1(Form("%s/%s.root", kDataDir, inFileNameMC));
   TFile outFile(Form("%s/%s.root", kOutDir, outFileNameEff), "RECREATE");
 
@@ -35,23 +35,27 @@ void Efficiency(const char *cutSettings = "", const char *inFileNameMC = "mc", c
 
     // get TTList
     std::string listName = Form("nuclei_proton_%s", cutSettings);
-    TTList *list1 = (TTList *)inFile1.Get(listName.data());
+    /* TTList *list1 = (TTList *)inFile1.Get(listName.data()); */
     TTList *list2 = (TTList *)inFile2.Get(listName.data());
     TTList *list3 = (TTList *)inFile3.Get(listName.data());
 
     // get histograms from file
-    TH2F *fTotal1 = (TH2F *)list1->Get(TString::Format("f%sTotal", kAntimatterMatter[iMatt]).Data());
-    TH2F *fITS_TPC_TOF1 = (TH2F *)list1->Get(TString::Format("f%sITS_TPC_TOF", kAntimatterMatter[iMatt]).Data());
+    /* TH2F *fTotal1 = (TH2F *)list1->Get(TString::Format("f%sTotal", kAntimatterMatter[iMatt]).Data());
+    TH2F *fITS_TPC_TOF1 = (TH2F *)list1->Get(TString::Format("f%sITS_TPC_TOF", kAntimatterMatter[iMatt]).Data()); */
     TH2F *fTotal2 = (TH2F *)list2->Get(TString::Format("f%sTotal", kAntimatterMatter[iMatt]).Data());
     TH2F *fITS_TPC_TOF2 = (TH2F *)list2->Get(TString::Format("f%sITS_TPC_TOF", kAntimatterMatter[iMatt]).Data());
     TH2F *fTotal3 = (TH2F *)list3->Get(TString::Format("f%sTotal", kAntimatterMatter[iMatt]).Data());
     TH2F *fITS_TPC_TOF3 = (TH2F *)list3->Get(TString::Format("f%sITS_TPC_TOF", kAntimatterMatter[iMatt]).Data());
+    
+    // merge datasets
+    fTotal3->Add(fTotal2);
+    fITS_TPC_TOF3->Add(fITS_TPC_TOF2);
 
-    TH2F *fTotal = (TH2F *)fTotal1->Clone(fTotal1->GetName());
-    fTotal->Add(fTotal2);
+    /* TH2F *fTotal = (TH2F *)fTotal1->Clone(fTotal1->GetName());
+    fTotal->Add(fTotal2); */
     //fTotal->Add(fTotal3);
-    TH2F *fITS_TPC_TOF = (TH2F *)fITS_TPC_TOF1->Clone(fITS_TPC_TOF1->GetName());
-    fITS_TPC_TOF->Add(fITS_TPC_TOF2);
+    /* TH2F *fITS_TPC_TOF = (TH2F *)fITS_TPC_TOF1->Clone(fITS_TPC_TOF1->GetName());
+    fITS_TPC_TOF->Add(fITS_TPC_TOF2); */
     //fITS_TPC_TOF->Add(fITS_TPC_TOF3);
 
     for (int iCent = 0; iCent < kNCentClasses + 1; ++iCent) // SET FIRST CENTRALITY BIN TO 1 EXCEPT FOR LHC16h7c_g4_2
@@ -66,8 +70,8 @@ void Efficiency(const char *cutSettings = "", const char *inFileNameMC = "mc", c
 
       if (iCent < -1)
       {
-        fTotal_Pt = fTotal->ProjectionY(TString::Format("f%sTotal_Pt", kAntimatterMatter[iMatt]), cent_bin_min, cent_bin_max);
-        fITS_TPC_TOF_Pt = fITS_TPC_TOF->ProjectionY(TString::Format("f%sITS_TPC_TOF_Pt", kAntimatterMatter[iMatt]), cent_bin_min, cent_bin_max);
+        /* fTotal_Pt = fTotal->ProjectionY(TString::Format("f%sTotal_Pt", kAntimatterMatter[iMatt]), cent_bin_min, cent_bin_max);
+        fITS_TPC_TOF_Pt = fITS_TPC_TOF->ProjectionY(TString::Format("f%sITS_TPC_TOF_Pt", kAntimatterMatter[iMatt]), cent_bin_min, cent_bin_max); */
       }
       else
       {
@@ -89,7 +93,7 @@ void Efficiency(const char *cutSettings = "", const char *inFileNameMC = "mc", c
       fEffPt.GetYaxis()->SetRangeUser(0., 1.);
       fEffPt.GetXaxis()->SetRangeUser(1., 5.);
       fEffPt.GetXaxis()->SetTitle("#it{p}_{T}");
-      fEffPt.GetYaxis()->SetTitle("#epsilon #times Acc");
+      fEffPt.GetYaxis()->SetTitle("#epsilon #times A");
       fEffPt.SetOption("PE");
       outFile.cd();
       fEffPt.Write();

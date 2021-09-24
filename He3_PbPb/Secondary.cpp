@@ -354,7 +354,7 @@ void Secondary(const float cutDCAz = 1.f, const int cutTPCcls = 89, const char *
       fPrimaryFrac.SetOption("pe");
       fPrimaryFrac.GetYaxis()->SetTitle("#it{f}_{#it{prim}}");
       fPrimaryFrac.GetXaxis()->SetTitle(kAxisTitlePt);
-      fPrimaryFrac.GetXaxis()->SetRangeUser(2.0, 10.);
+      fPrimaryFrac.GetXaxis()->SetRangeUser(2.0, 8.);
       fPrimaryFrac.Write();
 
       system(Form("mkdir %s/primary_plots", kPlotDir));

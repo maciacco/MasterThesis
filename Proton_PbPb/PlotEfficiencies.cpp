@@ -50,6 +50,7 @@ void PlotEfficiencies(const float cutDCAz = 1.f, const int cutTPCcls = 89, const
     fEff[iMatt]->GetYaxis()->SetRangeUser(0., 1.1);
     fEff[iMatt]->GetXaxis()->SetRangeUser(1., 5.0);
     fEff[iMatt]->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
+    fEff[iMatt]->GetYaxis()->SetTitle("#epsilon #times A");
     fEff[iMatt]->SetMarkerStyle(20);
     fEff[iMatt]->SetMarkerSize(0.8);
     fEff[iMatt]->SetLineColor(colors[iMatt]);
