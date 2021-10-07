@@ -8,12 +8,12 @@ sigmoidFlag=1
 spectraHistNameId=""
 extractRatios=1
 
-fileData="AnalysisResults"
+fileData="mc_20g7_likeData"
 fileMC="mc"
-signalName="SignalProtonGausDExpSignal1_LongMCTracks"
-spectraName="SpectraProtonGausDExpSignal1_LongMCTracks_newPrimary"
+signalName="SignalProtonGausDExpSignal1_LongMCTracks_MClikeData"
+spectraName="SpectraProtonGausDExpSignal1_LongMCTracks_newPrimary_MClikeData"
 EfficiencyHe3="EfficiencyProton_LongMCTracks_new"
-PrimaryHe3="PrimaryProton"
+PrimaryHe3="PrimaryProtonMC"
 
 # create output directories
 DIR_OUT=out
@@ -41,13 +41,14 @@ if [ $extractRatios -eq 1 ]; then
 .L ../utils/RooGausExp.cxx+
 .L ../utils/RooDSCBShape.cxx+
 .L ../utils/RooGausDExp.cxx+
-.L SignalBinned.cpp+
-.L Efficiency.cpp+
-.L Secondary.cpp+
+.L SignalBinnedMC.cpp+
+.L SecondaryMC.cpp+
+.L EfficiencyNew.cpp+
 .L Spectra.cpp+
-SignalBinned("$cutSettings",8,$argumentSignal,"$fileData","$signalName","recreate")
-//Secondary("$cutSettings","$fileData","$fileMC","$PrimaryHe3")
-Spectra("$cutSettings",8,$argumentSignal,$sigmoidFlag,"$spectraHistNameId","$spectraName","recreate","AnalysisResults","$signalName","$EfficiencyHe3","$PrimaryHe3")
+SignalBinnedMC("$cutSettings",$argumentSignal,"$fileData","$signalName","recreate")
+SecondaryMC("$cutSettings","$fileData","$fileMC","$PrimaryHe3")
+EfficiencyNew("$cutSettings","$fileMC","$EfficiencyHe3","$signalName","$PrimaryHe3")
+//Spectra("$cutSettings",$argumentSignal,$sigmoidFlag,"$spectraHistNameId","$spectraName","recreate","AnalysisResults","$signalName","$EfficiencyHe3","$PrimaryHe3")
 .q
 EOF
 fi

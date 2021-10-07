@@ -1,4 +1,4 @@
-// Efficiency.cpp
+// EfficiencyNew.cpp
 // This macro computes the efficiency x acceptance correction
 
 #include <Riostream.h>
@@ -15,13 +15,13 @@
 using namespace utils;
 using namespace proton;
 
-void Efficiency(const char *cutSettings = "", const char *inFileNameMC = "mc", const char *outFileNameEff = "EfficiencyProton_LongMCTracks")
+void EfficiencyNew(const char *cutSettings = "", const char *inFileNameMC = "mc", const char *outFileNameEff = "EfficiencyProton_LongMCTracks", const char *signalOut = "SignalProtonMC", const char *primOut = "PrimaryProtonMC")
 {
   // make signal extraction plots directory
   system(Form("mkdir %s/efficiency", kPlotDir));
 
-  TFile inFile1(Form("%s/%s_finePtBinning2.root", kDataDir, inFileNameMC));
-  TFile inFile2(Form("%s/%s_dataSet1.root", kDataDir, inFileNameMC));
+  TFile inFilePrimary(Form("%s/%s.root", kOutDir, primOut));
+  TFile inFileSignal(Form("%s/%s.root", kOutDir, signalOut));
   TFile inFile3(Form("%s/%s_20g7_20210929.root", kDataDir, inFileNameMC));
   //TFile inFile1(Form("%s/%s.root", kDataDir, inFileNameMC));
   TFile outFile(Form("%s/%s.root", kOutDir, outFileNameEff), "RECREATE");
@@ -45,7 +45,7 @@ void Efficiency(const char *cutSettings = "", const char *inFileNameMC = "mc", c
     // TH2F *fTotal2 = (TH2F *)list2->Get(TString::Format("f%sTotal", kAntimatterMatter[iMatt]).Data());
     // TH2F *fITS_TPC_TOF2 = (TH2F *)list2->Get(TString::Format("f%sITS_TPC_TOF", kAntimatterMatter[iMatt]).Data());
     TH2F *fTotal3 = (TH2F *)list3->Get(TString::Format("f%sTotal", kAntimatterMatter[iMatt]).Data());
-    TH2F *fITS_TPC_TOF3 = (TH2F *)list3->Get(TString::Format("f%sITS_TPC_TOF", kAntimatterMatter[iMatt]).Data());
+    //TH2F *fITS_TPC_TOF3 = (TH2F *)list3->Get(TString::Format("f%sITS_TPC_TOF", kAntimatterMatter[iMatt]).Data());
 
     ////////////////////////////////////////////////////////////////////////////
     // merge datasets *** ONLY IF WORKING WITH LHC18q AND LHC18r SEPARATELY ***
@@ -60,27 +60,25 @@ void Efficiency(const char *cutSettings = "", const char *inFileNameMC = "mc", c
     /* TH2F *fITS_TPC_TOF = (TH2F *)fITS_TPC_TOF1->Clone(fITS_TPC_TOF1->GetName());
     fITS_TPC_TOF->Add(fITS_TPC_TOF2); */
     //fITS_TPC_TOF->Add(fITS_TPC_TOF3);
+    TH1D *fTotal_Pt;       // = fTotal->ProjectionY(TString::Format("f%sTotal_Pt", kAntimatterMatter[iMatt]), cent_bin_min, cent_bin_max);
+    TH1D *fITS_TPC_TOF_Pt; // = fITS_TPC_TOF->ProjectionY(TString::Format("f%sITS_TPC_TOF_Pt", kAntimatterMatter[iMatt]), cent_bin_min, cent_bin_max);
+    TF1 *sec_f;
+    //TH1D *fSec;
 
-    for (int iCent = 0; iCent < kNCentClasses + 1; ++iCent) // SET FIRST CENTRALITY BIN TO 1 EXCEPT FOR LHC16h7c_g4_2
+    for (int iCent = 0; iCent < kNCentClasses; ++iCent) // SET FIRST CENTRALITY BIN TO 1 EXCEPT FOR LHC16h7c_g4_2
     {                                                       // loop over centrality
       int cent_bin_min = kCentBinsProton[iCent][0];
       int cent_bin_max = kCentBinsProton[iCent][1];
       double cent_bin_lim_min = kCentBinsLimitsProton[iCent][0];
       double cent_bin_lim_max = kCentBinsLimitsProton[iCent][1];
 
-      TH1D *fTotal_Pt;       // = fTotal->ProjectionY(TString::Format("f%sTotal_Pt", kAntimatterMatter[iMatt]), cent_bin_min, cent_bin_max);
-      TH1D *fITS_TPC_TOF_Pt; // = fITS_TPC_TOF->ProjectionY(TString::Format("f%sITS_TPC_TOF_Pt", kAntimatterMatter[iMatt]), cent_bin_min, cent_bin_max);
-
-      if (iCent < -1)
-      {
-        /* fTotal_Pt = fTotal->ProjectionY(TString::Format("f%sTotal_Pt", kAntimatterMatter[iMatt]), cent_bin_min, cent_bin_max);
-        fITS_TPC_TOF_Pt = fITS_TPC_TOF->ProjectionY(TString::Format("f%sITS_TPC_TOF_Pt", kAntimatterMatter[iMatt]), cent_bin_min, cent_bin_max); */
-      }
-      else
-      {
-        fTotal_Pt = fTotal3->ProjectionY(TString::Format("f%sTotal_Pt", kAntimatterMatter[iMatt]), cent_bin_min, cent_bin_max);
-        fITS_TPC_TOF_Pt = fITS_TPC_TOF3->ProjectionY(TString::Format("f%sITS_TPC_TOF_Pt", kAntimatterMatter[iMatt]), cent_bin_min, cent_bin_max);
-      }
+      fTotal_Pt = fTotal3->ProjectionY(TString::Format("f%sTotal_Pt", kAntimatterMatter[iMatt]), cent_bin_min, cent_bin_max);
+      //fITS_TPC_TOF_Pt = fITS_TPC_TOF3->ProjectionY(TString::Format("f%sITS_TPC_TOF_Pt", kAntimatterMatter[iMatt]), cent_bin_min, cent_bin_max);
+      sec_f = (TF1 *)inFilePrimary.Get(Form("f%sFunctionFit_%.0f_%.0f", kAntimatterMatter[iMatt], kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1]));
+      //fSec = (TH1D*)inFilePrimary.Get(Form("f%sPrimFrac_%.0f_%.0f", kAntimatterMatter[iMatt], kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1]));
+      fITS_TPC_TOF_Pt = (TH1D*)inFileSignal.Get(Form("%s_%d_%d/f%sTOFrawYield_%.0f_%.0f", cutSettings, 1, 1, kAntimatterMatter[iMatt], kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1]));
+      fITS_TPC_TOF_Pt->Multiply(sec_f);
+      //fITS_TPC_TOF_Pt->Multiply(fSec);
       fTotal_Pt = (TH1D *)fTotal_Pt->Rebin(kNPtBins, TString::Format("f%sTotal_Pt", kAntimatterMatter[iMatt]), kPtBins);
       fITS_TPC_TOF_Pt = (TH1D *)fITS_TPC_TOF_Pt->Rebin(kNPtBins, TString::Format("f%sITS_TPC_TOF_Pt", kAntimatterMatter[iMatt]), kPtBins);
       TH1D fEffPt(TString::Format("f%sEff_TOF_%.0f_%.0f", kAntimatterMatter[iMatt], cent_bin_lim_min, cent_bin_lim_max), TString::Format("%s Efficiency #times Acceptance, %.0f-%.0f%%", kAntimatterMatterLabel[iMatt], kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1]), kNPtBins, kPtBins);
@@ -100,7 +98,8 @@ void Efficiency(const char *cutSettings = "", const char *inFileNameMC = "mc", c
       fEffPt.SetOption("PE");
       outFile.cd();
       fEffPt.Write();
-
+      fTotal_Pt->Write();
+      fITS_TPC_TOF_Pt->Write();
       // save plot image
       TCanvas canv;
       fEffPt.Draw("");

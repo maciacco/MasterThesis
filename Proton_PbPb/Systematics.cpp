@@ -38,10 +38,10 @@ void Systematics(const int points = kNPoints, const bool cutVar = true, const bo
   TFile *outFile = TFile::Open(Form("%s/%s.root", kOutDir, outFileName), "recreate");
   TDirectory *cdHist = outFile->mkdir("hist");
 
-  for (int iC = 0; iC < kNCentClasses-1; ++iC) // TODO: extend the analysis to the third centrality class as well
+  for (int iC = 0; iC < kNCentClasses; ++iC) // TODO: extend the analysis to the third centrality class as well
   {
     TDirectory *cdFits = outFile->mkdir(Form("fits_%.0f_%.0f", kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]));
-    TH1D fFitPar(Form("fFitPar_%.0f_%.0f", kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]), Form("%.0f-%.0f%%", kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]), 3000, 0.8, 1.);
+    TH1D fFitPar(Form("fFitPar_%.0f_%.0f", kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]), Form("%.0f-%.0f%%", kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]), 3000, 0.9, 1.1);
     TH1D fProb(Form("fProb_%.0f_%.0f", kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]), Form("%.0f-%.0f%%", kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]), 1000., 0., 1.0);
     TH1D fRatio("fRatio", "fRatio", kNPtBins, kPtBins);
 
@@ -49,7 +49,7 @@ void Systematics(const int points = kNPoints, const bool cutVar = true, const bo
     int iP = 0;
     while (iP < kNPoints)
     {
-      double nUsedPtBins = 22;
+      double nUsedPtBins = 24;
       for (int iPtBin = 4; iPtBin < nUsedPtBins+1; ++iPtBin)
       {
         // extract variable which the variation is applied to
@@ -65,7 +65,7 @@ void Systematics(const int points = kNPoints, const bool cutVar = true, const bo
         else cutIndex = gRandom->Rndm() * kNCutTPCClusters;
 
         // extract background flag
-        int bkgFlag = 0;// gRandom->Rndm() * 2;
+        int bkgFlag = 1;// gRandom->Rndm() * 2;
 
         int sigmoidFlagRnd = 1;
         if (sigmoidVar)
@@ -76,7 +76,9 @@ void Systematics(const int points = kNPoints, const bool cutVar = true, const bo
           }
         }
 
-        auto fullCutSettingsSigm = Form("%s%d_%d_%d", cutSettings[cutVariable], cutIndex, bkgFlag, sigmoidFlagRnd);
+        int iNsigma = gRandom->Rndm() * 3;
+
+        auto fullCutSettingsSigm = Form("%s%d_%d_%d_%d", cutSettings[cutVariable], cutIndex, bkgFlag, sigmoidFlagRnd, iNsigma);
 
         TH1D *h = (TH1D *)specFile->Get(Form("%s/fRatio_%.0f_%.0f", fullCutSettingsSigm, kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]));
         fRatio.SetBinContent(iPtBin, h->GetBinContent(h->FindBin(fRatio.GetBinCenter(iPtBin))));
@@ -88,8 +90,8 @@ void Systematics(const int points = kNPoints, const bool cutVar = true, const bo
       TF1 fitFunc("fitFunc", "pol0");
       auto fit = fRatio.Fit(&fitFunc, "QS");
 
-      int ndf = 18;
-      if (fit->Status() == 0 && fit->Prob() > 0.025 && fit->Prob() < 0.975 && fit->Ndf() == ndf)
+      int ndf = 19;
+      if (fit->Status() == 0 && fit->Prob() > 0.005 && fit->Prob() < 0.995 && fit->Ndf() >= ndf)
       { // check chi2
         fFitPar.Fill(fitFunc.GetParameter(0));
         fProb.Fill(fitFunc.GetProb());
@@ -102,7 +104,7 @@ void Systematics(const int points = kNPoints, const bool cutVar = true, const bo
 
     cdHist->cd();
     fFitPar.GetYaxis()->SetTitle("Entries");
-    fFitPar.GetXaxis()->SetTitle("R (#bar{d}/d)");
+    fFitPar.GetXaxis()->SetTitle("R (#bar{p}/p)");
     fFitPar.SetDrawOption("histo");
     fFitPar.Rebin(8);
     fFitPar.SetFillStyle(3345);
@@ -116,7 +118,7 @@ void Systematics(const int points = kNPoints, const bool cutVar = true, const bo
     cFitPar.SetTicks(1, 1);
     fFitPar.GetXaxis()->SetRangeUser(fFitPar.GetMean()-5*fFitPar.GetRMS(),fFitPar.GetMean()+5*fFitPar.GetRMS());
     fFitPar.Draw("");
-    cFitPar.Print(Form("%s/Systematics_%s.png", kPlotDir, fFitPar.GetName()));
+    cFitPar.Print(Form("%s/Systematics_%s.pdf", kPlotDir, fFitPar.GetName()));
 
     fProb.GetYaxis()->SetTitle("Entries");
     fProb.GetXaxis()->SetTitle("#it{P}( #chi^{2} > #chi^{2}_{#it{obs}} )");

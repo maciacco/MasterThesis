@@ -1,4 +1,4 @@
-// SignalUnbinned.cpp
+// SignalUnbinnedMC.cpp
 
 #include <stdlib.h>
 #include <string>
@@ -40,15 +40,15 @@
 using namespace utils;
 using namespace proton;
 
+double roi_nsigma_up = 5.;
+double roi_nsigma_down = 5.;
+
 double computeExponentialNormalisation(double, double, double);
 
 const double kNSigma = 3; // define interval for bin counting
 
-void SignalBinned(const char *cutSettings = "", const double roi_nsigma = 8., const bool binCounting = false, const int bkg_shape = 1, const char *inFileDat = "AnalysisResults", const char *outFileName = "SignalProton", const char *outFileOption = "recreate", const bool extractSignal = true, const bool useDSCB = false, const bool binCountingNoFit = false)
+void SignalBinnedMC(const char *cutSettings = "", const bool binCounting = false, const int bkg_shape = 1, const char *inFileDat = "AnalysisResults", const char *outFileName = "SignalProton", const char *outFileOption = "recreate", const bool extractSignal = true, const bool useDSCB = false, const bool binCountingNoFit = false)
 {
-
-  double roi_nsigma_up = roi_nsigma;
-  double roi_nsigma_down = roi_nsigma;
 
   // make signal extraction plots directory
   system(Form("mkdir %s/signal_extraction", kPlotDir));
@@ -64,10 +64,7 @@ void SignalBinned(const char *cutSettings = "", const double roi_nsigma = 8., co
   TFile *outFile = TFile::Open(TString::Format("%s/%s.root", kOutDir, outFileName), outFileOption); // output file
   if (outFile->GetDirectory(Form("%s_%d_%d", cutSettings, binCounting, bkg_shape)))
     return;
-  int iNsigma = 0;
-  if (roi_nsigma > 7.8 && roi_nsigma < 8.1) iNsigma = 1;
-  else if (roi_nsigma > 8.1) iNsigma = 2; 
-  TDirectory *dirOutFile = outFile->mkdir(Form("%s_%d_%d_%d", cutSettings, binCounting, bkg_shape, iNsigma));
+  TDirectory *dirOutFile = outFile->mkdir(Form("%s_%d_%d", cutSettings, binCounting, bkg_shape));
   //TFile *dataFile = TFile::Open(TString::Format("%s/%s_largeNsigma.root", kDataDir, inFileDat)); // open data TFile
   TFile *dataFile = TFile::Open(TString::Format("%s/%s_largeNsigma.root", kDataDir, inFileDat)); // open data TFile
 
@@ -157,14 +154,14 @@ void SignalBinned(const char *cutSettings = "", const double roi_nsigma = 8., co
         tofSignalProjectionAll->Rebin(1);
 
         // limits
-        double nSigmaLeft = -20;
-        double nSigmaRight = -15.;
+        double nSigmaLeft = -12;
+        double nSigmaRight = -11.;
         if (ptMin > 1.)
         {
           if (ptMin > 1.81)
           {
-            nSigmaLeft = -17.;
-            nSigmaRight = -12.;
+            nSigmaLeft = -12.;
+            nSigmaRight = -11.;
           };
           tofSignalProjectionAll->GetXaxis()->SetRangeUser(nSigmaLeft, nSigmaRight);
           tofSignalProjection->GetXaxis()->SetRangeUser(nSigmaLeft, nSigmaRight);
@@ -400,23 +397,23 @@ void SignalBinned(const char *cutSettings = "", const double roi_nsigma = 8., co
           //   background1 = (RooAbsPdf *)new RooExponential("background1", "background1", tofSignal, *slope1);
           //   model = new RooAddPdf("model", "model", RooArgList(/* *signal, */ *background1), RooArgList(/* nSignal, */ *nBackground1));
           // }
-          /* else */ if (ptMin < 1.19)
-          {
+          /* else */ /* if (ptMin < 1.19)
+          { */
             background1 = (RooAbsPdf *)new RooExponential("background1", "background1", tofSignal, *slope1);
             background2 = (RooAbsPdf *)new RooExponential("background2", "background2", tofSignal, *slope2);
             //background2 = (RooAbsPdf *)new RooGenericPdf("background2", "TMath::Power(x[0]+x[1],x[2])", RooArgList(tofSignal, par0, par1));
             nBackground2 = new RooRealVar("#it{N}_{Bkg,2}", "nBackground2", 0., 1., 1.e9);
             model = new RooAddPdf("model", "model", RooArgList(*background1 /* , *background2 */), RooArgList(*nBackground1 /* , *nBackground2 */));
-          }
+          /* }
           else //if (ptMin < 2.09)
           {
             background1 = (RooAbsPdf *)new RooExponential("background1", "background1", tofSignal, *slope1);
             background2 = (RooAbsPdf *)new RooExponential("background2", "background2", tofSignal, *slope2);
             //background2 = (RooAbsPdf *)new RooGenericPdf("background2", "TMath::Power(x[0]+x[1],x[2])", RooArgList(tofSignal, par0, par1));
-            nBackground2 = new RooRealVar("#it{N}_{Bkg,2}", "nBackground2", /* normRooFitTail2,  */ 1., 1.e9);
+            nBackground2 = new RooRealVar("#it{N}_{Bkg,2}", "nBackground2", // normRooFitTail2,  // 1., 1.e9);
             //nBackground2->setConstant();
             model = new RooAddPdf("model", "model", RooArgList(*background1, *background2), RooArgList(*nBackground1, *nBackground2));
-          }
+          } */
           //else  // if (ptMin < 3.79)
           /* {
             //mean2 = new RooRealVar("#mu_{2}", "mu2", -11., -3.5);
@@ -600,7 +597,7 @@ void SignalBinned(const char *cutSettings = "", const double roi_nsigma = 8., co
 
           // background integral
           double bkgIntegral = ((RooAbsPdf *)model->createIntegral(RooArgSet(tofSignal), RooFit::NormSet(RooArgSet(tofSignal)), RooFit::Range("signalRange")))->getVal();
-          double bkgIntegral_val = (nBackground1->getVal() + nBackground2->getVal()) * bkgIntegral;
+          double bkgIntegral_val = (nBackground1->getVal() /* + nBackground2->getVal() */) * bkgIntegral;
 
           double rawYield, rawYieldError, counts;
           if (binCounting)

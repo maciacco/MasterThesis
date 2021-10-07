@@ -16,7 +16,7 @@
 using utils::TTList;
 using namespace proton;
 
-void PlotEfficienciesDifferential(const char *cutSettings="", const char *outFileName = "EfficiencyPlotsDifferential", const char *histoNameDir = "", const char *outFileOption = "recreate", const char *inFile = "EfficiencyProton")
+void PlotEfficienciesDifferential(const char *cutSettings="", const char *outFileName = "EfficiencyPlotsDifferential", const char *histoNameDir = "", const char *outFileOption = "recreate", const char *inFile = "EfficiencyProton_LongMCTracks_new")
 {
   gStyle->SetOptStat(0000000000000);
 
@@ -48,7 +48,7 @@ void PlotEfficienciesDifferential(const char *cutSettings="", const char *outFil
     // efficiency comparison to MB
     TCanvas cEffCompare(Form("cEffCompare_%s", kAntimatterMatter[iMatt]), Form("cEffCompare_%s", kAntimatterMatterLabel[iMatt]));
     cEffCompare.SetTicks(1, 1);
-    TLegend lEffCompare(0.484241, 0.208511+0.47, 0.795129, 0.389362+0.47);
+    TLegend lEffCompare(0.483709, 0.568421, 0.854637, 0.833333);
     lEffCompare.SetHeader(Form("%s, ITS + TPC + TOF",kAntimatterMatterLabel[iMatt]));
     lEffCompare.SetTextSize(0.035);
     lEffCompare.SetBorderSize(0);
@@ -89,6 +89,7 @@ void PlotEfficienciesDifferential(const char *cutSettings="", const char *outFil
     }
     
     cEff.cd();
+    lEff.SetTextSize(0.05);
     lEff.Draw("same");
     cEff.Write();
     cEff.Print(Form("%s/efficiency_plots/%s.pdf", kPlotDir, cEff.GetName()));

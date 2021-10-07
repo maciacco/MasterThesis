@@ -4,10 +4,14 @@
 cutSettings="$1"
 binCountingFlag="$2"
 expFlag="$3" # 1->sum of 2 exp
+roiNsigma="$4"
 extractRatios=1
 
 fileData="AnalysisResults"
+fileDataEff="mc_20g7_likeData"
 fileMC="mc"
+signalNameEff="SignalProtonSysEff"
+spectraNameEff="SpectraProtonSysEff"
 signalName="SignalProtonSys"
 spectraName="SpectraProtonSys"
 EfficiencyHe3="EfficiencyProtonSys"
@@ -43,9 +47,23 @@ if [ $extractRatios -eq 1 ]; then
 .L Efficiency.cpp+
 .L Secondary.cpp+
 .L Spectra.cpp+
-SignalBinned("$cutSettings",$argumentSignal,"$fileData","$signalName","update")
-//Efficiency("$cutSettings","$fileMC","$EfficiencyHe3")
-//Secondary("$cutSettings","$fileData","$fileMC","$PrimaryHe3")
+SignalBinned("$cutSettings",$roiNsigma,$argumentSignal,"$fileData","$signalName","update")
+Secondary("$cutSettings","$fileData","$fileMC","$PrimaryHe3")
+.q
+EOF
+fi
+
+if [ $extractRatios -eq 1 ]; then
+    root -b -l <<EOF
+.L ../utils/RooGausExp.cxx+
+.L ../utils/RooDSCBShape.cxx+
+.L ../utils/RooGausDExp.cxx+
+.L SignalBinnedMC.cpp+
+.L EfficiencyNew.cpp+
+.L SecondaryMC.cpp+
+SignalBinnedMC("$cutSettings",$argumentSignal,"$fileDataEff","$signalNameEff","recreate")
+SecondaryMC("$cutSettings","$fileDataEff","$fileMC","$PrimaryHe3Eff")
+EfficiencyNew("$cutSettings","$fileMC","$EfficiencyHe3","$signalNameEff","$PrimaryHe3Eff")
 .q
 EOF
 fi

@@ -13,6 +13,8 @@
 
 using namespace proton;
 
+double roi_n_sigma[] = {7.5, 8., 8.5};
+
 void LaunchAnalyses(const bool analyse = false)
 {
   TStopwatch swatch;
@@ -40,28 +42,32 @@ void LaunchAnalyses(const bool analyse = false)
     auto fullCutSettings = Form("%s%d", cutSettings[cutVariable], cutIndex);
     std::cout << "fullCutSettings = " << fullCutSettings << std::endl;
 
-    for (int iBkg = 0; iBkg < 2; ++iBkg)
+    for (int iBkg = 1; iBkg < 2; ++iBkg)
     {
-      if (analyse)
-      {
-        gSystem->Exec(Form("bash ~/Code/MasterThesis/Proton_PbPb/scripts/LaunchAnalysisSignEffPrim.sh %s 0 %d", fullCutSettings, iBkg));
-      }
-
-      for (int iSgm = 0; iSgm < 2; ++iSgm)
-      {
-        // bool binCountingFlag = 1 - iBin;
-        bool sigmoidFlag = 1 - iSgm;
-        auto spectraNameId = Form("%s_%d_%d",fullCutSettings, iBkg, sigmoidFlag);
-        std::cout << "SigmoidCorrection = " << kBoolString[sigmoidFlag] << "; cutSettings = " << fullCutSettings << "..." << std::endl;
-        outFile << "SigmoidCorrection = " << kBoolString[sigmoidFlag] << "; cutSettings = " << fullCutSettings << "..."
-                << "\n";
-
+      for(int iNsigma = 0; iNsigma < 3; ++iNsigma) {
+        std::cout << "bkg selection = " << iBkg << "; roiNsigma = " << roi_n_sigma[iNsigma] << std::endl;
         if (analyse)
         {
-          gSystem->Exec(Form("bash ~/Code/MasterThesis/Proton_PbPb/scripts/LaunchAnalysisSpec.sh %s 0 %d %d %s", fullCutSettings, iBkg, sigmoidFlag, spectraNameId));
+          gSystem->Exec(Form("bash ~/Code/MasterThesis/Proton_PbPb/scripts/LaunchAnalysisSignEffPrim.sh %s 1 1 %f", fullCutSettings, roi_n_sigma[iNsigma]));
+        }
+
+        for (int iSgm = 0; iSgm < 2; ++iSgm)
+        {
+          // bool binCountingFlag = 1 - iBin;
+          bool sigmoidFlag = 1 - iSgm;
+          auto spectraNameId = Form("%s_%d_%d_%d",fullCutSettings, iBkg, sigmoidFlag, iNsigma);
+          std::cout << "SigmoidCorrection = " << kBoolString[sigmoidFlag] << "; cutSettings = " << fullCutSettings << "..." << std::endl;
+          outFile << "SigmoidCorrection = " << kBoolString[sigmoidFlag] << "; cutSettings = " << fullCutSettings << "..."
+                  << "\n";
+
+          if (analyse)
+          {
+            gSystem->Exec(Form("bash ~/Code/MasterThesis/Proton_PbPb/scripts/LaunchAnalysisSpec.sh %s 1 %d %d %s %f", fullCutSettings, iBkg, sigmoidFlag, spectraNameId, roi_n_sigma[iNsigma]));
+          }
         }
       }
     }
+
   }
 
   swatch.Stop();

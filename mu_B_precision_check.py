@@ -96,7 +96,7 @@ for i_cent, cent in enumerate(centrality_classes):
     h_mu_b_sigma.SetTitle(f"{cent[0]}-{cent[1]}%")
 
     # mu_b uncertainty histogram
-    h_mu_b_uncertainty = ROOT.TH1D(f"mu_b_uncertainty_{cent[0]}_{cent[1]}", ";#sigma(^{3} #bar{He}/^{3} He) / #sigma(#bar{p}/p);error(#mu_{B}) (MeV)",150, 0.5, 75.5)
+    h_mu_b_uncertainty = ROOT.TH1D(f"mu_b_uncertainty_{cent[0]}_{cent[1]}", ";#sigma(^{3}#bar{He}/^{3}He) / #sigma(#bar{p}/p);#sigma(#mu_{B}) (MeV)",150, 0.5, 75.5)
     h_mu_b_uncertainty.SetTitle(f"{cent[0]}-{cent[1]}%")
 
     for i_uncertainties in range(N_UNCERTAINTIES):
@@ -104,7 +104,7 @@ for i_cent, cent in enumerate(centrality_classes):
         # define mu_b histogram
         h_mu_b_tmp = ROOT.TH1D(f"mu_b_tmp_n_{i_uncertainties+1}_{cent[0]}_{cent[1]}", ";#mu_{B} (MeV);Entries",400,-4.,4.)
         h_mu_b_tmp.SetDrawOption("pe")
-        h_mu_b_tmp_error = ROOT.TH1D(f"mu_b_tmp_error_n_{i_uncertainties+1}_{cent[0]}_{cent[1]}", ";error(#mu_{B}) (MeV);Entries",24000,0.,0.8)
+        h_mu_b_tmp_error = ROOT.TH1D(f"mu_b_tmp_error_n_{i_uncertainties+1}_{cent[0]}_{cent[1]}", ";#sigma(#mu_{B}) (MeV);Entries",24000,0.,0.8)
         h_mu_b_tmp_error.SetDrawOption("pe")
         
         # deuteron ratio uncertainty (starting from that of he3)
@@ -172,6 +172,8 @@ for i_cent, cent in enumerate(centrality_classes):
     
     # write png (uncertainty)
     c = ROOT.TCanvas("c", "c")
+    h_mu_b_uncertainty.SetMarkerStyle(20)
+    h_mu_b_uncertainty.SetMarkerSize(0.8)
     h_mu_b_uncertainty.Draw()
     print_name = "./"+h_mu_b_uncertainty.GetName()+".pdf"
     c.Print(print_name)   

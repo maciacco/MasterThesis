@@ -4,6 +4,7 @@ import numpy as np
 
 path_he3 = './He3_PbPb/out'
 path_hyp = './Hypertriton_PbPb'
+path_proton = './Proton_PbPb/out'
 centrality_classes = [[0, 5], [5, 10], [30, 50]]
 centrality_colors = [ROOT.kOrange+7, ROOT.kAzure+4, ROOT.kTeal+4]
 
@@ -16,8 +17,10 @@ ROOT.gStyle.SetTextFont(44)
 
 file_he3 = ROOT.TFile.Open(path_he3 + '/SpectraHe3.root')
 file_hyp = ROOT.TFile.Open(path_hyp + '/Ratio.root')
+file_proton = ROOT.TFile.Open(path_proton + '/SpectraProtonGausDExpSignal1_LongMCTracks_newPrimary.root')
 file_he3_syst = ROOT.TFile.Open(path_he3 + '/SystematicsAll.root')
 file_hyp_syst = ROOT.TFile.Open(path_hyp + '/Systematics.root')
+file_proton_syst = ROOT.TFile.Open(path_proton + '/SystematicsAll.root')
 
 file_out = ROOT.TFile.Open('FinalPlot.root', 'recreate')
 
@@ -26,12 +29,15 @@ for i_cent, cent in enumerate(centrality_classes):
     # get histograms
     ratio_he3 = file_he3.Get(f'1.0_89_1_1_1/fRatio_{cent[0]}_{cent[1]}')
     ratio_hyp = file_hyp.Get(f'fRatio_{cent[0]}_{cent[1]}')
+    ratio_proton = file_proton.Get(f'fRatio_{cent[0]}_{cent[1]}')
     ratio_he3_distribution = file_he3_syst.Get(f'hist/fFitPar_{cent[0]}_{cent[1]}')
     ratio_hyp_distribution = file_hyp_syst.Get(f'fParameterDistribution_{cent[0]}_{cent[1]}')
+    ratio_proton_distribution = file_proton_syst.Get(f'hist/fFitPar_{cent[0]}_{cent[1]}')
 
     # get fit functions
     fit_he3 = ratio_he3.GetFunction("pol0")
     fit_hyp = ratio_hyp.GetFunction("pol0")
+    fit_proton = ratio_proton.GetFunction("pol0")
 
     # get ratios and errors
     ratio_he3 = fit_he3.GetParameter(0)
@@ -39,10 +45,14 @@ for i_cent, cent in enumerate(centrality_classes):
 
     ratio_hyp = fit_hyp.GetParameter(0)
     ratio_hyp_err = fit_hyp.GetParError(0)
+    
+    ratio_proton = fit_proton.GetParameter(0)
+    ratio_proton_err = fit_proton.GetParError(0)
 
     # systematic error
     syst_he3 = ratio_he3_distribution.GetRMS()
     syst_hyp = ratio_hyp_distribution.GetRMS()
+    syst_proton = ratio_proton_distribution.GetRMS()
 
     # final plot
     ratios_vs_b = ROOT.TH1D(f'fRatio_vs_b_{cent[0]}_{cent[1]}', ';B+S/3; Antimatter / Matter', 10, -0.5, 9.5)
@@ -50,6 +60,8 @@ for i_cent, cent in enumerate(centrality_classes):
     ratios_vs_b.SetBinError(10, ratio_he3_err)
     ratios_vs_b.SetBinContent(9, ratio_hyp)
     ratios_vs_b.SetBinError(9, ratio_hyp_err)
+    ratios_vs_b.SetBinContent(4, ratio_proton)
+    ratios_vs_b.SetBinError(4, ratio_proton_err)
 
     # set labels
     a = ratios_vs_b.GetXaxis()
@@ -69,12 +81,15 @@ for i_cent, cent in enumerate(centrality_classes):
     ratios_vs_b.GetYaxis().SetRangeUser(0.6, 1.2)
 
     ratios_vs_b_graph = ROOT.TGraphErrors(ratios_vs_b)
-    for _ in range(8):
+    for _ in range(3):
         ratios_vs_b_graph.RemovePoint(0)
+    for _ in range(4):
+        ratios_vs_b_graph.RemovePoint(1)
 
     # set systematic errors
-    ratios_vs_b_graph.SetPointError(0, 0.5, syst_hyp)
-    ratios_vs_b_graph.SetPointError(1, 0.5, syst_he3)
+    ratios_vs_b_graph.SetPointError(1, 0.5, syst_hyp)
+    ratios_vs_b_graph.SetPointError(2, 0.5, syst_he3)
+    ratios_vs_b_graph.SetPointError(0, 0.5, syst_proton)
 
     ratios_vs_b_graph.SetFillColor(ROOT.kWhite)
     ratios_vs_b_graph.SetFillStyle(3000)
@@ -83,19 +98,22 @@ for i_cent, cent in enumerate(centrality_classes):
 
     # define histogram for fit
     ratios_vs_b_fit = ROOT.TH1D(ratios_vs_b)
+    stat_proton = ratios_vs_b.GetBinError(4)
     stat_hyp = ratios_vs_b.GetBinError(9)
     stat_he3 = ratios_vs_b.GetBinError(10)
+    ratios_vs_b_fit.SetBinError(4, np.sqrt(syst_proton*syst_proton+stat_proton*stat_proton))
     ratios_vs_b_fit.SetBinError(9, np.sqrt(syst_hyp*syst_hyp+stat_hyp*stat_hyp))
     ratios_vs_b_fit.SetBinError(10, np.sqrt(syst_he3*syst_he3+stat_he3*stat_he3))
 
     # fit to data (exponential)
     fit_expo = ROOT.TF1(f"fit_expo_{cent[0]}_{cent[1]}", "TMath::Exp(-2./3.*[0]*x)", -0.5, 9.5)
     fit_expo.SetNpx(10000)
-    ratios_vs_b_fit.Fit(f"fit_expo_{cent[0]}_{cent[1]}")
+    ratios_vs_b_fit.Fit(f"fit_expo_{cent[0]}_{cent[1]}")#,"R","",6.5,9.5)
     
     # chi2 and fit parameter
     formatted_chi2 = "{:.2f}".format(fit_expo.GetChisquare())
     print(f"chi2 = {formatted_chi2}")
+    print(f"prob = {fit_expo.GetProb()}")
     fit_parameter = fit_expo.GetParameter(0)
     fit_parameter_error = fit_expo.GetParError(0)
     print(f"mu_B / T = {fit_parameter} +/- {fit_parameter_error}")

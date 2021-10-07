@@ -175,7 +175,8 @@ namespace proton
   // DCAxy binning
   const int kNDCABinsMedium = 26;
   const double kDCABinsMedium[kNDCABinsMedium + 1] = {-1.30f, -1.10f, -0.90f, -0.70f, -0.50f, -0.35f, -0.25f, -0.15f, -0.10f, -0.08f, -0.06f, -0.04f, -0.02f, -0.0f, 0.02f, 0.04f, 0.06f, 0.08f, 0.10f, 0.15f, 0.25f, 0.35f, 0.50f, 0.70f, 0.90f, 1.10f, 1.30f};
-
+  const int kNDCABinsLarge = 18;
+  const double kDCABinsLarge[kNDCABinsLarge + 1] = {-1.30f, -1.10f, -0.90f, -0.70f, -0.50f, -0.35f, -0.20f, -0.12f, -0.06f, 0.00f, 0.06f, 0.12f, 0.20f, 0.35f, 0.50f, 0.70f, 0.90f, 1.10f, 1.30f};
 
   // systematics variations
   const int kNCutDCAz = 4;

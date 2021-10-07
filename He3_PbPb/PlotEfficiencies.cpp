@@ -40,7 +40,7 @@ void PlotEfficiencies(const float cutDCAz = 1.f, const int cutTPCcls = 89, const
   {
     TCanvas cEff(Form("cEff_%s", kAntimatterMatter[iMatt]), Form("cEff_%s", kAntimatterMatterLabel[iMatt]));
     cEff.SetTicks(1, 1);
-    TLegend lEff(0.484241, 0.208511, 0.795129, 0.389362);
+    TLegend lEff(0.537594, 0.222807, 0.941103, 0.494737);
     lEff.SetHeader(Form("%s, ITS + TPC",kAntimatterMatterLabel[iMatt]));
     lEff.SetTextSize(0.035);
     lEff.SetBorderSize(0);
@@ -62,6 +62,7 @@ void PlotEfficiencies(const float cutDCAz = 1.f, const int cutTPCcls = 89, const
       lEff.AddEntry(fEff[iCent], Form("%0.f - %0.f %%", kCentBinsLimitsHe3[iCent][0], kCentBinsLimitsHe3[iCent][1]));
     }
     lEff.Draw("same");
+    lEff.SetTextSize(0.05);
     cEff.Write();
     cEff.Print(Form("%s/efficiency_plots/%s.pdf", kPlotDir, cEff.GetName()));
   }
