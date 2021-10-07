@@ -64,7 +64,7 @@ TRAINING = not args.application
 PLOT_DIR = 'plots'
 MAKE_PRESELECTION_EFFICIENCY = args.eff
 MAKE_FEATURES_PLOTS = False
-MAKE_TRAIN_TEST_PLOT = args.train
+MAKE_TRAIN_TEST_PLOT = True
 OPTIMIZE = False
 OPTIMIZED = False
 TRAIN = args.train
@@ -209,15 +209,15 @@ if TRAINING:
                         os.mkdir(f'{PLOT_DIR}/train_test_out')
                     plot_utils.plot_output_train_test(model_hdl, train_test_data_cent,
                                                       logscale=True, density=True, labels=leg_labels)
-                    plt.savefig(f'{PLOT_DIR}/train_test_out/{bin}_out')
+                    plt.savefig(f'{PLOT_DIR}/train_test_out/{bin}_out.pdf')
 
                     plot_utils.plot_feature_imp(train_test_data_cent[0], train_test_data_cent[1], model_hdl)
-                    plt.savefig(f'{PLOT_DIR}/train_test_out/feature_imp_training_{bin}')
+                    plt.savefig(f'{PLOT_DIR}/train_test_out/feature_imp_training_{bin}.pdf')
                     plot_utils.plot_roc_train_test(
                         train_test_data_cent[3],
                         test_y_score, train_test_data_cent[1],
                         train_y_score, labels=leg_labels)
-                    plt.savefig(f'{PLOT_DIR}/train_test_out/roc_train_test_{bin}')
+                    plt.savefig(f'{PLOT_DIR}/train_test_out/roc_train_test_{bin}.pdf')
                     plt.close('all')
 
                 if COMPUTE_SCORES_FROM_EFF:

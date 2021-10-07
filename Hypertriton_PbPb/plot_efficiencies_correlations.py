@@ -63,7 +63,7 @@ DUMP_HYPERPARAMS = False
 TRAINING = not args.application
 PLOT_DIR = 'plots'
 MAKE_PRESELECTION_EFFICIENCY = args.eff
-MAKE_FEATURES_PLOTS = False
+MAKE_FEATURES_PLOTS = True
 MAKE_TRAIN_TEST_PLOT = args.train
 OPTIMIZE = False
 OPTIMIZED = False
@@ -187,16 +187,22 @@ if TRAINING:
             os.mkdir(f'{PLOT_DIR}/features')
 
         leg_labels = ['background', 'signal']
-        plot_utils.plot_distr(
+        plot_distr = plot_utils.plot_distr(
             [background_tree_handler, signal_tree_handler],
-            TRAINING_COLUMNS_LIST, bins=40, labels=leg_labels, log=True, density=True, figsize=(12, 7),
-            alpha=0.3, grid=False)
-        plt.subplots_adjust(left=0.06, bottom=0.06, right=0.99, top=0.96, hspace=0.55, wspace=0.55)
-        plt.savefig(f'{PLOT_DIR}/features/FeaturePlots')
-        plot_utils.plot_corr([background_tree_handler], TRAINING_COLUMNS_LIST, ['background'])
-        plt.savefig(f'{PLOT_DIR}/features/BackgroundCorrelationMatrix')
-        plot_utils.plot_corr([signal_tree_handler], TRAINING_COLUMNS_LIST, ['signal'])
-        plt.savefig(f'{PLOT_DIR}/features/SignalCorrelationMatrix')
+            TRAINING_COLUMNS_LIST, bins=40, labels=leg_labels, log=True, density=True, figsize=(10, 12),
+            alpha=0.5, grid=False)
+        plt.subplots_adjust(left=0.06, bottom=0.06, right=0.99, top=0.96, hspace=0.50, wspace=0.50)
+        plt.tight_layout()
+        plt.savefig(f'{PLOT_DIR}/features/FeaturePlots.pdf')
+        bkg_corr = plot_utils.plot_corr([background_tree_handler], TRAINING_COLUMNS_LIST, ['Background'])
+        bkg_corr.set_size_inches(6,6)
+        plt.subplots_adjust(left=0.1, bottom=0.06, right=0.99, top=0.96, hspace=0.55, wspace=0.55)
+        plt.tight_layout()
+        plt.savefig(f'{PLOT_DIR}/features/BackgroundCorrelationMatrix.pdf')
+        sig_corr = plot_utils.plot_corr([signal_tree_handler], TRAINING_COLUMNS_LIST, ['Signal'])
+        sig_corr.set_size_inches(6,6)
+        plt.tight_layout()
+        plt.savefig(f'{PLOT_DIR}/features/SignalCorrelationMatrix.pdf')
         plt.close('all')
 
         ###########################################################

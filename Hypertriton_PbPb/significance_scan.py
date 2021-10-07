@@ -12,6 +12,8 @@ import uproot
 import yaml
 from helpers import significance_error, expected_signal
 
+plt.rcParams.update({'font.size': 13})
+
 SPLIT = True
 MAX_EFF = 1.00
 
@@ -153,7 +155,7 @@ for split in SPLIT_LIST:
                 handles, labels = fig.gca().get_legend_handles_labels()
                 order = [2, 3, 0, 1]
                 plt.legend([handles[idx] for idx in order], [labels[idx] for idx in order], loc='upper right')
-                plt.savefig(f'plots/significance_scan/{bin}/{formatted_eff}_{bin}.png')
+                plt.savefig(f'plots/significance_scan/{bin}/{formatted_eff}_{bin}.pdf')
                 plt.close('all')
 
             eff_array_reduced = eff_array[40:]
@@ -190,7 +192,7 @@ for split in SPLIT_LIST:
                 plt.xlim(0.1, MAX_EFF-0.01)
             plt.ylim(0.3, up_limit.max()+0.3)
 
-            plt.savefig(f'plots/significance_scan/{bin}.png')
+            plt.savefig(f'plots/significance_scan/{bin}.pdf')
             plt.close('all')
 
             eff_cut_dict[bin] = cut_eff[0]
