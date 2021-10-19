@@ -22,24 +22,31 @@ void LaunchAnalyses(const bool analyse = false)
   std::ofstream outFile;
   outFile.open("ProcessedFiles.dat");
 
-  for (int iCutSettings = 0; iCutSettings < kNCutDCAz + kNTPCPidSigmas + kNCutTPCClusters; ++iCutSettings)
+  auto tmpNCutDCAz = kNCutDCAz-1;
+  auto tmpNTPCPidSigmas = kNTPCPidSigmas-1;
+  auto tmpNCutTPCClusters = kNCutTPCClusters-1;
+
+  for (int iCutSettings = -1; iCutSettings < tmpNCutDCAz + tmpNTPCPidSigmas + tmpNCutTPCClusters; ++iCutSettings)
   {
     char hname[100];
 
     // bool binCountingFlag = 1 - iBin;
     int cutVariable = 0;
     int cutIndex = iCutSettings;
-    if (iCutSettings >= kNCutDCAz && iCutSettings < (kNCutDCAz + kNTPCPidSigmas))
-    {
-      cutVariable = 1;
-      cutIndex -= kNCutDCAz;
+    char *fullCutSettings = Form("999");
+    if (iCutSettings > -1) {
+      if (iCutSettings >= tmpNCutDCAz && iCutSettings < (tmpNCutDCAz + tmpNTPCPidSigmas))
+      {
+        cutVariable = 1;
+        cutIndex -= tmpNCutDCAz;
+      }
+      else if (iCutSettings >= (tmpNCutDCAz + tmpNTPCPidSigmas))
+      {
+        cutVariable = 2;
+        cutIndex -= (tmpNCutDCAz + tmpNTPCPidSigmas);
+      }
+      fullCutSettings = Form("%s%d", cutSettings[cutVariable], cutIndex);
     }
-    else if (iCutSettings >= (kNCutDCAz + kNTPCPidSigmas))
-    {
-      cutVariable = 2;
-      cutIndex -= (kNCutDCAz + kNTPCPidSigmas);
-    }
-    auto fullCutSettings = Form("%s%d", cutSettings[cutVariable], cutIndex);
     std::cout << "fullCutSettings = " << fullCutSettings << std::endl;
 
     for (int iBkg = 1; iBkg < 2; ++iBkg)
@@ -55,7 +62,9 @@ void LaunchAnalyses(const bool analyse = false)
         {
           // bool binCountingFlag = 1 - iBin;
           bool sigmoidFlag = 1 - iSgm;
-          auto spectraNameId = Form("%s_%d_%d_%d",fullCutSettings, iBkg, sigmoidFlag, iNsigma);
+          auto tmpFullCutSettings = fullCutSettings;
+          if (iCutSettings == -1) tmpFullCutSettings = Form("");
+          auto spectraNameId = Form("%s_%d_%d_%d",tmpFullCutSettings, iBkg, sigmoidFlag, iNsigma);
           std::cout << "SigmoidCorrection = " << kBoolString[sigmoidFlag] << "; cutSettings = " << fullCutSettings << "..." << std::endl;
           outFile << "SigmoidCorrection = " << kBoolString[sigmoidFlag] << "; cutSettings = " << fullCutSettings << "..."
                   << "\n";

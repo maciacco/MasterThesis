@@ -62,8 +62,10 @@ void Systematics(const int points = kNPoints, const bool cutVar = true, const bo
         {
           cutIndex = gRandom->Rndm() * kNTPCPidSigmas;
         }
-        else cutIndex = gRandom->Rndm() * kNCutTPCClusters;
-
+        else
+        {
+          cutIndex = gRandom->Rndm() * kNCutTPCClusters;
+        }
         // extract background flag
         int bkgFlag = 1;// gRandom->Rndm() * 2;
 
@@ -78,8 +80,21 @@ void Systematics(const int points = kNPoints, const bool cutVar = true, const bo
 
         int iNsigma = gRandom->Rndm() * 3;
 
-        auto fullCutSettingsSigm = Form("%s%d_%d_%d_%d", cutSettings[cutVariable], cutIndex, bkgFlag, sigmoidFlagRnd, iNsigma);
+        auto tmpCutSettings = cutSettings[cutVariable];
+        auto tmpCutIndex = Form("%d",cutIndex);
+        if ( (cutVariable==0 && cutIndex==2) || (cutVariable==1 && cutIndex==0) || (cutVariable==2 && cutIndex==2))
+        {
+          tmpCutIndex = Form("");
+          tmpCutSettings = Form("");
+        }
+        if ( (cutIndex > 2 && (cutVariable == 2 || cutVariable == 0)) || (cutIndex > 0 && cutVariable == 1))
+        {
+          cutIndex--;
 
+          tmpCutIndex = Form("%d",cutIndex);
+        }
+        auto fullCutSettingsSigm = Form("%s%s_%d_%d_%d", tmpCutSettings, tmpCutIndex, bkgFlag, sigmoidFlagRnd, iNsigma);
+        std::cout<<"___fullCutSettings: "<<fullCutSettingsSigm<<std::endl;
         TH1D *h = (TH1D *)specFile->Get(Form("%s/fRatio_%.0f_%.0f", fullCutSettingsSigm, kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]));
         fRatio.SetBinContent(iPtBin, h->GetBinContent(h->FindBin(fRatio.GetBinCenter(iPtBin))));
         fRatio.SetBinError(iPtBin, h->GetBinError(h->FindBin(fRatio.GetBinCenter(iPtBin))));
@@ -91,7 +106,7 @@ void Systematics(const int points = kNPoints, const bool cutVar = true, const bo
       auto fit = fRatio.Fit(&fitFunc, "QS");
 
       int ndf = 19;
-      if (fit->Status() == 0 && fit->Prob() > 0.005 && fit->Prob() < 0.995 && fit->Ndf() >= ndf)
+      if (fit->Status() == 0 && (fit->Chi2()/fit->Ndf()) < 3. && fit->Ndf() >= ndf)
       { // check chi2
         fFitPar.Fill(fitFunc.GetParameter(0));
         fProb.Fill(fitFunc.GetProb());

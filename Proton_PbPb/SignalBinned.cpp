@@ -46,7 +46,6 @@ const double kNSigma = 3; // define interval for bin counting
 
 void SignalBinned(const char *cutSettings = "", const double roi_nsigma = 8., const bool binCounting = false, const int bkg_shape = 1, const char *inFileDat = "AnalysisResults", const char *outFileName = "SignalProton", const char *outFileOption = "recreate", const bool extractSignal = true, const bool useDSCB = false, const bool binCountingNoFit = false)
 {
-
   double roi_nsigma_up = roi_nsigma;
   double roi_nsigma_down = roi_nsigma;
 
@@ -61,12 +60,12 @@ void SignalBinned(const char *cutSettings = "", const double roi_nsigma = 8., co
   gStyle->SetOptStat(0);
   gStyle->SetOptFit(1111);
 
-  TFile *outFile = TFile::Open(TString::Format("%s/%s.root", kOutDir, outFileName), outFileOption); // output file
-  if (outFile->GetDirectory(Form("%s_%d_%d", cutSettings, binCounting, bkg_shape)))
-    return;
   int iNsigma = 0;
   if (roi_nsigma > 7.8 && roi_nsigma < 8.1) iNsigma = 1;
   else if (roi_nsigma > 8.1) iNsigma = 2; 
+  TFile *outFile = TFile::Open(TString::Format("%s/%s.root", kOutDir, outFileName), outFileOption); // output file
+  if (outFile->GetDirectory(Form("%s_%d_%d_%d", cutSettings, binCounting, bkg_shape,iNsigma)))
+    return;
   TDirectory *dirOutFile = outFile->mkdir(Form("%s_%d_%d_%d", cutSettings, binCounting, bkg_shape, iNsigma));
   //TFile *dataFile = TFile::Open(TString::Format("%s/%s_largeNsigma.root", kDataDir, inFileDat)); // open data TFile
   TFile *dataFile = TFile::Open(TString::Format("%s/%s_largeNsigma.root", kDataDir, inFileDat)); // open data TFile

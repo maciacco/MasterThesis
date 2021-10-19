@@ -33,6 +33,9 @@ else
 fi
 
 # launch analysis
+if (($cutSettings==999)); then
+    cutSettings=""
+fi
 
 echo $cutSettings
 argumentSignal="$binCountingFlag,$expFlag"

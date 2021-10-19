@@ -179,12 +179,12 @@ namespace proton
   const double kDCABinsLarge[kNDCABinsLarge + 1] = {-1.30f, -1.10f, -0.90f, -0.70f, -0.50f, -0.35f, -0.20f, -0.12f, -0.06f, 0.00f, 0.06f, 0.12f, 0.20f, 0.35f, 0.50f, 0.70f, 0.90f, 1.10f, 1.30f};
 
   // systematics variations
-  const int kNCutDCAz = 4;
-  const double kCutDCAz[] = {0.5, 0.75, 1.5, 2.0};
-  const int kNCutTPCClusters = 4;
-  const double kCutTPCClusters[] = {59., 64., 74., 79.};
-  const int kNTPCPidSigmas = 2;
-  const double kTPCPidSigmas[] = {3.25, 3.50};
+  const int kNCutDCAz = 5;
+  const double kCutDCAz[] = {0.5, 0.75, 1.0, 1.5, 2.0};
+  const int kNCutTPCClusters = 5;
+  const double kCutTPCClusters[] = {59., 64., 69., 74., 79.};
+  const int kNTPCPidSigmas = 3;
+  const double kTPCPidSigmas[] = {3.0, 3.25, 3.50};
   const char *cutSettings[] = {"dcaz", "pid", "tpc"};
 }
 
