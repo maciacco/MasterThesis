@@ -149,11 +149,11 @@ void SignalBinned(const char *cutSettings = "", const double roi_nsigma = 8., co
         // project histogram
         std::cout << "Pt bins: min=" << ptMin << "; max=" << ptMax << "; indexMin=" << pTbinsIndexMin << "; indexMax=" << pTbinsIndexMax << "; centralityBinMin=" << centBinMin << "; centralityBinMax=" << centBinMax << std::endl;
         TH1D *tofSignalProjection = fTOFSignal->ProjectionZ(Form("f%sTOFSignal_%.0f_%.0f_%.2f_%.2f", kAntimatterMatter[iMatt], centMin, centMax, fTOFSignal->GetYaxis()->GetBinLowEdge(pTbinsIndexMin), fTOFSignal->GetYaxis()->GetBinUpEdge(pTbinsIndexMax)), centBinMin, centBinMax, pTbinsIndexMin, pTbinsIndexMax);
-        tofSignalProjection->Rebin(1);
+        //tofSignalProjection->Rebin(1);
 
         // project histogram (antimatter + matter)
         TH1D *tofSignalProjectionAll = fTOFSignalAll->ProjectionZ(Form("f%sTOFSignalAll_%.0f_%.0f_%.2f_%.2f", kAntimatterMatter[iMatt], centMin, centMax, fTOFSignalAll->GetYaxis()->GetBinLowEdge(pTbinsIndexMin), fTOFSignalAll->GetYaxis()->GetBinUpEdge(pTbinsIndexMax)), centBinMin, centBinMax, pTbinsIndexMin, pTbinsIndexMax);
-        tofSignalProjectionAll->Rebin(1);
+       // tofSignalProjectionAll->Rebin(1);
 
         // limits
         double nSigmaLeft = -20;
@@ -226,7 +226,7 @@ void SignalBinned(const char *cutSettings = "", const double roi_nsigma = 8., co
           minNsigma = 13, maxNsigma = 17;
         if (ptMin > 3.16)
           minNsigma = 13, maxNsigma = 15;
-        TF1 expMismatch("expMismatch", "expo", nSigmaLeft, kTOFnSigmaMax);
+        /* TF1 expMismatch("expMismatch", "expo", nSigmaLeft, kTOFnSigmaMax);
         tofSignalProjectionAll->Fit("expMismatch", "QL+", "", minNsigma, maxNsigma);
         expMismatch.SetLineColor(kRed);
         double expMismatchDecayConstant = expMismatch.GetParameter(1);
@@ -248,11 +248,11 @@ void SignalBinned(const char *cutSettings = "", const double roi_nsigma = 8., co
         normRooFit2 /= tofSignalProjectionAll->GetBinWidth(2);
         std::cout << "binWidth = " << tofSignalProjectionAll->GetBinWidth(2) << "; fit parameter = " << expMismatch2.GetParameter(1) << "; normalisation = " << normRooFit2 << std::endl;
         // ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
+ */
         // PRELIMINARY FIT :: POWER LAW BACKGROUND (K)
         // fit K tail (all)
         double minNsigmaTail = nSigmaLeft, maxNsigmaTail = nSigmaLeft + 1.2;
-        TF1 powerLawKtail("powerLawKtail", "[0]*TMath::Power(x+[1],[2])+expo(3)", -20, kTOFnSigmaMax);
+        /* TF1 powerLawKtail("powerLawKtail", "[0]*TMath::Power(x+[1],[2])+expo(3)", -20, kTOFnSigmaMax);
         powerLawKtail.SetParLimits(0, 1., 1.e9);
         powerLawKtail.SetParameter(0, 1.e7);
         powerLawKtail.SetParLimits(1, 0., 50.);
@@ -265,7 +265,7 @@ void SignalBinned(const char *cutSettings = "", const double roi_nsigma = 8., co
         double normRooFitTail = 5.e7;
         normRooFitTail = powerLawKtail.Integral(nSigmaLeft, maxNsigma);
         normRooFitTail /= tofSignalProjectionAll->GetBinWidth(2);
-        normRooFitTail -= normRooFit;
+        normRooFitTail -= normRooFit; */
 
         // fit K tail (split)
         /* TF1 powerLawKtail2("powerLawKtail2","[0]*TMath::Power(x+[1],[2])+expo(3)",-20.,20.);
@@ -304,15 +304,15 @@ void SignalBinned(const char *cutSettings = "", const double roi_nsigma = 8., co
         else if (ptMin < 3.01) extendNsigmaLeft = 1.;
         else if (ptMin > 3.29) extendNsigmaLeft = -1.; */
 
-        TF1 powerLawKtail2("powerLawKtail2", "expo(0)+expo(2)", -20., 20.);
+        /* TF1 powerLawKtail2("powerLawKtail2", "expo(0)+expo(2)", -20., 20.);
         powerLawKtail2.SetParLimits(1, -2., -0.5);
         powerLawKtail2.FixParameter(2, expMismatch2.GetParameter(0));
         powerLawKtail2.FixParameter(3, expMismatch2.GetParameter(1));
         powerLawKtail2.SetLineColor(kGreen);
-        tofSignalProjection->Fit("powerLawKtail2", "QRL+", "", minNsigmaTail, maxNsigmaTail);
-        double normRooFitTail2 = 5.e7;
+        tofSignalProjection->Fit("powerLawKtail2", "QRL+", "", minNsigmaTail, maxNsigmaTail); */
+        double normRooFitTail2 = 5.e7;/* 
         normRooFitTail2 = powerLawKtail2.Integral(nSigmaLeft, maxNsigma);
-        normRooFitTail2 /= tofSignalProjection->GetBinWidth(2);
+        normRooFitTail2 /= tofSignalProjection->GetBinWidth(2); */
 
         //RooRealVar tofSignal("tofSignal", "n#sigma_{p}", kTOFnSigmaMin, kTOFnSigmaMax, "a.u.");
         RooRealVar tofSignal("tofSignal", "n#sigma_{p}", nSigmaLeft, maxNsigma, "a.u.");
@@ -378,8 +378,10 @@ void SignalBinned(const char *cutSettings = "", const double roi_nsigma = 8., co
         RooAddPdf *model;
         RooRealVar nSignal("N_{sig}", "nSignal", 1., 1.e8);
 
-        slope1 = new RooRealVar("#tau_{1}", "slope1", /* expMismatchDecayConstant2, */ -0.05 - 0.1, -0.0001);
-        slope2 = new RooRealVar("#tau_{2}", "slope2", /* powerLawKtail2.GetParameter(1) */ /* -1.0,  */0.955,  -1.100, -0.850);
+        //slope1 = new RooRealVar("#tau_{1}", "slope1", /* expMismatchDecayConstant2, */ -0.05 - 0.1, -0.0001);
+        slope1 = new RooRealVar("#tau_{1}", "slope1", /* expMismatchDecayConstant2, */ -10., 10.);
+        //slope2 = new RooRealVar("#tau_{2}", "slope2", /* powerLawKtail2.GetParameter(1) */ /* -1.0,  */0.955,  -1.100, -0.850);
+        slope2 = new RooRealVar("#tau_{2}", "slope2", /* powerLawKtail2.GetParameter(1) */ /* -1.0,  *//* -0.955, */  -5., 0.);
         //std::cout << "slope1 value = " << slope1->getVal() << std::endl;
         //slope2->setConstant(true);
         nBackground1 = new RooRealVar("#it{N}_{Bkg,1}", "nBackground1", /* normRooFit2, */ 1., 1.e7);
@@ -399,7 +401,7 @@ void SignalBinned(const char *cutSettings = "", const double roi_nsigma = 8., co
           //   background1 = (RooAbsPdf *)new RooExponential("background1", "background1", tofSignal, *slope1);
           //   model = new RooAddPdf("model", "model", RooArgList(/* *signal, */ *background1), RooArgList(/* nSignal, */ *nBackground1));
           // }
-          /* else */ if (ptMin < 1.19)
+          /* else */ if (ptMin < 1.39)
           {
             background1 = (RooAbsPdf *)new RooExponential("background1", "background1", tofSignal, *slope1);
             background2 = (RooAbsPdf *)new RooExponential("background2", "background2", tofSignal, *slope2);

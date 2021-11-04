@@ -15,6 +15,9 @@
 using utils::TTList;
 using namespace proton;
 
+double protonCorrectionPt(double pt){return 2-0.99876*TMath::Power(pt,0.00036);};
+double antiProtonCorrectionPt(double pt){return 1.03176*TMath::Power(pt,-0.01249);};
+
 void Spectra(const char *cutSettings = "", const double roi_nsigma = 8., const bool binCounting = false, const int bkg_shape = 1, const bool sigmoidCorrection = true, const char *histoNameDir = ".", const char *outFileName = "SpectraProton1", const char *outFileOption = "recreate", const char *dataFile = "AnalysisResults", const char *signalFile = "SignalProton", const char *effFile = "EfficiencyProton", const char *primFile = "PrimaryProton", const bool useEfficiencyMB = false)
 {
   std::cout << "cutSettings = " << cutSettings << std::endl;
@@ -114,13 +117,15 @@ void Spectra(const char *cutSettings = "", const double roi_nsigma = 8., const b
     int pTbinMax = 24;
     for (int iPtBin = 5; iPtBin < pTbinMax + 1; ++iPtBin)
     {
+      double antiProtonCorrection = antiProtonCorrectionPt(fSpectra[0]->GetBinCenter(iPtBin));
+      double protonCorrection = protonCorrectionPt(fSpectra[0]->GetBinCenter(iPtBin));
       double antiSpec = fSpectra[0]->GetBinContent(iPtBin);
       double spec = fSpectra[1]->GetBinContent(iPtBin);
       double antiSpecErr = fSpectra[0]->GetBinError(iPtBin);
       double specErr = fSpectra[1]->GetBinError(iPtBin);
       if (spec > 1.e-8 && antiSpec > 1.e-8)
       {
-        fRatio[iCent]->SetBinContent(iPtBin, antiSpec / spec);
+        fRatio[iCent]->SetBinContent(iPtBin, antiSpec / spec * protonCorrection / antiProtonCorrection);
         fRatio[iCent]->SetBinError(iPtBin, antiSpec / spec * TMath::Sqrt(antiSpecErr * antiSpecErr / antiSpec / antiSpec + specErr * specErr / spec / spec));
       }
     }

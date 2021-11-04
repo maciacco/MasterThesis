@@ -51,8 +51,10 @@ for i_cent, cent in enumerate(centrality_classes):
 
     # systematic error
     syst_he3 = ratio_he3_distribution.GetRMS()
+    syst_he3 = np.sqrt(syst_he3*syst_he3+0.00294*0.00294*ratio_he3*ratio_he3+0.02088*0.02088*ratio_he3*ratio_he3)
     syst_hyp = ratio_hyp_distribution.GetRMS()
     syst_proton = ratio_proton_distribution.GetRMS()
+    syst_proton = np.sqrt(syst_proton*syst_proton+0.00557*0.00557*ratio_proton*ratio_proton+0.01788*0.01788*ratio_proton*ratio_proton)
 
     # final plot
     ratios_vs_b = ROOT.TH1D(f'fRatio_vs_b_{cent[0]}_{cent[1]}', ';B+S/3; Antimatter / Matter', 10, -0.5, 9.5)

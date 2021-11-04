@@ -220,7 +220,7 @@ void SignalBinnedMC(const char *cutSettings = "", const bool binCounting = false
         // PRELIMINARY FIT :: MISMATCH
         // extract mismatch decay constant (all)
         double minNsigma = 15., maxNsigma = 20.;
-        if (ptMin > 3.11)
+       /*  if (ptMin > 3.11)
           minNsigma = 13, maxNsigma = 17;
         if (ptMin > 3.16)
           minNsigma = 13, maxNsigma = 15;
@@ -248,9 +248,9 @@ void SignalBinnedMC(const char *cutSettings = "", const bool binCounting = false
         // ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
         // PRELIMINARY FIT :: POWER LAW BACKGROUND (K)
-        // fit K tail (all)
+        // fit K tail (all)*/
         double minNsigmaTail = nSigmaLeft, maxNsigmaTail = nSigmaLeft + 1.2;
-        TF1 powerLawKtail("powerLawKtail", "[0]*TMath::Power(x+[1],[2])+expo(3)", -20, kTOFnSigmaMax);
+       /* TF1 powerLawKtail("powerLawKtail", "[0]*TMath::Power(x+[1],[2])+expo(3)", -20, kTOFnSigmaMax);
         powerLawKtail.SetParLimits(0, 1., 1.e9);
         powerLawKtail.SetParameter(0, 1.e7);
         powerLawKtail.SetParLimits(1, 0., 50.);
@@ -263,7 +263,7 @@ void SignalBinnedMC(const char *cutSettings = "", const bool binCounting = false
         double normRooFitTail = 5.e7;
         normRooFitTail = powerLawKtail.Integral(nSigmaLeft, maxNsigma);
         normRooFitTail /= tofSignalProjectionAll->GetBinWidth(2);
-        normRooFitTail -= normRooFit;
+        normRooFitTail -= normRooFit; */
 
         // fit K tail (split)
         /* TF1 powerLawKtail2("powerLawKtail2","[0]*TMath::Power(x+[1],[2])+expo(3)",-20.,20.);
@@ -302,15 +302,15 @@ void SignalBinnedMC(const char *cutSettings = "", const bool binCounting = false
         else if (ptMin < 3.01) extendNsigmaLeft = 1.;
         else if (ptMin > 3.29) extendNsigmaLeft = -1.; */
 
-        TF1 powerLawKtail2("powerLawKtail2", "expo(0)+expo(2)", -20., 20.);
+        /* TF1 powerLawKtail2("powerLawKtail2", "expo(0)+expo(2)", -20., 20.);
         powerLawKtail2.SetParLimits(1, -2., -0.5);
         powerLawKtail2.FixParameter(2, expMismatch2.GetParameter(0));
         powerLawKtail2.FixParameter(3, expMismatch2.GetParameter(1));
         powerLawKtail2.SetLineColor(kGreen);
         tofSignalProjection->Fit("powerLawKtail2", "QRL+", "", minNsigmaTail, maxNsigmaTail);
-        double normRooFitTail2 = 5.e7;
+        */ double normRooFitTail2 = 5.e7;/* 
         normRooFitTail2 = powerLawKtail2.Integral(nSigmaLeft, maxNsigma);
-        normRooFitTail2 /= tofSignalProjection->GetBinWidth(2);
+        normRooFitTail2 /= tofSignalProjection->GetBinWidth(2); */
 
         //RooRealVar tofSignal("tofSignal", "n#sigma_{p}", kTOFnSigmaMin, kTOFnSigmaMax, "a.u.");
         RooRealVar tofSignal("tofSignal", "n#sigma_{p}", nSigmaLeft, maxNsigma, "a.u.");
@@ -374,13 +374,13 @@ void SignalBinnedMC(const char *cutSettings = "", const bool binCounting = false
         RooAddPdf *modelPeak;
 
         RooAddPdf *model;
-        RooRealVar nSignal("N_{sig}", "nSignal", 1., 1.e8);
+        RooRealVar nSignal("N_{sig}", "nSignal", 1., 1.e7);
 
-        slope1 = new RooRealVar("#tau_{1}", "slope1", /* expMismatchDecayConstant2, */ -0.05 - 0.1, -0.0001);
+        slope1 = new RooRealVar("#tau_{1}", "slope1", /* expMismatchDecayConstant2, */ -10., 10.);
         slope2 = new RooRealVar("#tau_{2}", "slope2", /* powerLawKtail2.GetParameter(1) */ /* -1.0,  */0.955,  -1.100, -0.850);
         //std::cout << "slope1 value = " << slope1->getVal() << std::endl;
         //slope2->setConstant(true);
-        nBackground1 = new RooRealVar("#it{N}_{Bkg,1}", "nBackground1", /* normRooFit2, */ 1., 1.e7);
+        nBackground1 = new RooRealVar("#it{N}_{Bkg,1}", "nBackground1", /* normRooFit2, */ 1., 1.e4);
         //std::cout << "nBackground1 value = " << nBackground1->getVal() << std::endl;
         //slope1->setConstant();
         //nBackground1->setConstant();

@@ -173,10 +173,17 @@ namespace proton
   const char *kAntimatterMatterLabelExtended[2] = {"antiprotons", "protons"};
 
   // DCAxy binning
-  const int kNDCABinsMedium = 26;
+  const int kNDCABinsMedium = /* 52; */26;
   const double kDCABinsMedium[kNDCABinsMedium + 1] = {-1.30f, -1.10f, -0.90f, -0.70f, -0.50f, -0.35f, -0.25f, -0.15f, -0.10f, -0.08f, -0.06f, -0.04f, -0.02f, -0.0f, 0.02f, 0.04f, 0.06f, 0.08f, 0.10f, 0.15f, 0.25f, 0.35f, 0.50f, 0.70f, 0.90f, 1.10f, 1.30f};
-  const int kNDCABinsLarge = 18;
-  const double kDCABinsLarge[kNDCABinsLarge + 1] = {-1.30f, -1.10f, -0.90f, -0.70f, -0.50f, -0.35f, -0.20f, -0.12f, -0.06f, 0.00f, 0.06f, 0.12f, 0.20f, 0.35f, 0.50f, 0.70f, 0.90f, 1.10f, 1.30f};
+  /* const double kDCABinsMedium[kNDCABinsMedium + 1] =  {-1.30f,-1.20f,-1.10f,-1.00f,-0.90f,-0.80f,-0.70f,-0.60f,-0.50f,-0.40f,
+    -0.35f,-0.30f,-0.25f,-0.20f,-0.15f,-0.12f,-0.10f,-0.09f,-0.08f,-0.07f,
+    -0.06f,-0.05f,-0.04f,-0.03f,-0.02f,-0.01f, 0.00f, 0.01f, 0.02f, 0.03f,
+     0.04f, 0.05f, 0.06f, 0.07f, 0.08f, 0.09f, 0.10f, 0.12f, 0.15f, 0.20f,
+     0.25f, 0.30f, 0.35f, 0.40f, 0.50f, 0.60f, 0.70f, 0.80f, 0.90f, 1.00f,
+     1.10f, 1.20f, 1.30f}; */
+  
+  const int kNDCABinsLarge = 26;
+  const double kDCABinsLarge[kNDCABinsLarge + 1] = {-1.30f, -1.10f, -0.90f, -0.70f, -0.50f, -0.35f, -0.25f, -0.12f, -0.10f, -0.08f, -0.06f, -0.04f, -0.02f, -0.0f, 0.02f, 0.04f, 0.06f, 0.08f, 0.10f, 0.12f, 0.25f, 0.35f, 0.50f, 0.70f, 0.90f, 1.10f, 1.30f};
 
   // systematics variations
   const int kNCutDCAz = 5;

@@ -145,7 +145,7 @@ void SecondaryMC(const char *cutSettings = "", const char *inFileDatName = "Anal
       gStyle->SetStatX(0.85);
       gStyle->SetStatY(0.5);
       gStyle->SetStatFontSize(0.035);
-      TF1 fFitFunc(Form("f%sFunctionFit_%.0f_%.0f", kAntimatterMatter[iMatt], kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1]), "pol1", 0.5f, 3.0f);
+      TF1 fFitFunc(Form("f%sFunctionFit_%.0f_%.0f", kAntimatterMatter[iMatt], kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1]), "pol2", 0.5f, 3.0f);
       fPrimaryFrac.Fit(&fFitFunc, "MRQ");
       fPrimaryFrac.Fit(&fFitFunc, "MRQ");
       fFitFunc.Write();

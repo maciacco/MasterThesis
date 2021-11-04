@@ -56,6 +56,7 @@ cent_counts, cent_edges = analysis_results_file['Centrality_selected;1'].to_nump
 cent_bin_centers = (cent_edges[:-1]+cent_edges[1:])/2
 
 abs_correction_file = ROOT.TFile.Open('He3_abs.root')
+eff_correction_file = ROOT.TFile.Open('EffAbsCorrection.root')
 ratio_file = ROOT.TFile.Open('Ratio.root', 'recreate')
 
 for i_cent_bins in range(len(CENTRALITY_LIST)):
@@ -80,6 +81,8 @@ for i_cent_bins in range(len(CENTRALITY_LIST)):
             func_name = 'BlastWave'
         g_abs_correction = ROOT.TGraphAsymmErrors()
         g_abs_correction = abs_correction_file.Get(f"{cent_bins[0]}_{cent_bins[1]}/{func_name}/fEffCt_{split}_{cent_bins[0]}_{cent_bins[1]}_{func_name}")
+        eff_abs_correction = ROOT.TH1D()
+        eff_abs_correction = eff_correction_file.Get(f"{cent_bins[0]}_{cent_bins[1]}/{func_name}/fCorrection_{split}_{cent_bins[0]}_{cent_bins[1]}_{func_name}")
 
         # list of corrected yields
         ct_bins_tmp = [0]
@@ -127,10 +130,12 @@ for i_cent_bins in range(len(CENTRALITY_LIST)):
             # 2. absorption correction
             abs = g_abs_correction.GetPointY(CT_BINS_CENT[i_cent_bins].index(ct_bins[0]))
             print(f"absorption correction for point {CT_BINS_CENT[i_cent_bins].index(ct_bins[0])}: {abs}")
+            # 3. efficiency correction
+            eff_correct = eff_abs_correction.GetBinContent(eff_abs_correction.FindBin(ct_bins[0]))
 
             ct_bin_index = h_corrected_yields[i_split].FindBin(ct_bins[0]+0.5)
-            h_corrected_yields[i_split].SetBinContent(ct_bin_index, raw_yield/eff[0]/abs)
-            h_corrected_yields[i_split].SetBinError(ct_bin_index, raw_yield_error/eff[0]/abs)
+            h_corrected_yields[i_split].SetBinContent(ct_bin_index, raw_yield/eff[0]/abs/eff_correct)
+            h_corrected_yields[i_split].SetBinError(ct_bin_index, raw_yield_error/eff[0]/abs/eff_correct)
 
         # set labels
         h_corrected_yields[i_split].GetXaxis().SetTitle("#it{c}t (cm)")
