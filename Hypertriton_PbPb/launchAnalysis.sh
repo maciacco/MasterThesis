@@ -26,7 +26,7 @@
 # python3 he3_absorption_analysis.py
 
 # efficiency correction
-python3 eff_abs_correction.py
+# python3 eff_abs_correction.py
 
 # lifetime fits + ratio
 python3 ratio.py

@@ -106,12 +106,16 @@ for i_cent in range(cent_len):
             f_name = func_names_MB[i_fun]
         h_eff_correction_ct[i_cent].append([])
         h_eff_correction_pt[i_cent].append([])
+        h_eff_correction_ct_syst[i_cent].append([])
+        h_eff_correction_pt_syst[i_cent].append([])
         h_gen_ct[i_cent].append([])
         h_gen_pt[i_cent].append([])
         h_rec_ct[i_cent].append([])
         h_rec_pt[i_cent].append([])
         h_rec_ct_corrected[i_cent].append([])
         h_rec_pt_corrected[i_cent].append([])
+        h_rec_ct_syst[i_cent].append([])
+        h_rec_pt_syst[i_cent].append([])
         for split in split_list:
             h_eff_correction_ct[i_cent][i_fun].append(ROOT.TH1D(
                 f"fEffCorrectionCt_{split}_{cent_bins[0]}_{cent_bins[1]}_{f_name}", ";#it{c}t (cm);Entries",
