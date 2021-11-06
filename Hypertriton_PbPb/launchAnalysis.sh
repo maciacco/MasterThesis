@@ -14,7 +14,7 @@
 #python3 ml_analysis.py -s -m -a
 
 # significance scan
-python3 significance_scan.py
+# python3 significance_scan.py
 
 # signal extraction (pol1)
 # python3 signal_extraction.py
@@ -25,8 +25,11 @@ python3 significance_scan.py
 # absorption correction
 # python3 he3_absorption_analysis.py
 
+# efficiency correction
+python3 eff_abs_correction.py
+
 # lifetime fits + ratio
-#python3 ratio.py
+python3 ratio.py
 
 # systematics (ratio)
 #python3 systematics_ratio.py
