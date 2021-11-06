@@ -81,6 +81,7 @@ if [ $extractRatios -eq 1 ]; then
 .L Secondary.cpp+
 .L Spectra.cpp+
 .L SignalLoss.cpp+
+.L AbsorptionError.cpp+
 // SignalUnbinned($argumentCuts,$argumentSignal,"TreeOutData_NoPID","SignalHe3_NoPID","recreate",true,false)
 // SignalUnbinned($argumentCuts,$argumentSignal,"TreeOutData_He3PID","SignalHe3_He3PID","recreate",true,false)
 // SignalUnbinned($argumentCuts,$argumentSignal,"TreeOutData_AlphaPID","SignalHe3_AlphaPID","recreate",true,true)
@@ -88,8 +89,9 @@ if [ $extractRatios -eq 1 ]; then
 //Efficiency($argumentCuts,"$treeMC","$EfficiencyHe3")
 //EfficiencySec($argumentCuts,"$treeMC","$EfficiencyHe3SecWD",$HYPER_TO_HE3_RATIO)
 //Secondary($argumentCuts,"$treeData","$treeMC","$EfficiencyHe3SecWD","$PrimaryHe3")
-Spectra($argumentCuts,$argumentSignal,$sigmoidFlag,"$spectraHistNameId","$spectraName","recreate","AnalysisResults","$signalName","$EfficiencyHe3","$PrimaryHe3")
+//Spectra($argumentCuts,$argumentSignal,$sigmoidFlag,"$spectraHistNameId","$spectraName","recreate","AnalysisResults","$signalName","$EfficiencyHe3","$PrimaryHe3")
 // SignalLoss()
+AbsorptionError("AbsError","recreate","$spectraName")
 .q
 EOF
 fi

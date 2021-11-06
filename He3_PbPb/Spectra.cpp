@@ -15,8 +15,11 @@
 using utils::TTList;
 using namespace he3;
 
-double he3CorrectionPt(double pt){return 0.99274*TMath::Power(pt,0.00143);};
-double antiHe3CorrectionPt(double pt){return 1.04948*TMath::Power(pt,-0.01525);};
+double he3CorrectionPt(int iMatt, double pt){
+  if (iMatt == 1)
+    return 0.99274*TMath::Power(pt,0.00143);
+  return 1.04948*TMath::Power(pt,-0.01525);
+};
 
 void Spectra(const float cutDCAz = 1.f, const int cutTPCcls = 89, const bool binCounting = true, const int bkg_shape = 1, const bool sigmoidCorrection = true, const char *histoNameDir = ".", const char *outFileName = "SpectraHe3", const char *outFileOption = "recreate", const char *dataFile = "AnalysisResults", const char *signalFile = "SignalHe3", const char *effFile = "EfficiencyHe3", const char *primFile = "PrimaryHe3")
 {
@@ -77,6 +80,7 @@ void Spectra(const float cutDCAz = 1.f, const int cutTPCcls = 89, const bool bin
       fSpectra[iMatt]->Reset();
       for (int iPtBin = 3; iPtBin < pTbinMax + 1; ++iPtBin)
       {
+        double correction = he3CorrectionPt(iMatt, fSpectra[0]->GetBinCenter(iPtBin));  
         double rawYield = raw->GetBinContent(iPtBin);
         double rawYieldError = raw->GetBinError(iPtBin);
         double efficiency = eff->GetBinContent(iPtBin);
@@ -84,8 +88,8 @@ void Spectra(const float cutDCAz = 1.f, const int cutTPCcls = 89, const bool bin
 
         double primary = 0.;
         (!sigmoidCorrection && raw->GetBinCenter(iPtBin) < 6.5) ? primary = sec->GetBinContent(iPtBin) : primary = sec_f->Eval(raw->GetXaxis()->GetBinCenter(iPtBin));
-        fSpectra[iMatt]->SetBinContent(iPtBin, rawYield * primary / efficiency);
-        fSpectra[iMatt]->SetBinError(iPtBin, rawYield * primary / efficiency * TMath::Sqrt(effError * effError / efficiency / efficiency + rawYieldError * rawYieldError / rawYield / rawYield));
+        fSpectra[iMatt]->SetBinContent(iPtBin, rawYield * primary / efficiency / correction);
+        fSpectra[iMatt]->SetBinError(iPtBin, rawYield * primary / efficiency / correction * TMath::Sqrt(effError * effError / efficiency / efficiency + rawYieldError * rawYieldError / rawYield / rawYield));
       }
       fSpectra[iMatt]->SetName(Form("f%sSpectra_%.0f_%.0f", kAntimatterMatter[iMatt], kCentBinsLimitsHe3[iCent][0], kCentBinsLimitsHe3[iCent][1]));
       fSpectra[iMatt]->SetTitle(Form("%s, %.0f-%.0f%%", kAntimatterMatterLabel[iMatt], kCentBinsLimitsHe3[iCent][0], kCentBinsLimitsHe3[iCent][1]));
@@ -108,15 +112,13 @@ void Spectra(const float cutDCAz = 1.f, const int cutTPCcls = 89, const bool bin
       pTbinMax = 13;
     for (int iPtBin = 3; iPtBin < pTbinMax + 1; ++iPtBin)
     {
-      double antiHe3Correction = antiHe3CorrectionPt(fSpectra[0]->GetBinCenter(iPtBin));
-      double he3Correction = he3CorrectionPt(fSpectra[0]->GetBinCenter(iPtBin));
       double antiSpec = fSpectra[0]->GetBinContent(iPtBin);
       double spec = fSpectra[1]->GetBinContent(iPtBin);
       double antiSpecErr = fSpectra[0]->GetBinError(iPtBin);
       double specErr = fSpectra[1]->GetBinError(iPtBin);
       if (spec > 1.e-7 && antiSpec > 1.e-7)
       {
-        fRatio[iCent]->SetBinContent(iPtBin, antiSpec / spec * he3Correction / antiHe3Correction);
+        fRatio[iCent]->SetBinContent(iPtBin, antiSpec / spec);
         fRatio[iCent]->SetBinError(iPtBin, antiSpec / spec * TMath::Sqrt(antiSpecErr * antiSpecErr / antiSpec / antiSpec + specErr * specErr / spec / spec));
       }
     }

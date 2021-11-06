@@ -7,8 +7,12 @@ import yaml
 def he3_correction_pt(i_matt, pt):
     if i_matt == 0:
         return 1.04948*ROOT.TMath.Power(pt,-0.01525)
-    else:
-        return 0.99274*ROOT.TMath.Power(pt,0.00143)
+    return 0.99274*ROOT.TMath.Power(pt,0.00143)
+    
+def he3_uncertainty_pt(i_matt, pt):
+    if i_matt == 0:
+        return 0.02088*ROOT.TMath.Power(pt,-0.48766)
+    return 0.00294*ROOT.TMath.Power(pt,-0.19483)
 
 TOY_MC_EFF = 0.8 # value used in the toy MC (no physical meaning, just to keep eff < 1)
 TOY_MC_CT = 7.6  # value of the proper decay length used in the toy MC
@@ -81,12 +85,16 @@ for i_fun in range(n_fun[-2]):
 cent_len = len(CENTRALITY_LIST)
 h_eff_correction_ct = [[] for _ in range(cent_len)]
 h_eff_correction_pt = [[] for _ in range(cent_len)] # check consistency
+h_eff_correction_ct_syst = [[] for _ in range(cent_len)]
+h_eff_correction_pt_syst = [[] for _ in range(cent_len)] # check consistency
 h_gen_ct = [[] for _ in range(cent_len)]
 h_gen_pt = [[] for _ in range(cent_len)]
 h_rec_ct = [[] for _ in range(cent_len)]
 h_rec_pt = [[] for _ in range(cent_len)]
 h_rec_ct_corrected = [[] for _ in range(cent_len)]
 h_rec_pt_corrected = [[] for _ in range(cent_len)]
+h_rec_ct_syst = [[] for _ in range(cent_len)]
+h_rec_pt_syst = [[] for _ in range(cent_len)]
 for i_cent in range(cent_len):
     for i_fun in range(n_fun[i_cent]):
         ct_bins = np.asarray(CT_BINS_CENT[i_cent], dtype="float")
@@ -111,6 +119,12 @@ for i_cent in range(cent_len):
             h_eff_correction_pt[i_cent][i_fun].append(ROOT.TH1D(
                 f"fEffCorrectionPt_{split}_{cent_bins[0]}_{cent_bins[1]}_{f_name}", ";#it{p}_{T} (GeV/#it{c});Entries",
                 50, 0, 10))
+            h_eff_correction_ct_syst[i_cent][i_fun].append(ROOT.TH1D(
+                f"fEffCorrectionCtSyst_{split}_{cent_bins[0]}_{cent_bins[1]}_{f_name}", ";#it{c}t (cm);Entries",
+                len(ct_bins)-1,ct_bins))
+            h_eff_correction_pt_syst[i_cent][i_fun].append(ROOT.TH1D(
+                f"fEffCorrectionPtSyst_{split}_{cent_bins[0]}_{cent_bins[1]}_{f_name}", ";#it{p}_{T} (GeV/#it{c});Entries",
+                50, 0, 10))
             h_gen_ct[i_cent][i_fun].append(ROOT.TH1D(
                 f"fGenCt_{split}_{cent_bins[0]}_{cent_bins[1]}_{f_name}", ";#it{c}t (cm);Entries",
                 len(ct_bins)-1,ct_bins))
@@ -124,10 +138,16 @@ for i_cent in range(cent_len):
                 f"fRecPt_{split}_{cent_bins[0]}_{cent_bins[1]}_{f_name}", ";#it{p}_{T} (GeV/#it{c});Entries",
                 50, 0, 10))
             h_rec_ct_corrected[i_cent][i_fun].append(ROOT.TH1D(
-                f"fRecCt_{split}_{cent_bins[0]}_{cent_bins[1]}_{f_name}", ";#it{c}t (cm);Entries",
+                f"fRecCtCorrected_{split}_{cent_bins[0]}_{cent_bins[1]}_{f_name}", ";#it{c}t (cm);Entries",
                 len(ct_bins)-1,ct_bins))
             h_rec_pt_corrected[i_cent][i_fun].append(ROOT.TH1D(
-                f"fRecPt_{split}_{cent_bins[0]}_{cent_bins[1]}_{f_name}", ";#it{p}_{T} (GeV/#it{c});Entries",
+                f"fRecPtCorrected_{split}_{cent_bins[0]}_{cent_bins[1]}_{f_name}", ";#it{p}_{T} (GeV/#it{c});Entries",
+                50, 0, 10))
+            h_rec_ct_syst[i_cent][i_fun].append(ROOT.TH1D(
+                f"fRecCtSyst_{split}_{cent_bins[0]}_{cent_bins[1]}_{f_name}", ";#it{c}t (cm);Entries",
+                len(ct_bins)-1,ct_bins))
+            h_rec_pt_syst[i_cent][i_fun].append(ROOT.TH1D(
+                f"fRecPtSyst_{split}_{cent_bins[0]}_{cent_bins[1]}_{f_name}", ";#it{p}_{T} (GeV/#it{c});Entries",
                 50, 0, 10))
 
 # begin toy MC
@@ -148,6 +168,9 @@ while trial < N_TRIALS:
 
                 # efficiency correction
                 eff_corr = he3_correction_pt(i_matt,pt)
+                
+                # absorption systematic error
+                abs_syst = he3_uncertainty_pt(i_matt,pt)
 
                 h_gen_ct[i_cent][i_fun][i_matt].Fill(dec_ct)
                 h_gen_pt[i_cent][i_fun][i_matt].Fill(pt)
@@ -157,6 +180,9 @@ while trial < N_TRIALS:
                 if (ROOT.gRandom.Rndm() < TOY_MC_EFF*eff_corr):
                     h_rec_ct_corrected[i_cent][i_fun][i_matt].Fill(dec_ct)
                     h_rec_pt_corrected[i_cent][i_fun][i_matt].Fill(pt)
+                if (ROOT.gRandom.Rndm() < TOY_MC_EFF*(1+abs_syst)):
+                    h_rec_ct_syst[i_cent][i_fun][i_matt].Fill(dec_ct)
+                    h_rec_pt_syst[i_cent][i_fun][i_matt].Fill(pt)
 
         # MB analysis
         # sample centrality
@@ -232,6 +258,14 @@ for i_cent in range(cent_len):
             h_correction.GetYaxis().SetTitle("correction")
             h_correction.SetTitle(f"{cent_bins[0]}-{cent_bins[1]}%")
             h_correction.Write(f"fCorrection_{split_list[i_matt]}_{cent_bins[0]}_{cent_bins[1]}_{func_name}")
+            
+            h_correction_syst = ROOT.TH1D(h_rec_ct[i_cent][i_fun][i_matt])
+            h_correction_syst.Divide(h_rec_ct_syst[i_cent][i_fun][i_matt],h_rec_ct[i_cent][i_fun][i_matt])
+            h_correction_syst.Add(f_const,-1)
+            h_correction_syst.GetXaxis().SetTitle("#it{c}t (cm)")
+            h_correction_syst.GetYaxis().SetTitle("relative systematic uncertainty")
+            h_correction_syst.SetTitle(f"{cent_bins[0]}-{cent_bins[1]}%")
+            h_correction_syst.Write(f"fRelativeSystematicUncertainty_{split_list[i_matt]}_{cent_bins[0]}_{cent_bins[1]}_{func_name}")
 
             # plot the correction
             canv = ROOT.TCanvas("canv", "canv")

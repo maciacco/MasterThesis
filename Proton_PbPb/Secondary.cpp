@@ -77,11 +77,11 @@ void Secondary(const char *cutSettings = "", const char *inFileDatName = "Analys
     }
     else
     {
-      fDCAprim1 = (TH3F *)listMc20g7->Get(Form("f%sDCAPrimaryTOF", kAntimatterMatter[iMatt]));
-      //fDCAprim2 = (TH3F *)listMc20e3a_2->Get(Form("f%sDCAPrimaryTOF", kAntimatterMatter[0]));
+      fDCAprim1 = (TH3F *)listMc20e3a_1->Get(Form("f%sDCAPrimaryTOF", kAntimatterMatter[iMatt]));
+      fDCAprim2 = (TH3F *)listMc20e3a_2->Get(Form("f%sDCAPrimaryTOF", kAntimatterMatter[0]));
       //fDCAprim3 = (TH3F *)listMc3->Get(Form("f%sDCAPrimaryTOF", kAntimatterMatter[0]));
       fDCAprim = (TH3F *)fDCAprim1->Clone(fDCAprim1->GetName());
-      //fDCAprim->Add(fDCAprim2);
+      fDCAprim->Add(fDCAprim2);
       //fDCAprim->Add(fDCAprim3);
     }
     TH3F *fDCAsec1 = (TH3F *)listMc20e3a_1->Get(Form("f%sDCASecondaryTOF", kAntimatterMatter[iMatt]));
@@ -224,9 +224,8 @@ void Secondary(const char *cutSettings = "", const char *inFileDatName = "Analys
         double dataIntegralDCAcut = fDCAdatProj->Integral(fDCAdatProj->FindBin(-0.12), fDCAdatProj->FindBin(0.115));
         double dataIntegral = fDCAdatProj->Integral();
 
-        fit->SetRangeX(fDCAdatProj->FindBin(-1.3), fDCAdatProj->FindBin(1.29));
-
-          ROOT::Math::MinimizerOptions::SetDefaultStrategy(0);
+        fit->SetRangeX(fDCAdatProj->FindBin(-1.25), fDCAdatProj->FindBin(1.25));
+        ROOT::Math::MinimizerOptions::SetDefaultStrategy(0);
         if (ptMin < noSecMaterialThreshold)
         {
           fit->Constrain(2, 0., 0.05);
@@ -237,15 +236,16 @@ void Secondary(const char *cutSettings = "", const char *inFileDatName = "Analys
         /* TFitResultPtr  */ Int_t status = fit->Fit(); // perform the fit
         if (status != 0)
         {
-          fit = new TFractionFitter(fDCAdatProj, mc/* , "Q" */); // initialise
+          fit = new TFractionFitter(fDCAdatProj, mc, "Q"); // initialise
           fitter = fit->GetFitter();
+          ROOT::Math::MinimizerOptions::SetDefaultStrategy(0);
 
           TVirtualFitter::SetMaxIterations(MAX_ITER);
           TVirtualFitter::SetPrecision(0.01);
 
-          fit->SetRangeX(fDCAdatProj->FindBin(-1.3), fDCAdatProj->FindBin(1.29));
+          fit->SetRangeX(fDCAdatProj->FindBin(-1.25), fDCAdatProj->FindBin(1.25));
           fitter->Config().ParSettings(0).SetValue(0.710);
-          fitter->Config().ParSettings(0).SetLimits(0.600, 0.990);
+          fitter->Config().ParSettings(0).SetLimits(0.500, 0.990);
           fitter->Config().ParSettings(0).Release();
           fitter->Config().ParSettings(0).SetStepSize(1.e-3);
           fitter->Config().ParSettings(1).SetValue(0.300);
@@ -404,6 +404,7 @@ void Secondary(const char *cutSettings = "", const char *inFileDatName = "Analys
 
           // write histograms to file
           fDCAdatProj->GetXaxis()->SetTitleSize(0.05);
+          //fDCAdatProj->GetYaxis()->SetRangeUser(1e3,1e9);
           fDCAdatProj->Write();
           fDCAMcProjPrim->Write();
           if (ptMin < noSecMaterialThreshold)
