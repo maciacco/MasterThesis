@@ -12,7 +12,7 @@ extractRatios=1
 fileData="AnalysisResults"
 fileMC="mc"
 signalName="SignalProtonSys"
-spectraName="SpectraProtonSys"
+spectraName="SpectraProtonSysMCorrection"
 EfficiencyHe3="EfficiencyProtonSys"
 PrimaryHe3="PrimaryProtonSys"
 

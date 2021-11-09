@@ -26,7 +26,7 @@ using namespace proton;
 
 // #define USE_COUNTER
 
-void Systematics(const int points = kNPoints, const bool cutVar = true, const bool binCountingVar = true, const bool expVar = true, const bool sigmoidVar = true, const char *outFileName = "SystematicsAll")
+void Systematics(const int points = kNPoints, const bool cutVar = true, const bool binCountingVar = true, const bool expVar = true, const bool sigmoidVar = true, const char *outFileName = "SystematicsAllMCorrection")
 {
   gStyle->SetOptStat(110001110);
   gStyle->SetStatX(0.87);
@@ -34,7 +34,7 @@ void Systematics(const int points = kNPoints, const bool cutVar = true, const bo
   TStopwatch swatch;
   swatch.Start(true);
 
-  TFile *specFile = TFile::Open(Form("%s/SpectraProtonSys.root", kOutDir));
+  TFile *specFile = TFile::Open(Form("%s/SpectraProtonSysMCorrection.root", kOutDir));
   TFile *outFile = TFile::Open(Form("%s/%s.root", kOutDir, outFileName), "recreate");
   TDirectory *cdHist = outFile->mkdir("hist");
 

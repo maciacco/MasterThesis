@@ -16,17 +16,17 @@
 
 using utils::TTList;
 
-void PlotCentralitySelection(const char *outFileName = "CentralitySelectionPlot", const char *inFileName = "AnalysisResults")
+void PlotCentralitySelection(const char *outFileName = "CentralitySelectionPlotProton", const char *inFileName = "AnalysisResults_largeNsigma")
 {
   gStyle->SetOptStat(0);
 
-  TFile *inFile = TFile::Open(Form("data/Deuteron_PbPb/%s.root", inFileName));
+  TFile *inFile = TFile::Open(Form("data/Proton_PbPb/%s.root", inFileName));
   if (!inFile)
   {
     std::cout << "Input files do not exist!" << std::endl;
     return;
   }
-  auto inList = (TTList *)inFile->Get("mpuccio_deuterons_");
+  auto inList = (TTList *)inFile->Get("nuclei_proton_");
   auto fNormalisationHist = (TH2F *)inList->Get("fNormalisationHist");
   TH1D *fCent = fNormalisationHist->ProjectionX("fCent", 4, 4);
 
