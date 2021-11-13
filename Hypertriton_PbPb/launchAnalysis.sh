@@ -29,10 +29,10 @@
 # python3 eff_abs_correction.py
 
 # lifetime fits + ratio
-python3 ratio.py
+# python3 ratio.py
 
 # systematics (ratio)
-#python3 systematics_ratio.py
+python3 systematics_ratio.py
 
 # systematics (cpt)
 #python3 systematics_cpt.py
