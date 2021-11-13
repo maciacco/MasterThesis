@@ -102,8 +102,8 @@ void Spectra(const char *cutSettings = "", const double roi_nsigma = 8., const b
           primary = sec->GetBinContent(iPtBin);
           primaryError = sec->GetBinError(iPtBin);
         }
-        fSpectra[iMatt]->SetBinContent(iPtBin,/*  rawYield * primary */ 1 / efficiency / protonCorrection);
-        fSpectra[iMatt]->SetBinError(iPtBin, (/* rawYield * primary */1 / efficiency / protonCorrection) * TMath::Sqrt(/* primaryError * primaryError / primary / primary + */ effError * effError / efficiency / efficiency/*  + rawYieldError * rawYieldError / rawYield / rawYield */));
+        fSpectra[iMatt]->SetBinContent(iPtBin, rawYield * primary / efficiency / protonCorrection);
+        fSpectra[iMatt]->SetBinError(iPtBin, (rawYield * primary / efficiency / protonCorrection) * TMath::Sqrt(primaryError * primaryError / primary / primary + effError * effError / efficiency / efficiency + rawYieldError * rawYieldError / rawYield / rawYield));
 
         std::cout<<"eff="<<efficiency<<"; raw="<<rawYield<<"; rawError="<<rawYieldError<<"; primary="<<primary<<std::endl;
       }
@@ -130,8 +130,8 @@ void Spectra(const char *cutSettings = "", const double roi_nsigma = 8., const b
       double specErr = fSpectra[1]->GetBinError(iPtBin);
       if (spec > 1.e-8 && antiSpec > 1.e-8)
       {
-        fRatio[iCent]->SetBinContent(iPtBin, /* antiSpec / */ spec/ antiSpec);
-        fRatio[iCent]->SetBinError(iPtBin, /* antiSpec / */ spec/ antiSpec * TMath::Sqrt(antiSpecErr * antiSpecErr / antiSpec / antiSpec + specErr * specErr / spec / spec));
+        fRatio[iCent]->SetBinContent(iPtBin, antiSpec / spec);
+        fRatio[iCent]->SetBinError(iPtBin, antiSpec / spec * TMath::Sqrt(antiSpecErr * antiSpecErr / antiSpec / antiSpec + specErr * specErr / spec / spec));
       }
     }
     fRatio[iCent]->GetXaxis()->SetTitle(kAxisTitlePt);

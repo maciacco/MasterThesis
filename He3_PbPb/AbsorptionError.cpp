@@ -21,7 +21,7 @@ const int N_TRIALS = 10000;
 double uncertaintyPt(int iMatt, double pt){
   if (iMatt == 1)
     return 0.00294*TMath::Power(pt,-0.19483);
-  ssreturn 0.02088*TMath::Power(pt,-0.48766);
+  return 0.02088*TMath::Power(pt,-0.48766);
 };
 
 void AbsorptionError(const char *outFileName = "AbsError", const char *outFileOption = "recreate", const char *ratioFile = "SpectraHe3")

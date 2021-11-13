@@ -21,6 +21,7 @@
 #include <RooAddPdf.h>
 #include <RooPlot.h>
 #include <TFitResult.h>
+#include <RooFitResult.h>
 
 #include "../utils/Utils.h"
 #include "../utils/Config.h"
@@ -29,9 +30,8 @@ using namespace utils;
 using namespace proton;
 
 bool use_uniform = false;
-bool use_roofit = false;
 
-void Secondary(const char *cutSettings = "", const char *inFileDatName = "AnalysisResults_largeNsigma", const char *inFileMCName = "mc", const char *outFileName = "PrimaryProton", const bool useAntiProtonsAsPrimaries = false)
+void Secondary(const char *cutSettings = "", const char *inFileDatName = "AnalysisResults_largeNsigma", const char *inFileMCName = "mc", const char *outFileName = "PrimaryProton", const bool use_roofit = false, const bool useAntiProtonsAsPrimaries = false)
 {
   const int MAX_ITER = 2147483647;
 
@@ -185,23 +185,27 @@ void Secondary(const char *cutSettings = "", const char *inFileDatName = "Analys
         // ROOFIT UNIMPLEMENTED
         if (use_roofit)
         {
-          std::cout << "No RooFit implementation yet!" << std::endl;
-          return;
-          /* RooRealVar *dca = new RooRealVar("DCA_{xy}", "DCAxy", -1.3, 1.3, "cm");
+          // std::cout << "No RooFit implementation yet!" << std::endl;
+          // return;
+          RooRealVar *dca = new RooRealVar("DCA_{xy}", "DCAxy", -1.3, 1.3, "cm");
           RooDataHist *data = new RooDataHist("data", "data", *dca, fDCAdatProj);
           RooDataHist *prim_tmp = new RooDataHist("prim_tmp", "prim_tmp", *dca, fDCAMcProjPrim);
           RooHistPdf *prim = new RooHistPdf("prim", "prim", *dca, *prim_tmp);
           RooDataHist *sec_tmp = new RooDataHist("sec_tmp", "sec_tmp", *dca, fDCAMcProjSec);
           RooHistPdf *sec = new RooHistPdf("sec", "sec", *dca, *sec_tmp);
-          RooRealVar *primfrac = new RooRealVar("#it{f_{prim}}","primfrac",0.,1.);
-          RooAddPdf *model = new RooAddPdf("model", "model", RooArgList(*prim, *sec), RooArgList(*primfrac));
-          model->fitTo(*data);
-          RooPlot *xframe = dca->frame(RooFit::Title("dca"), RooFit::Name(fDCAdatProj->GetName()));
-          data->plotOn(xframe);
-          model->plotOn(xframe, RooFit::Components("prim"), RooFit::LineColor(kBlue));
-          model->plotOn(xframe, RooFit::Components("sec"), RooFit::LineColor(kRed));
-          model->plotOn(xframe, RooFit::LineColor(kGreen));
-          xframe->Write();
+          RooDataHist *sec_wd_tmp = new RooDataHist("sec_wd_tmp", "sec_wd_tmp", *dca, fDCAMcProjSecWD);
+          RooHistPdf *sec_wd = new RooHistPdf("sec_wd", "sec_wd", *dca, *sec_wd_tmp);
+          RooRealVar *primfrac;
+          if (iMatt == 1) primfrac = new RooRealVar("#it{f_{prim}}","primfrac",0.7,0.5,1.);
+          else primfrac = new RooRealVar("#it{f_{prim}}","primfrac",0.,1.);
+          RooRealVar *sec_wd_frac = new RooRealVar("#it{f_{sec_wd}}","sec_wd_frac",0.0,0.5);
+          RooAddPdf *model;
+          if (iMatt == 1)
+            model = new RooAddPdf("model", "model", RooArgList(*prim, *sec_wd, *sec), RooArgList(*primfrac, *sec_wd_frac));
+          else
+            model = new RooAddPdf("model", "model", RooArgList(*prim, *sec_wd), RooArgList(*primfrac));
+
+          RooFitResult* res = model->fitTo(*data,RooFit::Save());
 
           // integrate primaries (-0.12,0.12)
           dca->setRange("intRange",-0.12,0.12);
@@ -210,11 +214,35 @@ void Secondary(const char *cutSettings = "", const char *inFileDatName = "Analys
           // integrate model
           Double_t tot_integral = (model->createIntegral(*dca,RooFit::NormSet(*dca),RooFit::Range("intRange")))->getVal();
           Double_t ratio = primfrac->getVal()*prim_integral/tot_integral;
-          Double_t ratio_err = TMath::Sqrt(ratio * (1. - ratio) / (tot_integral*fDCAdatProj->Integral()));
-          
+          Double_t ratio_err = primfrac->getError()*prim_integral/tot_integral;//TMath::Sqrt(ratio * (1. - ratio) / (tot_integral*fDCAdatProj->Integral()));
+
+          if (ratio < 0.5){
+            primfrac->setVal(0.85);
+            primfrac->setMin(0.65);
+            primfrac->setMax(0.9);
+            res = model->fitTo(*data,RooFit::Save());
+
+            dca->setRange("intRange",-0.12,0.12);
+            prim_integral = (prim->createIntegral(*dca,RooFit::NormSet(*dca),RooFit::Range("intRange")))->getVal();
+            //std::cout << setprecision(8) << prim_integral << std::endl;
+            // integrate model
+            tot_integral = (model->createIntegral(*dca,RooFit::NormSet(*dca),RooFit::Range("intRange")))->getVal();
+            ratio = primfrac->getVal()*prim_integral/tot_integral;
+            ratio_err = primfrac->getError()*prim_integral/tot_integral;
+          }
+          if (res->status() != 0) continue;
+          RooPlot *xframe = dca->frame(RooFit::Title("dca"), RooFit::Name(fDCAdatProj->GetName()));
+          data->plotOn(xframe);
+          model->plotOn(xframe, RooFit::Components("prim"), RooFit::LineColor(kBlue));
+          model->plotOn(xframe, RooFit::Components("sec_wd"), RooFit::LineColor(kOrange));
+          if (iMatt == 1)
+            model->plotOn(xframe, RooFit::Components("sec"), RooFit::LineColor(kRed));
+          model->plotOn(xframe, RooFit::LineColor(kGreen));
+          xframe->Write();
+
           // save primary fraction and its uncertainty
           prim_frac_roofit = ratio;
-          prim_frac_roofit_err = ratio_err; */
+          prim_frac_roofit_err = ratio_err;
         }
 
         TFractionFitter *fit = new TFractionFitter(fDCAdatProj, mc, "Q"); // initialise
@@ -373,9 +401,10 @@ void Secondary(const char *cutSettings = "", const char *inFileDatName = "Analys
           if (ptMin < noSecMaterialThreshold)
           {
             fDCAMcProjSec->Scale(fracMc3 * integralData / fDCAMcProjSec->Integral(), "width");
-            fRatioDCASec.SetName(Form("f%sRatioDCASec_%.0f_%.0f_%.2f_%.2f", kAntimatterMatter[iMatt], kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1], fDCAdat->GetYaxis()->GetBinLowEdge(pTbinsIndexMin), fDCAdat->GetYaxis()->GetBinUpEdge(pTbinsIndexMax)));
-            fRatioDCASec.SetTitle(fRatioDCASec.GetName());
           }
+
+          fRatioDCASec.SetName(Form("f%sRatioDCASec_%.0f_%.0f_%.2f_%.2f", kAntimatterMatter[iMatt], kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1], fDCAdat->GetYaxis()->GetBinLowEdge(pTbinsIndexMin), fDCAdat->GetYaxis()->GetBinUpEdge(pTbinsIndexMax)));
+          fRatioDCASec.SetTitle(fRatioDCASec.GetName());
 
           auto kNDCABins = kNDCABinsMedium;
           for (int iDCA = 1; iDCA < kNDCABins + 1; ++iDCA)
@@ -387,7 +416,7 @@ void Secondary(const char *cutSettings = "", const char *inFileDatName = "Analys
             (primMc > 1.e-1) ? fRatioDCAPrim.SetBinContent(iDCA, primPrediction / primMc) : fRatioDCAPrim.SetBinContent(iDCA, 0);
             (primMc > 1.e-1) ? fRatioDCAPrim.SetBinError(iDCA, TMath::Sqrt(primPrediction_err * primPrediction_err / primPrediction / primPrediction + primMc_err * primMc_err / primMc / primMc)) : fRatioDCAPrim.SetBinError(iDCA, 0.);
 
-            if (ptMin < noSecMaterialThreshold)
+            if (ptMin < 10/* noSecMaterialThreshold */)
             {
               double secPrediction = mc2->GetBinContent(iDCA);
               double secMc = fDCAMcProjSecWD->GetBinContent(iDCA);
@@ -407,7 +436,7 @@ void Secondary(const char *cutSettings = "", const char *inFileDatName = "Analys
           //fDCAdatProj->GetYaxis()->SetRangeUser(1e3,1e9);
           fDCAdatProj->Write();
           fDCAMcProjPrim->Write();
-          if (ptMin < noSecMaterialThreshold)
+          if (/* ptMin < noSecMaterialThreshold */ptMin < 10)
           {
             fRatioDCASec.GetXaxis()->SetTitle(kAxisTitleDCA);
             fRatioDCASec.GetXaxis()->SetTitleSize(0.05);

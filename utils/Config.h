@@ -182,9 +182,11 @@ namespace proton
      0.25f, 0.30f, 0.35f, 0.40f, 0.50f, 0.60f, 0.70f, 0.80f, 0.90f, 1.00f,
      1.10f, 1.20f, 1.30f}; */
   
-  const int kNDCABinsLarge = 26;
+  /* const int kNDCABinsLarge = 26;
   const double kDCABinsLarge[kNDCABinsLarge + 1] = {-1.30f, -1.10f, -0.90f, -0.70f, -0.50f, -0.35f, -0.25f, -0.12f, -0.10f, -0.08f, -0.06f, -0.04f, -0.02f, -0.0f, 0.02f, 0.04f, 0.06f, 0.08f, 0.10f, 0.12f, 0.25f, 0.35f, 0.50f, 0.70f, 0.90f, 1.10f, 1.30f};
-
+ *//* const int kNDCABinsMedium = 16;
+  const double kDCABinsMedium[kNDCABinsMedium + 1] = {-1.30f, -1.00f, -0.80f, -0.50f, -0.20f, -0.12f, -0.06f, -0.03f, 0.00f, 0.03f, 0.06f, 0.12f, 0.20f, 0.50f, 0.80f, 1.00f, 1.30f};
+   */
   // systematics variations
   const int kNCutDCAz = 5;
   const double kCutDCAz[] = {0.5, 0.75, 1.0, 1.5, 2.0};
