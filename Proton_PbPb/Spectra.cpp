@@ -17,8 +17,8 @@ using namespace proton;
 
 double protonCorrectionPt(int iMatt,double pt){
   if (iMatt == 1) 
-    return 1;
-    //return 0.99876*TMath::Power(pt,0.00036);
+    //return 1;
+    return 0.99876*TMath::Power(pt,0.00036);
     //return 1.03176*TMath::Power(pt,-0.01249);
   return 1;
 };
@@ -102,6 +102,7 @@ void Spectra(const char *cutSettings = "", const double roi_nsigma = 8., const b
           primary = sec->GetBinContent(iPtBin);
           primaryError = sec->GetBinError(iPtBin);
         }
+        primaryError = 0.;
         fSpectra[iMatt]->SetBinContent(iPtBin, rawYield * primary / efficiency / protonCorrection);
         fSpectra[iMatt]->SetBinError(iPtBin, (rawYield * primary / efficiency / protonCorrection) * TMath::Sqrt(primaryError * primaryError / primary / primary + effError * effError / efficiency / efficiency + rawYieldError * rawYieldError / rawYield / rawYield));
 

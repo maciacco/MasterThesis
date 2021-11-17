@@ -13,7 +13,7 @@ fileMC="mc"
 signalName="SignalProtonGausDExpSignal1_LongMCTracks"
 spectraName="SpectraProtonGausDExpSignal1_LongMCTracks_newPrimary"
 EfficiencyHe3="EfficiencyProton_LongMCTracks_new"
-PrimaryHe3="PrimaryProtong"
+PrimaryHe3="PrimaryProton"
 
 # create output directories
 DIR_OUT=out
@@ -49,7 +49,7 @@ if [ $extractRatios -eq 1 ]; then
 //SignalBinned("$cutSettings",8,$argumentSignal,"$fileData","$signalName","recreate")
 Secondary("$cutSettings","$fileData","$fileMC","$PrimaryHe3")//,true)
 Spectra("$cutSettings",8,$argumentSignal,$sigmoidFlag,"$spectraHistNameId","$spectraName","recreate","AnalysisResults","$signalName","$EfficiencyHe3","$PrimaryHe3")
-//AbsorptionError("AbsErrorMCorrection","recreate","$spectraName")
+AbsorptionError("AbsErrorMCorrection","recreate","$spectraName")
 .q
 EOF
 fi

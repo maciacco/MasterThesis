@@ -20,7 +20,7 @@ const int N_TRIALS = 10000;
 
 double uncertaintyPt(int iMatt, double pt){
   if (iMatt == 1)
-    return 0.00294*TMath::Power(pt,-0.19483);
+    return (1./0.029)*(0.738506/1.058)*0.00294*TMath::Power(pt,-0.19483)*(0.131713/0.738506);
   return 0.02088*TMath::Power(pt,-0.48766);
 };
 

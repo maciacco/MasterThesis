@@ -33,6 +33,11 @@ bool use_uniform = false;
 
 void Secondary(const char *cutSettings = "", const char *inFileDatName = "AnalysisResults_largeNsigma", const char *inFileMCName = "mc", const char *outFileName = "PrimaryProton", const bool use_roofit = false, const bool useAntiProtonsAsPrimaries = false)
 {
+  // killing RooFit output
+  RooMsgService::instance().setGlobalKillBelow(RooFit::ERROR);
+  RooMsgService::instance().setSilentMode(true);
+  gErrorIgnoreLevel = kError; // Suppressing warning outputs
+
   const int MAX_ITER = 2147483647;
 
   gStyle->SetPadTickX(1);
@@ -54,7 +59,7 @@ void Secondary(const char *cutSettings = "", const char *inFileDatName = "Analys
 
   for (int iMatt = 0; iMatt < 2; ++iMatt)
   {
-    double noSecMaterialThreshold = 1.24f; //1.79f;
+    double noSecMaterialThreshold = /* 1.24f; */ 1.59f;
     if (iMatt == 0)
       noSecMaterialThreshold = 0.f;
 
@@ -102,7 +107,7 @@ void Secondary(const char *cutSettings = "", const char *inFileDatName = "Analys
       TH1D fPrimaryFrac(Form("f%sPrimFrac_%.0f_%.0f", kAntimatterMatter[iMatt], kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1]), Form("%.0f-%.0f%%", kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1]), kNPtBins, kPtBins);
       TH1D fSecondaryFrac(Form("f%sSecFrac_%.0f_%.0f", kAntimatterMatter[iMatt], kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1]), Form("%.0f-%.0f%%", kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1]), kNPtBins, kPtBins);
 
-      int nUsedPtBins = 20;
+      int nUsedPtBins = 24;
 
       for (int iPtBin = 5; iPtBin < nUsedPtBins + 1; ++iPtBin)
       { // loop on pT bins
@@ -129,9 +134,9 @@ void Secondary(const char *cutSettings = "", const char *inFileDatName = "Analys
         fDCAdatProj->SetTitle(projTitle);
         fDCAMcProjPrim = fDCAprim->ProjectionZ(TString::Format("f%sDCAPrimaryTOF_%.0f_%.0f_%.2f_%.2f", kAntimatterMatter[iMatt], fDCAdat->GetXaxis()->GetBinLowEdge(kCentBinsProton[iCent][0]), fDCAdat->GetXaxis()->GetBinUpEdge(kCentBinsProton[iCent][1]), fDCAdat->GetYaxis()->GetBinLowEdge(pTbinsIndexMin), fDCAdat->GetYaxis()->GetBinUpEdge(pTbinsIndexMax)), kCentBinsProton[iCent][0], kCentBinsProton[iCent][1], pTbinsIndexMin, pTbinsIndexMax);
         fDCAMcProjPrim->SetTitle(projTitle);
-        fDCAMcProjSec = fDCAsec->ProjectionZ(TString::Format("f%sDCASecondaryTOF_%.0f_%.0f_%.2f_%.2f", kAntimatterMatter[iMatt], fDCAdat->GetXaxis()->GetBinLowEdge(kCentBinsProton[iCent][0]), fDCAdat->GetXaxis()->GetBinUpEdge(kCentBinsProton[iCent][1]), fDCAdat->GetYaxis()->GetBinLowEdge(pTbinsIndexMin), fDCAdat->GetYaxis()->GetBinUpEdge(pTbinsIndexMax)), kCentBinsProton[0][0], kCentBinsProton[iCent][1], pTbinsIndexMin, pTbinsIndexMax);
+        fDCAMcProjSec = fDCAsec->ProjectionZ(TString::Format("f%sDCASecondaryTOF_%.0f_%.0f_%.2f_%.2f", kAntimatterMatter[iMatt], fDCAdat->GetXaxis()->GetBinLowEdge(kCentBinsProton[iCent][0]), fDCAdat->GetXaxis()->GetBinUpEdge(kCentBinsProton[iCent][1]), fDCAdat->GetYaxis()->GetBinLowEdge(pTbinsIndexMin), fDCAdat->GetYaxis()->GetBinUpEdge(pTbinsIndexMax)), kCentBinsProton[3][0], kCentBinsProton[3][1], pTbinsIndexMin, pTbinsIndexMax);
         fDCAMcProjSec->SetTitle(projTitle);
-        fDCAMcProjSecWD = fDCAsecWD->ProjectionZ(TString::Format("f%sDCASecondaryWeakTOF_%.0f_%.0f_%.2f_%.2f", kAntimatterMatter[iMatt], fDCAdat->GetXaxis()->GetBinLowEdge(kCentBinsProton[iCent][0]), fDCAdat->GetXaxis()->GetBinUpEdge(kCentBinsProton[iCent][1]), fDCAdat->GetYaxis()->GetBinLowEdge(pTbinsIndexMin), fDCAdat->GetYaxis()->GetBinUpEdge(pTbinsIndexMax)), kCentBinsProton[0][0], kCentBinsProton[iCent][1], pTbinsIndexMin, pTbinsIndexMax);
+        fDCAMcProjSecWD = fDCAsecWD->ProjectionZ(TString::Format("f%sDCASecondaryWeakTOF_%.0f_%.0f_%.2f_%.2f", kAntimatterMatter[iMatt], fDCAdat->GetXaxis()->GetBinLowEdge(kCentBinsProton[iCent][0]), fDCAdat->GetXaxis()->GetBinUpEdge(kCentBinsProton[iCent][1]), fDCAdat->GetYaxis()->GetBinLowEdge(pTbinsIndexMin), fDCAdat->GetYaxis()->GetBinUpEdge(pTbinsIndexMax)), kCentBinsProton[3][0], kCentBinsProton[3][1], pTbinsIndexMin, pTbinsIndexMax);
         fDCAMcProjSecWD->SetTitle(projTitle);
 
         // rebin
@@ -150,7 +155,9 @@ void Secondary(const char *cutSettings = "", const char *inFileDatName = "Analys
         TCanvas canv(canvNameTOF, canvTitleTOF);
 
         fDCAdatProj->GetYaxis()->SetTitle("Entries");
+        fDCAdatProj->Write();
         fDCAMcProjPrim->GetYaxis()->SetTitle("Entries");
+        fDCAMcProjPrim->Write();
         fDCAMcProjSec->GetYaxis()->SetTitle("Entries");
         fDCAMcProjSec->Write();
         fDCAMcProjSecWD->GetYaxis()->SetTitle("Entries");
@@ -216,7 +223,7 @@ void Secondary(const char *cutSettings = "", const char *inFileDatName = "Analys
           Double_t ratio = primfrac->getVal()*prim_integral/tot_integral;
           Double_t ratio_err = primfrac->getError()*prim_integral/tot_integral;//TMath::Sqrt(ratio * (1. - ratio) / (tot_integral*fDCAdatProj->Integral()));
 
-          if (ratio < 0.5){
+          if (ratio < 0.72){continue;
             primfrac->setVal(0.85);
             primfrac->setMin(0.65);
             primfrac->setMax(0.9);
@@ -243,6 +250,10 @@ void Secondary(const char *cutSettings = "", const char *inFileDatName = "Analys
           // save primary fraction and its uncertainty
           prim_frac_roofit = ratio;
           prim_frac_roofit_err = ratio_err;
+
+          // print fit results
+          std::cout << "f_prim_fit = " << primfrac->getVal() << std::endl;
+          std::cout << "fraction = " << prim_integral/tot_integral << std::endl;
         }
 
         TFractionFitter *fit = new TFractionFitter(fDCAdatProj, mc, "Q"); // initialise
@@ -269,7 +280,7 @@ void Secondary(const char *cutSettings = "", const char *inFileDatName = "Analys
           ROOT::Math::MinimizerOptions::SetDefaultStrategy(0);
 
           TVirtualFitter::SetMaxIterations(MAX_ITER);
-          TVirtualFitter::SetPrecision(0.01);
+         // TVirtualFitter::SetPrecision(0.01);
 
           fit->SetRangeX(fDCAdatProj->FindBin(-1.25), fDCAdatProj->FindBin(1.25));
           fitter->Config().ParSettings(0).SetValue(0.710);
@@ -356,6 +367,9 @@ void Secondary(const char *cutSettings = "", const char *inFileDatName = "Analys
           chiSq.Draw("same");
           covStatus.Draw("same");
 
+          // print fit results
+          std::cout << "f_prim_TFFfit = " << fracMc1 << std::endl;
+
           // compute fraction of primaries and material secondaries
           double intPrimDCAcutError = 0.;
           double intPrimDCAcut = mc1->IntegralAndError(result->FindBin(-0.12), result->FindBin(0.115), intPrimDCAcutError);
@@ -371,6 +385,8 @@ void Secondary(const char *cutSettings = "", const char *inFileDatName = "Analys
           fPrimaryFrac.SetBinContent(fPrimaryFrac.FindBin(ptMin + 0.005f), primaryRatio);
           fPrimaryFrac.SetBinError(fPrimaryFrac.FindBin(ptMin + 0.005f), primaryRatioError);
 
+          std::cout << "fraction = " << intPrimDCAcut / intResDCAcut << std::endl;
+          std::cout << " * * * * * * * * * * * * * * * * * " << std::endl;
           // roofit check
           if (use_roofit)
           {

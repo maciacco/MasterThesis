@@ -91,7 +91,7 @@ if [ $extractRatios -eq 1 ]; then
 //Secondary($argumentCuts,"$treeData","$treeMC","$EfficiencyHe3SecWD","$PrimaryHe3")
 Spectra($argumentCuts,$argumentSignal,$sigmoidFlag,"$spectraHistNameId","$spectraName","recreate","AnalysisResults","$signalName","$EfficiencyHe3","$PrimaryHe3")
 // SignalLoss()
-//AbsorptionError("AbsError","recreate","$spectraName")
+AbsorptionError("AbsError","recreate","$spectraName")
 .q
 EOF
 fi

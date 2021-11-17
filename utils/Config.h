@@ -166,7 +166,7 @@ namespace proton
 
   // centrality binning
   const double kCentBinsLimitsProton[][2] = {{0, 5}, {5, 10}, {30, 50}, {0, 90}};
-  const int kCentBinsProton[][2] = {{1, 1}, {2, 2}, {5, 6}, {1, 10}}; // centrality classes bin indexes in He3 analysis
+  const int kCentBinsProton[][2] = {{1, 1}, {2, 2}, {5, 6}, {1, 10}, {1,4}}; // centrality classes bin indexes in He3 analysis
 
   // antimatter / matter
   const char *kAntimatterMatterLabel[2] = {"#bar{p}", "p"};

@@ -14,7 +14,7 @@ def he3_uncertainty_pt(i_matt, pt):
         return 0.02088*ROOT.TMath.Power(pt,-0.48766)
     return 0.00294*ROOT.TMath.Power(pt,-0.19483)
 
-TOY_MC_EFF = 1. # value used in the toy MC (no physical meaning, just to keep eff < 1)
+TOY_MC_EFF = 0.8 # value used in the toy MC (no physical meaning, just to keep eff < 1)
 TOY_MC_CT = 7.6  # value of the proper decay length used in the toy MC
 N_TRIALS = 1e7   # number of iterations for the toy MC 
 
@@ -178,13 +178,13 @@ while trial < N_TRIALS:
 
                 h_gen_ct[i_cent][i_fun][i_matt].Fill(dec_ct)
                 h_gen_pt[i_cent][i_fun][i_matt].Fill(pt)
-                if (ROOT.gRandom.Rndm()*eff_corr*(1+abs_syst) < TOY_MC_EFF):
+                if (ROOT.gRandom.Rndm() < TOY_MC_EFF):
                     h_rec_ct[i_cent][i_fun][i_matt].Fill(dec_ct)
                     h_rec_pt[i_cent][i_fun][i_matt].Fill(pt)
-                if (ROOT.gRandom.Rndm()*eff_corr*(1+abs_syst) < TOY_MC_EFF*eff_corr):
+                if (ROOT.gRandom.Rndm() < TOY_MC_EFF*eff_corr):
                     h_rec_ct_corrected[i_cent][i_fun][i_matt].Fill(dec_ct)
                     h_rec_pt_corrected[i_cent][i_fun][i_matt].Fill(pt)
-                if (ROOT.gRandom.Rndm()*eff_corr*(1+abs_syst) < TOY_MC_EFF*(1+abs_syst)*eff_corr):
+                if (ROOT.gRandom.Rndm() < TOY_MC_EFF*(1+abs_syst)):
                     h_rec_ct_syst[i_cent][i_fun][i_matt].Fill(dec_ct)
                     h_rec_pt_syst[i_cent][i_fun][i_matt].Fill(pt)
 

@@ -23,7 +23,7 @@ file_he3_syst_abs = ROOT.TFile.Open(path_he3 + '/AbsError.root')
 file_hyp_syst = ROOT.TFile.Open(path_hyp + '/Systematics.root')
 file_hyp_syst_abs = ROOT.TFile.Open(path_hyp + '/AbsError.root')
 file_proton_syst = ROOT.TFile.Open(path_proton + '/SystematicsAll.root')
-file_proton_syst_abs = ROOT.TFile.Open(path_proton + '/AbsError.root')
+file_proton_syst_abs = ROOT.TFile.Open(path_proton + '/AbsErrorMCorrection.root')
 
 file_out = ROOT.TFile.Open('FinalPlot.root', 'recreate')
 
@@ -31,7 +31,7 @@ for i_cent, cent in enumerate(centrality_classes):
 
     # get histograms
     ratio_he3 = file_he3.Get(f'1.0_89_1_1_1/fRatio_{cent[0]}_{cent[1]}')
-    # ratio_he3_abs = file_he3.Get(f'1.0_89_1_1_1/fRatio_{cent[0]}_{cent[1]}')
+    #ratio_he3_abs = file_he3.Get(f'1.0_89_1_1_1/fRatio_{cent[0]}_{cent[1]}')
     ratio_hyp = file_hyp.Get(f'fRatio_{cent[0]}_{cent[1]}')
     ratio_proton = file_proton.Get(f'fRatio_{cent[0]}_{cent[1]}')
     ratio_he3_distribution = file_he3_syst.Get(f'hist/fFitPar_{cent[0]}_{cent[1]}')
@@ -58,14 +58,14 @@ for i_cent, cent in enumerate(centrality_classes):
 
     # systematic error
     syst_he3 = ratio_he3_distribution.GetRMS()
-    #syst_he3_abs = ratio_he3_distribution_abs.GetRMS()
-    #syst_he3 = np.sqrt(syst_he3*syst_he3+syst_he3_abs*syst_he3_abs)
+    syst_he3_abs = ratio_he3_distribution_abs.GetRMS()
+    syst_he3 = np.sqrt(syst_he3*syst_he3+syst_he3_abs*syst_he3_abs)
     syst_hyp = ratio_hyp_distribution.GetRMS()
-    #syst_hyp_abs = ratio_hyp_distribution_abs.GetRMS()
+    syst_hyp_abs = ratio_hyp_distribution_abs.GetRMS()
     #syst_hyp = np.sqrt(syst_hyp*syst_hyp+syst_hyp_abs*syst_hyp_abs)
     syst_proton = ratio_proton_distribution.GetRMS()
-    #syst_proton_abs = ratio_proton_distribution_abs.GetRMS()
-    #syst_proton = np.sqrt(syst_proton*syst_proton+syst_proton_abs*syst_proton_abs)
+    syst_proton_abs = ratio_proton_distribution_abs.GetRMS()
+    syst_proton = np.sqrt(syst_proton*syst_proton+syst_proton_abs*syst_proton_abs)
 
     # final plot
     ratios_vs_b = ROOT.TH1D(f'fRatio_vs_b_{cent[0]}_{cent[1]}', ';B+S/3; Antimatter / Matter', 10, -0.5, 9.5)
