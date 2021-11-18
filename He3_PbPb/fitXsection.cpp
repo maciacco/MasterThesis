@@ -7,8 +7,10 @@
 #include <TLatex.h>
 
 Double_t scalingFactorMine(Double_t *x, Double_t *par){
+  double fit_c_proton = 0.868419;
+  double fit_c_proton_error = 0.0579547;
   Double_t f=1.-(1./0.029)* /* (0.738506/1.058)*(0.738506-1.) */ (1.058-1.)*par[0]*TMath::Power(x[0],-0.19483);
-  Double_t f_new=1.-(1./0.029)* (0.738506/1.058)*(0.738506-1.) *par[0]*TMath::Power(x[0],-0.19483);
+  Double_t f_new=1.-(1./0.029)* (fit_c_proton/1.058)*(fit_c_proton-1.) *par[0]*TMath::Power(x[0],-0.19483);
   Double_t f_note=0.99274*TMath::Power(x[0],0.00143);
   return f_new*(1+(f-f_note)/f_note);
 }
@@ -87,7 +89,7 @@ void fitXsection(){
   f2.FixParameter(29,f123.GetParameter(5));
   f2.FixParameter(30,f123.GetParameter(6));
   f2.FixParameter(31,f123.GetParameter(7));
-  gXSectMeasrd->Fit("fitPol2","WR","",0.5,10.);
+  gXSectMeasrd->Fit("fitPol2","WR","",0.5,7.);
   gXSectMeasrd->GetFunction("fitPol2")->SetNpx(10000);
   gXSectMeasrd->GetYaxis()->SetRangeUser(-0.5,2.5);
   c.cd();

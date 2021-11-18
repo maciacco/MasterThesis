@@ -4,15 +4,33 @@ import numpy as np
 import ROOT
 import yaml
 
-def he3_correction_pt(i_matt, pt):
-    if i_matt == 0:
-        return 1.04948*ROOT.TMath.Power(pt,-0.01525)
-    return 0.99274*ROOT.TMath.Power(pt,0.00143)
+# def he3_correction_pt(i_matt, pt):
+#    if i_matt == 0:
+#        return 1.04948*ROOT.TMath.Power(pt,-0.01525)
+#    return 0.99274*ROOT.TMath.Power(pt,0.00143)
     
-def he3_uncertainty_pt(i_matt, pt):
-    if i_matt == 0:
-        return 0.02088*ROOT.TMath.Power(pt,-0.48766)
-    return 0.00294*ROOT.TMath.Power(pt,-0.19483)
+# def he3_uncertainty_pt(i_matt, pt):
+#     if i_matt == 0:
+#         return 0.02088*ROOT.TMath.Power(pt,-0.48766)
+#     return 0.00294*ROOT.TMath.Power(pt,-0.19483)
+
+def he3_correction_pt(iMatt, pt):
+    fit_c_proton = 0.868419
+    f=1.-(1./0.029)*(1.058-1.)*0.00294*ROOT.TMath.Power(pt,-0.19483);
+    f_note=0.99274*ROOT.TMath.Power(pt,0.00143);
+    f_new = 0
+    if iMatt == 1:
+        f_new = 1.-(1./0.029)*(fit_c_proton/1.058)*(fit_c_proton-1.)*0.00294*ROOT.TMath.Power(pt,-0.19483)
+    else:
+        f_new = 1.+(0.02088*ROOT.TMath.Power(pt,-0.48766))/(0.084)*(1.-0.83)
+    return f_new*(1+(f-f_note)/f_note)
+
+def he3_uncertainty_pt(iMatt, pt):
+    fit_c_proton = 0.868419
+    fit_c_proton_error = 0.0579547    
+    if iMatt == 1:
+        return (1./0.029)*(fit_c_proton/1.058)*0.00294*ROOT.TMath.Power(pt,-0.19483)*(fit_c_proton_error/fit_c_proton);
+    return 0.02088*ROOT.TMath.Power(pt,-0.48766)
 
 TOY_MC_EFF = 0.8 # value used in the toy MC (no physical meaning, just to keep eff < 1)
 TOY_MC_CT = 7.6  # value of the proper decay length used in the toy MC
