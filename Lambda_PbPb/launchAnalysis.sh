@@ -22,20 +22,5 @@
 # signal extraction (expo)
 # python3 signal_extraction.py -b
 
-# absorption correction
-# python3 he3_absorption_analysis.py
-
-# efficiency correction
-python3 eff_abs_correction.py
-
-# lifetime fits + ratio
-python3 ratio.py
-
-# systematics (ratio)
-python3 systematics_ratio.py
-
-# systematics (absorption)
-python3 systematics_absorption.py
-
 # systematics (cpt)
 #python3 systematics_cpt.py

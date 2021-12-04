@@ -131,7 +131,7 @@ for i_cent_bins in range(len(CENTRALITY_LIST)):
             abs = g_abs_correction.GetPointY(CT_BINS_CENT[i_cent_bins].index(ct_bins[0]))
             print(f"absorption correction for point {CT_BINS_CENT[i_cent_bins].index(ct_bins[0])}: {abs}")
             # 3. efficiency correction
-            eff_correct = 1#eff_abs_correction.GetBinContent(eff_abs_correction.FindBin(ct_bins[0]))
+            eff_correct = eff_abs_correction.GetBinContent(eff_abs_correction.FindBin(ct_bins[0]))
 
             ct_bin_index = h_corrected_yields[i_split].FindBin(ct_bins[0]+0.5)
             h_corrected_yields[i_split].SetBinContent(ct_bin_index, raw_yield/eff[0]/abs/eff_correct)

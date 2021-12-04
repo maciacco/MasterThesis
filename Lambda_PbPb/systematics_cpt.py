@@ -47,14 +47,19 @@ signal_extraction_file = ROOT.TFile.Open('SignalExtraction.root')
 signal_extraction_keys = uproot.open('SignalExtraction.root').keys()
 
 abs_correction_file = ROOT.TFile.Open('He3_abs.root')
-eff_correction_file = ROOT.TFile.Open('EffAbsCorrection.root')
-systematics_file = ROOT.TFile.Open('SystematicsRatio.root', 'recreate')
+systematics_file = ROOT.TFile.Open('SystematicsLifetime.root', 'recreate')
 
-for i_cent_bins in range(len(CENTRALITY_LIST)-2):
+for i_cent_bins in range(len(CENTRALITY_LIST)):
     cent_bins = CENTRALITY_LIST[i_cent_bins]
+    if cent_bins[1] < 80:
+        continue
 
-    h_parameter_distribution = ROOT.TH1D(f'fParameterDistribution_{cent_bins[0]}_{cent_bins[1]}', f'{cent_bins[0]}-{cent_bins[1]}%', 200, 0, 2)
+    h_asymmetry_distribution = ROOT.TH1D(f'fAsymmetryDistribution_{cent_bins[0]}_{cent_bins[1]}', f'{cent_bins[0]}-{cent_bins[1]}%', 400, -200, 200)
     h_prob_distribution = ROOT.TH1D(f'fProbDistribution_{cent_bins[0]}_{cent_bins[1]}', f'{cent_bins[0]}-{cent_bins[1]}%', 100, 0, 1)
+    h_lifetime = [ROOT.TH1D(), ROOT.TH1D()]
+    h_lifetime[0] = ROOT.TH1D(f'fLifetimeAntimatterDistribution_{cent_bins[0]}_{cent_bins[1]}', f'{cent_bins[0]}-{cent_bins[1]}%', 1000, 0, 1000)
+    h_lifetime[1] = ROOT.TH1D(f'fLifetimeMatterDistribution_{cent_bins[0]}_{cent_bins[1]}', f'{cent_bins[0]}-{cent_bins[1]}%', 1000, 0, 1000)
+    h_fit_status = ROOT.TH1D(f'fFitStatus_{cent_bins[0]}_{cent_bins[1]}', f'{cent_bins[0]}-{cent_bins[1]}%', 100, 0, 99)
 
     systematics_file.mkdir(f'{cent_bins[0]}_{cent_bins[1]}')
     ####################################################
@@ -66,6 +71,8 @@ for i_cent_bins in range(len(CENTRALITY_LIST)-2):
         h_corrected_yields = [ROOT.TH1D(), ROOT.TH1D()]
         if (i_trial % 100) == 0:
             print(f'{cent_bins[0]}-{cent_bins[1]}%: i_trial = {i_trial}')
+
+        lifetime_tmp = [-9999., -9999.]
         for i_split, split in enumerate(SPLIT_LIST):
 
             # get preselection efficiency histogram
@@ -78,12 +85,12 @@ for i_cent_bins in range(len(CENTRALITY_LIST)-2):
                 func_name = 'BlastWave'
             g_abs_correction = ROOT.TGraphAsymmErrors()
             g_abs_correction = abs_correction_file.Get(f"{cent_bins[0]}_{cent_bins[1]}/{func_name}/fEffCt_{split}_{cent_bins[0]}_{cent_bins[1]}_{func_name}")
-            eff_abs_correction = ROOT.TH1D()
-            eff_abs_correction = eff_correction_file.Get(f"{cent_bins[0]}_{cent_bins[1]}/{func_name}/fCorrection_{split}_{cent_bins[0]}_{cent_bins[1]}_{func_name}")
 
             # list of corrected yields
             ct_bins_tmp = [0]
             ct_bins_tmp += CT_BINS_CENT[i_cent_bins]
+            #if cent_bins[1] == 90:
+            #    ct_bin_tmp = CT_BINS_CENT[i_cent_bins]
             bins = np.array(ct_bins_tmp, dtype=float)
 
             h_corrected_yields[i_split] = ROOT.TH1D(
@@ -134,65 +141,75 @@ for i_cent_bins in range(len(CENTRALITY_LIST)-2):
                 bdt_eff = float(formatted_eff_cut)
                 eff = presel_eff * eff_cut_dict[bin]
                 abs = g_abs_correction.GetPointY(CT_BINS_CENT[i_cent_bins].index(ct_bins[0]))
-                # 3. efficiency correction
-                eff_correct = eff_abs_correction.GetBinContent(eff_abs_correction.FindBin(ct_bins[0]))
 
                 ct_bin_index = h_corrected_yields[i_split].FindBin(ct_bins[0]+0.5)
 
-                h_corrected_yields[i_split].SetBinContent(ct_bin_index, raw_yield/eff[0]/abs/eff_correct)
-                h_corrected_yields[i_split].SetBinError(ct_bin_index, raw_yield_error/eff[0]/abs/eff_correct)
+                h_corrected_yields[i_split].SetBinContent(ct_bin_index, raw_yield/eff[0]/abs)
+                h_corrected_yields[i_split].SetBinError(ct_bin_index, raw_yield_error/eff[0]/abs)
 
             # set labels
             h_corrected_yields[i_split].GetXaxis().SetTitle("#it{c}t (cm)")
-            #h_corrected_yields[i_split].Scale(1., "width")
+            h_corrected_yields[i_split].GetYaxis().SetTitle("d#it{N}/d(#it{c}t) (cm^{-1})")
+            for i_bin in range(len(bins))[2:]:
+                bin_width = h_corrected_yields[i_split].GetBinWidth(i_bin)
+                #print(f"bin: {h_corrected_yields[i_split].GetBinLowEdge(i_bin)}; bin width: {bin_width}")
+                bin_content = h_corrected_yields[i_split].GetBinContent(i_bin)
+                bin_error = h_corrected_yields[i_split].GetBinError(i_bin)
+                h_corrected_yields[i_split].SetBinContent(i_bin, bin_content/bin_width)
+                h_corrected_yields[i_split].SetBinError(i_bin, bin_error/bin_width)
 
-        # ratios
-        h_ratio = ROOT.TH1D(h_corrected_yields[0])
-        h_ratio.SetName(f'fRatio_{cent_bins[0]}_{cent_bins[1]}')
-        h_ratio.SetTitle(f'{cent_bins[0]}-{cent_bins[1]}%')
-        h_ratio.Divide(h_corrected_yields[0], h_corrected_yields[1], 1, 1)
-        h_ratio.GetYaxis().SetTitle("^{3}_{#bar{#Lambda}}#bar{H}/^{3}_{#Lambda}H")
-        fit_function = ROOT.TF1('plo0', 'pol0', CT_BINS_CENT[i_cent_bins][0], CT_BINS_CENT[i_cent_bins][-1])
-        res = h_ratio.Fit(fit_function, 'SQ')
-        systematics_file.cd(f'{cent_bins[0]}_{cent_bins[1]}')
+            # fit with exponential pdf
+            fit_function_expo = ROOT.TF1("expo", "expo", 2, 35)
+            if cent_bins[0] == 30:
+                fit_function_expo = ROOT.TF1("expo", "expo", 2, 14)
+            elif cent_bins[1] == 90:
+                fit_function_expo = ROOT.TF1("expo", "expo", 0, 35)
+            res = h_corrected_yields[i_split].Fit(fit_function_expo, "QRMIS+")
 
-        if fit_function.GetProb() > 0.025 and fit_function.GetProb() < 0.975 and res.Status() == 0 and res.Ndf() > 1:
-            # h_ratio.Write()
-            h_parameter_distribution.Fill(fit_function.GetParameter(0))
-            h_prob_distribution.Fill(res.Prob())
-            i_trial += 1
-        del h_corrected_yields
-        del h_ratio
+            # compute lifetime
+            tau = -1/fit_function_expo.GetParameter(1)*100/SPEED_OF_LIGHT # ps
 
+            if (res.Prob() > 0.025) and (res.Prob() < 0.975) and (fit_function_expo.GetNDF() == 5):
+                systematics_file.cd(f'{cent_bins[0]}_{cent_bins[1]}')
+                # h_corrected_yields[i_split].Write()
+                lifetime_tmp[i_split] = tau
+                h_prob_distribution.Fill(res.Prob())
+                h_fit_status.Fill(fit_function_expo.IsValid())
+
+        if (lifetime_tmp[0] > 0) and (lifetime_tmp[1] > 0):
+            h_lifetime[0].Fill(lifetime_tmp[0])
+            h_lifetime[1].Fill(lifetime_tmp[1])
+            h_asymmetry_distribution.Fill(lifetime_tmp[1]-lifetime_tmp[0])
+            i_trial+=1
     systematics_file.cd()
-    h_parameter_distribution.GetXaxis().SetTitle("p_{0}")
-    h_parameter_distribution.GetXaxis().SetRangeUser(0.4, 1.4)
-    h_parameter_distribution.GetYaxis().SetTitle("Entries")
-    h_parameter_distribution.GetXaxis().SetTitle("R ( ^{3}_{#bar{#Lambda}}#bar{H} / ^{3}_{#Lambda}H)")
-    h_parameter_distribution.SetDrawOption("histo")
-    h_parameter_distribution.SetLineWidth(2)
-    h_parameter_distribution.SetFillStyle(3345)
-    h_parameter_distribution.SetFillColor(ROOT.kBlue)
-    h_parameter_distribution.Write()
+    h_asymmetry_distribution.GetXaxis().SetTitle("Asymmetry (ps)")
+    h_asymmetry_distribution.GetYaxis().SetTitle("Entries")
+    h_asymmetry_distribution.Write()
+
+    # save plots
+    h_asymmetry_distribution.Rebin(8)
+    c = ROOT.TCanvas("c", "c")
+    ROOT.gStyle.SetOptStat(110001110)
+    c.SetTicks(1, 1)
+    h_asymmetry_distribution.SetDrawOption("histo")
+    h_asymmetry_distribution.SetLineWidth(2)
+    h_asymmetry_distribution.SetFillStyle(3345)
+    h_asymmetry_distribution.SetFillColor(ROOT.kBlue)
+    h_asymmetry_distribution.Draw("histo")
+    c.Print(f"plots/{h_asymmetry_distribution.GetName()}.png")
+
     h_prob_distribution.GetXaxis().SetTitle("Prob")
     h_prob_distribution.GetYaxis().SetTitle("Entries")
     h_prob_distribution.Write()
+    h_lifetime[0].GetXaxis().SetTitle("#tau (ps)")
+    h_lifetime[1].GetXaxis().SetTitle("#tau (ps)")
+    h_lifetime[0].Write()
+    h_lifetime[1].Write()
+    h_fit_status.Write()
 
-    # plot systematics distribution
-    c = ROOT.TCanvas("c", "c")
-    ROOT.gStyle.SetOptStat(110001110)
-    ROOT.gStyle.SetStatX(0.85);
-    ROOT.gStyle.SetStatY(0.85);
-    c.cd()
-    c.SetTicks(1, 1)
-    mean = h_parameter_distribution.GetMean()
-    std_dev = h_parameter_distribution.GetRMS()
-    h_parameter_distribution.Rebin(2)
-    h_parameter_distribution.GetXaxis().SetRangeUser(mean-5*std_dev, mean+5*std_dev)
-    h_parameter_distribution.Draw("histo")
-    c.Print(f"plots/{h_parameter_distribution.GetName()}.pdf")
-
-    del h_parameter_distribution
+    del h_asymmetry_distribution
     del h_prob_distribution
+    del h_fit_status
+    del h_lifetime
 
 systematics_file.Close()
