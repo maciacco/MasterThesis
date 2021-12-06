@@ -14,7 +14,7 @@ from helpers import significance_error, expected_signal
 
 plt.rcParams.update({'font.size': 13})
 
-SPLIT = True
+SPLIT = False
 MAX_EFF = 1.00
 
 # avoid pandas warning
@@ -48,8 +48,8 @@ presel_eff_file = uproot.open('PreselEff.root')
 analysis_results_file = uproot.open(os.path.expandvars(ANALYSIS_RESULTS_PATH))
 
 # get centrality selected histogram
-cent_counts, cent_edges = analysis_results_file['Centrality_selected;1'].to_numpy()
-cent_bin_centers = (cent_edges[:-1]+cent_edges[1:])/2
+#cent_counts, cent_edges = analysis_results_file['StrangenessRatios_summary/Centrality_selected;1'].to_numpy()
+#cent_bin_centers = (cent_edges[:-1]+cent_edges[1:])/2
 
 # cut dictionary
 eff_cut_dict = dict()
@@ -59,9 +59,9 @@ for split in SPLIT_LIST:
         cent_bins = CENTRALITY_LIST[i_cent_bins]
 
         # get number of events
-        cent_range_map = np.logical_and(cent_bin_centers > cent_bins[0], cent_bin_centers < cent_bins[1])
-        counts_cent_range = cent_counts[cent_range_map]
-        evts = np.sum(counts_cent_range)
+        #cent_range_map = np.logical_and(cent_bin_centers > cent_bins[0], cent_bin_centers < cent_bins[1])
+        counts_cent_range = 250e6/10 #cent_counts[cent_range_map]
+        evts = counts_cent_range #np.sum(counts_cent_range)
         print(f'Number of events: {evts}')
 
         # get preselection efficiency histogram
@@ -85,6 +85,7 @@ for split in SPLIT_LIST:
             for eff_score in zip(eff_array, score_eff_arrays_dict[bin]):
                 if (ct_bins[0] > 0) and (eff_score[0] < 0.49):
                     continue
+                eff_BDT = eff_score[0]
                 formatted_eff = "{:.2f}".format(eff_score[0])
                 print(f'processing {bin}: eff = {eff_score[0]:.2f}, score = {eff_score[1]:.2f}...')
 
@@ -92,13 +93,13 @@ for split in SPLIT_LIST:
                 df_data_sel = df_data.query(f'model_output > {eff_score[1]}')
 
                 # make histogram
-                hyp_mass = 2.991
+                hyp_mass = 1.115683
                 sigma = 0.0015
-                m_min = 2.98 #hyp_mass - 3*sigma
-                m_max = 3.005 #hyp_mass + 3*sigma
-                nBins = 26
+                m_min = 1.105 #hyp_mass - 3*sigma
+                m_max = 1.13 #hyp_mass + 3*sigma
+                nBins = 100
 
-                counts, bin_edges = np.histogram(np.array(df_data_sel['m']), nBins, range=(2.960, 3.025))
+                counts, bin_edges = np.histogram(np.array(df_data_sel['mass']), nBins, range=(1.09, 1.14))
                 bin_centers = (bin_edges[1:]+bin_edges[:-1])/2.
                 side_map = np.logical_or(bin_centers < m_min, bin_centers > m_max)
                 mass_map = np.logical_not(side_map)
@@ -113,7 +114,7 @@ for split in SPLIT_LIST:
 
                 # compute background
                 pol_integral = pol.integ()
-                bin_size = (3.025-2.960)/nBins
+                bin_size = (1.14-1.09)/nBins
                 bkg = (pol_integral(m_max) - pol_integral(m_min))/bin_size
 
                 # compute eff = presel_eff * BDT_eff
@@ -121,7 +122,7 @@ for split in SPLIT_LIST:
                     presel_eff_bin_centers > ct_bins[0],
                     presel_eff_bin_centers < ct_bins[1])
                 presel_eff = presel_eff_counts[presel_eff_map]
-                eff = presel_eff * eff_score[0]
+                eff = presel_eff * eff_BDT
 
                 # compute expected signal
                 sig = expected_signal(cent_bins, ct_bins, eff, evts)[0]
@@ -133,7 +134,7 @@ for split in SPLIT_LIST:
                 pol_offset = pol(mass_bins)
                 mass_counts = mass_counts+pol_offset
 
-                xx_mass = np.linspace(m_min, m_max, 100)
+                xx_mass = np.linspace(m_min, m_max, 50)
                 yy_mass = norm.pdf(xx_mass, hyp_mass, sigma)*sig*bin_size
                 yy_offset = pol(xx_mass)  # plot polynomial
                 yy_mass = yy_mass+yy_offset
@@ -150,8 +151,8 @@ for split in SPLIT_LIST:
                 plt.errorbar(mass_bins, mass_counts, np.sqrt(mass_counts), fmt='o', label='Pseudodata', color='red', ecolor='black')
                 plt.plot(xx_side, yy_side, label='Background fit', color='green')
                 plt.plot(xx_mass, yy_mass, label='Gaussian model', color='orange')
-                plt.xlabel(r'$M \ (^{3}He + \pi^{-}) \ (\mathrm{GeV}/\it{c}^{2})$')
-                plt.ylabel(r'$\mathrm{Entries}/(2.5 \mathrm{MeV}/\it{c}^{2})$')
+                plt.xlabel(r'$M \ (p + \pi^{-}) \ (\mathrm{GeV}/\it{c}^{2})$')
+                plt.ylabel(r'$\mathrm{Entries}/(0.0005 \mathrm{MeV}/\it{c}^{2})$')
                 handles, labels = fig.gca().get_legend_handles_labels()
                 order = [2, 3, 0, 1]
                 plt.legend([handles[idx] for idx in order], [labels[idx] for idx in order], loc='upper right')
@@ -171,14 +172,15 @@ for split in SPLIT_LIST:
             up_limit = significance_array + significance_err_array
 
             # cut
-            cut_eff_index = significance_array == significance_array.max()
+            cut_eff_index = (significance_array == significance_array.max())
+            print(cut_eff_index)
             cut_eff = eff_array_reduced[cut_eff_index]
 
             fig = plt.figure()
             plt.plot(eff_array_reduced, significance_array, 'b', label='Expected Significance')
             plt.fill_between(eff_array_reduced, low_limit, up_limit,
                              facecolor='deepskyblue', label=r'$ \pm 1\sigma$', alpha=0.3)
-            plt.vlines(cut_eff[0], 0, 20, colors='red', linestyles='dashed',
+            plt.vlines(cut_eff[0], 0, significance_array.max(), colors='red', linestyles='dashed',
                        label=f'cut = {"{:.2f}".format(cut_eff[0])}')
 
             handles, labels = fig.gca().get_legend_handles_labels()
@@ -187,10 +189,10 @@ for split in SPLIT_LIST:
 
             plt.xlabel("BDT Efficiency")
             plt.ylabel("Significance x BDT Efficiency")
-            plt.xlim(0.5, MAX_EFF-0.01)
+            plt.xlim(0.7, MAX_EFF-0.01)
             if ct_bins[0] == 0:
                 plt.xlim(0.1, MAX_EFF-0.01)
-            plt.ylim(0.3, up_limit.max()+0.3)
+            plt.ylim(10, up_limit.max()+10)
 
             plt.savefig(f'plots/significance_scan/{bin}.pdf')
             plt.close('all')

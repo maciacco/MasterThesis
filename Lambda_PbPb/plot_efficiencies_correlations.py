@@ -28,7 +28,7 @@ def presel_eff_hist(df_list, col_name, split, cent_bins, bins):
 
     for val in df_list[0][col_name]:
         hist_eff.Fill(val)
-    for val in df_list[1][col_name]:
+    for val in df_list[1][f"{col_name}MC"]:
         hist_gen.Fill(val)
 
     # compute efficiency and set properties
@@ -63,7 +63,7 @@ DUMP_HYPERPARAMS = False
 TRAINING = not args.application
 PLOT_DIR = 'plots'
 MAKE_PRESELECTION_EFFICIENCY = args.eff
-MAKE_FEATURES_PLOTS = True
+MAKE_FEATURES_PLOTS = False
 MAKE_TRAIN_TEST_PLOT = args.train
 OPTIMIZE = False
 OPTIMIZED = False
@@ -89,8 +89,8 @@ with open(os.path.expandvars(config), 'r') as stream:
         print(exc)
 
 DATA_PATH = params['DATA_PATH']
-MC_PATH = params['MC_SIGNAL_PATH']
-BKG_PATH = params['LS_BACKGROUND_PATH']
+MC_SIGNAL_PATH = params['MC_SIGNAL_PATH']
+MC_SIGNAL_PATH_GEN = params['MC_SIGNAL_PATH_GEN']
 CT_BINS = params['CT_BINS']
 CT_BINS_CENT = params['CT_BINS_CENT']
 PT_BINS = params['PT_BINS']
@@ -108,8 +108,8 @@ if SPLIT:
 
 if TRAINING:
 
-    df_signal = uproot.open(os.path.expandvars(MC_PATH))['SignalTable'].arrays(library="pd")
-    df_background = uproot.open(os.path.expandvars(BKG_PATH))['DataTable'].arrays(library="pd")
+    df_signal = uproot.open(os.path.expandvars(MC_SIGNAL_PATH))['LambdaTree'].arrays(library="pd")
+    df_background = uproot.open(os.path.expandvars(DATA_PATH))['LambdaTree'].arrays(library="pd")
 
     # make plot directory
     if not os.path.isdir(PLOT_DIR):
@@ -134,11 +134,11 @@ if TRAINING:
                 ##############################################################
                 # PRESELECTION EFFICIENCY
                 ##############################################################
-                df_generated = uproot.open(os.path.expandvars(MC_PATH))['GenTable'].arrays(library="pd")
+                df_generated = uproot.open(os.path.expandvars(MC_SIGNAL_PATH_GEN))['LambdaTree'].arrays(library="pd")
                 df_signal_cent = df_signal.query(
-                    f'Matter {split_ineq_sign} and centrality > {cent_bins[0]} and centrality < {cent_bins[1]} and pt > 2 and pt < 10')
+                    f'matter {split_ineq_sign} and centrality > {cent_bins[0]} and centrality < {cent_bins[1]} and pt > 0.5 and pt < 4') # pt cut?
                 df_generated_cent = df_generated.query(
-                    f'matter {split_ineq_sign} and centrality > {cent_bins[0]} and centrality < {cent_bins[1]} and pt > 2 and pt < 10')
+                    f'matter {split_ineq_sign} and centrality > {cent_bins[0]} and centrality < {cent_bins[1]} and ptMC > 0.5 and ptMC < 4') # pt cut?
                 del df_generated
 
                 # fill histograms (vs. ct and vs. pt)
@@ -173,8 +173,8 @@ if TRAINING:
         # PLOT FEATURES DISTRIBUTIONS AND CORRELATIONS
         ######################################################
 
-        df_signal_ct = df_signal.query(f'pt > 2 and pt < 10')
-        df_background_ct = df_background.query(f'pt > 2 and pt < 10')
+        df_signal_ct = df_signal.query(f'pt > 0.5 and pt < 4') # pt cut?
+        df_background_ct = df_background.query(f'pt > 0.5 and pt < 4 and ( mass < 1.105 or mass > 1.13 )') # pt cut?
 
         # define tree handlers
         signal_tree_handler = TreeHandler()

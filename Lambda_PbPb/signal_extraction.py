@@ -12,7 +12,8 @@ import uproot
 import yaml
 from helpers import significance_error, ndarray2roo
 
-SPLIT = True
+SPLIT = False
+use_crystalball = True
 MAX_EFF = 1.00
 
 # avoid pandas warning
@@ -36,6 +37,7 @@ with open(os.path.expandvars(config), 'r') as stream:
         print(exc)
 
 DATA_PATH = params['DATA_PATH']
+CT_BINS = params['CT_BINS']
 CT_BINS_CENT = params['CT_BINS_CENT']
 CENTRALITY_LIST = params['CENTRALITY_LIST']
 RANDOM_STATE = params['RANDOM_STATE']
@@ -58,7 +60,10 @@ for split in SPLIT_LIST:
         cent_bins = CENTRALITY_LIST[i_cent_bins]
         for ct_bins in zip(CT_BINS_CENT[i_cent_bins][:-1], CT_BINS_CENT[i_cent_bins][1:]):
 
+            # ct_bins_df_index = int(CT_BINS_CENT[i_cent_bins][0]/5 -1) # where 5 is the bin size
+            # print(f'Index = {ct_bins_df_index}')
             bin = f'{split}_{cent_bins[0]}_{cent_bins[1]}_{ct_bins[0]}_{ct_bins[1]}'
+            # bin_df = f'{split}_{cent_bins[0]}_{cent_bins[1]}_{CT_BINS[ct_bins_df_index][0]}_{CT_BINS[ct_bins_df_index][1]}'
             df_data = pd.read_parquet(f'df/{bin}')
             df_signal = pd.read_parquet(f'df/mc_{bin}')
 
@@ -73,33 +78,45 @@ for split in SPLIT_LIST:
             h_significance = ROOT.TH1D("fSignificance", "fSignificance", 101, -0.005, 1.005)
 
             for eff_score in zip(eff_array, score_eff_arrays_dict[bin]):
-                if (ct_bins[0] > 0.5) and (eff_score[0] < 0.50):
+                if (ct_bins[0] > 0.5) and (eff_score[0] < 0.69 or eff_score[0] > 0.99):
                     continue
                 formatted_eff = "{:.2f}".format(eff_score[0])
                 print(f'processing {bin}: eff = {eff_score[0]:.2f}, score = {eff_score[1]:.2f}...')
 
                 df_data_sel = df_data.query(f'model_output > {eff_score[1]}')
                 df_signal_sel = df_signal.query(f'model_output > {eff_score[1]} and y_true == 1')
-                if np.count_nonzero(df_signal_sel['y_true'] == 1) > 10000:
-                    print('Sampling 10000 events...')
-                    df_signal_sel = df_signal_sel.sample(10000)
+                if np.count_nonzero(df_signal_sel['y_true'] == 1) > 1000:
+                    print('Sampling 1000 events...')
+                    df_signal_sel = df_signal_sel.sample(1000)
 
                 # get invariant mass distribution (data and mc)
-                roo_m = ROOT.RooRealVar("m", "#it{M} (^{3}He + #pi^{-})", 2.960, 3.025, "GeV/#it{c}^{2}")
-                roo_data = ndarray2roo(np.array(df_data_sel['m']), roo_m)
-                roo_mc_signal = ndarray2roo(np.array(df_signal_sel['m']), roo_m)
+                roo_m = ROOT.RooRealVar("m", "#it{M} (p + #pi^{-})", 1.09, 1.14, "GeV/#it{c}^{2}")
+                roo_data_unbinned = ndarray2roo(np.array(df_data_sel['mass']), roo_m)
+                roo_mc_signal = ndarray2roo(np.array(df_signal_sel['mass']), roo_m)
+                roo_m.setBins(100)
+                roo_data = ROOT.RooDataHist('data','data',roo_m,roo_data_unbinned)
 
                 # declare fit model
                 # kde
-                roo_n_signal = ROOT.RooRealVar('N_{signal}', 'Nsignal', 0., 1.e3)
+                roo_n_signal = ROOT.RooRealVar('N_{signal}', 'Nsignal', 1., 1.e6)
                 delta_mass = ROOT.RooRealVar("#deltam", 'deltaM', -0.004, 0.004, 'GeV/c^{2}')
                 shifted_mass = ROOT.RooAddition("mPrime", "m + #Deltam", ROOT.RooArgList(roo_m, delta_mass))
-                roo_signal = ROOT.RooKeysPdf("signal", "signal", shifted_mass, roo_m,
-                                             roo_mc_signal, ROOT.RooKeysPdf.NoMirror, 2)
-                roo_signal_plot = ROOT.RooKeysPdf(roo_signal)
+                roo_signal = ROOT.RooCrystalBall() #= ROOT.RooKeysPdf("signal", "signal", shifted_mass, roo_m,
+                           #                  roo_mc_signal, ROOT.RooKeysPdf.NoMirror, 2)
+
+                # cb signal
+                mass = ROOT.RooRealVar('mass','mass',1.11,1.12)
+                sigma_left = ROOT.RooRealVar('sigma_left','sigma_left',0.,0.005)
+                sigma_right = ROOT.RooRealVar('sigma_right','sigma_right',0.,0.005)
+                alpha_left = ROOT.RooRealVar('alpha_left','alpha_left',0.,2.)
+                alpha_right = ROOT.RooRealVar('alpha_right','alpha_right',0.,10.)
+                n_left = ROOT.RooRealVar('n_left','n_left',0.,5.)
+                n_right = ROOT.RooRealVar('n_right','n_right',0.,4.)
+                roo_signal = ROOT.RooCrystalBall('signal','signal',roo_m,mass,sigma_left,alpha_left,n_left,True)    
+                roo_signal_plot = ROOT.RooCrystalBall(roo_signal)
 
                 # background
-                roo_n_background = ROOT.RooRealVar('N_{bkg}', 'Nbackground', 0., 1.e4)
+                roo_n_background = ROOT.RooRealVar('N_{bkg}', 'Nbackground', 1., 1.e7)
                 roo_slope = ROOT.RooRealVar('slope', 'slope', -20., 20.)
                 roo_bkg = ROOT.RooRealVar()
 
@@ -117,14 +134,15 @@ for split in SPLIT_LIST:
                 ROOT.RooMsgService.instance().setGlobalKillBelow(ROOT.RooFit.ERROR)
                 ROOT.RooMsgService.instance().setSilentMode(ROOT.kTRUE)
                 ROOT.gErrorIgnoreLevel = ROOT.kError
+                roo_model.fitTo(roo_data, ROOT.RooFit.Save(), ROOT.RooFit.Extended(ROOT.kTRUE))
                 r = roo_model.fitTo(roo_data, ROOT.RooFit.Save(), ROOT.RooFit.Extended(ROOT.kTRUE))
 
                 print(f'fit status: {r.status()}')
-                if r.status() == 0 and delta_mass.getError() > 1.e-6:
+                if r.status() == 0: # and delta_mass.getError() > 1.e-6:
 
                     # plot
-                    nBins = 26
-                    xframe = roo_m.frame(2.96, 3.025, nBins)
+                    nBins = 100
+                    xframe = roo_m.frame(1.09, 1.14, nBins)
                     xframe.SetTitle(
                         str(ct_bins[0]) + '#leq #it{c}t<' + str(ct_bins[1]) + ' cm, ' + str(cent_bins[0]) + '-' +
                         str(cent_bins[1]) + '%, BDT efficiency = ' + str(formatted_eff))
@@ -142,17 +160,17 @@ for split in SPLIT_LIST:
                     formatted_chi2 = "{:.2f}".format(xframe.chiSquare('model', 'data'))
                     roo_model.paramOn(xframe, ROOT.RooFit.Label(
                         '#chi^{2}/NDF = '+formatted_chi2),
-                        ROOT.RooFit.Layout(0.55, 0.85, 0.88))
+                        ROOT.RooFit.Layout(0.57, 0.85, 0.88))
                     xframe.getAttText().SetTextFont(44)
                     xframe.getAttText().SetTextSize(20)
                     xframe.getAttLine().SetLineWidth(0)
 
                     print(f'chi2/NDF: {formatted_chi2}, edm: {r.edm()}')
-                    if float(formatted_chi2) < 2 and r.edm() < 1:
+                    if float(formatted_chi2) < 5: # and r.edm() < 1:
 
                         # fit mc distribution to get sigma and mass
-                        roo_mean_mc = ROOT.RooRealVar("mean", "mean", 2.98, 3.0)
-                        roo_sigma_mc = ROOT.RooRealVar("sigma", "sigma", 0.0005, 0.0040)
+                        roo_mean_mc = ROOT.RooRealVar("mean", "mean", 1.11, 1.12)
+                        roo_sigma_mc = ROOT.RooRealVar("sigma", "sigma", 0.0001, 0.0040)
                         gaus = ROOT.RooGaussian('gaus', 'gaus', roo_m, roo_mean_mc, roo_sigma_mc)
                         gaus.fitTo(roo_mc_signal)
 
@@ -194,19 +212,19 @@ for split in SPLIT_LIST:
                             canv = ROOT.TCanvas()
                             canv.cd()
                             text_mass = ROOT.TLatex(
-                                2.965, 0.74 * xframe.GetMaximum(),
-                                "#it{m}_{^{3}_{#Lambda}H} = " + "{:.6f}".format(mass_val) + " GeV/#it{c^{2}}")
+                                1.092, 0.74 * xframe.GetMaximum(),
+                                "#it{m}_{#Lambda} = " + "{:.6f}".format(mass_val) + " GeV/#it{c^{2}}")
                             text_mass.SetTextFont(44)
                             text_mass.SetTextSize(20)
-                            text_signif = ROOT.TLatex(2.965, 0.91 * xframe.GetMaximum(),
+                            text_signif = ROOT.TLatex(1.092, 0.91 * xframe.GetMaximum(),
                                                     "S/#sqrt{S+B} (3#sigma) = " + "{:.3f}".format(significance_val) + " #pm " +
                                                     "{:.3f}".format(significance_err))
                             text_signif.SetTextFont(44)
                             text_signif.SetTextSize(20)
-                            text_sig = ROOT.TLatex(2.965, 0.84 * xframe.GetMaximum(), "S (3#sigma) = " + "{:.1f}".format(sig) + " #pm " + "{:.1f}".format(signal_int*roo_n_signal.getError()))
+                            text_sig = ROOT.TLatex(1.092, 0.84 * xframe.GetMaximum(), "S (3#sigma) = " + "{:.1f}".format(sig) + " #pm " + "{:.1f}".format(signal_int*roo_n_signal.getError()))
                             text_sig.SetTextFont(44)
                             text_sig.SetTextSize(20)
-                            text_bkg = ROOT.TLatex(2.965, 0.77 * xframe.GetMaximum(), "B (3#sigma) = " + "{:.1f}".format(bkg) + " #pm" + "{:.1f}".format(bkg_int*roo_n_background.getError()))
+                            text_bkg = ROOT.TLatex(1.092, 0.77 * xframe.GetMaximum(), "B (3#sigma) = " + "{:.1f}".format(bkg) + " #pm" + "{:.1f}".format(bkg_int*roo_n_background.getError()))
                             text_bkg.SetTextFont(44)
                             text_bkg.SetTextSize(20)
                             xframe.Draw("")
@@ -223,7 +241,7 @@ for split in SPLIT_LIST:
                             canv.Print(f'plots/signal_extraction/{bin}_{bkg_shape}/{eff_score[0]:.2f}_{bin}.pdf')
 
                             # plot kde and mc
-                            frame = roo_m.frame(2.96, 3.025, 130)
+                            frame = roo_m.frame(1.09, 1.14, 130)
                             frame.SetTitle(str(cent_bins[0])+"-"+str(cent_bins[1])+"%, "+str(ct_bins[0])+"#leq #it{c}t<"+str(ct_bins[1])+" cm, BDT efficiency = "+str(formatted_eff))
                             roo_mc_signal.plotOn(frame)
                             roo_signal_plot.plotOn(frame, ROOT.RooFit.Name("KDE"))
@@ -242,6 +260,7 @@ for split in SPLIT_LIST:
                             leg_mc.SetBorderSize(0)
                             leg_mc.Draw("same")
                             cc.SetLogy(ROOT.kTRUE)
+                            cc.Write()
                             cc.Print(f'plots/kde_signal/{bin}/{formatted_eff}_{bin}.pdf')
 
             h_raw_yields.GetXaxis().SetTitle("BDT efficiency")

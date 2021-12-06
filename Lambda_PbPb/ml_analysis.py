@@ -17,37 +17,10 @@ from hipe4ml.model_handler import ModelHandler
 from hipe4ml.tree_handler import TreeHandler
 from sklearn.model_selection import train_test_split
 
-
-def presel_eff_hist(df_list, col_name, split, cent_bins, bins):
-    # fill histograms (vs. ct and vs. pt)
-    bins_array = np.asarray(bins, dtype=float)
-    hist_eff = ROOT.TH1F(
-        f'fPreselEff_vs_{col_name}_{split}_{cent_bins[0]}_{cent_bins[1]}',
-        f'Preselection Efficiency, {split}, {cent_bins[0]}-{cent_bins[1]}%', len(bins) - 1, bins_array)
-    hist_gen = ROOT.TH1F('fPreselGen_vs_{col_name}', 'Gen', len(bins)-1, bins_array)
-
-    for val in df_list[0][col_name]:
-        hist_eff.Fill(val)
-    for val in df_list[1][col_name]:
-        hist_gen.Fill(val)
-
-    # compute efficiency and set properties
-    hist_eff.Divide(hist_eff, hist_gen, 1, 1, "B")
-    if col_name == 'ct':
-        hist_eff.GetXaxis().SetTitle('#it{c}t (cm)')
-    elif col_name == 'pt':
-        hist_eff.GetXaxis().SetTitle('#it{p}_{T} (GeV/#it{c})')
-    hist_eff.GetYaxis().SetTitle('Efficiency')
-    hist_eff.SetMinimum(0)
-    hist_eff.SetDrawOption("histo")
-    hist_eff.SetLineWidth(2)
-
-    # return histogram
-    return hist_eff
-
-
 parser = argparse.ArgumentParser(prog='ml_analysis', allow_abbrev=True)
 parser.add_argument('-split', action='store_true')
+parser.add_argument('-dotraining', action='store_true')
+parser.add_argument('-generate', action='store_true')
 parser.add_argument('-mergecentrality', action='store_true')
 parser.add_argument('-eff', action='store_true')
 parser.add_argument('-train', action='store_true')
@@ -56,17 +29,17 @@ parser.add_argument('-application', action='store_true')
 args = parser.parse_args()
 
 SPLIT = args.split
+SAMPLE_SIDEBANDS = args.generate
 MAX_EFF = 1.00
-DUMP_HYPERPARAMS = False
+DUMP_HYPERPARAMS = True
 
 # training
-TRAINING = not args.application
+TRAINING = not args.application and args.dotraining
 PLOT_DIR = 'plots'
 MAKE_PRESELECTION_EFFICIENCY = args.eff
-MAKE_FEATURES_PLOTS = False
 MAKE_TRAIN_TEST_PLOT = True
 OPTIMIZE = False
-OPTIMIZED = False
+OPTIMIZED = True
 TRAIN = args.train
 COMPUTE_SCORES_FROM_EFF = args.computescoreff
 MERGE_CENTRALITY = args.mergecentrality
@@ -89,9 +62,10 @@ with open(os.path.expandvars(config), 'r') as stream:
         print(exc)
 
 DATA_PATH = params['DATA_PATH']
-MC_PATH = params['MC_SIGNAL_PATH']
-BKG_PATH = params['LS_BACKGROUND_PATH']
+MC_SIGNAL_PATH = params['MC_SIGNAL_PATH']
+MC_SIGNAL_PATH_GEN = params['MC_SIGNAL_PATH_GEN']
 CT_BINS = params['CT_BINS']
+CT_BINS_APPLY = params['CT_BINS_APPLY']
 CT_BINS_CENT = params['CT_BINS_CENT']
 PT_BINS = params['PT_BINS']
 CENTRALITY_LIST = params['CENTRALITY_LIST']
@@ -106,10 +80,19 @@ SPLIT_LIST = ['all']
 if SPLIT:
     SPLIT_LIST = ['antimatter', 'matter']
 
+if SAMPLE_SIDEBANDS and not TRAINING and not APPLICATION:
+
+    df_data = uproot.open(os.path.expandvars(DATA_PATH))['LambdaTree'].arrays(library="pd")
+    df_background = df_data.sample(frac=0.1)
+    df_data = df_data.drop(df_background.index)
+    df_background.to_parquet('df/background_dataset', compression='gzip')
+    df_data.to_parquet('df/data_dataset', compression='gzip')
+
+
 if TRAINING:
 
-    df_signal = uproot.open(os.path.expandvars(MC_PATH))['SignalTable'].arrays(library="pd")
-    df_background = uproot.open(os.path.expandvars(BKG_PATH))['DataTable'].arrays(library="pd")
+    df_signal = uproot.open(os.path.expandvars(MC_SIGNAL_PATH))['LambdaTree'].arrays(library="pd")
+    df_background = pd.read_parquet('df/background_dataset')
 
     # make plot directory
     if not os.path.isdir(PLOT_DIR):
@@ -123,8 +106,8 @@ if TRAINING:
 
     for ct_bins in CT_BINS:
 
-        df_signal_ct = df_signal.query(f'ct > {ct_bins[0]} and ct < {ct_bins[1]} and pt > 2 and pt < 10')
-        df_background_ct = df_background.query(f'ct > {ct_bins[0]} and ct < {ct_bins[1]} and pt > 2 and pt < 10')
+        df_signal_ct = df_signal.query(f'ct > {ct_bins[0]} and ct < {ct_bins[1]} and pt > 0.5 and pt < 4')
+        df_background_ct = df_background.query(f'ct > {ct_bins[0]} and ct < {ct_bins[1]} and pt > 0.5 and pt < 4 and ( mass < 1.105 or mass > 1.13 ) ')
 
         # define tree handlers
         signal_tree_handler = TreeHandler()
@@ -186,60 +169,64 @@ if TRAINING:
                     model_hdl.dump_model_handler(model_file_name)
                 elif COMPUTE_SCORES_FROM_EFF:
                     if OPTIMIZED:
-                        model_hdl.load_model_handler(f'models/{bin_model}_optimized_trained')
+                        model_hdl.load_model_handler(f'models/{bin_model}_trained')
                     else:
                         model_hdl.load_model_handler(f'models/{bin_model}_trained')
                 else:
                     continue
 
-                # get only centrality selected
-                train_test_data_cent = [pd.DataFrame(), [], pd.DataFrame(), []]
-                train_test_data_cent[0] = train_test_data[0].query(f'Matter {split_ineq_sign} and centrality > {cent_bins[0]} and centrality < {cent_bins[1]}')
-                train_test_data_cent[2] = train_test_data[2].query(f'Matter {split_ineq_sign} and centrality > {cent_bins[0]} and centrality < {cent_bins[1]}')
-                train_test_data_cent[1] = train_test_data_cent[0]['y_true']
-                train_test_data_cent[3] = train_test_data_cent[2]['y_true']
+                ct_bins_df_index = int(ct_bins[0]/5 -1)
+                for ct_bins_df in zip(CT_BINS_APPLY[i_cent_bins][ct_bins_df_index][:-1], CT_BINS_APPLY[i_cent_bins][ct_bins_df_index][1:]):
+                    bin_df = f'{split}_{cent_bins[0]}_{cent_bins[1]}_{ct_bins_df[0]}_{ct_bins_df[1]}'
+                    
+                    # get only centrality selected
+                    train_test_data_cent = [pd.DataFrame(), [], pd.DataFrame(), []]
+                    train_test_data_cent[0] = train_test_data[0].query(f'matter {split_ineq_sign} and centrality > {cent_bins[0]} and centrality < {cent_bins[1]} and ct >= {ct_bins_df[0]} and ct < {ct_bins_df[1]}')
+                    train_test_data_cent[2] = train_test_data[2].query(f'matter {split_ineq_sign} and centrality > {cent_bins[0]} and centrality < {cent_bins[1]} and ct >= {ct_bins_df[0]} and ct < {ct_bins_df[1]}')
+                    train_test_data_cent[1] = train_test_data_cent[0]['y_true']
+                    train_test_data_cent[3] = train_test_data_cent[2]['y_true']
 
-                # get predictions for training and test sets
-                test_y_score = model_hdl.predict(train_test_data_cent[2])
-                train_y_score = model_hdl.predict(train_test_data_cent[0])
+                    # get predictions for training and test sets
+                    test_y_score = model_hdl.predict(train_test_data_cent[2])
+                    train_y_score = model_hdl.predict(train_test_data_cent[0])
 
-                # second condition needed because of issue with Qt libraries
-                if MAKE_TRAIN_TEST_PLOT and not MAKE_PRESELECTION_EFFICIENCY:
-                    if not os.path.isdir(f'{PLOT_DIR}/train_test_out'):
-                        os.mkdir(f'{PLOT_DIR}/train_test_out')
-                    plot_utils.plot_output_train_test(model_hdl, train_test_data_cent,
-                                                      logscale=True, density=True, labels=leg_labels)
-                    plt.savefig(f'{PLOT_DIR}/train_test_out/{bin}_out.pdf')
+                    # second condition needed because of issue with Qt libraries
+                    if MAKE_TRAIN_TEST_PLOT and not MAKE_PRESELECTION_EFFICIENCY:
+                        if not os.path.isdir(f'{PLOT_DIR}/train_test_out'):
+                            os.mkdir(f'{PLOT_DIR}/train_test_out')
+                        plot_utils.plot_output_train_test(model_hdl, train_test_data_cent,
+                                                        logscale=True, density=True, labels=leg_labels)
+                        plt.savefig(f'{PLOT_DIR}/train_test_out/{bin_df}_out.pdf')
 
-                    plot_utils.plot_feature_imp(train_test_data_cent[0], train_test_data_cent[1], model_hdl)
-                    plt.savefig(f'{PLOT_DIR}/train_test_out/feature_imp_training_{bin}.pdf')
-                    plot_utils.plot_roc_train_test(
-                        train_test_data_cent[3],
-                        test_y_score, train_test_data_cent[1],
-                        train_y_score, labels=leg_labels)
-                    plt.savefig(f'{PLOT_DIR}/train_test_out/roc_train_test_{bin}.pdf')
-                    plt.close('all')
+                        plot_utils.plot_feature_imp(train_test_data_cent[0], train_test_data_cent[1], model_hdl)
+                        plt.savefig(f'{PLOT_DIR}/train_test_out/feature_imp_training_{bin_df}.pdf')
+                        plot_utils.plot_roc_train_test(
+                            train_test_data_cent[3],
+                            test_y_score, train_test_data_cent[1],
+                            train_y_score, labels=leg_labels)
+                        plt.savefig(f'{PLOT_DIR}/train_test_out/roc_train_test_{bin_df}.pdf')
+                        plt.close('all')
 
-                if COMPUTE_SCORES_FROM_EFF:
-                    # get scores corresponding to BDT efficiencies using test set
-                    eff_array = np.arange(0.10, MAX_EFF, 0.01)
-                    score_array = analysis_utils.score_from_efficiency_array(
-                        train_test_data_cent[3], test_y_score, efficiency_selected=eff_array, keep_lower=False)
-                    score_eff_arrays_dict[bin] = score_array
+                    if COMPUTE_SCORES_FROM_EFF:
+                        # get scores corresponding to BDT efficiencies using test set
+                        eff_array = np.arange(0.10, MAX_EFF, 0.01)
+                        score_array = analysis_utils.score_from_efficiency_array(
+                            train_test_data_cent[3], test_y_score, efficiency_selected=eff_array, keep_lower=False)
+                        score_eff_arrays_dict[bin_df] = score_array
 
-                    # write test set data frame
-                    train_test_data_cent[2]['model_output'] = test_y_score
-                    train_test_data_cent[2]['y_true'] = train_test_data_cent[3]
-                    train_test_data_cent[2] = train_test_data_cent[2].query('y_true > 0.5')
-                    train_test_data_cent[2].to_parquet(f'df/mc_{bin}', compression='gzip')
+                        # write test set data frame
+                        train_test_data_cent[2]['model_output'] = test_y_score
+                        train_test_data_cent[2]['y_true'] = train_test_data_cent[3]
+                        train_test_data_cent_tmp = train_test_data_cent[2].query(f'y_true > 0.5 and ct >= {ct_bins_df[0]} and ct < {ct_bins_df[1]}')
+                        train_test_data_cent_tmp.to_parquet(f'df/mc_{bin_df}', compression='gzip')
 
-                    # get the model hyperparameters
-                    if DUMP_HYPERPARAMS:
-                        if not os.path.isdir('hyperparams'):
-                            os.mkdir('hyperparams')
-                        model_params_dict = model_hdl.get_model_params()
-                        with open(f'hyperparams/model_params_{bin}.yml', 'w') as outfile:
-                            yaml.dump(model_params_dict, outfile, default_flow_style=False)
+                # get the model hyperparameters
+                if DUMP_HYPERPARAMS and TRAIN:
+                    if not os.path.isdir('hyperparams'):
+                        os.mkdir('hyperparams')
+                    model_params_dict = model_hdl.get_model_params()
+                    with open(f'hyperparams/model_params_{bin}.yml', 'w') as outfile:
+                        yaml.dump(model_params_dict, outfile, default_flow_style=False)
 
                     # save roc-auc
                 del train_test_data_cent
@@ -254,7 +241,7 @@ if APPLICATION:
     score_eff_arrays_dict = pickle.load(open("file_score_eff_dict", "rb"))
 
     for split in SPLIT_LIST:
-        df_data = uproot.open(os.path.expandvars(DATA_PATH))['DataTable'].arrays(library="pd")
+        df_data = pd.read_parquet('df/data_dataset')
 
         split_ineq_sign = '> -0.1'
         if SPLIT:
@@ -268,14 +255,15 @@ if APPLICATION:
             for ct_bins in zip(CT_BINS_CENT[i_cent_bins][:-1], CT_BINS_CENT[i_cent_bins][1:]):
                 bin = f'{split}_{cent_bins[0]}_{cent_bins[1]}_{ct_bins[0]}_{ct_bins[1]}'
                 df_data_cent = df_data.query(
-                    f'Matter {split_ineq_sign} and centrality > {cent_bins[0]} and centrality < {cent_bins[1]} and pt > 2 and pt < 10 and ct > {ct_bins[0]} and ct < {ct_bins[1]}')
+                    f'matter {split_ineq_sign} and centrality > {cent_bins[0]} and centrality < {cent_bins[1]} and pt > 0.5 and pt < 4 and ct > {ct_bins[0]} and ct < {ct_bins[1]}')
 
+                ct_bins_df_index = int(ct_bins[0]/5 -1)
                 model_hdl = ModelHandler()
-                bin_model = bin
+                bin_model = f'{split}_{cent_bins[0]}_{cent_bins[1]}_{CT_BINS_APPLY[i_cent_bins][ct_bins_df_index][0]}_{CT_BINS_APPLY[i_cent_bins][ct_bins_df_index][-1]}'
                 if MERGE_CENTRALITY:
-                    bin_model = f'all_0_90_{ct_bins[0]}_{ct_bins[1]}'
+                    bin_model = f'all_0_90_{CT_BINS_APPLY[i_cent_bins][ct_bins_df_index][0]}_{CT_BINS_APPLY[i_cent_bins][ct_bins_df_index][-1]}'
                 if OPTIMIZED:
-                    model_hdl.load_model_handler(f'models/{bin_model}_optimized_trained')
+                    model_hdl.load_model_handler(f'models/{bin_model}_trained') # *_optimized_trained
                 else:
                     model_hdl.load_model_handler(f'models/{bin_model}_trained')
 

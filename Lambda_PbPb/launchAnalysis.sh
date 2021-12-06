@@ -1,17 +1,17 @@
 # preselection efficiency
-#python3 plot_efficiencies_correlations.py -m -s -eff
+python3 plot_efficiencies_correlations.py -eff
 
 # plot feature distributions and correlations
-#python3 plot_efficiencies_correlations.py -s -m
+#python3 plot_efficiencies_correlations.py
 
 # train/test models and compute scores
-#python3 ml_analysis.py -m -s -t -c
+#python3 ml_analysis.py -t -c
 
 # train/test plots
-#python3 ml_analysis.py -m -c
+#python3 ml_analysis.py -c
 
 # application
-#python3 ml_analysis.py -s -m -a
+#python3 ml_analysis.py -a
 
 # significance scan
 # python3 significance_scan.py
