@@ -106,8 +106,8 @@ if TRAINING:
 
     for ct_bins in CT_BINS:
 
-        df_signal_ct = df_signal.query(f'ct > {ct_bins[0]} and ct < {ct_bins[1]} and pt > 0.5 and pt < 4')
-        df_background_ct = df_background.query(f'ct > {ct_bins[0]} and ct < {ct_bins[1]} and pt > 0.5 and pt < 4 and ( mass < 1.105 or mass > 1.13 ) ')
+        df_signal_ct = df_signal.query(f'ct > {ct_bins[0]} and ct < {ct_bins[1]} and pt > 2 and pt < 10')
+        df_background_ct = df_background.query(f'ct > {ct_bins[0]} and ct < {ct_bins[1]} and pt > 2 and pt < 10 and ( mass < 1.105 or mass > 1.13 ) ')
 
         # define tree handlers
         signal_tree_handler = TreeHandler()
@@ -255,7 +255,7 @@ if APPLICATION:
             for ct_bins in zip(CT_BINS_CENT[i_cent_bins][:-1], CT_BINS_CENT[i_cent_bins][1:]):
                 bin = f'{split}_{cent_bins[0]}_{cent_bins[1]}_{ct_bins[0]}_{ct_bins[1]}'
                 df_data_cent = df_data.query(
-                    f'matter {split_ineq_sign} and centrality > {cent_bins[0]} and centrality < {cent_bins[1]} and pt > 0.5 and pt < 4 and ct > {ct_bins[0]} and ct < {ct_bins[1]}')
+                    f'matter {split_ineq_sign} and centrality > {cent_bins[0]} and centrality < {cent_bins[1]} and pt > 2 and pt < 10 and ct > {ct_bins[0]} and ct < {ct_bins[1]}')
 
                 ct_bins_df_index = int(ct_bins[0]/5 -1)
                 model_hdl = ModelHandler()

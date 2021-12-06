@@ -15,6 +15,7 @@ from helpers import significance_error, ndarray2roo
 SPLIT = False
 use_crystalball = True
 MAX_EFF = 1.00
+mass_PDG = 1.115683 # GeV/c^2
 
 # avoid pandas warning
 warnings.simplefilter(action='ignore', category=FutureWarning)
@@ -88,9 +89,6 @@ for split in SPLIT_LIST:
 
                 df_data_sel = df_data.query(f'model_output > {eff_score[1]}')
                 df_signal_sel = df_signal.query(f'model_output > {eff_score[1]} and y_true == 1')
-                if np.count_nonzero(df_signal_sel['y_true'] == 1) > 1000:
-                    print('Sampling 1000 events...')
-                    df_signal_sel = df_signal_sel.sample(1000)
 
                 # get invariant mass distribution (data and mc)
                 roo_m = ROOT.RooRealVar("m", "#it{M} (p + #pi^{-})", 1.09, 1.14, "GeV/#it{c}^{2}")
@@ -98,6 +96,7 @@ for split in SPLIT_LIST:
                 roo_mc_signal = ndarray2roo(np.array(df_signal_sel['mass']), roo_m)
                 roo_m.setBins(100)
                 roo_data = ROOT.RooDataHist('data','data',roo_m,roo_data_unbinned)
+                roo_mc_signal = ROOT.RooDataHist('data','data',roo_m,roo_mc_signal)
 
                 # declare fit model
                 # kde
@@ -116,7 +115,7 @@ for split in SPLIT_LIST:
                 n_left = ROOT.RooRealVar('n_left','n_left',0.,5.)
                 n_right = ROOT.RooRealVar('n_right','n_right',0.,4.)
                 roo_signal = ROOT.RooCrystalBall('signal','signal',roo_m,mass,sigma_left,alpha_left,n_left,True)    
-                roo_signal_plot = ROOT.RooCrystalBall(roo_signal)
+                roo_signal_copy = ROOT.RooCrystalBall(roo_signal)
 
                 # background
                 roo_n_background = ROOT.RooRealVar('N_{bkg}', 'Nbackground', 1., 1.e7)
@@ -177,8 +176,21 @@ for split in SPLIT_LIST:
                         gaus = ROOT.RooGaussian('gaus', 'gaus', roo_m, roo_mean_mc, roo_sigma_mc)
                         gaus.fitTo(roo_mc_signal)
 
+                        # fit mc distribution with dscb
+                        mass_mc = ROOT.RooRealVar('mass','mass',1.11,1.12)
+                        sigma_left_mc = ROOT.RooRealVar('sigma_left','sigma_left',0.,0.005)
+                        sigma_right_mc = ROOT.RooRealVar('sigma_right','sigma_right',0.,0.005)
+                        alpha_left_mc = ROOT.RooRealVar('alpha_left','alpha_left',0.,2.)
+                        alpha_right_mc = ROOT.RooRealVar('alpha_right','alpha_right',0.,10.)
+                        n_left_mc = ROOT.RooRealVar('n_left','n_left',0.,5.)
+                        n_right_mc = ROOT.RooRealVar('n_right','n_right',0.,4.)
+                        roo_signal_mc = ROOT.RooCrystalBall('signal','signal',roo_m,mass_mc,sigma_left_mc,alpha_left_mc,n_left_mc,True) 
+                        roo_signal_plot = ROOT.RooCrystalBall(roo_signal_mc)
+                        for _ in range(2):
+                            roo_signal_mc.fitTo(roo_mc_signal)
+
                         # mass
-                        mass_val = roo_mean_mc.getVal()-delta_mass.getVal()
+                        mass_val = mass_mc.getVal()
 
                         # significance
                         m_set = ROOT.RooArgSet(roo_m)
@@ -208,8 +220,8 @@ for split in SPLIT_LIST:
                             h_raw_yields.SetBinError(eff_index, roo_n_signal.getError())
 
                             # fill mass histogram
-                            h_mass.SetBinContent(eff_index, mass.getVal())
-                            h_mass.SetBinError(eff_index, mass.getError())
+                            h_mass.SetBinContent(eff_index, mass.getVal()-mass_mc.getVal()+mass_PDG)
+                            h_mass.SetBinError(eff_index, np.sqrt(mass.getError()*mass.getError()+mass_mc.getError()*mass_mc.getError()))
 
                             # write to file
                             root_file_signal_extraction.cd(f'{bin}_{bkg_shape}')
