@@ -1,5 +1,5 @@
 DATA_PATH: "../data/Lambda_PbPb/data_reduced_tenth.root"
-ANALYSIS_RESULTS_PATH: "../data/Lambda_PbPb/data.root"
+ANALYSIS_RESULTS_PATH: "../data/Lambda_PbPb/StrangenessRatios_summary.root"
 MC_SIGNAL_PATH: "../data/Lambda_PbPb/mc_reduced_tenth_rec.root"
 MC_SIGNAL_PATH_GEN: "../data/Lambda_PbPb/mc_reduced_tenth.root"
 

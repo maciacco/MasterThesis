@@ -71,8 +71,11 @@ for split in SPLIT_LIST:
             root_file_signal_extraction = ROOT.TFile("SignalExtraction.root", "update")
             root_file_signal_extraction.mkdir(f'{bin}_{bkg_shape}')
 
-            # raw yileds histogram
+            # raw yields histogram
             h_raw_yields = ROOT.TH1D("fRawYields", "fRawYields", 101, -0.005, 1.005)
+
+            # mass histogram
+            h_mass = ROOT.TH1D("fMass","fMass", 101, -0.005, 1.005)
 
             # significance histogram
             h_significance = ROOT.TH1D("fSignificance", "fSignificance", 101, -0.005, 1.005)
@@ -204,6 +207,10 @@ for split in SPLIT_LIST:
                             h_raw_yields.SetBinContent(eff_index, roo_n_signal.getVal())
                             h_raw_yields.SetBinError(eff_index, roo_n_signal.getError())
 
+                            # fill mass histogram
+                            h_mass.SetBinContent(eff_index, mass.getVal())
+                            h_mass.SetBinError(eff_index, mass.getError())
+
                             # write to file
                             root_file_signal_extraction.cd(f'{bin}_{bkg_shape}')
                             xframe.Write()
@@ -266,6 +273,10 @@ for split in SPLIT_LIST:
             h_raw_yields.GetXaxis().SetTitle("BDT efficiency")
             h_raw_yields.GetYaxis().SetTitle("#it{N_{raw}}")
             h_raw_yields.Write()
+
+            h_mass.GetXaxis().SetTitle("BDT efficiency")
+            h_mass.GetYaxis().SetTitle("#it{m} (GeV/#it{c^2})")
+            h_mass.Write()
 
             h_significance.GetXaxis().SetTitle("BDT efficiency")
             h_significance.GetYaxis().SetTitle("S / #sqrt{S + B}")

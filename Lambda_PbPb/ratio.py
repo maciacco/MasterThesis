@@ -15,7 +15,7 @@ ROOT.gInterpreter.ProcessLine('#include "../utils/Utils.h"')
 ROOT.gInterpreter.ProcessLine('using namespace utils;')
 
 SPEED_OF_LIGHT = 2.99792458
-SPLIT = True
+SPLIT = False
 
 # avoid pandas warning
 warnings.simplefilter(action='ignore', category=FutureWarning)
@@ -38,7 +38,7 @@ RANDOM_STATE = params['RANDOM_STATE']
 ##################################################################
 
 # split matter/antimatter
-SPLIT_LIST = ['']
+SPLIT_LIST = ['all']
 if SPLIT:
     SPLIT_LIST = ['antimatter', 'matter']
 
@@ -50,15 +50,12 @@ ROOT.gStyle.SetOptFit(0)
 
 eff_cut_dict = pickle.load(open("file_eff_cut_dict", "rb"))
 presel_eff_file = uproot.open('PreselEff.root')
+analysis_results_file = uproot.open(ANALYSIS_RESULTS_PATH)
 signal_extraction_file = ROOT.TFile.Open('SignalExtraction.root')
 signal_extraction_keys = uproot.open('SignalExtraction.root').keys()
 
 # get centrality selected histogram
-ROOT.gInterpreter.ProcessLine(f"TFile fileAnalysisResults({ANALYSIS_RESULTS_PATH});")
-ROOT.gInterpreter.ProcessLine(f"TTList ls = (TTList*)fileAnalysisResults.Get(\"StrangenessRatios_summary\");")
-ROOT.gInterpreter.ProcessLine(f"TH1D *cent_hist = (TH1D*)ls->Get(\"Centrality_selected\")")
-cent_histogram_uproot = uproot.from_pyroot(ROOT.cent_hist)
-cent_counts, cent_edges = cent_histogram_uproot.to_numpy()
+cent_counts, cent_edges = analysis_results_file['Centrality_selected;1'].to_numpy()
 cent_bin_centers = (cent_edges[:-1]+cent_edges[1:])/2
 
 ratio_file = ROOT.TFile.Open('Ratio.root', 'recreate')
@@ -73,20 +70,13 @@ for i_cent_bins in range(len(CENTRALITY_LIST)):
     print(f'Number of events: {evts}')
 
     h_corrected_yields = [ROOT.TH1D(), ROOT.TH1D()]
+    h_mass = [ROOT.TH1D(), ROOT.TH1D()]
     for i_split, split in enumerate(SPLIT_LIST):
         print(f'{i_split} -> {split}')
         # get preselection efficiency and abs correction histograms
         presel_eff_counts, presel_eff_edges = presel_eff_file[
             f'fPreselEff_vs_ct_{split}_{cent_bins[0]}_{cent_bins[1]};1'].to_numpy()
         presel_eff_bin_centers = (presel_eff_edges[1:]+presel_eff_edges[:-1])/2
-
-        # func_name = 'BGBW'
-        # if (cent_bins[1] == 90) or (cent_bins[0] == 0 and cent_bins[1] == 10):
-        #     func_name = 'BlastWave'
-        # g_abs_correction = ROOT.TGraphAsymmErrors()
-        # g_abs_correction = abs_correction_file.Get(f"{cent_bins[0]}_{cent_bins[1]}/{func_name}/fEffCt_{split}_{cent_bins[0]}_{cent_bins[1]}_{func_name}")
-        # eff_abs_correction = ROOT.TH1D()
-        # eff_abs_correction = eff_correction_file.Get(f"{cent_bins[0]}_{cent_bins[1]}/{func_name}/fCorrection_{split}_{cent_bins[0]}_{cent_bins[1]}_{func_name}")
 
         # list of corrected yields
         ct_bins_tmp = [0]
@@ -99,6 +89,8 @@ for i_cent_bins in range(len(CENTRALITY_LIST)):
         # print(bins)
         h_corrected_yields[i_split] = ROOT.TH1D(
             f'fYields_{split}_{cent_bins[0]}_{cent_bins[1]}', f'{split}, {cent_bins[0]}-{cent_bins[1]}%', len(bins)-1, bins)
+        h_mass[i_split] = ROOT.TH1D(
+            f'fMass_{split}_{cent_bins[0]}_{cent_bins[1]}', f'{split}, {cent_bins[0]}-{cent_bins[1]}%', len(bins)-1, bins)
 
         for ct_bins in zip(CT_BINS_CENT[i_cent_bins][:-1], CT_BINS_CENT[i_cent_bins][1:]):
 
@@ -122,6 +114,13 @@ for i_cent_bins in range(len(CENTRALITY_LIST)):
             raw_yield_error = h_raw_yield.GetBinError(eff_index)
             print(f'eff_cut = {formatted_eff_cut}, raw_yield = {raw_yield}+{raw_yield_error}')
 
+            # get mass
+            h_mass_eff = signal_extraction_file.Get(f'{bin}_{bkg_shape}/fMass;1')
+            eff_index = h_mass_eff.FindBin(float(formatted_eff_cut))
+            mass = h_mass_eff.GetBinContent(eff_index)
+            mass_error = h_mass_eff.GetBinError(eff_index)
+            print(f'eff_cut = {formatted_eff_cut}, mass = {mass}+{mass_error}')
+
             # apply corrections
             # 1. efficiency (presel x BDT)
             presel_eff_map = np.logical_and(
@@ -140,10 +139,14 @@ for i_cent_bins in range(len(CENTRALITY_LIST)):
             ct_bin_index = h_corrected_yields[i_split].FindBin(ct_bins[0]+0.5)
             h_corrected_yields[i_split].SetBinContent(ct_bin_index, raw_yield/eff[0])
             h_corrected_yields[i_split].SetBinError(ct_bin_index, raw_yield_error/eff[0])
+            h_mass[i_split].SetBinContent(ct_bin_index, mass)
+            h_mass[i_split].SetBinError(ct_bin_index, mass_error)
 
         # set labels
         h_corrected_yields[i_split].GetXaxis().SetTitle("#it{c}t (cm)")
         h_corrected_yields[i_split].GetYaxis().SetTitle("d#it{N}/d(#it{c}t) (cm^{-1})")
+        h_mass[i_split].GetXaxis().SetTitle("#it{c}t (cm)")
+        h_mass[i_split].GetYaxis().SetTitle("#it{m}_{#Lambda} (GeV/#it{c}^{2})")
         #h_corrected_yields[i_split].Scale(1, "width")
         for i_bin in range(len(bins))[2:]:
             bin_width = h_corrected_yields[i_split].GetBinWidth(i_bin)
@@ -152,10 +155,13 @@ for i_cent_bins in range(len(CENTRALITY_LIST)):
             bin_error = h_corrected_yields[i_split].GetBinError(i_bin)
             h_corrected_yields[i_split].SetBinContent(i_bin, bin_content/bin_width)
             h_corrected_yields[i_split].SetBinError(i_bin, bin_error/bin_width)
-        h_corrected_yields[i_split].GetYaxis().SetRangeUser(1., 450.)
+        #h_corrected_yields[i_split].GetYaxis().SetRangeUser(1., 450.)
         h_corrected_yields[i_split].SetMarkerStyle(20)
         h_corrected_yields[i_split].SetMarkerSize(0.8)
         h_corrected_yields[i_split].Write()
+        h_mass[i_split].SetMarkerStyle(20)
+        h_mass[i_split].SetMarkerSize(0.8)
+        h_mass[i_split].Write()
 
         # fit with exponential pdf
         fit_function_expo = ROOT.TF1("expo", "expo", 2, 35)

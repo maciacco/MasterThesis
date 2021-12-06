@@ -48,20 +48,20 @@ presel_eff_file = uproot.open('PreselEff.root')
 analysis_results_file = uproot.open(os.path.expandvars(ANALYSIS_RESULTS_PATH))
 
 # get centrality selected histogram
-#cent_counts, cent_edges = analysis_results_file['StrangenessRatios_summary/Centrality_selected;1'].to_numpy()
-#cent_bin_centers = (cent_edges[:-1]+cent_edges[1:])/2
+cent_counts, cent_edges = analysis_results_file['Centrality_selected;1'].to_numpy()
+cent_bin_centers = (cent_edges[:-1]+cent_edges[1:])/2
 
 # cut dictionary
-eff_cut_dict = dict()
+#eff_cut_dict = dict()
 
 for split in SPLIT_LIST:
     for i_cent_bins in range(len(CENTRALITY_LIST)):
         cent_bins = CENTRALITY_LIST[i_cent_bins]
 
         # get number of events
-        #cent_range_map = np.logical_and(cent_bin_centers > cent_bins[0], cent_bin_centers < cent_bins[1])
-        counts_cent_range = 250e6/10 #cent_counts[cent_range_map]
-        evts = counts_cent_range #np.sum(counts_cent_range)
+        cent_range_map = np.logical_and(cent_bin_centers > cent_bins[0], cent_bin_centers < cent_bins[1])
+        counts_cent_range = cent_counts[cent_range_map]
+        evts = np.sum(counts_cent_range)
         print(f'Number of events: {evts}')
 
         # get preselection efficiency histogram
