@@ -63,7 +63,7 @@ DUMP_HYPERPARAMS = False
 TRAINING = not args.application
 PLOT_DIR = 'plots'
 MAKE_PRESELECTION_EFFICIENCY = args.eff
-MAKE_FEATURES_PLOTS = True
+MAKE_FEATURES_PLOTS = False
 MAKE_TRAIN_TEST_PLOT = args.train
 OPTIMIZE = False
 OPTIMIZED = False
@@ -90,7 +90,7 @@ with open(os.path.expandvars(config), 'r') as stream:
 
 DATA_PATH = params['DATA_PATH']
 BKG_PATH = params['BKG_PATH']
-MC_SIGNAL_PATH = params['MC_SIGNAL_RED_PATH']
+MC_SIGNAL_PATH = params['MC_SIGNAL_PATH']
 MC_SIGNAL_PATH_GEN = params['MC_SIGNAL_PATH_GEN']
 CT_BINS = params['CT_BINS']
 CT_BINS_CENT = params['CT_BINS_CENT']
@@ -134,12 +134,12 @@ if TRAINING:
                 ##############################################################
                 # PRESELECTION EFFICIENCY
                 ##############################################################
-                df_generated = uproot.open(os.path.expandvars(MC_SIGNAL_PATH_GEN))['LambdaTree'].arrays(library="pd")
+                # df_generated = uproot.open(os.path.expandvars(MC_SIGNAL_PATH_GEN))['LambdaTree'].arrays(library="pd")
                 df_signal_cent = df_signal.query(
-                    f'matter {split_ineq_sign} and centrality > {cent_bins[0]} and centrality < {cent_bins[1]} and pt > 0.5 and pt < 3') # pt cut?
-                df_generated_cent = df_generated.query(
+                    f'matter {split_ineq_sign} and centrality > {cent_bins[0]} and centrality < {cent_bins[1]} and pt > 0.5 and pt < 3 and isReconstructed') # pt cut?
+                df_generated_cent = df_signal.query(
                     f'matter {split_ineq_sign} and centrality > {cent_bins[0]} and centrality < {cent_bins[1]} and ptMC > 0.5 and ptMC < 3') # pt cut?
-                del df_generated
+                #del df_generated
 
                 # fill histograms (vs. ct and vs. pt)
                 hist_eff_ct = presel_eff_hist([df_signal_cent, df_generated_cent], 'ct', split, cent_bins, CT_BINS_CENT[i_cent_bins])
@@ -174,7 +174,7 @@ if TRAINING:
         ######################################################
 
         df_background = uproot.open(os.path.expandvars(BKG_PATH))['LambdaTree'].arrays(library="pd")
-        df_signal_ct = df_signal.query(f'pt > 0.5 and pt < 3') # pt cut?
+        df_signal_ct = df_signal.query(f'pt > 0.5 and pt < 3 and ((flag & 1) == 1) and isReconstructed') # pt cut?
         df_background_ct = df_background.query(f'pt > 0.5 and pt < 3 and ( mass < 1.105 or mass > 1.13 )') # pt cut?
 
         # define tree handlers

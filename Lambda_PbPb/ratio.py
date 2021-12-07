@@ -95,7 +95,7 @@ for i_cent_bins in range(len(CENTRALITY_LIST)):
         for ct_bins in zip(CT_BINS_CENT[i_cent_bins][:-1], CT_BINS_CENT[i_cent_bins][1:]):
 
             bin = f'{split}_{cent_bins[0]}_{cent_bins[1]}_{ct_bins[0]}_{ct_bins[1]}'
-            formatted_eff_cut = "{:.2f}".format(eff_cut_dict[bin])
+            formatted_eff_cut = "0.90"# "{:.2f}".format(eff_cut_dict[bin])
 
             # look for plot with eff = eff_cut (or the nearest one)
             bkg_shape = 'pol1'
@@ -146,7 +146,7 @@ for i_cent_bins in range(len(CENTRALITY_LIST)):
         h_corrected_yields[i_split].GetXaxis().SetTitle("#it{c}t (cm)")
         h_corrected_yields[i_split].GetYaxis().SetTitle("d#it{N}/d(#it{c}t) (cm^{-1})")
         h_mass[i_split].GetXaxis().SetTitle("#it{c}t (cm)")
-        h_mass[i_split].GetYaxis().SetTitle("#it{m}_{#Lambda} (GeV/#it{c}^{2})")
+        h_mass[i_split].GetYaxis().SetTitle("#it{m}_{#Lambda} (MeV/#it{c}^{2})")
         #h_corrected_yields[i_split].Scale(1, "width")
         for i_bin in range(len(bins))[2:]:
             bin_width = h_corrected_yields[i_split].GetBinWidth(i_bin)

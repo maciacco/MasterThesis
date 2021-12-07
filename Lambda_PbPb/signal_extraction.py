@@ -47,6 +47,8 @@ CENTRALITY_LIST = params['CENTRALITY_LIST']
 RANDOM_STATE = params['RANDOM_STATE']
 ##################################################################
 
+USE_TEST_OUTPUT = True
+
 # split matter/antimatter
 SPLIT_LIST = ['all']
 if SPLIT:
@@ -60,6 +62,10 @@ score_eff_arrays_dict = pickle.load(open("file_score_eff_dict", "rb"))
 eff_array = np.arange(0.10, MAX_EFF, 0.01)
 
 for split in SPLIT_LIST:
+    df_signal = pd.DataFrame()
+    if not USE_TEST_OUTPUT:
+        df_signal = uproot.open(f"../data/Lambda_PbPb/mc.root")['LambdaTree'].arrays(library="pd")
+
     for i_cent_bins in range(len(CENTRALITY_LIST)):
         cent_bins = CENTRALITY_LIST[i_cent_bins]
         for ct_bins in zip(CT_BINS_CENT[i_cent_bins][:-1], CT_BINS_CENT[i_cent_bins][1:]):
@@ -69,7 +75,12 @@ for split in SPLIT_LIST:
             bin = f'{split}_{cent_bins[0]}_{cent_bins[1]}_{ct_bins[0]}_{ct_bins[1]}'
             # bin_df = f'{split}_{cent_bins[0]}_{cent_bins[1]}_{CT_BINS[ct_bins_df_index][0]}_{CT_BINS[ct_bins_df_index][1]}'
             df_data = pd.read_parquet(f'df/{bin}.parquet.gzip')
-            df_signal = pd.read_parquet(f'df/mc_{bin}')
+            df_signal_ct = pd.DataFrame()
+            if USE_TEST_OUTPUT:
+                df_signal_ct = pd.read_parquet(f'df/mc_{bin}')
+            else:
+                ct_bins_df_index = int(ct_bins[0]/5 -1)
+                df_signal_ct = df_signal.query(f"centrality >= {cent_bins[0]} and centrality < {cent_bins[1]} and ct >= {ct_bins[0]} and ct < {ct_bins[1]}and ct < {ct_bins[1]} and pt > 0.5 and pt < 3 and isReconstructed and tpcClV0Pi > 69 and tpcClV0Pr > 69 and radius > 3")
 
             # ROOT.Math.MinimizerOptions.SetDefaultTolerance(1e-2)
             root_file_signal_extraction = ROOT.TFile("SignalExtraction.root", "update")
@@ -85,13 +96,17 @@ for split in SPLIT_LIST:
             h_significance = ROOT.TH1D("fSignificance", "fSignificance", 101, -0.005, 1.005)
 
             for eff_score in zip(eff_array, score_eff_arrays_dict[bin]):
-                if (ct_bins[0] > 0.5) and (eff_score[0] < 0.69 or eff_score[0] > 0.99):
+                if (ct_bins[0] > 0.5) and (eff_score[0] < 0.88 or eff_score[0] > 0.92):
                     continue
                 formatted_eff = "{:.2f}".format(eff_score[0])
                 print(f'processing {bin}: eff = {eff_score[0]:.2f}, score = {eff_score[1]:.2f}...')
 
                 df_data_sel = df_data.query(f'model_output > {eff_score[1]}')
-                df_signal_sel = df_signal.query(f'model_output > {eff_score[1]} and y_true == 1')
+                df_signal_sel = pd.DataFrame()
+                if USE_TEST_OUTPUT:
+                    df_signal_sel = df_signal_ct.query(f'model_output > {eff_score[1]} and y_true == 1')
+                else:
+                    df_signal_sel = df_signal_ct
 
                 # get invariant mass distribution (data and mc)
                 roo_m = ROOT.RooRealVar("m", "#it{M} (p + #pi^{-})", 1.09, 1.14, "GeV/#it{c}^{2}")
@@ -109,19 +124,41 @@ for split in SPLIT_LIST:
                 #roo_signal = ROOT.RooKeysPdf("signal", "signal", shifted_mass, roo_m,
                            #                  roo_mc_signal, ROOT.RooKeysPdf.NoMirror, 2)
 
+                # fit mc distribution with dscb
+                mass_mc = ROOT.RooRealVar('mass','mass',1.11,1.12)
+                sigma_left_mc = ROOT.RooRealVar('sigma_left','sigma_left',0.,0.005)
+                sigma_right_mc = ROOT.RooRealVar('sigma_right','sigma_right',0.,0.005)
+                alpha_left_mc = ROOT.RooRealVar('alpha_left','alpha_left',0.,2.)
+                alpha_right_mc = ROOT.RooRealVar('alpha_right','alpha_right',0.,2.)
+                n_left_mc = ROOT.RooRealVar('n_left','n_left',0.,10.)
+                n_right_mc = ROOT.RooRealVar('n_right','n_right',0.,10.)
+                roo_signal_mc = ROOT.RooDSCBShape('signal','signal',roo_m,mass_mc,sigma_left_mc,alpha_left_mc,n_left_mc,alpha_right_mc,n_right_mc) 
+                roo_signal_plot = ROOT.RooDSCBShape(roo_signal_mc)
+                for _ in range(2):
+                    roo_signal_mc.fitTo(roo_mc_signal)
+
                 # cb signal
                 mass = ROOT.RooRealVar('mass','mass',1.11,1.12)
-                sigma_left = ROOT.RooRealVar('sigma_left','sigma_left',0.,0.005)
-                sigma_right = ROOT.RooRealVar('sigma_right','sigma_right',0.,0.005)
-                alpha_left = ROOT.RooRealVar('alpha_left','alpha_left',0.,2.)
-                alpha_right = ROOT.RooRealVar('alpha_right','alpha_right',0.,2.)
-                n_left = ROOT.RooRealVar('n_left','n_left',0.,10.)
-                n_right = ROOT.RooRealVar('n_right','n_right',0.,10.)
-                roo_signal = ROOT.RooDSCBShape('signal','signal',roo_m,mass,sigma_left,alpha_left,n_left,alpha_right,n_right)    
+                # sigma_left = ROOT.RooRealVar('sigma_left','sigma_left',0.,0.005)
+                # sigma_right = ROOT.RooRealVar('sigma_right','sigma_right',0.,0.005)
+                # alpha_left = ROOT.RooRealVar('alpha_left','alpha_left',0.,2.)
+                # alpha_right = ROOT.RooRealVar('alpha_right','alpha_right',0.,2.)
+                # n_left = ROOT.RooRealVar('n_left','n_left',0.,10.)
+                # n_right = ROOT.RooRealVar('n_right','n_right',0.,10.)
+                sigma_left_mc.setConstant()
+                sigma_right_mc.setConstant()
+                alpha_left_mc.setConstant()
+                alpha_right_mc.setConstant()
+                n_left_mc.setConstant()
+                n_right_mc.setConstant()
+                roo_signal = ROOT.RooDSCBShape('signal','signal',roo_m,mass,sigma_left_mc,alpha_left_mc,n_left_mc,alpha_right_mc,n_right_mc) 
+                # roo_signal = ROOT.RooDSCBShape('signal','signal',roo_m,mass,sigma_left,alpha_left,n_left,alpha_right,n_right)      
                 roo_signal_copy = ROOT.RooDSCBShape(roo_signal)
 
                 # background
                 roo_n_background = ROOT.RooRealVar('N_{bkg}', 'Nbackground', 1., 1.e7)
+                # roo_a = ROOT.RooRealVar('a', 'a', -20., 20.)
+                # roo_b = ROOT.RooRealVar('b', 'b', -20., 20.)
                 roo_slope = ROOT.RooRealVar('slope', 'slope', -20., 20.)
                 roo_bkg = ROOT.RooRealVar()
 
@@ -171,26 +208,13 @@ for split in SPLIT_LIST:
                     xframe.getAttLine().SetLineWidth(0)
 
                     print(f'chi2/NDF: {formatted_chi2}, edm: {r.edm()}')
-                    if float(formatted_chi2) < 10: # and r.edm() < 1:
+                    if float(formatted_chi2) < 100: # and r.edm() < 1:
 
                         # fit mc distribution to get sigma and mass
                         roo_mean_mc = ROOT.RooRealVar("mean", "mean", 1.11, 1.12)
                         roo_sigma_mc = ROOT.RooRealVar("sigma", "sigma", 0.0001, 0.0040)
                         gaus = ROOT.RooGaussian('gaus', 'gaus', roo_m, roo_mean_mc, roo_sigma_mc)
                         gaus.fitTo(roo_mc_signal)
-
-                        # fit mc distribution with dscb
-                        mass_mc = ROOT.RooRealVar('mass','mass',1.11,1.12)
-                        sigma_left_mc = ROOT.RooRealVar('sigma_left','sigma_left',0.,0.005)
-                        sigma_right_mc = ROOT.RooRealVar('sigma_right','sigma_right',0.,0.005)
-                        alpha_left_mc = ROOT.RooRealVar('alpha_left','alpha_left',0.,2.)
-                        alpha_right_mc = ROOT.RooRealVar('alpha_right','alpha_right',0.,2.)
-                        n_left_mc = ROOT.RooRealVar('n_left','n_left',0.,10.)
-                        n_right_mc = ROOT.RooRealVar('n_right','n_right',0.,10.)
-                        roo_signal_mc = ROOT.RooDSCBShape('signal','signal',roo_m,mass_mc,sigma_left_mc,alpha_left_mc,n_left_mc,alpha_right_mc,n_right_mc) 
-                        roo_signal_plot = ROOT.RooDSCBShape(roo_signal_mc)
-                        for _ in range(2):
-                            roo_signal_mc.fitTo(roo_mc_signal)
 
                         # mass
                         mass_val = mass_mc.getVal()

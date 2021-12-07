@@ -34,15 +34,16 @@ MAX_EFF = 1.00
 DUMP_HYPERPARAMS = True
 
 # training
-TRAINING = not args.application and args.dotraining
 PLOT_DIR = 'plots'
 MAKE_PRESELECTION_EFFICIENCY = args.eff
 MAKE_TRAIN_TEST_PLOT = True
 OPTIMIZE = False
 OPTIMIZED = True
-TRAIN = args.train
+TRAIN = False #args.train
 COMPUTE_SCORES_FROM_EFF = args.computescoreff
+TRAINING = not args.application and (COMPUTE_SCORES_FROM_EFF or TRAIN)
 MERGE_CENTRALITY = args.mergecentrality
+CREATE_TRAIN_TEST = False
 
 # application
 APPLICATION = args.application
@@ -120,21 +121,30 @@ if TRAINING:
 
     for ct_bins in CT_BINS:
 
-        df_signal_ct = df_signal.query(f'ct > {ct_bins[0]} and ct < {ct_bins[1]} and pt > 0.5 and pt < 3 and isReconstructed')
-        df_background_ct = df_background.query(f'ct > {ct_bins[0]} and ct < {ct_bins[1]} and pt > 0.5 and pt < 3 and ( mass < 1.105 or mass > 1.13 ) ')
+        if CREATE_TRAIN_TEST and TRAIN:
+            df_signal_ct = df_signal.query(f'ct > {ct_bins[0]} and ct < {ct_bins[1]} and pt > 0.5 and pt < 3 and isReconstructed and tpcClV0Pi > 69 and tpcClV0Pr > 69 and radius > 3')
+            df_background_ct = df_background.query(f'ct > {ct_bins[0]} and ct < {ct_bins[1]} and pt > 0.5 and pt < 3 and ( mass < 1.105 or mass > 1.13 ) and tpcClV0Pi > 69 and tpcClV0Pr > 69 and radius > 3')
 
-        # define tree handlers
-        signal_tree_handler = TreeHandler()
-        background_tree_handler = TreeHandler()
-        signal_tree_handler.set_data_frame(df_signal_ct)
-        background_tree_handler.set_data_frame(df_background_ct)
-        del df_signal_ct, df_background_ct
+            # define tree handlers
+            signal_tree_handler = TreeHandler()
+            background_tree_handler = TreeHandler()
+            signal_tree_handler.set_data_frame(df_signal_ct)
+            background_tree_handler.set_data_frame(df_background_ct)
+            del df_signal_ct, df_background_ct
 
-        # split data into training and test set
-        train_test_data = train_test_generator([signal_tree_handler, background_tree_handler], [
-            1, 0], test_size=0.5, random_state=RANDOM_STATE)
-        train_test_data[0]['y_true'] = train_test_data[1]
-        train_test_data[2]['y_true'] = train_test_data[3]
+            # split data into training and test set
+            train_test_data = train_test_generator([signal_tree_handler, background_tree_handler], [
+                1, 0], test_size=0.5, random_state=RANDOM_STATE)
+            train_test_data[0]['y_true'] = train_test_data[1]
+            train_test_data[2]['y_true'] = train_test_data[3]
+            train_test_data[0].to_parquet(f'df/train_data_{ct_bins[0]}_{ct_bins[1]}.parquet.gzip',compression='gzip')
+            train_test_data[2].to_parquet(f'df/test_data_{ct_bins[0]}_{ct_bins[1]}.parquet.gzip',compression='gzip')
+            continue
+        else:
+            train_test_data = [pd.DataFrame(), pd.DataFrame(), pd.DataFrame(), pd.DataFrame()]
+            train_test_data[0] = pd.read_parquet(f'df/train_test/train_data_{ct_bins[0]}_{ct_bins[1]}.parquet.gzip')
+            train_test_data[2] = pd.read_parquet(f'df/train_test/test_data_{ct_bins[0]}_{ct_bins[1]}.parquet.gzip')
+
 
         for split in SPLIT_LIST:
             split_ineq_sign = '> -0.1'
@@ -181,7 +191,7 @@ if TRAINING:
                     if OPTIMIZE:
                         model_file_name = str(f'models/{bin_model}_optimized_trained')
                     model_hdl.dump_model_handler(model_file_name)
-                elif COMPUTE_SCORES_FROM_EFF:
+                elif COMPUTE_SCORES_FROM_EFF and isModelTrained:
                     if OPTIMIZED:
                         model_hdl.load_model_handler(f'models/{bin_model}_trained')
                     else:
@@ -246,7 +256,8 @@ if TRAINING:
                 del train_test_data_cent
                 ##############################################################
 
-    pickle.dump(score_eff_arrays_dict, open("file_score_eff_dict", "wb"))
+    if COMPUTE_SCORES_FROM_EFF:
+        pickle.dump(score_eff_arrays_dict, open("file_score_eff_dict", "wb"))
 
 # apply model to data
 if APPLICATION:
@@ -284,7 +295,7 @@ if APPLICATION:
                 if USE_PD:
                     df_data = pd.read_parquet('df/data_dataset')
                     df_data_cent = df_data.query(
-                    f'matter {split_ineq_sign} and centrality > {cent_bins[0]} and centrality < {cent_bins[1]} and pt > 0.5 and pt < 4 and ct > {ct_bins[0]} and ct < {ct_bins[1]}')
+                    f'matter {split_ineq_sign} and centrality > {cent_bins[0]} and centrality < {cent_bins[1]} and pt > 0.5 and pt < 3 and ct > {ct_bins[0]} and ct < {ct_bins[1]} and tpcClV0Pi > 69 and tpcClV0Pr > 69 and radius > 3')
                     del df_data
 
                     data_y_score = model_hdl.predict(df_data_cent)
