@@ -76,6 +76,8 @@ HYPERPARAMS = params['HYPERPARAMS']
 HYPERPARAMS_RANGES = params['HYPERPARAMS_RANGES']
 ##################################################################
 
+USE_PD = True
+
 # split matter/antimatter
 SPLIT_LIST = ['all']
 if SPLIT:
@@ -83,15 +85,28 @@ if SPLIT:
 
 if SAMPLE_SIDEBANDS and not TRAINING and not APPLICATION:
 
-    df_data = ROOT.RDataFrame("LambdaTree","../data/Lambda_PbPb/data_cols.root")
-    df_index = df_data.Define("index","gRandom->Rndm()+mass-mass")
-    df_index.Filter("index < 0.05").Snapshot("LambdaTree","../data/Lambda_PbPb/dataBackground.root")
-    df_index.Filter("index > 0.05").Snapshot("LambdaTree","../data/Lambda_PbPb/dataSample.root")
+    if USE_PD:
+        df_data = uproot.open(os.path.expandvars("../data/Lambda_PbPb/data.root"))['LambdaTree'].arrays(library="pd")
+        df_background = df_data.sample(frac=0.05)
+        df_data = df_data.drop(df_background.index)
+        df_background.to_parquet('df/background_dataset', compression='gzip')
+        df_data.to_parquet('df/data_dataset', compression='gzip')
+
+    else:
+        df_data = ROOT.RDataFrame("LambdaTree","../data/Lambda_PbPb/data.root")
+        df_index = df_data.Define("index","gRandom->Rndm()+mass-mass")
+        df_index.Filter("index < 0.05").Snapshot("LambdaTree","../data/Lambda_PbPb/dataBackground.root")
+        df_index.Filter("index > 0.05").Snapshot("LambdaTree","../data/Lambda_PbPb/dataSample.root")
+
 
 if TRAINING:
 
     df_signal = uproot.open(os.path.expandvars(MC_SIGNAL_PATH))['LambdaTree'].arrays(library="pd")
-    df_background = uproot.open(os.path.expandvars(BKG_PATH))['LambdaTree'].arrays(library="pd")
+    df_background = pd.DataFrame()
+    if USE_PD:
+        df_background = pd.read_parquet('df/background_dataset')
+    else:
+        df_background = uproot.open(os.path.expandvars(f'{BKG_PATH}'))['LambdaTree'].arrays(library="pd")
 
     # make plot directory
     if not os.path.isdir(PLOT_DIR):
@@ -105,7 +120,7 @@ if TRAINING:
 
     for ct_bins in CT_BINS:
 
-        df_signal_ct = df_signal.query(f'ct > {ct_bins[0]} and ct < {ct_bins[1]} and pt > 0.5 and pt < 3')
+        df_signal_ct = df_signal.query(f'ct > {ct_bins[0]} and ct < {ct_bins[1]} and pt > 0.5 and pt < 3 and isReconstructed')
         df_background_ct = df_background.query(f'ct > {ct_bins[0]} and ct < {ct_bins[1]} and pt > 0.5 and pt < 3 and ( mass < 1.105 or mass > 1.13 ) ')
 
         # define tree handlers
@@ -266,11 +281,23 @@ if APPLICATION:
                     model_hdl.load_model_handler(f'models/{bin_model}_trained')
 
                 eff_array = np.arange(0.10, MAX_EFF, 0.01)
-                df_data = TreeHandler()
-                df_data.get_handler_from_large_file(DATA_PATH, "LambdaTree",
-                    preselection=f'matter {split_ineq_sign} and centrality > {cent_bins[0]} and centrality < {cent_bins[1]} and pt > 0.5 and pt < 3 and ct > {ct_bins[0]} and ct < {ct_bins[1]}',
-                    max_workers=8)
+                if USE_PD:
+                    df_data = pd.read_parquet('df/data_dataset')
+                    df_data_cent = df_data.query(
+                    f'matter {split_ineq_sign} and centrality > {cent_bins[0]} and centrality < {cent_bins[1]} and pt > 0.5 and pt < 4 and ct > {ct_bins[0]} and ct < {ct_bins[1]}')
+                    del df_data
 
-                df_data.apply_model_handler(model_hdl)
-                df_data.apply_preselections(f'model_output > {score_eff_arrays_dict[bin][len(eff_array)-1]}')
-                df_data.write_df_to_parquet_files(bin,"df/")
+                    data_y_score = model_hdl.predict(df_data_cent)
+                    df_data_cent['model_output'] = data_y_score
+
+                    df_data_cent = df_data_cent.query(f'model_output > {score_eff_arrays_dict[bin][len(eff_array)-1]}')
+                    df_data_cent.to_parquet(f'df/{bin}.parquet.gzip', compression='gzip')
+                else:
+                    df_data = TreeHandler()
+                    df_data.get_handler_from_large_file(DATA_PATH, "LambdaTree",
+                        preselection=f'matter {split_ineq_sign} and centrality > {cent_bins[0]} and centrality < {cent_bins[1]} and pt > 0.5 and pt < 3 and ct > {ct_bins[0]} and ct < {ct_bins[1]}',
+                        max_workers=8)
+
+                    df_data.apply_model_handler(model_hdl)
+                    df_data.apply_preselections(f'model_output > {score_eff_arrays_dict[bin][len(eff_array)-1]}')
+                    df_data.write_df_to_parquet_files(bin,"df/")
