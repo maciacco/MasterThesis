@@ -52,6 +52,7 @@ def expected_signal(cent_class, ct_range, eff, n_events):
         if cent_bin==cent_class[1]:
             return lambda_yield*correction*n_events
 
+    
     # expected signal for 0-90% centrality
-    lambda_yield_0_90 = 1.55e8/55
+    lambda_yield_0_90 = 26053794 # using PbPb at 2.76 GeV
     return correction*lambda_yield_0_90

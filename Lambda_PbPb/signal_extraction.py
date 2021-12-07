@@ -17,6 +17,9 @@ use_crystalball = True
 MAX_EFF = 1.00
 mass_PDG = 1.115683 # GeV/c^2
 
+ROOT.gInterpreter.ProcessLine("#include \"../utils/RooDSCBShape.h\"")
+ROOT.gInterpreter.ProcessLine(".L ../utils/RooDSCBShape.cxx+")
+
 # avoid pandas warning
 warnings.simplefilter(action='ignore', category=FutureWarning)
 ROOT.gROOT.SetBatch()
@@ -65,7 +68,7 @@ for split in SPLIT_LIST:
             # print(f'Index = {ct_bins_df_index}')
             bin = f'{split}_{cent_bins[0]}_{cent_bins[1]}_{ct_bins[0]}_{ct_bins[1]}'
             # bin_df = f'{split}_{cent_bins[0]}_{cent_bins[1]}_{CT_BINS[ct_bins_df_index][0]}_{CT_BINS[ct_bins_df_index][1]}'
-            df_data = pd.read_parquet(f'df/{bin}')
+            df_data = pd.read_parquet(f'df/{bin}.parquet.gzip')
             df_signal = pd.read_parquet(f'df/mc_{bin}')
 
             # ROOT.Math.MinimizerOptions.SetDefaultTolerance(1e-2)
@@ -94,16 +97,16 @@ for split in SPLIT_LIST:
                 roo_m = ROOT.RooRealVar("m", "#it{M} (p + #pi^{-})", 1.09, 1.14, "GeV/#it{c}^{2}")
                 roo_data_unbinned = ndarray2roo(np.array(df_data_sel['mass']), roo_m)
                 roo_mc_signal = ndarray2roo(np.array(df_signal_sel['mass']), roo_m)
-                roo_m.setBins(100)
-                roo_data = ROOT.RooDataHist('data','data',roo_m,roo_data_unbinned)
-                roo_mc_signal = ROOT.RooDataHist('data','data',roo_m,roo_mc_signal)
+                roo_m.setBins(200)
+                roo_data = ROOT.RooDataHist('data','data',ROOT.RooArgSet(roo_m),roo_data_unbinned)
+                roo_mc_signal = ROOT.RooDataHist('data','data',ROOT.RooArgSet(roo_m),roo_mc_signal)
 
                 # declare fit model
                 # kde
                 roo_n_signal = ROOT.RooRealVar('N_{signal}', 'Nsignal', 1., 1.e6)
                 delta_mass = ROOT.RooRealVar("#deltam", 'deltaM', -0.004, 0.004, 'GeV/c^{2}')
                 shifted_mass = ROOT.RooAddition("mPrime", "m + #Deltam", ROOT.RooArgList(roo_m, delta_mass))
-                roo_signal = ROOT.RooCrystalBall() #= ROOT.RooKeysPdf("signal", "signal", shifted_mass, roo_m,
+                #roo_signal = ROOT.RooKeysPdf("signal", "signal", shifted_mass, roo_m,
                            #                  roo_mc_signal, ROOT.RooKeysPdf.NoMirror, 2)
 
                 # cb signal
@@ -111,11 +114,11 @@ for split in SPLIT_LIST:
                 sigma_left = ROOT.RooRealVar('sigma_left','sigma_left',0.,0.005)
                 sigma_right = ROOT.RooRealVar('sigma_right','sigma_right',0.,0.005)
                 alpha_left = ROOT.RooRealVar('alpha_left','alpha_left',0.,2.)
-                alpha_right = ROOT.RooRealVar('alpha_right','alpha_right',0.,10.)
-                n_left = ROOT.RooRealVar('n_left','n_left',0.,5.)
-                n_right = ROOT.RooRealVar('n_right','n_right',0.,4.)
-                roo_signal = ROOT.RooCrystalBall('signal','signal',roo_m,mass,sigma_left,alpha_left,n_left,True)    
-                roo_signal_copy = ROOT.RooCrystalBall(roo_signal)
+                alpha_right = ROOT.RooRealVar('alpha_right','alpha_right',0.,2.)
+                n_left = ROOT.RooRealVar('n_left','n_left',0.,10.)
+                n_right = ROOT.RooRealVar('n_right','n_right',0.,10.)
+                roo_signal = ROOT.RooDSCBShape('signal','signal',roo_m,mass,sigma_left,alpha_left,n_left,alpha_right,n_right)    
+                roo_signal_copy = ROOT.RooDSCBShape(roo_signal)
 
                 # background
                 roo_n_background = ROOT.RooRealVar('N_{bkg}', 'Nbackground', 1., 1.e7)
@@ -143,7 +146,7 @@ for split in SPLIT_LIST:
                 if r.status() == 0: # and delta_mass.getError() > 1.e-6:
 
                     # plot
-                    nBins = 100
+                    nBins = 200
                     xframe = roo_m.frame(1.09, 1.14, nBins)
                     xframe.SetTitle(
                         str(ct_bins[0]) + '#leq #it{c}t<' + str(ct_bins[1]) + ' cm, ' + str(cent_bins[0]) + '-' +
@@ -168,7 +171,7 @@ for split in SPLIT_LIST:
                     xframe.getAttLine().SetLineWidth(0)
 
                     print(f'chi2/NDF: {formatted_chi2}, edm: {r.edm()}')
-                    if float(formatted_chi2) < 5: # and r.edm() < 1:
+                    if float(formatted_chi2) < 10: # and r.edm() < 1:
 
                         # fit mc distribution to get sigma and mass
                         roo_mean_mc = ROOT.RooRealVar("mean", "mean", 1.11, 1.12)
@@ -181,11 +184,11 @@ for split in SPLIT_LIST:
                         sigma_left_mc = ROOT.RooRealVar('sigma_left','sigma_left',0.,0.005)
                         sigma_right_mc = ROOT.RooRealVar('sigma_right','sigma_right',0.,0.005)
                         alpha_left_mc = ROOT.RooRealVar('alpha_left','alpha_left',0.,2.)
-                        alpha_right_mc = ROOT.RooRealVar('alpha_right','alpha_right',0.,10.)
-                        n_left_mc = ROOT.RooRealVar('n_left','n_left',0.,5.)
-                        n_right_mc = ROOT.RooRealVar('n_right','n_right',0.,4.)
-                        roo_signal_mc = ROOT.RooCrystalBall('signal','signal',roo_m,mass_mc,sigma_left_mc,alpha_left_mc,n_left_mc,True) 
-                        roo_signal_plot = ROOT.RooCrystalBall(roo_signal_mc)
+                        alpha_right_mc = ROOT.RooRealVar('alpha_right','alpha_right',0.,2.)
+                        n_left_mc = ROOT.RooRealVar('n_left','n_left',0.,10.)
+                        n_right_mc = ROOT.RooRealVar('n_right','n_right',0.,10.)
+                        roo_signal_mc = ROOT.RooDSCBShape('signal','signal',roo_m,mass_mc,sigma_left_mc,alpha_left_mc,n_left_mc,alpha_right_mc,n_right_mc) 
+                        roo_signal_plot = ROOT.RooDSCBShape(roo_signal_mc)
                         for _ in range(2):
                             roo_signal_mc.fitTo(roo_mc_signal)
 
@@ -263,7 +266,7 @@ for split in SPLIT_LIST:
                             frame = roo_m.frame(1.09, 1.14, 130)
                             frame.SetTitle(str(cent_bins[0])+"-"+str(cent_bins[1])+"%, "+str(ct_bins[0])+"#leq #it{c}t<"+str(ct_bins[1])+" cm, BDT efficiency = "+str(formatted_eff))
                             roo_mc_signal.plotOn(frame)
-                            roo_signal_plot.plotOn(frame, ROOT.RooFit.Name("KDE"))
+                            roo_signal_plot.plotOn(frame, ROOT.RooFit.Name("DSCB"))
                             gaus.plotOn(frame, ROOT.RooFit.Name("gaussian"), ROOT.RooFit.LineColor(ROOT.kRed), ROOT.RooFit.LineStyle(ROOT.kDashed))
                             cc = ROOT.TCanvas("cc", "cc")
                             if not os.path.isdir('plots/kde_signal'):
@@ -272,7 +275,7 @@ for split in SPLIT_LIST:
                                 os.mkdir(f'plots/kde_signal/{bin}')
                             frame.Draw()
                             leg_mc = ROOT.TLegend(0.7, 0.8, 0.85, 0.7)
-                            leg_mc.AddEntry(frame.findObject("KDE"), "KDE")
+                            leg_mc.AddEntry(frame.findObject("DSCB"), "DSCB")
                             leg_mc.AddEntry(frame.findObject("gaussian"), "Gaussian")
                             leg_mc.SetTextFont(44)
                             leg_mc.SetTextSize(20)

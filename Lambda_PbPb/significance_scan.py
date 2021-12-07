@@ -52,7 +52,7 @@ cent_counts, cent_edges = analysis_results_file['Centrality_selected;1'].to_nump
 cent_bin_centers = (cent_edges[:-1]+cent_edges[1:])/2
 
 # cut dictionary
-#eff_cut_dict = dict()
+eff_cut_dict = dict()
 
 for split in SPLIT_LIST:
     for i_cent_bins in range(len(CENTRALITY_LIST)):
@@ -72,7 +72,7 @@ for split in SPLIT_LIST:
         for ct_bins in zip(CT_BINS_CENT[i_cent_bins][:-1], CT_BINS_CENT[i_cent_bins][1:]):
 
             bin = f'{split}_{cent_bins[0]}_{cent_bins[1]}_{ct_bins[0]}_{ct_bins[1]}'
-            df_data = pd.read_parquet(f'df/{bin}')
+            df_data = pd.read_parquet(f'df/{bin}.parquet.gzip')
 
             # plot directory
             if not os.path.isdir('plots/significance_scan'):

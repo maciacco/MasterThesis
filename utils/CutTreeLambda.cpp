@@ -25,6 +25,6 @@ void CutTreeLambda(const char *inFileName, const char *outFileName, const char *
   ROOT::RDataFrame df(treeName, Form("%s/%s.root", kPathToFile, inFileName));
 
   // get subset of columns
-  df.Snapshot(treeName, Form("./%s.root", outFileName), {"cosPA", "pt", "cosPA", "dcaV0tracks", "dcaPrPV", "dcaPiPV", "dcaV0PV" , "tpcNsigmaPr", "matter", "centrality", "ct", "mass", "isReconstructed", "ctMC", "ptMC"});
+  df.Snapshot(treeName, Form("./%s.root", outFileName), {"cosPA", "pt", "dcaV0tracks", "dcaPrPV", "dcaPiPV", "dcaV0PV" , "tpcNsigmaPr", "matter", "centrality", "ct", "mass", "isReconstructed", "ctMC", "ptMC","isPrimary"});
 
 }
