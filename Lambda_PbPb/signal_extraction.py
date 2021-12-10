@@ -77,7 +77,7 @@ for split in SPLIT_LIST:
             df_data = pd.read_parquet(f'df/{bin}.parquet.gzip')
             df_signal_ct = pd.DataFrame()
             if USE_TEST_OUTPUT:
-                df_signal_ct = pd.read_parquet(f'df/mc_{bin}')
+                df_signal_ct = pd.read_parquet(f'df/mc_df_newMC/mc_{bin}')
             else:
                 ct_bins_df_index = int(ct_bins[0]/5 -1)
                 df_signal_ct = df_signal.query(f"centrality >= {cent_bins[0]} and centrality < {cent_bins[1]} and ct >= {ct_bins[0]} and ct < {ct_bins[1]}and ct < {ct_bins[1]} and pt > 0.5 and pt < 3 and isReconstructed and tpcClV0Pi > 69 and tpcClV0Pr > 69 and radius > 3")
@@ -91,12 +91,15 @@ for split in SPLIT_LIST:
 
             # mass histogram
             h_mass = ROOT.TH1D("fMass","fMass", 101, -0.005, 1.005)
+            # mass histogram
+            h_mass_dat = ROOT.TH1D("fMassData","fMassData", 101, -0.005, 1.005)
+            h_mass_mc = ROOT.TH1D("fMassMC","fMassMC", 101, -0.005, 1.005)
 
             # significance histogram
             h_significance = ROOT.TH1D("fSignificance", "fSignificance", 101, -0.005, 1.005)
 
             for eff_score in zip(eff_array, score_eff_arrays_dict[bin]):
-                if (ct_bins[0] > 0.5) and (eff_score[0] < 0.88 or eff_score[0] > 0.92):
+                if (ct_bins[0] > 0.5) and (eff_score[0] < 0.69 or eff_score[0] > 0.91):
                     continue
                 formatted_eff = "{:.2f}".format(eff_score[0])
                 print(f'processing {bin}: eff = {eff_score[0]:.2f}, score = {eff_score[1]:.2f}...')
@@ -126,12 +129,12 @@ for split in SPLIT_LIST:
 
                 # fit mc distribution with dscb
                 mass_mc = ROOT.RooRealVar('mass','mass',1.11,1.12)
-                sigma_left_mc = ROOT.RooRealVar('sigma_left','sigma_left',0.,0.005)
+                sigma_left_mc = ROOT.RooRealVar('sigma','sigma',0.,0.005)
                 sigma_right_mc = ROOT.RooRealVar('sigma_right','sigma_right',0.,0.005)
                 alpha_left_mc = ROOT.RooRealVar('alpha_left','alpha_left',0.,2.)
                 alpha_right_mc = ROOT.RooRealVar('alpha_right','alpha_right',0.,2.)
-                n_left_mc = ROOT.RooRealVar('n_left','n_left',0.,10.)
-                n_right_mc = ROOT.RooRealVar('n_right','n_right',0.,10.)
+                n_left_mc = ROOT.RooRealVar('n_left','n_left',0.,15.)
+                n_right_mc = ROOT.RooRealVar('n_right','n_right',0.,15.)
                 roo_signal_mc = ROOT.RooDSCBShape('signal','signal',roo_m,mass_mc,sigma_left_mc,alpha_left_mc,n_left_mc,alpha_right_mc,n_right_mc) 
                 roo_signal_plot = ROOT.RooDSCBShape(roo_signal_mc)
                 for _ in range(2):
@@ -139,20 +142,20 @@ for split in SPLIT_LIST:
 
                 # cb signal
                 mass = ROOT.RooRealVar('mass','mass',1.11,1.12)
-                # sigma_left = ROOT.RooRealVar('sigma_left','sigma_left',0.,0.005)
-                # sigma_right = ROOT.RooRealVar('sigma_right','sigma_right',0.,0.005)
-                # alpha_left = ROOT.RooRealVar('alpha_left','alpha_left',0.,2.)
-                # alpha_right = ROOT.RooRealVar('alpha_right','alpha_right',0.,2.)
-                # n_left = ROOT.RooRealVar('n_left','n_left',0.,10.)
-                # n_right = ROOT.RooRealVar('n_right','n_right',0.,10.)
-                sigma_left_mc.setConstant()
-                sigma_right_mc.setConstant()
-                alpha_left_mc.setConstant()
-                alpha_right_mc.setConstant()
-                n_left_mc.setConstant()
-                n_right_mc.setConstant()
-                roo_signal = ROOT.RooDSCBShape('signal','signal',roo_m,mass,sigma_left_mc,alpha_left_mc,n_left_mc,alpha_right_mc,n_right_mc) 
-                # roo_signal = ROOT.RooDSCBShape('signal','signal',roo_m,mass,sigma_left,alpha_left,n_left,alpha_right,n_right)      
+                sigma_left = ROOT.RooRealVar('sigma','sigma',0.,0.005)
+                sigma_right = ROOT.RooRealVar('sigma_right','sigma_right',0.,0.005)
+                alpha_left = ROOT.RooRealVar('alpha_left','alpha_left',0.,3.)
+                alpha_right = ROOT.RooRealVar('alpha_right','alpha_right',0.,3.)
+                n_left = ROOT.RooRealVar('n_left','n_left',0.,15.)
+                n_right = ROOT.RooRealVar('n_right','n_right',0.,15.)
+                # sigma_left_mc.setConstant()
+                # sigma_right_mc.setConstant()
+                # alpha_left_mc.setConstant()
+                # alpha_right_mc.setConstant()
+                # n_left_mc.setConstant()
+                # n_right_mc.setConstant()
+                # roo_signal = ROOT.RooDSCBShape('signal','signal',roo_m,mass,sigma_left_mc,alpha_left_mc,n_left_mc,alpha_right_mc,n_right_mc) 
+                roo_signal = ROOT.RooDSCBShape('signal','signal',roo_m,mass,sigma_left,alpha_left,n_left,alpha_right,n_right)      
                 roo_signal_copy = ROOT.RooDSCBShape(roo_signal)
 
                 # background
@@ -202,7 +205,7 @@ for split in SPLIT_LIST:
                     formatted_chi2 = "{:.2f}".format(xframe.chiSquare('model', 'data'))
                     roo_model.paramOn(xframe, ROOT.RooFit.Label(
                         '#chi^{2}/NDF = '+formatted_chi2),
-                        ROOT.RooFit.Layout(0.57, 0.85, 0.88))
+                        ROOT.RooFit.Layout(0.60, 0.85, 0.88))
                     xframe.getAttText().SetTextFont(44)
                     xframe.getAttText().SetTextSize(20)
                     xframe.getAttLine().SetLineWidth(0)
@@ -249,6 +252,14 @@ for split in SPLIT_LIST:
                             # fill mass histogram
                             h_mass.SetBinContent(eff_index, mass.getVal()-mass_mc.getVal()+mass_PDG)
                             h_mass.SetBinError(eff_index, np.sqrt(mass.getError()*mass.getError()+mass_mc.getError()*mass_mc.getError()))
+
+                            # fill mass histogram (data)
+                            h_mass_dat.SetBinContent(eff_index, mass.getVal())
+                            h_mass_dat.SetBinError(eff_index, mass.getError())
+
+                            # fill mass histogram (mc)
+                            h_mass_mc.SetBinContent(eff_index, mass_mc.getVal())
+                            h_mass_mc.SetBinError(eff_index, mass_mc.getError())
 
                             # write to file
                             root_file_signal_extraction.cd(f'{bin}_{bkg_shape}')
@@ -314,8 +325,16 @@ for split in SPLIT_LIST:
             h_raw_yields.Write()
 
             h_mass.GetXaxis().SetTitle("BDT efficiency")
-            h_mass.GetYaxis().SetTitle("#it{m} (GeV/#it{c^2})")
+            h_mass.GetYaxis().SetTitle("#it{m} (MeV/#it{c^2})")
             h_mass.Write()
+
+            h_mass_dat.GetXaxis().SetTitle("BDT efficiency")
+            h_mass_dat.GetYaxis().SetTitle("#it{m} (MeV/#it{c^2})")
+            h_mass_dat.Write()
+
+            h_mass_mc.GetXaxis().SetTitle("BDT efficiency")
+            h_mass_mc.GetYaxis().SetTitle("#it{m} (MeV/#it{c^2})")
+            h_mass_mc.Write()
 
             h_significance.GetXaxis().SetTitle("BDT efficiency")
             h_significance.GetYaxis().SetTitle("S / #sqrt{S + B}")

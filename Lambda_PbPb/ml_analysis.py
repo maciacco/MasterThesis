@@ -39,9 +39,9 @@ MAKE_PRESELECTION_EFFICIENCY = args.eff
 MAKE_TRAIN_TEST_PLOT = True
 OPTIMIZE = False
 OPTIMIZED = True
-TRAIN = False #args.train
+TRAIN = False #args.dotraining
 COMPUTE_SCORES_FROM_EFF = args.computescoreff
-TRAINING = not args.application and (COMPUTE_SCORES_FROM_EFF or TRAIN)
+TRAINING = args.train and (COMPUTE_SCORES_FROM_EFF or TRAIN)
 MERGE_CENTRALITY = args.mergecentrality
 CREATE_TRAIN_TEST = False
 
@@ -87,7 +87,7 @@ if SPLIT:
 if SAMPLE_SIDEBANDS and not TRAINING and not APPLICATION:
 
     if USE_PD:
-        df_data = uproot.open(os.path.expandvars("../data/Lambda_PbPb/data.root"))['LambdaTree'].arrays(library="pd")
+        df_data = uproot.open(os.path.expandvars("../data/AnalysisResults.root"))['LambdaTree'].arrays(library="pd")
         df_background = df_data.sample(frac=0.05)
         df_data = df_data.drop(df_background.index)
         df_background.to_parquet('df/background_dataset', compression='gzip')
@@ -121,9 +121,10 @@ if TRAINING:
 
     for ct_bins in CT_BINS:
 
-        if CREATE_TRAIN_TEST and TRAIN:
+        train_test_data = [pd.DataFrame(), pd.DataFrame(), pd.DataFrame(), pd.DataFrame()]
+        if CREATE_TRAIN_TEST and (COMPUTE_SCORES_FROM_EFF or TRAIN):
             df_signal_ct = df_signal.query(f'ct > {ct_bins[0]} and ct < {ct_bins[1]} and pt > 0.5 and pt < 3 and isReconstructed and tpcClV0Pi > 69 and tpcClV0Pr > 69 and radius > 3')
-            df_background_ct = df_background.query(f'ct > {ct_bins[0]} and ct < {ct_bins[1]} and pt > 0.5 and pt < 3 and ( mass < 1.105 or mass > 1.13 ) and tpcClV0Pi > 69 and tpcClV0Pr > 69 and radius > 3')
+            df_background_ct = df_background.query(f'ct > {ct_bins[0]} and ct < {ct_bins[1]} and pt > 0.5 and pt < 3 and ( mass < 1.1 or mass > 1.13 ) and tpcClV0Pi > 69 and tpcClV0Pr > 69 and radius > 3')
 
             # define tree handlers
             signal_tree_handler = TreeHandler()
@@ -139,11 +140,10 @@ if TRAINING:
             train_test_data[2]['y_true'] = train_test_data[3]
             train_test_data[0].to_parquet(f'df/train_data_{ct_bins[0]}_{ct_bins[1]}.parquet.gzip',compression='gzip')
             train_test_data[2].to_parquet(f'df/test_data_{ct_bins[0]}_{ct_bins[1]}.parquet.gzip',compression='gzip')
-            continue
+            # continue
         else:
-            train_test_data = [pd.DataFrame(), pd.DataFrame(), pd.DataFrame(), pd.DataFrame()]
-            train_test_data[0] = pd.read_parquet(f'df/train_test/train_data_{ct_bins[0]}_{ct_bins[1]}.parquet.gzip')
-            train_test_data[2] = pd.read_parquet(f'df/train_test/test_data_{ct_bins[0]}_{ct_bins[1]}.parquet.gzip')
+            train_test_data[0] = pd.read_parquet(f'df/train_data_{ct_bins[0]}_{ct_bins[1]}.parquet.gzip')
+            train_test_data[2] = pd.read_parquet(f'df/test_data_{ct_bins[0]}_{ct_bins[1]}.parquet.gzip')
 
 
         for split in SPLIT_LIST:
@@ -164,7 +164,7 @@ if TRAINING:
                 # features plot
                 leg_labels = ['background', 'signal']
 
-                model_clf = xgb.XGBClassifier(use_label_encoder=False)
+                model_clf = xgb.XGBClassifier(use_label_encoder=False, n_jobs=10)
                 model_hdl = ModelHandler(model_clf, TRAINING_COLUMNS_LIST)
                 model_hdl.set_model_params(HYPERPARAMS)
 
@@ -177,7 +177,7 @@ if TRAINING:
 
                 if OPTIMIZE and TRAIN:
                     model_hdl.optimize_params_bayes(train_test_data, HYPERPARAMS_RANGES,
-                                                    'roc_auc', nfold=5, init_points=10, n_iter=10, njobs=-1)
+                                                    'roc_auc', nfold=5, init_points=10, n_iter=10, njobs=10)
 
                 isModelTrained = os.path.isfile(f'models/{bin_model}_trained')
                 print(f'isModelTrained {bin_model}: {isModelTrained}')
@@ -192,6 +192,7 @@ if TRAINING:
                         model_file_name = str(f'models/{bin_model}_optimized_trained')
                     model_hdl.dump_model_handler(model_file_name)
                 elif COMPUTE_SCORES_FROM_EFF and isModelTrained:
+                    print('Model trained...')
                     if OPTIMIZED:
                         model_hdl.load_model_handler(f'models/{bin_model}_trained')
                     else:
@@ -256,7 +257,7 @@ if TRAINING:
                 del train_test_data_cent
                 ##############################################################
 
-    if COMPUTE_SCORES_FROM_EFF:
+    if COMPUTE_SCORES_FROM_EFF and TRAIN:
         pickle.dump(score_eff_arrays_dict, open("file_score_eff_dict", "wb"))
 
 # apply model to data
@@ -294,6 +295,8 @@ if APPLICATION:
                 eff_array = np.arange(0.10, MAX_EFF, 0.01)
                 if USE_PD:
                     df_data = pd.read_parquet('df/data_dataset')
+                    #df_data = uproot.open('../data/AnalysisResults.root')['LambdaTree'].arrays(library="pd")
+                    # df_data = df_data.append(df_data_r, ignore_index=True)
                     df_data_cent = df_data.query(
                     f'matter {split_ineq_sign} and centrality > {cent_bins[0]} and centrality < {cent_bins[1]} and pt > 0.5 and pt < 3 and ct > {ct_bins[0]} and ct < {ct_bins[1]} and tpcClV0Pi > 69 and tpcClV0Pr > 69 and radius > 3')
                     del df_data
