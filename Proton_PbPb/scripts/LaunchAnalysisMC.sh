@@ -8,12 +8,12 @@ sigmoidFlag=1
 spectraHistNameId=""
 extractRatios=1
 
-fileData="mc_20g7_likeData"
-fileMC="mc"
-signalName="SignalProtonGausDExpSignal1_LongMCTracks_MClikeData"
-spectraName="SpectraProtonGausDExpSignal1_LongMCTracks_newPrimary_MClikeData"
-EfficiencyHe3="EfficiencyProton_LongMCTracks_new"
-PrimaryHe3="PrimaryProtonMC"
+fileData="AnalysisResults_LHC21l5"
+fileMC="AnalysisResults_LHC21l5"
+signalName="SignalProtonMC_21l5"
+spectraName="SpectraProtonMCMC_21l5"
+EfficiencyHe3="EfficiencyProtonMC_21l5"
+PrimaryHe3="PrimaryProtonMC_21l5"
 
 # create output directories
 DIR_OUT=out
@@ -44,9 +44,9 @@ if [ $extractRatios -eq 1 ]; then
 .L SignalBinnedMC.cpp+
 .L SecondaryMC.cpp+
 .L EfficiencyNew.cpp+
-.L Spectra.cpp+
-//SignalBinnedMC("$cutSettings",$argumentSignal,"$fileData","$signalName","recreate")
-//SecondaryMC("$cutSettings","$fileData","$fileMC","$PrimaryHe3")
+//.L Spectra.cpp+
+SignalBinnedMC("$cutSettings",$argumentSignal,"$fileData","$signalName","recreate")
+SecondaryMC("$cutSettings","$fileData","$fileMC","$PrimaryHe3")
 EfficiencyNew("$cutSettings","$fileMC","$EfficiencyHe3","$signalName","$PrimaryHe3")
 .q
 EOF

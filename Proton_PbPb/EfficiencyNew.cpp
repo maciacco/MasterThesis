@@ -15,14 +15,15 @@
 using namespace utils;
 using namespace proton;
 
-void EfficiencyNew(const char *cutSettings = "", const char *inFileNameMC = "mc", const char *outFileNameEff = "EfficiencyProton_LongMCTracks", const char *signalOut = "SignalProtonMC", const char *primOut = "PrimaryProtonMC")
+void EfficiencyNew(const char *cutSettings = "", const char *inFileNameMC = "mc_20g7_20210929", const char *outFileNameEff = "EfficiencyProton_LongMCTracks", const char *signalOut = "SignalProtonMC", const char *primOut = "PrimaryProtonMC")
 {
   // make signal extraction plots directory
   system(Form("mkdir %s/efficiency", kPlotDir));
 
   TFile inFilePrimary(Form("%s/%s.root", kOutDir, primOut));
   TFile inFileSignal(Form("%s/%s.root", kOutDir, signalOut));
-  TFile inFile3(Form("%s/%s_20g7_20210929.root", kDataDir, inFileNameMC));
+  TFile inFile_20g7(Form("%s/%s.root", kDataDir, "mc_20g7_20210929"));
+  TFile inFile_21l5(Form("%s/%s.root", kDataDir, inFileNameMC));
   //TFile inFile1(Form("%s/%s.root", kDataDir, inFileNameMC));
   TFile outFile(Form("%s/%s.root", kOutDir, outFileNameEff), "RECREATE");
 
@@ -34,17 +35,23 @@ void EfficiencyNew(const char *cutSettings = "", const char *inFileNameMC = "mc"
     system(Form("mkdir %s/efficiency/%s_%s_", kPlotDir, kAntimatterMatter[iMatt], cutSettings));
 
     // get TTList
-    std::string listName = Form("nuclei_proton_%s", cutSettings);
+    std::string listName_21l5 = Form("mpuccio_proton_mcTrue_%s", cutSettings);
+    std::string listName_20g7 = Form("nuclei_proton_%s", cutSettings);
     /* TTList *list1 = (TTList *)inFile1.Get(listName.data()); */
     //TTList *list2 = (TTList *)inFile2.Get(listName.data());
-    TTList *list3 = (TTList *)inFile3.Get(listName.data());
+    TTList *list_21l5 = (TTList *)inFile_21l5.Get(listName_21l5.data());
+    TTList *list_20g7 = (TTList *)inFile_20g7.Get(listName_20g7.data());
 
     // get histograms from file
     /* TH2F *fTotal1 = (TH2F *)list1->Get(TString::Format("f%sTotal", kAntimatterMatter[iMatt]).Data());
     TH2F *fITS_TPC_TOF1 = (TH2F *)list1->Get(TString::Format("f%sITS_TPC_TOF", kAntimatterMatter[iMatt]).Data()); */
     // TH2F *fTotal2 = (TH2F *)list2->Get(TString::Format("f%sTotal", kAntimatterMatter[iMatt]).Data());
     // TH2F *fITS_TPC_TOF2 = (TH2F *)list2->Get(TString::Format("f%sITS_TPC_TOF", kAntimatterMatter[iMatt]).Data());
-    TH2F *fTotal3 = (TH2F *)list3->Get(TString::Format("f%sTotal", kAntimatterMatter[iMatt]).Data());
+    TH2F *fTotal = (TH2F *)list_21l5->Get(TString::Format("f%sTotal", kAntimatterMatter[iMatt]).Data());
+    
+    TH2F *fTotal_20g7 = (TH2F *)list_20g7->Get(TString::Format("f%sTotal", kAntimatterMatter[iMatt]).Data());
+    if (ADD20g7)
+      fTotal->Add(fTotal_20g7);
     //TH2F *fITS_TPC_TOF3 = (TH2F *)list3->Get(TString::Format("f%sITS_TPC_TOF", kAntimatterMatter[iMatt]).Data());
 
     ////////////////////////////////////////////////////////////////////////////
@@ -72,7 +79,7 @@ void EfficiencyNew(const char *cutSettings = "", const char *inFileNameMC = "mc"
       double cent_bin_lim_min = kCentBinsLimitsProton[iCent][0];
       double cent_bin_lim_max = kCentBinsLimitsProton[iCent][1];
 
-      fTotal_Pt = fTotal3->ProjectionY(TString::Format("f%sTotal_Pt", kAntimatterMatter[iMatt]), cent_bin_min, cent_bin_max);
+      fTotal_Pt = fTotal->ProjectionY(TString::Format("f%sTotal_Pt", kAntimatterMatter[iMatt]), cent_bin_min, cent_bin_max);
       //fITS_TPC_TOF_Pt = fITS_TPC_TOF3->ProjectionY(TString::Format("f%sITS_TPC_TOF_Pt", kAntimatterMatter[iMatt]), cent_bin_min, cent_bin_max);
       sec_f = (TF1 *)inFilePrimary.Get(Form("f%sFunctionFit_%.0f_%.0f", kAntimatterMatter[iMatt], kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1]));
       //fSec = (TH1D*)inFilePrimary.Get(Form("f%sPrimFrac_%.0f_%.0f", kAntimatterMatter[iMatt], kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1]));

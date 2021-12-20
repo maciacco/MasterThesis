@@ -47,7 +47,7 @@ double computeExponentialNormalisation(double, double, double);
 
 const double kNSigma = 3; // define interval for bin counting
 
-void SignalBinnedMC(const char *cutSettings = "", const bool binCounting = false, const int bkg_shape = 1, const char *inFileDat = "AnalysisResults", const char *outFileName = "SignalProton", const char *outFileOption = "recreate", const bool extractSignal = true, const bool useDSCB = false, const bool binCountingNoFit = false)
+void SignalBinnedMC(const char *cutSettings = "", const bool binCounting = false, const int bkg_shape = 1, const char *inFileDat = "mc_20g7_likeData_largeNsigma", const char *outFileName = "SignalProton", const char *outFileOption = "recreate", const bool extractSignal = true, const bool useDSCB = false, const bool binCountingNoFit = false)
 {
 
   // make signal extraction plots directory
@@ -65,31 +65,41 @@ void SignalBinnedMC(const char *cutSettings = "", const bool binCounting = false
   if (outFile->GetDirectory(Form("%s_%d_%d", cutSettings, binCounting, bkg_shape)))
     return;
   TDirectory *dirOutFile = outFile->mkdir(Form("%s_%d_%d", cutSettings, binCounting, bkg_shape));
-  //TFile *dataFile = TFile::Open(TString::Format("%s/%s_largeNsigma.root", kDataDir, inFileDat)); // open data TFile
-  TFile *dataFile = TFile::Open(TString::Format("%s/%s_largeNsigma.root", kDataDir, inFileDat)); // open data TFile
+  //TFile *mcFile_21l5 = TFile::Open(TString::Format("%s/%s_largeNsigma.root", kDataDir, inFileDat)); // open data TFile
+  TFile *mcFile_21l5 = TFile::Open(TString::Format("%s/%s.root", kDataDir, inFileDat)); // open data TFile
+  TFile *mcFile_20g7 = TFile::Open(TString::Format("%s/%s.root", kDataDir, "mc_20g7_likeData_largeNsigma")); // open data TFile
 
   //TFile *dataFile2 = TFile::Open(TString::Format("%s/%s.root", kDataDir, inFileDat)); // open data TFile
-  if (!dataFile)
+  if (!mcFile_21l5)
   {
     std::cout << "File not found!" << std::endl; // check data TFile opening
     return;
   }
 
   // get TTList
-  std::string listName = Form("nuclei_proton_%s", cutSettings);
-  TTList *list = (TTList *)dataFile->Get(listName.data());
+  std::string listName_21l5 = Form("mpuccio_proton_mcFalse_%s", cutSettings);
+  TTList *list_21l5 = (TTList *)mcFile_21l5->Get(listName_21l5.data());
+  std::string listName_20g7 = Form("nuclei_proton_%s", cutSettings);
+  TTList *list_20g7 = (TTList *)mcFile_20g7->Get(listName_20g7.data());
   //TTList *list2 = (TTList *)dataFile2->Get(listName.data());
 
   // merge antimatter + matter histograms
   std::string histNameA = Form("f%sTOFnSigma", kAntimatterMatter[0]);
   std::string histNameM = Form("f%sTOFnSigma", kAntimatterMatter[1]);
-  TH3F *fTOFSignalA = (TH3F *)list->Get(histNameA.data());
+  TH3F *fTOFSignalA = (TH3F *)list_21l5->Get(histNameA.data());
+  TH3F *fTOFSignalA_20g7 = (TH3F *)list_20g7->Get(histNameA.data());
+  if (ADD20g7)
+    fTOFSignalA->Add(fTOFSignalA_20g7);
   // TH3F *fTOFSignalA2 = (TH3F *)list2->Get(histNameA.data());
   TH3F *fTOFSignalAll = (TH3F *)fTOFSignalA->Clone(fTOFSignalA->GetName());
-  TH3F *fTOFSignalM = (TH3F *)list->Get(histNameM.data());
+  TH3F *fTOFSignalM = (TH3F *)list_21l5->Get(histNameM.data());
+  TH3F *fTOFSignalM_20g7 = (TH3F *)list_20g7->Get(histNameM.data());
+  if (ADD20g7)
+    fTOFSignalM->Add(fTOFSignalM_20g7);
   //TH3F *fTOFSignalM2 = (TH3F *)list2->Get(histNameM.data());
   //fTOFSignalAll->Add(fTOFSignalA2);
-  fTOFSignalAll->Add(fTOFSignalM);
+  if (ADD20g7)
+    fTOFSignalAll->Add(fTOFSignalM);
   //fTOFSignalAll->Add(fTOFSignalM2);
 
   /////////////////////////////////////////////////////////////////////////////////////
@@ -105,8 +115,8 @@ void SignalBinnedMC(const char *cutSettings = "", const bool binCounting = false
   { // loop on antimatter/matter
     // Get histograms from file
     std::string histName = Form("f%sTOFnSigma", kAntimatterMatter[iMatt]);
-    TH3F *fTOFSignal1 = (TH3F *)list->Get(histName.data());
-    //TH3F *fTOFSignal2 = (TH3F *)list2->Get(histName.data());
+    TH3F *fTOFSignal1 = (TH3F *)list_21l5->Get(histName.data());
+    TH3F *fTOFSignal2 = (TH3F *)list_20g7->Get(histName.data());
     if (!fTOFSignal1)
     {
       std::cout << "Hstogram not found!" << std::endl; // check data TFile opening
@@ -114,7 +124,8 @@ void SignalBinnedMC(const char *cutSettings = "", const bool binCounting = false
     }
 
     TH3F *fTOFSignal = (TH3F *)fTOFSignal1->Clone(fTOFSignal1->GetName());
-    //fTOFSignal->Add(fTOFSignal2);
+    if (ADD20g7)
+      fTOFSignal->Add(fTOFSignal2);
 
     // make plot subdirectory
     system(Form("mkdir %s/signal_extraction/%s_%s_%d_%d", kPlotDir, kAntimatterMatter[iMatt], cutSettings, binCounting, bkg_shape));
@@ -129,13 +140,15 @@ void SignalBinnedMC(const char *cutSettings = "", const bool binCounting = false
       TH1D fMean("fMean", "fMean", kNPtBins, kPtBins);
       TH1D fAlphaL("fAlphaL", "fAlphaL", kNPtBins, kPtBins);
       TH1D fAlphaR("fAlphaR", "fAlphaR", kNPtBins, kPtBins);
-      int nUsedPtBins = 24; // up to 2.00 GeV/c
+      int nUsedPtBins = 24; // up to 2.00 GeV/c with train binning
       //int nUsedPtBins = 39;
+      // int nUsedPtBins = 2;
 
-      for (int iPtBin = 5; iPtBin < nUsedPtBins + 1; ++iPtBin)
+      for (int iPtBin = 5; iPtBin < nUsedPtBins + 1; ++iPtBin) // full train data binning
+      //for (int iPtBin = 0; iPtBin < nUsedPtBins; ++iPtBin)
       { // loop on pT bins
-        double ptMin = fTOFrawYield.GetXaxis()->GetBinLowEdge(iPtBin);
-        double ptMax = fTOFrawYield.GetXaxis()->GetBinUpEdge(iPtBin);
+        double ptMin = kPtBins[iPtBin];//fTOFrawYield.GetXaxis()->GetBinLowEdge(iPtBin);
+        double ptMax = kPtBins[iPtBin+1];//fTOFrawYield.GetXaxis()->GetBinUpEdge(iPtBin);
         double centMin = kCentBinsLimitsProton[iCent][0];
         double centMax = kCentBinsLimitsProton[iCent][1];
 
@@ -147,7 +160,7 @@ void SignalBinnedMC(const char *cutSettings = "", const bool binCounting = false
         // project histogram
         std::cout << "Pt bins: min=" << ptMin << "; max=" << ptMax << "; indexMin=" << pTbinsIndexMin << "; indexMax=" << pTbinsIndexMax << "; centralityBinMin=" << centBinMin << "; centralityBinMax=" << centBinMax << std::endl;
         TH1D *tofSignalProjection = fTOFSignal->ProjectionZ(Form("f%sTOFSignal_%.0f_%.0f_%.2f_%.2f", kAntimatterMatter[iMatt], centMin, centMax, fTOFSignal->GetYaxis()->GetBinLowEdge(pTbinsIndexMin), fTOFSignal->GetYaxis()->GetBinUpEdge(pTbinsIndexMax)), centBinMin, centBinMax, pTbinsIndexMin, pTbinsIndexMax);
-        tofSignalProjection->Rebin(1);
+        //tofSignalProjection->Rebin(8);
 
         // project histogram (antimatter + matter)
         TH1D *tofSignalProjectionAll = fTOFSignalAll->ProjectionZ(Form("f%sTOFSignalAll_%.0f_%.0f_%.2f_%.2f", kAntimatterMatter[iMatt], centMin, centMax, fTOFSignalAll->GetYaxis()->GetBinLowEdge(pTbinsIndexMin), fTOFSignalAll->GetYaxis()->GetBinUpEdge(pTbinsIndexMax)), centBinMin, centBinMax, pTbinsIndexMin, pTbinsIndexMax);

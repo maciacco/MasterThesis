@@ -76,6 +76,7 @@ for i_cent_bins in range(len(CENTRALITY_LIST)):
     h_mass_mc = [ROOT.TH1D(), ROOT.TH1D()]
     h_mass_dat = [ROOT.TH1D(), ROOT.TH1D()]
     h_m_minus_mc = [ROOT.TH1D(), ROOT.TH1D()]
+    h_m_minus_mc_distribution = [ROOT.TH1D(), ROOT.TH1D()] # distribution to reject outliers
     for i_split, split in enumerate(SPLIT_LIST):
         print(f'{i_split} -> {split}')
         # get preselection efficiency and abs correction histograms
@@ -102,6 +103,8 @@ for i_cent_bins in range(len(CENTRALITY_LIST)):
             f'fMassData_{split}_{cent_bins[0]}_{cent_bins[1]}', f'{split}, {cent_bins[0]}-{cent_bins[1]}%', len(bins)-1, bins)
         h_m_minus_mc[i_split] = ROOT.TH1D(
             f'fDeltaMassLambda_{split}_{cent_bins[0]}_{cent_bins[1]}', f'{split}, {cent_bins[0]}-{cent_bins[1]}%', len(bins)-1, bins)
+        h_m_minus_mc_distribution[i_split] = ROOT.TH1D(
+            f'fDeltaMassLambdaDistribution_{split}_{cent_bins[0]}_{cent_bins[1]}', f'{split}, {cent_bins[0]}-{cent_bins[1]}%', 800, -400, 400)
 
         for ct_bins in zip(CT_BINS_CENT[i_cent_bins][:-1], CT_BINS_CENT[i_cent_bins][1:]):
 
@@ -153,7 +156,8 @@ for i_cent_bins in range(len(CENTRALITY_LIST)):
             # 3. efficiency correction
             # eff_correct = eff_abs_correction.GetBinContent(eff_abs_correction.FindBin(ct_bins[0]))
 
-            ct_bin_index = h_corrected_yields[i_split].FindBin(ct_bins[0]+0.5)
+            ct_bin_index = h_corrected_yields[i_split].FindBin(ct_bins[0]+0.05)
+            print(f"ct_index = {ct_bin_index}")
             h_corrected_yields[i_split].SetBinContent(ct_bin_index, raw_yield/eff[0])
             h_corrected_yields[i_split].SetBinError(ct_bin_index, raw_yield_error/eff[0])
             h_mass[i_split].SetBinContent(ct_bin_index, mass)
@@ -164,6 +168,23 @@ for i_cent_bins in range(len(CENTRALITY_LIST)):
             h_mass_dat[i_split].SetBinError(ct_bin_index, mass_dat_error*1e6)
             h_m_minus_mc[i_split].SetBinContent(ct_bin_index, (mass_dat - mass_mc)*1e6)
             h_m_minus_mc[i_split].SetBinError(ct_bin_index, 1e6*np.sqrt(mass_dat_error*mass_dat_error+mass_mc_error*mass_mc_error))
+            # h_m_minus_mc_distribution[i_split].Fill((mass_dat-mass_mc)*1e6)
+
+        # mean_delta_mass = h_m_minus_mc_distribution[i_split].GetMean()
+        # sigma_delta_mass = h_m_minus_mc_distribution[i_split].GetRMS()
+        # n_entries = h_m_minus_mc_distribution[i_split].GetEntries()
+        # prob_reject = 1/4/n_entries
+        # gaus_cdf = ROOT.TF1("gaus_cdf","ROOT::Math::normal_cdf(x)")
+        # limit = -gaus_cdf.GetX(prob_reject,-5,0)
+        # print(F"LIMIT = {limit}")
+
+        # for ct_bins in zip(CT_BINS_CENT[i_cent_bins][:-1], CT_BINS_CENT[i_cent_bins][1:]):
+        #     ct_bin_index = h_corrected_yields[i_split].FindBin(ct_bins[0]+0.5)
+        #     bin_content = h_m_minus_mc[i_split].GetBinContent(ct_bin_index)
+        #     if np.abs(bin_content-mean_delta_mass) > (limit*sigma_delta_mass):
+        #         print("remove point")
+        #         h_m_minus_mc[i_split].SetBinContent(ct_bin_index,0)
+        #         h_m_minus_mc[i_split].SetBinError(ct_bin_index,0)
 
         # set labels
         h_corrected_yields[i_split].GetXaxis().SetTitle("#it{c}t (cm)")
@@ -178,10 +199,26 @@ for i_cent_bins in range(len(CENTRALITY_LIST)):
         h_m_minus_mc[i_split].GetXaxis().SetTitle("#it{c}t (cm)")
         h_m_minus_mc[i_split].GetYaxis().SetTitle("#it{m}_{#Lambda}^{data} - #it{m}_{#Lambda}^{MC} (keV/#it{c}^{2})")
         h_m_minus_mc[i_split].Fit("pol0")
+        prob = h_m_minus_mc[i_split].GetFunction("pol0").GetProb()
+        gaus = ROOT.TF1("gausn","gausn")
+        gaus.SetParameter(0,1)
+        gaus.SetParameter(1,0)
+        gaus.SetParameter(2,1)
+        integral = gaus.Integral(-2.64,2.64)
+        #print(f"Probability = {prob}, integral = {(integral)}, n_entries_hist = {h_m_minus_mc_distribution[i_split].GetEntries()}")
+        
+        mass_fit = h_m_minus_mc[i_split].GetFunction("pol0").GetParameter(0)
+        for ct_bins in zip(CT_BINS_CENT[i_cent_bins][:-1], CT_BINS_CENT[i_cent_bins][1:]):
+            ct_bin_index = h_corrected_yields[i_split].FindBin(ct_bins[0]+0.05)
+            bin_content = h_m_minus_mc[i_split].GetBinContent(ct_bin_index)
+            bin_error = h_m_minus_mc[i_split].GetBinError(ct_bin_index)
+            h_m_minus_mc_distribution[i_split].Fill((bin_content-mass_fit)/bin_error)
+        # h_m_minus_mc_distribution[i_split].Fit("gaus","L")
+
         #h_corrected_yields[i_split].Scale(1, "width")
         for i_bin in range(len(bins))[2:]:
             bin_width = h_corrected_yields[i_split].GetBinWidth(i_bin)
-            print(f"bin: {h_corrected_yields[i_split].GetBinLowEdge(i_bin)}; bin width: {bin_width}")
+            # print(f"bin: {h_corrected_yields[i_split].GetBinLowEdge(i_bin)}; bin width: {bin_width}")
             bin_content = h_corrected_yields[i_split].GetBinContent(i_bin)
             bin_error = h_corrected_yields[i_split].GetBinError(i_bin)
             h_corrected_yields[i_split].SetBinContent(i_bin, bin_content/bin_width)
@@ -210,14 +247,15 @@ for i_cent_bins in range(len(CENTRALITY_LIST)):
         h_m_minus_mc[i_split].GetYaxis().SetRangeUser(-5e2,5e2)
         h_m_minus_mc[i_split].SetMarkerSize(0.8)
         h_m_minus_mc[i_split].Write()
+        h_m_minus_mc_distribution[i_split].Write()
 
         # mass shift chi2 and value
         canv_delta_mass = ROOT.TCanvas("fDeltaMassCanvas","canv_delta_mass")
         h_m_minus_mc[i_split].Draw()
         delta_mass_kev = h_m_minus_mc[i_split].GetFunction("pol0").GetParameter(0)
         delta_mass_error_kev = h_m_minus_mc[i_split].GetFunction("pol0").GetParError(0)
-        formatted_delta_mass = "{:.0f}".format(delta_mass_kev)
-        formatted_delta_mass_error = "{:.0f}".format(delta_mass_error_kev)
+        formatted_delta_mass = "{:.1f}".format(delta_mass_kev)
+        formatted_delta_mass_error = "{:.1f}".format(delta_mass_error_kev)
         delta_mass_text = ROOT.TLatex(20, 300, "#delta#it{m} = "+formatted_delta_mass+" #pm "+formatted_delta_mass_error+" keV/#it{c}^{2}")
         delta_mass_text.SetTextFont(44)
         delta_mass_text.SetTextSize(28)
@@ -255,7 +293,7 @@ for i_cent_bins in range(len(CENTRALITY_LIST)):
         integral_error = fit_function_expo.IntegralError(0, 1.e9, res_expo.GetParams(), res_expo.GetCovarianceMatrix().GetMatrixArray())
         formatted_integral = "{:.10f}".format(integral/2./evts)
         formatted_integral_error = "{:.10f}".format(integral_error/evts/2.)
-        print(f"N_ev = {evts}")
+        # print(f"N_ev = {evts}")
         integral_yield = ROOT.TLatex(20, 40, "1/#it{N_{ev}} #times BR #times d#it{N}/d#it{y} = "+formatted_integral+" #pm "+formatted_integral_error)
         integral_yield.SetTextSize(0.05)
 

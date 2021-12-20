@@ -11,7 +11,7 @@ import uproot
 import yaml
 
 SPEED_OF_LIGHT = 2.99792458
-N_TRIALS = 2000
+N_TRIALS = 10000
 SPLIT = False
 MAX_EFF = 0.99
 THRESH_EFF = 0.90
@@ -74,6 +74,7 @@ for i_cent_bins in range(len(CENTRALITY_LIST)):
         h_mass_mc = [ROOT.TH1D(), ROOT.TH1D()]
         h_mass_dat = [ROOT.TH1D(), ROOT.TH1D()]
         h_m_minus_mc = [ROOT.TH1D(), ROOT.TH1D()]
+        h_m_minus_mc_distribution_reject = [ROOT.TH1D(), ROOT.TH1D()] # distribution to reject outliers
         if (i_trial % 100) == 0:
             print(f'{cent_bins[0]}-{cent_bins[1]}%: i_trial = {i_trial}')
 
@@ -102,6 +103,8 @@ for i_cent_bins in range(len(CENTRALITY_LIST)):
                 f'fMassData_{split}_{cent_bins[0]}_{cent_bins[1]}', f'{split}, {cent_bins[0]}-{cent_bins[1]}%', len(bins)-1, bins)
             h_m_minus_mc[i_split] = ROOT.TH1D(
                 f'fDeltaMassLambda_{split}_{cent_bins[0]}_{cent_bins[1]}', f'{split}, {cent_bins[0]}-{cent_bins[1]}%', len(bins)-1, bins)
+            h_m_minus_mc_distribution_reject[i_split] = ROOT.TH1D(
+                f'fDeltaMassLambdaDistribution_{split}_{cent_bins[0]}_{cent_bins[1]}', f'{split}, {cent_bins[0]}-{cent_bins[1]}%', 800, -400, 400)
 
             for ct_bins in zip(CT_BINS_CENT[i_cent_bins][:-1], CT_BINS_CENT[i_cent_bins][1:]):
 
@@ -162,7 +165,7 @@ for i_cent_bins in range(len(CENTRALITY_LIST)):
                 eff = presel_eff * eff_cut_dict[bin]
                 #abs = g_abs_correction.GetPointY(CT_BINS_CENT[i_cent_bins].index(ct_bins[0]))
 
-                ct_bin_index = h_corrected_yields[i_split].FindBin(ct_bins[0]+0.5)
+                ct_bin_index = h_corrected_yields[i_split].FindBin(ct_bins[0]+0.05)
 
                 h_corrected_yields[i_split].SetBinContent(ct_bin_index, raw_yield/eff[0])
                 h_corrected_yields[i_split].SetBinError(ct_bin_index, raw_yield_error/eff[0])
@@ -172,8 +175,25 @@ for i_cent_bins in range(len(CENTRALITY_LIST)):
                 h_mass_mc[i_split].SetBinError(ct_bin_index, mass_mc_error)
                 h_mass_dat[i_split].SetBinContent(ct_bin_index, mass_dat)
                 h_mass_dat[i_split].SetBinError(ct_bin_index, mass_dat_error)
+                # h_m_minus_mc_distribution_reject[i_split].Fill((mass_dat-mass_mc)*1e6)
                 h_m_minus_mc[i_split].SetBinContent(ct_bin_index, (mass_dat - mass_mc)*1e6)
                 h_m_minus_mc[i_split].SetBinError(ct_bin_index, 1e6*np.sqrt(mass_dat_error*mass_dat_error+mass_mc_error*mass_mc_error))
+
+            mean_delta_mass = h_m_minus_mc_distribution_reject[i_split].GetMean()
+            sigma_delta_mass = h_m_minus_mc_distribution_reject[i_split].GetRMS()
+            n_entries = h_m_minus_mc_distribution_reject[i_split].GetEntries()
+            prob_reject = 1/4/n_entries
+            gaus_cdf = ROOT.TF1("gaus_cdf","ROOT::Math::normal_cdf(x)")
+            limit = -gaus_cdf.GetX(prob_reject,-5,0)
+            # print(F"LIMIT = {limit}")
+
+            # for ct_bins in zip(CT_BINS_CENT[i_cent_bins][:-1], CT_BINS_CENT[i_cent_bins][1:]):
+            #     ct_bin_index = h_corrected_yields[i_split].FindBin(ct_bins[0]+0.5)
+            #     bin_content = h_m_minus_mc[i_split].GetBinContent(ct_bin_index)
+            #     if np.abs(bin_content-mean_delta_mass) > (limit*sigma_delta_mass):
+            #         # print("remove point")
+            #         h_m_minus_mc[i_split].SetBinContent(ct_bin_index,0)
+            #         h_m_minus_mc[i_split].SetBinError(ct_bin_index,0)
 
             # set labels
             h_corrected_yields[i_split].GetXaxis().SetTitle("#it{c}t (cm)")
@@ -188,6 +208,7 @@ for i_cent_bins in range(len(CENTRALITY_LIST)):
             h_m_minus_mc[i_split].GetXaxis().SetTitle("#it{c}t (cm)")
             h_m_minus_mc[i_split].GetYaxis().SetTitle("#it{m}_{#Lambda}^{data}-#it{m}_{#Lambda}^{MC} (keV/#it{c}^{2})")
             res_deltaM = h_m_minus_mc[i_split].Fit("pol0","QS")
+
             for i_bin in range(len(bins))[2:]:
                 bin_width = h_corrected_yields[i_split].GetBinWidth(i_bin)
                 #print(f"bin: {h_corrected_yields[i_split].GetBinLowEdge(i_bin)}; bin width: {bin_width}")
@@ -207,14 +228,15 @@ for i_cent_bins in range(len(CENTRALITY_LIST)):
             # compute lifetime
             tau = -1/fit_function_expo.GetParameter(1)*100/SPEED_OF_LIGHT # ps
 
-            if (h_m_minus_mc[i_split].GetFunction("pol0").GetChisquare()/h_m_minus_mc[i_split].GetFunction("pol0").GetNDF()) < 3:
-                systematics_file.cd(f'{cent_bins[0]}_{cent_bins[1]}')
-                # h_corrected_yields[i_split].Write()
-                #lifetime_tmp[i_split] = tau
-                h_m_minus_mc_distribution.Fill(h_m_minus_mc[i_split].GetFunction("pol0").GetParameter(0))
-                h_prob_distribution.Fill(res_deltaM.Prob())
-                #h_fit_status.Fill(fit_function_expo.IsValid())
-                i_trial+=1
+            if h_m_minus_mc[i_split].GetEntries() > 0:
+                if (h_m_minus_mc[i_split].GetFunction("pol0").GetChisquare()/h_m_minus_mc[i_split].GetFunction("pol0").GetNDF()) < 3:
+                    systematics_file.cd(f'{cent_bins[0]}_{cent_bins[1]}')
+                    # h_corrected_yields[i_split].Write()
+                    #lifetime_tmp[i_split] = tau
+                    h_m_minus_mc_distribution.Fill(h_m_minus_mc[i_split].GetFunction("pol0").GetParameter(0))
+                    h_prob_distribution.Fill(res_deltaM.Prob())
+                    #h_fit_status.Fill(fit_function_expo.IsValid())
+                    i_trial+=1
         
     systematics_file.cd()
 

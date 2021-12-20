@@ -31,7 +31,7 @@ using namespace proton;
 bool use_uniform = false;
 bool use_roofit = false;
 
-void SecondaryMC(const char *cutSettings = "", const char *inFileDatName = "AnalysisResults_largeNsigma", const char *inFileMCName = "mc", const char *outFileName = "PrimaryProtonMC", const bool useAntiProtonsAsPrimaries = false)
+void SecondaryMC(const char *cutSettings = "", const char *inFileDatName = "AnalysisResults_largeNsigma", const char *inFileMCName = "mc_20g7_20210929", const char *outFileName = "PrimaryProtonMC", const bool useAntiProtonsAsPrimaries = false)
 {
   gStyle->SetPadTickX(1);
   gStyle->SetPadTickY(1);
@@ -43,8 +43,9 @@ void SecondaryMC(const char *cutSettings = "", const char *inFileDatName = "Anal
 
   // open files
  //TFile *inFileDat = TFile::Open(Form("%s/%s.root", kDataDir, inFileDatName)); 
-  TFile *inFileDat = TFile::Open(Form("%s/%s_largeNsigma.root", kDataDir, inFileDatName)); 
-  TFile *inFileMC20g7 = TFile::Open(Form("%s/%s_20g7_20210929.root", kDataDir, inFileMCName));
+  TFile *inFileMC20g7_likeData = TFile::Open(Form("%s/%s.root", kDataDir, "mc_20g7_20210929")); 
+  TFile *inFileMC21l5 = TFile::Open(Form("%s/%s.root", kDataDir, inFileMCName));
+  TFile *inFileMC20g7 = TFile::Open(Form("%s/%s.root", kDataDir, "mc_20g7_likeData_largeNsigma"));
   //TFile *inFileMC1 = TFile::Open(Form("%s/%s.root", kDataDir, inFileMCName));
   TFile *outFile = TFile::Open(Form("%s/%s.root", kOutDir, outFileName), "recreate");
 
@@ -57,23 +58,32 @@ void SecondaryMC(const char *cutSettings = "", const char *inFileDatName = "Anal
     system(Form("mkdir %s/primary_fraction/%s_%s", kPlotDir, kAntimatterMatter[iMatt], cutSettings));
 
     // get TTList(s)
+    std::string listName_mcFalse = Form("mpuccio_proton_mcFalse_%s", cutSettings);
+    std::string listName_mcTrue = Form("mpuccio_proton_mcTrue_%s", cutSettings);
     std::string listName = Form("nuclei_proton_%s", cutSettings);
-    TTList *listData = (TTList *)inFileDat->Get(listName.data());
-    TTList *listMc20g7 = (TTList *)inFileMC20g7->Get(listName.data());
+    TTList *listMc21l5_likeData = (TTList *)inFileMC21l5->Get(listName_mcFalse.data());
+    TTList *listMc21l5 = (TTList *)inFileMC21l5->Get(listName_mcTrue.data());
+    TTList *listMc20g7_likeData = (TTList *)inFileMC20g7->Get(listName.data());
+    TTList *listMc20g7 = (TTList *)inFileMC20g7_likeData->Get(listName.data());
 
     // get histograms from files
-    TH3F *fDCAdat = (TH3F *)listData->Get(Form("f%sDCAxyTOF", kAntimatterMatter[iMatt]));
-    TH3F *fDCAprim, *fDCAprim1, *fDCAprim2, *fDCAprim3, *fDCAsec, *fDCAsecWD;
+    TH3F *fDCAdat = (TH3F *)listMc21l5_likeData->Get(Form("f%sDCAxyTOF", kAntimatterMatter[iMatt]));
+    TH3F *fDCAdat_20g7 = (TH3F *)listMc20g7_likeData->Get(Form("f%sDCAxyTOF", kAntimatterMatter[iMatt]));
+    if (ADD20g7)
+      fDCAdat->Add(fDCAdat_20g7);
+    TH3F *fDCAprim, *fDCAsec, *fDCAsecWD, *fDCAprim_20g7, *fDCAsec_20g7, *fDCAsecWD_20g7;
     if(useAntiProtonsAsPrimaries){
-      fDCAprim = (TH3F *)listData->Get(Form("f%sDCAxyTOF", kAntimatterMatter[0]));
+      fDCAprim = (TH3F *)listMc21l5_likeData->Get(Form("f%sDCAxyTOF", kAntimatterMatter[0]));
     }
     else{
-      fDCAprim1 = (TH3F *)listMc20g7->Get(Form("f%sDCAPrimaryTOF", kAntimatterMatter[iMatt]));
-      fDCAsec = (TH3F *)listMc20g7->Get(Form("f%sDCASecondaryTOF", kAntimatterMatter[iMatt]));
-      fDCAsecWD = (TH3F *)listMc20g7->Get(Form("f%sDCASecondaryWeakTOF", kAntimatterMatter[iMatt]));
+      fDCAprim = (TH3F *)listMc21l5->Get(Form("f%sDCAPrimaryTOF", kAntimatterMatter[iMatt]));
+      fDCAsec = (TH3F *)listMc21l5->Get(Form("f%sDCASecondaryTOF", kAntimatterMatter[iMatt]));
+      fDCAsecWD = (TH3F *)listMc21l5->Get(Form("f%sDCASecondaryWeakTOF", kAntimatterMatter[iMatt]));
+      fDCAprim_20g7 = (TH3F *)listMc20g7->Get(Form("f%sDCAPrimaryTOF", kAntimatterMatter[iMatt]));
+      fDCAsec_20g7 = (TH3F *)listMc20g7->Get(Form("f%sDCASecondaryTOF", kAntimatterMatter[iMatt]));
+      fDCAsecWD_20g7 = (TH3F *)listMc20g7->Get(Form("f%sDCASecondaryWeakTOF", kAntimatterMatter[iMatt]));
       //fDCAprim2 = (TH3F *)listMc20e3a_2->Get(Form("f%sDCAPrimaryTOF", kAntimatterMatter[0]));
       //fDCAprim3 = (TH3F *)listMc3->Get(Form("f%sDCAPrimaryTOF", kAntimatterMatter[0]));
-      fDCAprim = (TH3F *)fDCAprim1->Clone(fDCAprim1->GetName());
       //fDCAprim->Add(fDCAprim2);
       //fDCAprim->Add(fDCAprim3);
     }

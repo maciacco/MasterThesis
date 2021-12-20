@@ -8,7 +8,7 @@ roiNsigma="$4"
 extractRatios=1
 
 fileData="AnalysisResults"
-fileDataEff="mc_20g7_likeData"
+fileDataEff="AnalysisResults_LHC21l5"
 fileMC="mc"
 signalNameEff="SignalProtonSysEff"
 spectraNameEff="SpectraProtonSysEff"
