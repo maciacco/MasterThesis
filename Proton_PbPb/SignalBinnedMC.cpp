@@ -77,7 +77,7 @@ void SignalBinnedMC(const char *cutSettings = "", const bool binCounting = false
   }
 
   // get TTList
-  std::string listName_21l5 = Form("mpuccio_proton_mcFalse_%s", cutSettings);
+  std::string listName_21l5 = Form("nuclei_proton_mcFalse_%s", cutSettings);
   TTList *list_21l5 = (TTList *)mcFile_21l5->Get(listName_21l5.data());
   std::string listName_20g7 = Form("nuclei_proton_%s", cutSettings);
   TTList *list_20g7 = (TTList *)mcFile_20g7->Get(listName_20g7.data());
@@ -87,19 +87,19 @@ void SignalBinnedMC(const char *cutSettings = "", const bool binCounting = false
   std::string histNameA = Form("f%sTOFnSigma", kAntimatterMatter[0]);
   std::string histNameM = Form("f%sTOFnSigma", kAntimatterMatter[1]);
   TH3F *fTOFSignalA = (TH3F *)list_21l5->Get(histNameA.data());
-  TH3F *fTOFSignalA_20g7 = (TH3F *)list_20g7->Get(histNameA.data());
-  if (ADD20g7)
-    fTOFSignalA->Add(fTOFSignalA_20g7);
+  //TH3F *fTOFSignalA_20g7 = (TH3F *)list_20g7->Get(histNameA.data());
+  /* if (ADD20g7)
+    fTOFSignalA->Add(fTOFSignalA_20g7); */
   // TH3F *fTOFSignalA2 = (TH3F *)list2->Get(histNameA.data());
   TH3F *fTOFSignalAll = (TH3F *)fTOFSignalA->Clone(fTOFSignalA->GetName());
   TH3F *fTOFSignalM = (TH3F *)list_21l5->Get(histNameM.data());
-  TH3F *fTOFSignalM_20g7 = (TH3F *)list_20g7->Get(histNameM.data());
-  if (ADD20g7)
-    fTOFSignalM->Add(fTOFSignalM_20g7);
+  //TH3F *fTOFSignalM_20g7 = (TH3F *)list_20g7->Get(histNameM.data());
+  /* if (ADD20g7)
+    fTOFSignalM->Add(fTOFSignalM_20g7); */
   //TH3F *fTOFSignalM2 = (TH3F *)list2->Get(histNameM.data());
   //fTOFSignalAll->Add(fTOFSignalA2);
-  if (ADD20g7)
-    fTOFSignalAll->Add(fTOFSignalM);
+/*   if (ADD20g7)
+    fTOFSignalAll->Add(fTOFSignalM); */
   //fTOFSignalAll->Add(fTOFSignalM2);
 
   /////////////////////////////////////////////////////////////////////////////////////
@@ -116,14 +116,16 @@ void SignalBinnedMC(const char *cutSettings = "", const bool binCounting = false
     // Get histograms from file
     std::string histName = Form("f%sTOFnSigma", kAntimatterMatter[iMatt]);
     TH3F *fTOFSignal1 = (TH3F *)list_21l5->Get(histName.data());
+    fTOFSignal1->SetName("A");
     TH3F *fTOFSignal2 = (TH3F *)list_20g7->Get(histName.data());
+    fTOFSignal1->SetName("B");
     if (!fTOFSignal1)
     {
       std::cout << "Hstogram not found!" << std::endl; // check data TFile opening
       return;
     }
 
-    TH3F *fTOFSignal = (TH3F *)fTOFSignal1->Clone(fTOFSignal1->GetName());
+    TH3F *fTOFSignal = (TH3F *)fTOFSignal1->Clone(histName.data());
     if (ADD20g7)
       fTOFSignal->Add(fTOFSignal2);
 
@@ -147,8 +149,8 @@ void SignalBinnedMC(const char *cutSettings = "", const bool binCounting = false
       for (int iPtBin = 5; iPtBin < nUsedPtBins + 1; ++iPtBin) // full train data binning
       //for (int iPtBin = 0; iPtBin < nUsedPtBins; ++iPtBin)
       { // loop on pT bins
-        double ptMin = kPtBins[iPtBin];//fTOFrawYield.GetXaxis()->GetBinLowEdge(iPtBin);
-        double ptMax = kPtBins[iPtBin+1];//fTOFrawYield.GetXaxis()->GetBinUpEdge(iPtBin);
+        double ptMin = kPtBins[iPtBin-1];//fTOFrawYield.GetXaxis()->GetBinLowEdge(iPtBin);
+        double ptMax = kPtBins[iPtBin];//fTOFrawYield.GetXaxis()->GetBinUpEdge(iPtBin);
         double centMin = kCentBinsLimitsProton[iCent][0];
         double centMax = kCentBinsLimitsProton[iCent][1];
 

@@ -35,7 +35,7 @@ void EfficiencyNew(const char *cutSettings = "", const char *inFileNameMC = "mc_
     system(Form("mkdir %s/efficiency/%s_%s_", kPlotDir, kAntimatterMatter[iMatt], cutSettings));
 
     // get TTList
-    std::string listName_21l5 = Form("mpuccio_proton_mcTrue_%s", cutSettings);
+    std::string listName_21l5 = Form("nuclei_proton_mcTrue_%s", cutSettings);
     std::string listName_20g7 = Form("nuclei_proton_%s", cutSettings);
     /* TTList *list1 = (TTList *)inFile1.Get(listName.data()); */
     //TTList *list2 = (TTList *)inFile2.Get(listName.data());

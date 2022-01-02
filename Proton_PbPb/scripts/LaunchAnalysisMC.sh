@@ -10,10 +10,10 @@ extractRatios=1
 
 fileData="AnalysisResults_LHC21l5"
 fileMC="AnalysisResults_LHC21l5"
-signalName="SignalProtonMC_21l5"
-spectraName="SpectraProtonMCMC_21l5"
-EfficiencyHe3="EfficiencyProtonMC_21l5"
-PrimaryHe3="PrimaryProtonMC_21l5"
+signalName="SignalProtonMC_21l5_false"
+spectraName="SpectraProtonMCMC_21l5_false"
+EfficiencyHe3="EfficiencyProtonMC_21l5_false"
+PrimaryHe3="PrimaryProtonMC_21l5_false"
 
 # create output directories
 DIR_OUT=out

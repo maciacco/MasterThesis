@@ -31,7 +31,7 @@ using namespace proton;
 bool use_uniform = false;
 bool use_roofit = false;
 
-void SecondaryMC(const char *cutSettings = "", const char *inFileDatName = "AnalysisResults_largeNsigma", const char *inFileMCName = "mc_20g7_20210929", const char *outFileName = "PrimaryProtonMC", const bool useAntiProtonsAsPrimaries = false)
+void SecondaryMC(const char *cutSettings = "", const char *inFileDatName = "AnalysisResults_largeNsigma", const char *inFileMCName = "mc_20g7_20210929", const char *outFileName = "PrimaryProtonMC")
 {
   gStyle->SetPadTickX(1);
   gStyle->SetPadTickY(1);
@@ -43,9 +43,9 @@ void SecondaryMC(const char *cutSettings = "", const char *inFileDatName = "Anal
 
   // open files
  //TFile *inFileDat = TFile::Open(Form("%s/%s.root", kDataDir, inFileDatName)); 
-  TFile *inFileMC20g7_likeData = TFile::Open(Form("%s/%s.root", kDataDir, "mc_20g7_20210929")); 
+  TFile *inFileMC20g7_likeData = TFile::Open(Form("%s/%s.root", kDataDir, "mc_20g7_likeData_largeNsigma")); 
   TFile *inFileMC21l5 = TFile::Open(Form("%s/%s.root", kDataDir, inFileMCName));
-  TFile *inFileMC20g7 = TFile::Open(Form("%s/%s.root", kDataDir, "mc_20g7_likeData_largeNsigma"));
+  TFile *inFileMC20g7 = TFile::Open(Form("%s/%s.root", kDataDir, "mc_20g7_20210929"));
   //TFile *inFileMC1 = TFile::Open(Form("%s/%s.root", kDataDir, inFileMCName));
   TFile *outFile = TFile::Open(Form("%s/%s.root", kOutDir, outFileName), "recreate");
 
@@ -58,35 +58,30 @@ void SecondaryMC(const char *cutSettings = "", const char *inFileDatName = "Anal
     system(Form("mkdir %s/primary_fraction/%s_%s", kPlotDir, kAntimatterMatter[iMatt], cutSettings));
 
     // get TTList(s)
-    std::string listName_mcFalse = Form("mpuccio_proton_mcFalse_%s", cutSettings);
-    std::string listName_mcTrue = Form("mpuccio_proton_mcTrue_%s", cutSettings);
+    std::string listName_mcFalse = Form("nuclei_proton_mcFalse_%s", cutSettings);
+    std::string listName_mcTrue = Form("nuclei_proton_mcTrue_%s", cutSettings);
     std::string listName = Form("nuclei_proton_%s", cutSettings);
     TTList *listMc21l5_likeData = (TTList *)inFileMC21l5->Get(listName_mcFalse.data());
     TTList *listMc21l5 = (TTList *)inFileMC21l5->Get(listName_mcTrue.data());
-    TTList *listMc20g7_likeData = (TTList *)inFileMC20g7->Get(listName.data());
-    TTList *listMc20g7 = (TTList *)inFileMC20g7_likeData->Get(listName.data());
+    TTList *listMc20g7_likeData = (TTList *)inFileMC20g7_likeData->Get(listName.data());
+    TTList *listMc20g7 = (TTList *)inFileMC20g7->Get(listName.data());
 
     // get histograms from files
     TH3F *fDCAdat = (TH3F *)listMc21l5_likeData->Get(Form("f%sDCAxyTOF", kAntimatterMatter[iMatt]));
     TH3F *fDCAdat_20g7 = (TH3F *)listMc20g7_likeData->Get(Form("f%sDCAxyTOF", kAntimatterMatter[iMatt]));
-    if (ADD20g7)
-      fDCAdat->Add(fDCAdat_20g7);
     TH3F *fDCAprim, *fDCAsec, *fDCAsecWD, *fDCAprim_20g7, *fDCAsec_20g7, *fDCAsecWD_20g7;
-    if(useAntiProtonsAsPrimaries){
-      fDCAprim = (TH3F *)listMc21l5_likeData->Get(Form("f%sDCAxyTOF", kAntimatterMatter[0]));
-    }
-    else{
-      fDCAprim = (TH3F *)listMc21l5->Get(Form("f%sDCAPrimaryTOF", kAntimatterMatter[iMatt]));
-      fDCAsec = (TH3F *)listMc21l5->Get(Form("f%sDCASecondaryTOF", kAntimatterMatter[iMatt]));
-      fDCAsecWD = (TH3F *)listMc21l5->Get(Form("f%sDCASecondaryWeakTOF", kAntimatterMatter[iMatt]));
-      fDCAprim_20g7 = (TH3F *)listMc20g7->Get(Form("f%sDCAPrimaryTOF", kAntimatterMatter[iMatt]));
-      fDCAsec_20g7 = (TH3F *)listMc20g7->Get(Form("f%sDCASecondaryTOF", kAntimatterMatter[iMatt]));
-      fDCAsecWD_20g7 = (TH3F *)listMc20g7->Get(Form("f%sDCASecondaryWeakTOF", kAntimatterMatter[iMatt]));
-      //fDCAprim2 = (TH3F *)listMc20e3a_2->Get(Form("f%sDCAPrimaryTOF", kAntimatterMatter[0]));
-      //fDCAprim3 = (TH3F *)listMc3->Get(Form("f%sDCAPrimaryTOF", kAntimatterMatter[0]));
-      //fDCAprim->Add(fDCAprim2);
-      //fDCAprim->Add(fDCAprim3);
-    }
+    
+    fDCAprim = (TH3F *)listMc21l5->Get(Form("f%sDCAPrimaryTOF", kAntimatterMatter[iMatt]));
+    fDCAsec = (TH3F *)listMc21l5->Get(Form("f%sDCASecondaryTOF", kAntimatterMatter[iMatt]));
+    fDCAsecWD = (TH3F *)listMc21l5->Get(Form("f%sDCASecondaryWeakTOF", kAntimatterMatter[iMatt]));
+    fDCAprim_20g7 = (TH3F *)listMc20g7->Get(Form("f%sDCAPrimaryTOF", kAntimatterMatter[iMatt]));
+    fDCAsec_20g7 = (TH3F *)listMc20g7->Get(Form("f%sDCASecondaryTOF", kAntimatterMatter[iMatt]));
+    fDCAsecWD_20g7 = (TH3F *)listMc20g7->Get(Form("f%sDCASecondaryWeakTOF", kAntimatterMatter[iMatt]));
+    //fDCAprim2 = (TH3F *)listMc20e3a_2->Get(Form("f%sDCAPrimaryTOF", kAntimatterMatter[0]));
+    //fDCAprim3 = (TH3F *)listMc3->Get(Form("f%sDCAPrimaryTOF", kAntimatterMatter[0]));
+    //fDCAprim->Add(fDCAprim2);
+    //fDCAprim->Add(fDCAprim3);
+
     for (int iCent = 0; iCent < kNCentClasses; ++iCent)
     {
       TH1D fPrimaryFrac(Form("f%sPrimFrac_%.0f_%.0f", kAntimatterMatter[iMatt], kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1]), Form("%.0f-%.0f%%", kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1]), kNPtBins, kPtBins);
@@ -108,6 +103,10 @@ void SecondaryMC(const char *cutSettings = "", const char *inFileDatName = "Anal
         TH1D *fDCAMcProjPrim;
         TH1D *fDCAMcProjSec;
         TH1D *fDCAMcProjSecWD;
+        TH1D *fDCAdatProj_20g7;
+        TH1D *fDCAMcProjPrim_20g7;
+        TH1D *fDCAMcProjSec_20g7;
+        TH1D *fDCAMcProjSecWD_20g7;
         TString canvTitleTOF;
         TString canvNameTOF;
         TH1D fRatioDCAPrim("", "", kNDCABinsMedium, kDCABinsMedium);
@@ -123,6 +122,34 @@ void SecondaryMC(const char *cutSettings = "", const char *inFileDatName = "Anal
         fDCAMcProjSec->SetTitle(projTitle);
         fDCAMcProjSecWD = fDCAsecWD->ProjectionZ(TString::Format("f%sDCASecWDTOF_%.0f_%.0f_%.2f_%.2f", kAntimatterMatter[iMatt], fDCAdat->GetXaxis()->GetBinLowEdge(kCentBinsProton[iCent][0]), fDCAdat->GetXaxis()->GetBinUpEdge(kCentBinsProton[iCent][1]), fDCAdat->GetYaxis()->GetBinLowEdge(pTbinsIndexMin), fDCAdat->GetYaxis()->GetBinUpEdge(pTbinsIndexMax)), kCentBinsProton[iCent][0], kCentBinsProton[iCent][1], pTbinsIndexMin, pTbinsIndexMax);
         fDCAMcProjSecWD->SetTitle(projTitle);
+
+        // lhc21l5 - new mc
+        fDCAdatProj_20g7 = fDCAdat_20g7->ProjectionZ(TString::Format("f%sDCAxyTOF_20g7_%.0f_%.0f_%.2f_%.2f", kAntimatterMatter[iMatt], fDCAdat->GetXaxis()->GetBinLowEdge(kCentBinsProton[iCent][0]), fDCAdat->GetXaxis()->GetBinUpEdge(kCentBinsProton[iCent][1]), fDCAdat->GetYaxis()->GetBinLowEdge(pTbinsIndexMin), fDCAdat->GetYaxis()->GetBinUpEdge(pTbinsIndexMax)), kCentBinsProton[iCent][0], kCentBinsProton[iCent][1], pTbinsIndexMin, pTbinsIndexMax);
+        fDCAdatProj_20g7->SetTitle(projTitle);
+        fDCAMcProjPrim_20g7 = fDCAprim_20g7->ProjectionZ(TString::Format("f%sDCAPrimTOF_20g7_%.0f_%.0f_%.2f_%.2f", kAntimatterMatter[iMatt], fDCAdat->GetXaxis()->GetBinLowEdge(kCentBinsProton[iCent][0]), fDCAdat->GetXaxis()->GetBinUpEdge(kCentBinsProton[iCent][1]), fDCAdat->GetYaxis()->GetBinLowEdge(pTbinsIndexMin), fDCAdat->GetYaxis()->GetBinUpEdge(pTbinsIndexMax)), kCentBinsProton[iCent][0], kCentBinsProton[iCent][1], pTbinsIndexMin, pTbinsIndexMax);
+        fDCAMcProjPrim_20g7->SetTitle(projTitle);
+        fDCAMcProjSec_20g7 = fDCAsec_20g7->ProjectionZ(TString::Format("f%sDCASecTOF_20g7_%.0f_%.0f_%.2f_%.2f", kAntimatterMatter[iMatt], fDCAdat->GetXaxis()->GetBinLowEdge(kCentBinsProton[iCent][0]), fDCAdat->GetXaxis()->GetBinUpEdge(kCentBinsProton[iCent][1]), fDCAdat->GetYaxis()->GetBinLowEdge(pTbinsIndexMin), fDCAdat->GetYaxis()->GetBinUpEdge(pTbinsIndexMax)), kCentBinsProton[iCent][0], kCentBinsProton[iCent][1], pTbinsIndexMin, pTbinsIndexMax);
+        fDCAMcProjSec_20g7->SetTitle(projTitle);
+        fDCAMcProjSecWD_20g7 = fDCAsecWD_20g7->ProjectionZ(TString::Format("f%sDCASecWDTOF_20g7_%.0f_%.0f_%.2f_%.2f", kAntimatterMatter[iMatt], fDCAdat->GetXaxis()->GetBinLowEdge(kCentBinsProton[iCent][0]), fDCAdat->GetXaxis()->GetBinUpEdge(kCentBinsProton[iCent][1]), fDCAdat->GetYaxis()->GetBinLowEdge(pTbinsIndexMin), fDCAdat->GetYaxis()->GetBinUpEdge(pTbinsIndexMax)), kCentBinsProton[iCent][0], kCentBinsProton[iCent][1], pTbinsIndexMin, pTbinsIndexMax);
+        fDCAMcProjSecWD_20g7->SetTitle(projTitle);
+
+        // fDCAdatProj = (TH1D*)fDCAdatProj->Rebin(kNDCABinsLarge,fDCAdatProj->GetName(),kDCABinsLarge);
+        // fDCAdatProj->Write();
+        // fDCAMcProjPrim = (TH1D*)fDCAMcProjPrim->Rebin(kNDCABinsLarge,fDCAMcProjPrim->GetName(),kDCABinsLarge);
+        // fDCAMcProjSec = (TH1D*)fDCAMcProjSec->Rebin(kNDCABinsLarge,fDCAMcProjSec->GetName(),kDCABinsLarge);
+        // fDCAMcProjSecWD = (TH1D*)fDCAMcProjSecWD->Rebin(kNDCABinsLarge,fDCAMcProjSecWD->GetName(),kDCABinsLarge);
+        // fDCAdatProj_20g7 = (TH1D*)fDCAdatProj_20g7->Rebin(kNDCABinsLarge,fDCAdatProj_20g7->GetName(),kDCABinsLarge);
+        // fDCAdatProj_20g7->Write();
+        // fDCAMcProjPrim_20g7 = (TH1D*)fDCAMcProjPrim_20g7->Rebin(kNDCABinsLarge,fDCAMcProjPrim_20g7->GetName(),kDCABinsLarge);
+        // fDCAMcProjSec_20g7 = (TH1D*)fDCAMcProjSec_20g7->Rebin(kNDCABinsLarge,fDCAMcProjSec_20g7->GetName(),kDCABinsLarge);
+        // fDCAMcProjSecWD_20g7 = (TH1D*)fDCAMcProjSecWD_20g7->Rebin(kNDCABinsLarge,fDCAMcProjSecWD_20g7->GetName(),kDCABinsLarge);
+
+        if (ADD20g7){
+          fDCAdatProj->Add(fDCAdatProj_20g7);
+          fDCAMcProjPrim->Add(fDCAMcProjPrim_20g7);
+          fDCAMcProjSec->Add(fDCAMcProjSec_20g7);
+          fDCAMcProjSecWD->Add(fDCAMcProjSecWD_20g7);
+        }
 
         canvTitleTOF = TString::Format("%.2f#leq #it{p}_{T}<%.2f GeV/#it{c}, %.0f-%.0f%%", fDCAdat->GetYaxis()->GetBinLowEdge(pTbinsIndexMin), fDCAdat->GetYaxis()->GetBinUpEdge(pTbinsIndexMax), fDCAdat->GetXaxis()->GetBinLowEdge(kCentBinsProton[iCent][0]), fDCAdat->GetXaxis()->GetBinUpEdge(kCentBinsProton[iCent][1]));
         canvNameTOF = TString::Format("f%sDCAxyTOF_%.0f_%.0f_%.2f_%.2f", kAntimatterMatter[iMatt], fDCAdat->GetXaxis()->GetBinLowEdge(kCentBinsProton[iCent][0]), fDCAdat->GetXaxis()->GetBinUpEdge(kCentBinsProton[iCent][1]), fDCAdat->GetYaxis()->GetBinLowEdge(pTbinsIndexMin), fDCAdat->GetYaxis()->GetBinUpEdge(pTbinsIndexMax));
@@ -155,7 +182,7 @@ void SecondaryMC(const char *cutSettings = "", const char *inFileDatName = "Anal
       gStyle->SetStatX(0.85);
       gStyle->SetStatY(0.5);
       gStyle->SetStatFontSize(0.035);
-      TF1 fFitFunc(Form("f%sFunctionFit_%.0f_%.0f", kAntimatterMatter[iMatt], kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1]), "pol2", 0.5f, 3.0f);
+      TF1 fFitFunc(Form("f%sFunctionFit_%.0f_%.0f", kAntimatterMatter[iMatt], kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1]), "pol1", 1.0f, 2.0f);
       fPrimaryFrac.Fit(&fFitFunc, "MRQ");
       fPrimaryFrac.Fit(&fFitFunc, "MRQ");
       fFitFunc.Write();
