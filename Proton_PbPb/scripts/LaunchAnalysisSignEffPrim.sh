@@ -8,7 +8,7 @@ roiNsigma="$4"
 extractRatios=1
 
 fileData="AnalysisResults"
-fileDataEff="AnalysisResults_LHC21l5"
+fileDataEff="AnalysisResults_LHC21l5_full"
 fileMC="mc"
 signalNameEff="SignalProtonSysEff"
 spectraNameEff="SpectraProtonSysEff"
@@ -56,6 +56,8 @@ Secondary("$cutSettings","$fileData","$fileMC","$PrimaryHe3")
 EOF
 fi
 
+echo "CIAOCIAOCIAOCIAOCIAOCIAOCIAO"
+
 if [ $extractRatios -eq 1 ]; then
     root -b -l <<EOF
 .L ../utils/RooGausExp.cxx+
@@ -65,8 +67,8 @@ if [ $extractRatios -eq 1 ]; then
 .L EfficiencyNew.cpp+
 .L SecondaryMC.cpp+
 SignalBinnedMC("$cutSettings",$argumentSignal,"$fileDataEff","$signalNameEff","recreate")
-SecondaryMC("$cutSettings","$fileDataEff","$fileMC","$PrimaryHe3Eff")
-EfficiencyNew("$cutSettings","$fileMC","$EfficiencyHe3","$signalNameEff","$PrimaryHe3Eff")
+SecondaryMC("$cutSettings","$fileDataEff","$fileDataEff","$PrimaryHe3Eff")
+EfficiencyNew("$cutSettings","$fileDataEff","$EfficiencyHe3","$signalNameEff","$PrimaryHe3Eff","update")
 .q
 EOF
 fi

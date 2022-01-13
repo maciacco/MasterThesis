@@ -21,8 +21,8 @@ const int N_TRIALS = 10000;
 double uncertaintyPt(int iMatt, double pt){
   if (iMatt == 1)
     return 0.00557*TMath::Power(pt,-0.32839);
-  //return 0.01788*TMath::Power(pt,-0.58252);
-  return 0;
+  return 0.01788*TMath::Power(pt,-0.58252);
+  //return 0;
 };
 
 void AbsorptionError(const char *outFileName = "AbsError", const char *outFileOption = "recreate", const char *ratioFile = "SpectraProton")

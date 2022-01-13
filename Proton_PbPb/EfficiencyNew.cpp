@@ -8,6 +8,7 @@
 #include <TLatex.h>
 #include <TStyle.h>
 #include <TCanvas.h>
+#include <TDirectory.h>
 
 #include "../utils/Utils.h"
 #include "../utils/Config.h"
@@ -15,7 +16,7 @@
 using namespace utils;
 using namespace proton;
 
-void EfficiencyNew(const char *cutSettings = "", const char *inFileNameMC = "mc_20g7_20210929", const char *outFileNameEff = "EfficiencyProton_LongMCTracks", const char *signalOut = "SignalProtonMC", const char *primOut = "PrimaryProtonMC")
+void EfficiencyNew(const char *cutSettings = "", const char *inFileNameMC = "mc_20g7_20210929", const char *outFileNameEff = "EfficiencyProton_LongMCTracks", const char *signalOut = "SignalProtonMC", const char *primOut = "PrimaryProtonMC", const char *saving_mode="recreate")
 {
   // make signal extraction plots directory
   system(Form("mkdir %s/efficiency", kPlotDir));
@@ -25,10 +26,14 @@ void EfficiencyNew(const char *cutSettings = "", const char *inFileNameMC = "mc_
   TFile inFile_20g7(Form("%s/%s.root", kDataDir, "mc_20g7_20210929"));
   TFile inFile_21l5(Form("%s/%s.root", kDataDir, inFileNameMC));
   //TFile inFile1(Form("%s/%s.root", kDataDir, inFileNameMC));
-  TFile outFile(Form("%s/%s.root", kOutDir, outFileNameEff), "RECREATE");
+  TFile outFile(Form("%s/%s.root", kOutDir, outFileNameEff), saving_mode);
 
   gStyle->SetOptStat(0);
 
+  if (outFile.GetDirectory(Form("%s_", cutSettings)))
+    return;
+  TDirectory *dirOutFile = outFile.mkdir(Form("%s_", cutSettings));
+  dirOutFile->cd();
   for (int iMatt = 0; iMatt < 2; ++iMatt)
   {
     // make plot subdirectory
@@ -69,8 +74,8 @@ void EfficiencyNew(const char *cutSettings = "", const char *inFileNameMC = "mc_
     //fITS_TPC_TOF->Add(fITS_TPC_TOF3);
     TH1D *fTotal_Pt;       // = fTotal->ProjectionY(TString::Format("f%sTotal_Pt", kAntimatterMatter[iMatt]), cent_bin_min, cent_bin_max);
     TH1D *fITS_TPC_TOF_Pt; // = fITS_TPC_TOF->ProjectionY(TString::Format("f%sITS_TPC_TOF_Pt", kAntimatterMatter[iMatt]), cent_bin_min, cent_bin_max);
-    TF1 *sec_f;
-    //TH1D *fSec;
+    //TF1 *sec_f;
+    TH1D *fSec;
 
     for (int iCent = 0; iCent < kNCentClasses; ++iCent) // SET FIRST CENTRALITY BIN TO 1 EXCEPT FOR LHC16h7c_g4_2
     {                                                       // loop over centrality
@@ -81,11 +86,11 @@ void EfficiencyNew(const char *cutSettings = "", const char *inFileNameMC = "mc_
 
       fTotal_Pt = fTotal->ProjectionY(TString::Format("f%sTotal_Pt", kAntimatterMatter[iMatt]), cent_bin_min, cent_bin_max);
       //fITS_TPC_TOF_Pt = fITS_TPC_TOF3->ProjectionY(TString::Format("f%sITS_TPC_TOF_Pt", kAntimatterMatter[iMatt]), cent_bin_min, cent_bin_max);
-      sec_f = (TF1 *)inFilePrimary.Get(Form("f%sFunctionFit_%.0f_%.0f", kAntimatterMatter[iMatt], kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1]));
-      //fSec = (TH1D*)inFilePrimary.Get(Form("f%sPrimFrac_%.0f_%.0f", kAntimatterMatter[iMatt], kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1]));
+      //sec_f = (TF1 *)inFilePrimary.Get(Form("f%sFunctionFit_%.0f_%.0f", kAntimatterMatter[iMatt], kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1]));
+      fSec = (TH1D*)inFilePrimary.Get(Form("f%sPrimFrac_%.0f_%.0f", kAntimatterMatter[iMatt], kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1]));
       fITS_TPC_TOF_Pt = (TH1D*)inFileSignal.Get(Form("%s_%d_%d/f%sTOFrawYield_%.0f_%.0f", cutSettings, 1, 1, kAntimatterMatter[iMatt], kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1]));
-      fITS_TPC_TOF_Pt->Multiply(sec_f);
-      //fITS_TPC_TOF_Pt->Multiply(fSec);
+      //fITS_TPC_TOF_Pt->Multiply(sec_f);
+      fITS_TPC_TOF_Pt->Multiply(fSec);
       fTotal_Pt = (TH1D *)fTotal_Pt->Rebin(kNPtBins, TString::Format("f%sTotal_Pt", kAntimatterMatter[iMatt]), kPtBins);
       fITS_TPC_TOF_Pt = (TH1D *)fITS_TPC_TOF_Pt->Rebin(kNPtBins, TString::Format("f%sITS_TPC_TOF_Pt", kAntimatterMatter[iMatt]), kPtBins);
       TH1D fEffPt(TString::Format("f%sEff_TOF_%.0f_%.0f", kAntimatterMatter[iMatt], cent_bin_lim_min, cent_bin_lim_max), TString::Format("%s Efficiency #times Acceptance, %.0f-%.0f%%", kAntimatterMatterLabel[iMatt], kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1]), kNPtBins, kPtBins);
@@ -103,7 +108,7 @@ void EfficiencyNew(const char *cutSettings = "", const char *inFileNameMC = "mc_
       fEffPt.GetXaxis()->SetTitle("#it{p}_{T}");
       fEffPt.GetYaxis()->SetTitle("#epsilon #times A");
       fEffPt.SetOption("PE");
-      outFile.cd();
+      dirOutFile->cd();
       fEffPt.Write();
       fTotal_Pt->Write();
       fITS_TPC_TOF_Pt->Write();

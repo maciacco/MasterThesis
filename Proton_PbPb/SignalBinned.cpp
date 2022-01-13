@@ -37,6 +37,8 @@
 #include "../utils/RooDSCBShape.h"
 #include "../utils/RooGausDExp.h"
 
+const double extend_roi = 0;
+
 using namespace utils;
 using namespace proton;
 
@@ -149,7 +151,7 @@ void SignalBinned(const char *cutSettings = "", const double roi_nsigma = 8., co
         // project histogram
         std::cout << "Pt bins: min=" << ptMin << "; max=" << ptMax << "; indexMin=" << pTbinsIndexMin << "; indexMax=" << pTbinsIndexMax << "; centralityBinMin=" << centBinMin << "; centralityBinMax=" << centBinMax << std::endl;
         TH1D *tofSignalProjection = fTOFSignal->ProjectionZ(Form("f%sTOFSignal_%.0f_%.0f_%.2f_%.2f", kAntimatterMatter[iMatt], centMin, centMax, fTOFSignal->GetYaxis()->GetBinLowEdge(pTbinsIndexMin), fTOFSignal->GetYaxis()->GetBinUpEdge(pTbinsIndexMax)), centBinMin, centBinMax, pTbinsIndexMin, pTbinsIndexMax);
-        //tofSignalProjection->Rebin(1);
+        // tofSignalProjection->Rebin(4);
 
         // project histogram (antimatter + matter)
         TH1D *tofSignalProjectionAll = fTOFSignalAll->ProjectionZ(Form("f%sTOFSignalAll_%.0f_%.0f_%.2f_%.2f", kAntimatterMatter[iMatt], centMin, centMax, fTOFSignalAll->GetYaxis()->GetBinLowEdge(pTbinsIndexMin), fTOFSignalAll->GetYaxis()->GetBinUpEdge(pTbinsIndexMax)), centBinMin, centBinMax, pTbinsIndexMin, pTbinsIndexMax);
@@ -366,9 +368,9 @@ void SignalBinned(const char *cutSettings = "", const double roi_nsigma = 8., co
         RooRealVar *slope2;
         RooRealVar *mean2;
         RooRealVar *sigma2;
-        RooRealVar *alpha2L = new RooRealVar("#alpha_{2,L}", "alpha2L", -3.0, -1.1);
+        RooRealVar *alpha2L = new RooRealVar("#alpha_{2,L}", "alpha2L", -3.0, -0.8);
         RooRealVar *alpha2R;
-        alpha2R = new RooRealVar("#alpha_{2,R}", "alpha2R", 0.8, 1.5);
+        alpha2R = new RooRealVar("#alpha_{2,R}", "alpha2R", 0.8, 3.0);
         /* RooRealVar *mean3;
         RooRealVar *sigma3; */
         RooRealVar *nBackground1;
@@ -381,7 +383,7 @@ void SignalBinned(const char *cutSettings = "", const double roi_nsigma = 8., co
         //slope1 = new RooRealVar("#tau_{1}", "slope1", /* expMismatchDecayConstant2, */ -0.05 - 0.1, -0.0001);
         slope1 = new RooRealVar("#tau_{1}", "slope1", /* expMismatchDecayConstant2, */ -10., 10.);
         //slope2 = new RooRealVar("#tau_{2}", "slope2", /* powerLawKtail2.GetParameter(1) */ /* -1.0,  */0.955,  -1.100, -0.850);
-        slope2 = new RooRealVar("#tau_{2}", "slope2", /* powerLawKtail2.GetParameter(1) */ /* -1.0,  *//* -0.955, */  -5., 0.);
+        slope2 = new RooRealVar("#tau_{2}", "slope2", /* powerLawKtail2.GetParameter(1) */ /* -1.0,  *//* -0.955, */ -0.9, -10.,2.);
         //std::cout << "slope1 value = " << slope1->getVal() << std::endl;
         //slope2->setConstant(true);
         nBackground1 = new RooRealVar("#it{N}_{Bkg,1}", "nBackground1", /* normRooFit2, */ 1., 1.e7);
@@ -391,7 +393,7 @@ void SignalBinned(const char *cutSettings = "", const double roi_nsigma = 8., co
 
         RooRealVar par0("par0", "par0" /* ,powerLawKtail2.GetParameter(1) */, 20., 0., 50.);
         //par0.setConstant();
-        RooRealVar par1("par1", "par1" /* ,powerLawKtail2.GetParameter(2) */, -5, -10., 0.);
+        RooRealVar par1("par1", "par1" /* ,powerLawKtail2.GetParameter(2) */, -1., -2., 0.);
         //par1.setConstant();
         if (bkg_shape == 1)
         { // expo
@@ -542,7 +544,8 @@ void SignalBinned(const char *cutSettings = "", const double roi_nsigma = 8., co
           covQ = r->covQual();
           
           // signal range
-          tofSignal.setRange("signalRange", mean_tmp - roi_nsigma_down * rms_tmp, mean_tmp + roi_nsigma_up * rms_tmp);
+          tofSignal.setRange("signalRange", mean_tmp - (roi_nsigma_down+extend_roi) * rms_tmp, mean_tmp + (roi_nsigma_up+2) * rms_tmp);
+          tofSignal.setRange("aFitRange", mean_tmp - (2.) * rms_tmp, mean_tmp + (roi_nsigma_up+2) * rms_tmp);
         }
 
         // frame
@@ -572,7 +575,7 @@ void SignalBinned(const char *cutSettings = "", const double roi_nsigma = 8., co
           //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
           // FIT PROTON PEAK
           //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-          /* nBackground1->setConstant(true);
+          nBackground1->setConstant(true);
           nBackground2->setConstant(true);
           slope1->setConstant(true);
           slope2->setConstant(true);
@@ -587,8 +590,14 @@ void SignalBinned(const char *cutSettings = "", const double roi_nsigma = 8., co
             alphaR->setConstant(true);
           }
           modelPeak = new RooAddPdf("model2", "model2", RooArgList(*background1, *background2, *signal), RooArgList(*nBackground1, *nBackground2, nSignal));
-          modelPeak->fitTo(data, RooFit::Range("signalRange"));
-          modelPeak->fitTo(data, RooFit::Range("signalRange"));
+          if (iMatt == 1){
+            modelPeak->fitTo(data, RooFit::Range("signalRange"));
+            modelPeak->fitTo(data, RooFit::Range("signalRange"));
+          }
+          else{
+            modelPeak->fitTo(data, RooFit::Range("aFitRange"));
+            modelPeak->fitTo(data, RooFit::Range("aFitRange"));
+          }
           if (iMatt == 1){
             fitParameterMean[iCent][iPtBin]=mean.getVal();
             fitParameterSigma[iCent][iPtBin]=sigma->getVal();
@@ -596,18 +605,20 @@ void SignalBinned(const char *cutSettings = "", const double roi_nsigma = 8., co
             fitParameterAlphaR[iCent][iPtBin]=alphaR->getVal();
           }
           //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-          modelPeak->plotOn(xframe, RooFit::Name("modelPeak"), RooFit::LineColor(kRed), RooFit::NormRange("signalRange"), RooFit::Range("signalRange"));
-         */
+          if (iMatt ==1)
+            modelPeak->plotOn(xframe, RooFit::Name("modelPeak"), RooFit::LineColor(kRed), RooFit::NormRange("signalRange"), RooFit::Range("signalRange"));
+          else
+            modelPeak->plotOn(xframe, RooFit::Name("modelPeak"), RooFit::LineColor(kRed), RooFit::NormRange("aFitRange"), RooFit::Range("signalRange"));
 
           // background integral
           double bkgIntegral = ((RooAbsPdf *)model->createIntegral(RooArgSet(tofSignal), RooFit::NormSet(RooArgSet(tofSignal)), RooFit::Range("signalRange")))->getVal();
           double bkgIntegral_val = (nBackground1->getVal() + nBackground2->getVal()) * bkgIntegral;
 
           double rawYield, rawYieldError, counts;
-          if (binCounting)
+          if (!binCounting)
           {
             // total counts
-            counts = data.sumEntries(Form("tofSignal>%f && tofSignal<%f", mean_tmp - roi_nsigma_down * rms_tmp, mean_tmp + roi_nsigma_up * rms_tmp));
+            counts = data.sumEntries(Form("tofSignal>%f && tofSignal<%f", mean_tmp - (roi_nsigma_down+extend_roi) * rms_tmp, mean_tmp + (roi_nsigma_up+extend_roi) * rms_tmp));
             rawYield = counts - bkgIntegral_val; // signal=counts-error
             std::cout << "Counts: " << counts << ", Background: "<< bkgIntegral_val << std::endl;
             rawYieldError = TMath::Sqrt(counts); // counts=signal+bkg => correct error from poisson statistics
@@ -680,10 +691,10 @@ void SignalBinned(const char *cutSettings = "", const double roi_nsigma = 8., co
         tofSignalProjection->GetXaxis()->SetRangeUser(-0.5, 0.5);
         double peakMaximum = tofSignalProjection->GetBinContent(tofSignalProjection->GetMaximumBin());
         std::cout << "peakMaximum=" << peakMaximum << std::endl;
-        TLine lsx(mean_tmp - roi_nsigma_down * rms_tmp, 0, mean_tmp - roi_nsigma_down * rms_tmp, peakMaximum);
+        TLine lsx(mean_tmp - (roi_nsigma_down+extend_roi) * rms_tmp, 0, mean_tmp - (roi_nsigma_down+extend_roi) * rms_tmp, peakMaximum);
         lsx.SetLineStyle(kDashed);
         lsx.Draw("same");
-        TLine ldx(mean_tmp + roi_nsigma_up * rms_tmp, 0, mean_tmp + roi_nsigma_up * rms_tmp, peakMaximum*0.75);
+        TLine ldx(mean_tmp + (roi_nsigma_up+extend_roi) * rms_tmp, 0, mean_tmp + (roi_nsigma_up+extend_roi) * rms_tmp, peakMaximum*0.75);
         if(ptMin>1.19)ldx.SetY2(peakMaximum*0.6);
         ldx.SetLineStyle(kDashed);
         ldx.Draw("same");

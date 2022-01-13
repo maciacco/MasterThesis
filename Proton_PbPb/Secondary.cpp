@@ -51,9 +51,9 @@ void Secondary(const char *cutSettings = "", const char *inFileDatName = "Analys
   // open files
   //TFile *inFileDat = TFile::Open(Form("%s/%s.root", kDataDir, inFileDatName));
   TFile *inFileDat = TFile::Open(Form("%s/%s_largeNsigma.root", kDataDir, inFileDatName));
-  TFile *inFileMC20g7 = TFile::Open(Form("%s/%s.root", kDataDir, "mc_20g7_20210929"/* inFileMCName */));
-  TFile *inFileMC20e3a_1 = TFile::Open(Form("%s/%s_20e3a_runlist1_20210929.root", kDataDir, inFileMCName));
-  TFile *inFileMC20e3a_2 = TFile::Open(Form("%s/%s_20e3a_runlist2_20210929.root", kDataDir, inFileMCName));
+  TFile *inFileMC20g7 = TFile::Open(Form("%s/%s.root", kDataDir, "AnalysisResults_LHC21l5_full"/* inFileMCName */));
+  TFile *inFileMC20e3a_1 = TFile::Open(Form("%s/%s_20e3a_runlist1_20210929.root", kDataDir, "mc"));
+  TFile *inFileMC20e3a_2 = TFile::Open(Form("%s/%s_20e3a_runlist2_20210929.root", kDataDir, "mc"));
   //TFile *inFileMC1 = TFile::Open(Form("%s/%s.root", kDataDir, inFileMCName));
   TFile *outFile = TFile::Open(Form("%s/%s.root", kOutDir, outFileName), "recreate");
 
@@ -67,9 +67,10 @@ void Secondary(const char *cutSettings = "", const char *inFileDatName = "Analys
     system(Form("mkdir %s/primary_fraction/%s_%s", kPlotDir, kAntimatterMatter[iMatt], cutSettings));
 
     // get TTList(s)
+    std::string listName_true = Form("nuclei_proton_mcTrue_%s", cutSettings);
     std::string listName = Form("nuclei_proton_%s", cutSettings);
     TTList *listData = (TTList *)inFileDat->Get(listName.data());
-    TTList *listMc20g7 = (TTList *)inFileMC20g7->Get(listName.data());
+    TTList *listMc20g7 = (TTList *)inFileMC20g7->Get(listName_true.data());
     TTList *listMc20e3a_1 = (TTList *)inFileMC20e3a_1->Get(listName.data());
     TTList *listMc20e3a_2 = (TTList *)inFileMC20e3a_2->Get(listName.data());
 

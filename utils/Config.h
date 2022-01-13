@@ -204,6 +204,9 @@ namespace proton
   const int kNTPCPidSigmas = 3;
   const double kTPCPidSigmas[] = {3.0, 3.25, 3.50};
   const char *cutSettings[] = {"dcaz", "pid", "tpc"};
+  const int kNTrackCuts = 11;
+  const int trackCutIndexes[kNTrackCuts] = {0,0,1,2,3,0,1,0,1,2,3};
+  const char* trackCutSettings[kNTrackCuts] = {"","dcaz","dcaz","dcaz","dcaz","pid","pid","tpc","tpc","tpc","tpc"};
 }
 
 #endif // CONFIGFILE_H

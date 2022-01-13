@@ -10,9 +10,9 @@ roiNsigma="$6"
 extractRatios=1
 
 fileData="AnalysisResults"
-fileMC="mc"
+fileMC="mc_20g7_20210929"
 signalName="SignalProtonSys"
-spectraName="SpectraProtonSysMCorrection"
+spectraName="SpectraProtonSys"
 EfficiencyHe3="EfficiencyProtonSys"
 PrimaryHe3="PrimaryProtonSys"
 
