@@ -46,6 +46,7 @@ void SystematicsPt(const int points = kNPoints, const bool cutVar = true, const 
     TH1D fSystematicUncertaintyEff(Form("fSystematicUncertaintyEff_%.0f_%.0f", kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]), Form("%.0f-%.0f%%", kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]), kNPtBins, kPtBins);
     TH1D fSystematicUncertaintyPrim(Form("fSystematicUncertaintyPrim_%.0f_%.0f", kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]), Form("%.0f-%.0f%%", kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]), kNPtBins, kPtBins);
     TH1D fSystematicUncertaintyTot(Form("fSystematicUncertaintyTot_%.0f_%.0f", kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]), Form("%.0f-%.0f%%", kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]), kNPtBins, kPtBins);
+    TH1D fSystematicUncertaintyTotal(Form("fSystematicUncertaintyTotal_%.0f_%.0f", kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]), Form("%.0f-%.0f%%", kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]), kNPtBins, kPtBins);
     TH1D fRatioFromVariationsTot(Form("fRatioFromVariationsTot_%.0f_%.0f", kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]), Form("%.0f-%.0f%%", kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]), kNPtBins, kPtBins);
     double ratioBins[1000];
     for (int iRatioBins = 0; iRatioBins < 3000; iRatioBins++){
@@ -167,7 +168,10 @@ void SystematicsPt(const int points = kNPoints, const bool cutVar = true, const 
       double totSys=TMath::Sqrt(fSystematicUncertaintyEff.GetBinContent(iPtBins)*fSystematicUncertaintyEff.GetBinContent(iPtBins)+proj->GetRMS()*proj->GetRMS()/proj->GetMean()/proj->GetMean());
       fSystematicUncertaintyTot.SetBinContent(iPtBins,totSys);
       fSystematicUncertaintyTot.SetBinError(iPtBins,0);
-
+      
+      fSystematicUncertaintyTotal.SetBinContent(iPtBins,proj->GetRMS());
+      fSystematicUncertaintyTotal.SetBinError(iPtBins,0);
+      
       fRatioFromVariationsTot.SetBinContent(iPtBins,proj->GetMean());
       fRatioFromVariationsTot.SetBinError(iPtBins,0);
     }
@@ -181,6 +185,7 @@ void SystematicsPt(const int points = kNPoints, const bool cutVar = true, const 
     fSystematicUncertaintyROI.Write();
     fSystematicUncertaintyPrim.Write();
     fSystematicUncertaintyTot.Write();
+    fSystematicUncertaintyTotal.Write();
     fRatioFromVariationsTot.Write();
     TCanvas cSys("cSys", "cSys");
     TLegend lSys(0.154381, 0.739079, 0.460362, 0.936246);

@@ -12,7 +12,7 @@ const int kMarkerSize[] = {20,24};
 const char* kFittingMethod[] = {"TFF","RooFit"};
 const Color_t kHistColor[] = {kRed,kBlue};
 
-void PlotSecondaryCorrection(const char *inFileRooFitName = "PrimaryProtonRoo", const char *inFileTFFName = "PrimaryProton", const char *outFileCompareName = "PrimaryCompareRooFitTFF", const char *inFileSpectraTFFName = "SpectraProtonGausDExpSignal1_LongMCTracks_newPrimary", const char* inFileSpectraRooName = "SpectraProtonGausDExpSignal1_LongMCTracks_newPrimary_Roo"){
+void PlotSecondaryCorrection(const char *inFileRooFitName = "PrimaryProton_ROO", const char *inFileTFFName = "PrimaryProton", const char *outFileCompareName = "PrimaryCompareRooFitTFF", const char *inFileSpectraTFFName = "SpectraProton_MC21l5_raw", const char* inFileSpectraRooName = "SpectraProton_MC21l5_raw_ROO"){
   gStyle->SetOptFit(0000);
   gStyle->SetOptStat(0000);
   // compare RooFit and ROOT::TFractionFitter
@@ -58,6 +58,7 @@ void PlotSecondaryCorrection(const char *inFileRooFitName = "PrimaryProtonRoo", 
       hPrimary[iM][1]->Draw("same");
       l.Draw("same");
       c.Write();
+      c.Print(Form("plots/%s.pdf",hPrimary[iM][0]->GetName()));
     }
     TH1D hDivideTFF(*hPrimary[0][0]);
     hDivideTFF.SetName(Form("fDivideTFF_%.0f_%.0f",kCentBinsLimitsProton[iC][0],kCentBinsLimitsProton[iC][1]));

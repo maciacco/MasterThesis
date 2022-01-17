@@ -16,7 +16,7 @@
 using utils::TTList;
 using namespace proton;
 
-void PlotEfficienciesDifferential(const char *cutSettings="", const char *outFileName = "EfficiencyPlotsDifferential", const char *histoNameDir = "", const char *outFileOption = "recreate", const char *inFile = "EfficiencyProton_LongMCTracks_new")
+void PlotEfficienciesDifferential(const char *cutSettings="", const char *outFileName = "EfficiencyPlotsDifferential", const char *histoNameDir = "", const char *outFileOption = "recreate", const char *inFile = "EfficiencyProtonMC_21l5_false")
 {
   gStyle->SetOptStat(0000000000000);
 
@@ -54,10 +54,10 @@ void PlotEfficienciesDifferential(const char *cutSettings="", const char *outFil
     lEffCompare.SetBorderSize(0);
 
     TH1D *fEff[kNCentClasses];
-    TH1D *fEffMB = (TH1D *)inFileEff->Get(Form("f%sEff_TOF_0_90", kAntimatterMatter[iMatt]));
+    TH1D *fEffMB = (TH1D *)inFileEff->Get(Form("_/f%sEff_TOF_0_90", kAntimatterMatter[iMatt]));
     for (int iCent = 0; iCent < kNCentClasses; ++iCent)
     {
-      fEff[iCent] = (TH1D *)inFileEff->Get(Form("f%sEff_TOF_%.0f_%.0f", kAntimatterMatter[iMatt], kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1]));
+      fEff[iCent] = (TH1D *)inFileEff->Get(Form("_/f%sEff_TOF_%.0f_%.0f", kAntimatterMatter[iMatt], kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1]));
       fEff[iCent]->SetTitle("");
       fEff[iCent]->GetYaxis()->SetRangeUser(0., 1.1);
       fEff[iCent]->GetXaxis()->SetRangeUser(1., 2.0);

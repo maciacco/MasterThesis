@@ -157,9 +157,9 @@ namespace proton
   const double kTOFnSigmaMax = 20.;
 
   // pt binning
-  const int kNPtBins = 84; // analysis train binning
+  //const int kNPtBins = 84; // analysis train binning
   //const int kNPtBins = 2;
-  //const int kNPtBins = 32;
+  const int kNPtBins = 32;
   //const int kNPtBins = 70; // analysis binning
   //const int kNPtBins = 11;
   //double kPtBins[kNPtBins+1] = {1.00f, 1.50f, 2.00f};

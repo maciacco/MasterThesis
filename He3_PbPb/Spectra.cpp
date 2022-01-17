@@ -29,7 +29,8 @@ double he3CorrectionPt(int iMatt, double pt){
     f_new = 1.-(1./0.029)*(fit_c_proton/1.058)*(fit_c_proton-1.)*0.00294*TMath::Power(pt,-0.19483);
   }
   else f_new = 1.+(0.02088*TMath::Power(pt,-0.48766))/(0.084)*(1.-0.83);
-  return f_new*(1+(f-f_note)/f_note);
+  //return f_new*(1+(f-f_note)/f_note);
+  return 1;
 };
 
 void Spectra(const float cutDCAz = 1.f, const int cutTPCcls = 89, const bool binCounting = true, const int bkg_shape = 1, const bool sigmoidCorrection = true, const char *histoNameDir = ".", const char *outFileName = "SpectraHe3", const char *outFileOption = "recreate", const char *dataFile = "AnalysisResults", const char *signalFile = "SignalHe3", const char *effFile = "EfficiencyHe3", const char *primFile = "PrimaryHe3")

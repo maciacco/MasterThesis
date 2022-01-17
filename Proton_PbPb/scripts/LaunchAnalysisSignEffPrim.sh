@@ -51,7 +51,7 @@ if [ $extractRatios -eq 1 ]; then
 .L Secondary.cpp+
 .L Spectra.cpp+
 SignalBinned("$cutSettings",$roiNsigma,$argumentSignal,"$fileData","$signalName","update")
-Secondary("$cutSettings","$fileData","$fileMC","$PrimaryHe3")
+Secondary("$cutSettings","$fileData","$fileMC","$PrimaryHe3")//,true)
 .q
 EOF
 fi

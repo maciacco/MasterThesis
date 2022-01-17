@@ -615,7 +615,7 @@ void SignalBinned(const char *cutSettings = "", const double roi_nsigma = 8., co
           double bkgIntegral_val = (nBackground1->getVal() + nBackground2->getVal()) * bkgIntegral;
 
           double rawYield, rawYieldError, counts;
-          if (!binCounting)
+          if (binCounting)
           {
             // total counts
             counts = data.sumEntries(Form("tofSignal>%f && tofSignal<%f", mean_tmp - (roi_nsigma_down+extend_roi) * rms_tmp, mean_tmp + (roi_nsigma_up+extend_roi) * rms_tmp));

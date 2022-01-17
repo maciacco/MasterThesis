@@ -21,9 +21,10 @@ const int N_TRIALS = 10000;
 double uncertaintyPt(int iMatt, double pt){
   double fit_c_proton = 0.868419;
   double fit_c_proton_error = 0.0579547;
-  if (iMatt == 1)
+  /* if (iMatt == 1)
     return (1./0.029)*(fit_c_proton/1.058)*0.00294*TMath::Power(pt,-0.19483)*(fit_c_proton_error/fit_c_proton);
-  return 0.02088*TMath::Power(pt,-0.48766);
+  return 0.02088*TMath::Power(pt,-0.48766); */
+  return 1;
 };
 
 void AbsorptionError(const char *outFileName = "AbsError", const char *outFileOption = "recreate", const char *ratioFile = "SpectraHe3")

@@ -204,11 +204,11 @@ void Secondary(const char *cutSettings = "", const char *inFileDatName = "Analys
           RooDataHist *sec_wd_tmp = new RooDataHist("sec_wd_tmp", "sec_wd_tmp", *dca, fDCAMcProjSecWD);
           RooHistPdf *sec_wd = new RooHistPdf("sec_wd", "sec_wd", *dca, *sec_wd_tmp);
           RooRealVar *primfrac;
-          if (iMatt == 1) primfrac = new RooRealVar("#it{f_{prim}}","primfrac",0.7,0.5,1.);
-          else primfrac = new RooRealVar("#it{f_{prim}}","primfrac",0.,1.);
-          RooRealVar *sec_wd_frac = new RooRealVar("#it{f_{sec_wd}}","sec_wd_frac",0.0,0.5);
+          if (iMatt == 1) primfrac = new RooRealVar("#it{f_{prim}}","primfrac",0.7,0.6,1.);
+          else primfrac = new RooRealVar("#it{f_{prim}}","primfrac",0.85,0.,1.);
+          RooRealVar *sec_wd_frac = new RooRealVar("#it{f_{sec_wd}}","sec_wd_frac",0.0,0.7);
           RooAddPdf *model;
-          if (iMatt == 1)
+          if (iMatt == 1 && ptMin < noSecMaterialThreshold)
             model = new RooAddPdf("model", "model", RooArgList(*prim, *sec_wd, *sec), RooArgList(*primfrac, *sec_wd_frac));
           else
             model = new RooAddPdf("model", "model", RooArgList(*prim, *sec_wd), RooArgList(*primfrac));
@@ -223,6 +223,7 @@ void Secondary(const char *cutSettings = "", const char *inFileDatName = "Analys
           Double_t tot_integral = (model->createIntegral(*dca,RooFit::NormSet(*dca),RooFit::Range("intRange")))->getVal();
           Double_t ratio = primfrac->getVal()*prim_integral/tot_integral;
           Double_t ratio_err = primfrac->getError()*prim_integral/tot_integral;//TMath::Sqrt(ratio * (1. - ratio) / (tot_integral*fDCAdatProj->Integral()));
+          std::cout << "Prim frac error = " << primfrac->getError()*prim_integral/tot_integral << std::endl;
 
           if (ratio < 0.72){continue;
             primfrac->setVal(0.85);
@@ -240,13 +241,24 @@ void Secondary(const char *cutSettings = "", const char *inFileDatName = "Analys
           }
           if (res->status() != 0) continue;
           RooPlot *xframe = dca->frame(RooFit::Title("dca"), RooFit::Name(fDCAdatProj->GetName()));
-          data->plotOn(xframe);
+          data->plotOn(xframe,RooFit::Name("data"));
           model->plotOn(xframe, RooFit::Components("prim"), RooFit::LineColor(kBlue));
           model->plotOn(xframe, RooFit::Components("sec_wd"), RooFit::LineColor(kOrange));
-          if (iMatt == 1)
+          if (iMatt == 1 && ptMin < noSecMaterialThreshold)
             model->plotOn(xframe, RooFit::Components("sec"), RooFit::LineColor(kRed));
-          model->plotOn(xframe, RooFit::LineColor(kGreen));
+          model->plotOn(xframe, RooFit::Name("model"), RooFit::LineColor(kGreen));
+          std::cout << "Chi2 = " << xframe->chiSquare("model", "data") << std::endl;
           xframe->Write();
+
+          TCanvas c(xframe->GetName(),xframe->GetTitle());
+          double chi2 = xframe->chiSquare("model", "data");
+          xframe->Draw();
+          TLatex chiSq(0.65, 1.e7, Form("#chi^{2}/NDF=%.2f", chi2));
+          chiSq.SetNDC();
+          chiSq.SetY(0.55);
+          chiSq.SetTextSize(22);
+          chiSq.Draw("same");
+          c.Write();
 
           // save primary fraction and its uncertainty
           prim_frac_roofit = ratio;
@@ -270,6 +282,8 @@ void Secondary(const char *cutSettings = "", const char *inFileDatName = "Analys
         {
           fit->Constrain(2, 0., 0.05);
         }
+        if(iMatt == 1)
+          fit->Constrain(1, 0., 0.9);
 
         TVirtualFitter::SetMaxIterations(MAX_ITER);    
         /* TVirtualFitter::SetPrecision(1e-2);  */
@@ -325,7 +339,7 @@ void Secondary(const char *cutSettings = "", const char *inFileDatName = "Analys
           result->SetLineColor(kGreen + 2);
           result->SetLineWidth(3);
           mc1->SetLineColor(kBlue);
-          mc2->SetLineColor(kViolet);
+          mc2->SetLineColor(kOrange);
 
           TLegend leg(0.574499 + 0.05, 0.60552, 0.879628 + 0.05, 0.866667);
           leg.AddEntry(fDCAdatProj, "data");
@@ -369,7 +383,7 @@ void Secondary(const char *cutSettings = "", const char *inFileDatName = "Analys
           covStatus.Draw("same");
 
           // print fit results
-          std::cout << "f_prim_TFFfit = " << fracMc1 << std::endl;
+          std::cout << "f_prim_TFFfit = " << fracMc1 << " +/- " << errFracMc1 << std::endl;
 
           // compute fraction of primaries and material secondaries
           double intPrimDCAcutError = 0.;
@@ -378,7 +392,8 @@ void Secondary(const char *cutSettings = "", const char *inFileDatName = "Analys
           double intResDCAcutError = 0.;
           double intResDCAcut = result->IntegralAndError(result->FindBin(-0.12), result->FindBin(0.115), intResDCAcutError);
           double primaryRatio = intPrimDCAcut / intResDCAcut;
-          double primaryRatioError = primaryRatio * TMath::Sqrt(intPrimDCAcutError * intPrimDCAcutError / intPrimDCAcut / intPrimDCAcut + intResDCAcutError * intResDCAcutError / intResDCAcut / intResDCAcut); // TMath::Sqrt(primaryRatio * (1.f - primaryRatio) / intResDCAcut);
+          double primaryRatioError = errFracMc1/fracMc1*primaryRatio;//primaryRatio * TMath::Sqrt(intPrimDCAcutError * intPrimDCAcutError / intPrimDCAcut / intPrimDCAcut + intResDCAcutError * intResDCAcutError / intResDCAcut / intResDCAcut); // TMath::Sqrt(primaryRatio * (1.f - primaryRatio) / intResDCAcut);
+          //double primaryRatioError = TMath::Sqrt(primaryRatio * (1.f - primaryRatio) / intResDCAcut);
           if (primaryRatio < 1.e-7)
             primaryRatioError = 1. / intResDCAcut;
           //double secondaryRatio = intSecDCAcut / intResDCAcut;
@@ -476,7 +491,19 @@ void Secondary(const char *cutSettings = "", const char *inFileDatName = "Analys
       fFitFunc.SetParLimits(0, 0., 10000.);
       fFitFunc.SetParLimits(1, -100., 0.);
       fPrimaryFrac.Fit(&fFitFunc, "MRQ");
-      fPrimaryFrac.Fit(&fFitFunc, "MRQ");
+      auto r = fPrimaryFrac.Fit(&fFitFunc, "MRQS");
+      auto cov_mat = r->GetCovarianceMatrix();
+      //corr_mat.Print();
+      //std::cout<<"0,0 = "<<corr_mat(0,0)<<std::endl;
+      //corr_mat.Print();
+      TH2D hCovMat(Form("f%sCovMat_%.0f_%.0f", kAntimatterMatter[iMatt], kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1]),"CorrelationMatrix",2,0,2,2,0,2);
+      for (int i=0;i<2;++i){
+        for(int j=0;j<2;++j){
+          //std::cout << cov_mat(0,1) << std::endl;
+          hCovMat.SetBinContent(i+1,j+1,cov_mat(i,j));
+        }
+      }
+      hCovMat.Write();
       fFitFunc.Write();
 
       fPrimaryFrac.SetMarkerStyle(20);

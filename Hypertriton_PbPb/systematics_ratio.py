@@ -135,7 +135,7 @@ for i_cent_bins in range(len(CENTRALITY_LIST)-2):
                 eff = presel_eff * eff_cut_dict[bin]
                 abs = g_abs_correction.GetPointY(CT_BINS_CENT[i_cent_bins].index(ct_bins[0]))
                 # 3. efficiency correction
-                eff_correct = eff_abs_correction.GetBinContent(eff_abs_correction.FindBin(ct_bins[0]))
+                eff_correct = 1 # eff_abs_correction.GetBinContent(eff_abs_correction.FindBin(ct_bins[0]))
 
                 ct_bin_index = h_corrected_yields[i_split].FindBin(ct_bins[0]+0.5)
 
