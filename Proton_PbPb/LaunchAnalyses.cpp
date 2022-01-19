@@ -25,8 +25,9 @@ void LaunchAnalyses(const bool analyse = false)
   auto tmpNCutDCAz = kNCutDCAz-1;
   auto tmpNTPCPidSigmas = kNTPCPidSigmas-1;
   auto tmpNCutTPCClusters = kNCutTPCClusters-1;
+  auto tmpNCutDCAxy = kNCutDCAxy-1;
 
-  for (int iCutSettings = -1; iCutSettings < tmpNCutDCAz + tmpNTPCPidSigmas + tmpNCutTPCClusters; ++iCutSettings)
+  for (int iCutSettings = -1; iCutSettings < tmpNCutDCAz + tmpNTPCPidSigmas + tmpNCutTPCClusters + tmpNCutDCAxy; ++iCutSettings)
   {
     char hname[100];
 
@@ -40,10 +41,15 @@ void LaunchAnalyses(const bool analyse = false)
         cutVariable = 1;
         cutIndex -= tmpNCutDCAz;
       }
-      else if (iCutSettings >= (tmpNCutDCAz + tmpNTPCPidSigmas))
+      else if (iCutSettings >= (tmpNCutDCAz + tmpNTPCPidSigmas) && iCutSettings < (tmpNCutDCAz + tmpNTPCPidSigmas + tmpNCutTPCClusters))
       {
         cutVariable = 2;
         cutIndex -= (tmpNCutDCAz + tmpNTPCPidSigmas);
+      }
+      else if (iCutSettings >= (tmpNCutDCAz + tmpNTPCPidSigmas + tmpNCutTPCClusters))
+      {
+        cutVariable = 3;
+        cutIndex -= (tmpNCutDCAz + tmpNTPCPidSigmas + tmpNCutTPCClusters);
       }
       fullCutSettings = Form("%s%d", cutSettings[cutVariable], cutIndex);
     }
@@ -55,7 +61,7 @@ void LaunchAnalyses(const bool analyse = false)
         std::cout << "bkg selection = " << iBkg << "; roiNsigma = " << roi_n_sigma[iNsigma] << std::endl;
         if (analyse)
         {
-          gSystem->Exec(Form("bash ~/Code/MasterThesis/Proton_PbPb/scripts/LaunchAnalysisSignEffPrim.sh %s 1 1 %f", fullCutSettings, roi_n_sigma[iNsigma]));
+          gSystem->Exec(Form("bash ~/Code/MasterThesis/Proton_PbPb/scripts/LaunchAnalysisSignEffPrim.sh %s 1 1 %f %f", fullCutSettings, roi_n_sigma[iNsigma], kCutDCAxyVariations[cutIndex]));
         }
 
         for (int iSgm = 0; iSgm < 2; ++iSgm)

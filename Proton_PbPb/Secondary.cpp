@@ -33,7 +33,7 @@ bool use_uniform = false;
 
 const double fitRange = 0.5;
 
-void Secondary(const char *cutSettings = "", const char *inFileDatName = "AnalysisResults", const char *inFileMCName = "mc", const char *outFileName = "PrimaryProton", const bool use_roofit = false, const bool useAntiProtonsAsPrimaries = false)
+void Secondary(const char *cutSettings = "", const double DCAxyCut=0.07, const char *inFileDatName = "AnalysisResults", const char *inFileMCName = "mc", const char *outFileName = "PrimaryProton", const bool use_roofit = false, const bool useAntiProtonsAsPrimaries = false)
 {
   // killing RooFit output
   RooMsgService::instance().setGlobalKillBelow(RooFit::ERROR);
@@ -218,7 +218,7 @@ void Secondary(const char *cutSettings = "", const char *inFileDatName = "Analys
           RooFitResult* res = model->fitTo(*data,RooFit::Save());
 
           // integrate primaries (-0.12,0.12)
-          dca->setRange("intRange",-kDCAxyCut,kDCAxyCut);
+          dca->setRange("intRange",-DCAxyCut,DCAxyCut);
           Double_t prim_integral = (prim->createIntegral(*dca,RooFit::NormSet(*dca),RooFit::Range("intRange")))->getVal();
           //std::cout << setprecision(8) << prim_integral << std::endl;
           // integrate model
@@ -233,7 +233,7 @@ void Secondary(const char *cutSettings = "", const char *inFileDatName = "Analys
             primfrac->setMax(0.9);
             res = model->fitTo(*data,RooFit::Save());
 
-            dca->setRange("intRange",-kDCAxyCut,kDCAxyCut);
+            dca->setRange("intRange",-DCAxyCut,DCAxyCut);
             prim_integral = (prim->createIntegral(*dca,RooFit::NormSet(*dca),RooFit::Range("intRange")))->getVal();
             //std::cout << setprecision(8) << prim_integral << std::endl;
             // integrate model
@@ -275,7 +275,7 @@ void Secondary(const char *cutSettings = "", const char *inFileDatName = "Analys
         ROOT::Fit::Fitter *fitter = fit->GetFitter();
 
         // compute wd template fraction
-        double dataIntegralDCAcut = fDCAdatProj->Integral(fDCAdatProj->FindBin(-kDCAxyCut), fDCAdatProj->FindBin(kDCAxyCut-0.001));
+        double dataIntegralDCAcut = fDCAdatProj->Integral(fDCAdatProj->FindBin(-DCAxyCut), fDCAdatProj->FindBin(DCAxyCut-0.001));
         double dataIntegral = fDCAdatProj->Integral();
 
         fit->SetRangeX(fDCAdatProj->FindBin(-fitRange), fDCAdatProj->FindBin(fitRange-0.001));
@@ -390,10 +390,10 @@ void Secondary(const char *cutSettings = "", const char *inFileDatName = "Analys
 
           // compute fraction of primaries and material secondaries
           double intPrimDCAcutError = 0.;
-          double intPrimDCAcut = mc1->IntegralAndError(result->FindBin(-kDCAxyCut), result->FindBin(kDCAxyCut-0.001), intPrimDCAcutError);
+          double intPrimDCAcut = mc1->IntegralAndError(result->FindBin(-DCAxyCut), result->FindBin(DCAxyCut-0.001), intPrimDCAcutError);
           //double intSecDCAcut = mc3->Integral(result->FindBin(-0.12), result->FindBin(0.115));
           double intResDCAcutError = 0.;
-          double intResDCAcut = result->IntegralAndError(result->FindBin(-kDCAxyCut), result->FindBin(kDCAxyCut-0.001), intResDCAcutError);
+          double intResDCAcut = result->IntegralAndError(result->FindBin(-DCAxyCut), result->FindBin(DCAxyCut-0.001), intResDCAcutError);
           double primaryRatio = intPrimDCAcut / intResDCAcut;
           double primaryRatioError = errFracMc1/fracMc1*primaryRatio;//primaryRatio * TMath::Sqrt(intPrimDCAcutError * intPrimDCAcutError / intPrimDCAcut / intPrimDCAcut + intResDCAcutError * intResDCAcutError / intResDCAcut / intResDCAcut); // TMath::Sqrt(primaryRatio * (1.f - primaryRatio) / intResDCAcut);
           //double primaryRatioError = TMath::Sqrt(primaryRatio * (1.f - primaryRatio) / intResDCAcut);

@@ -45,6 +45,7 @@ void EfficiencyNew(const char *cutSettings = "", const char *inFileNameMC = "mc_
     /* TTList *list1 = (TTList *)inFile1.Get(listName.data()); */
     //TTList *list2 = (TTList *)inFile2.Get(listName.data());
     TTList *list_21l5 = (TTList *)inFile_21l5.Get(listName_21l5.data());
+    if (!list_21l5) return;
     TTList *list_20g7 = (TTList *)inFile_20g7.Get(listName_20g7.data());
 
     // get histograms from file
@@ -89,6 +90,7 @@ void EfficiencyNew(const char *cutSettings = "", const char *inFileNameMC = "mc_
       //sec_f = (TF1 *)inFilePrimary.Get(Form("f%sFunctionFit_%.0f_%.0f", kAntimatterMatter[iMatt], kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1]));
       fSec = (TH1D*)inFilePrimary.Get(Form("f%sPrimFrac_%.0f_%.0f", kAntimatterMatter[iMatt], kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1]));
       fITS_TPC_TOF_Pt = (TH1D*)inFileSignal.Get(Form("%s_%d_%d/f%sTOFrawYield_%.0f_%.0f", cutSettings, 1, 1, kAntimatterMatter[iMatt], kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1]));
+      if (!fSec || !fITS_TPC_TOF_Pt || !fTotal_Pt) return;
       //fITS_TPC_TOF_Pt->Multiply(sec_f);
       fITS_TPC_TOF_Pt->Multiply(fSec);
       fTotal_Pt = (TH1D *)fTotal_Pt->Rebin(kNPtBins, TString::Format("f%sTotal_Pt", kAntimatterMatter[iMatt]), kPtBins);

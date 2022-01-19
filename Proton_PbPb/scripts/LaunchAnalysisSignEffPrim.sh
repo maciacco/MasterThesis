@@ -5,6 +5,7 @@ cutSettings="$1"
 binCountingFlag="$2"
 expFlag="$3" # 1->sum of 2 exp
 roiNsigma="$4"
+dcaxycut="$5"
 extractRatios=1
 
 fileData="AnalysisResults"
@@ -36,6 +37,7 @@ fi
 # launch analysis
 if (($cutSettings==999)); then
     cutSettings=""
+    dcaxycut=0.07
 fi
 
 echo $cutSettings
@@ -51,12 +53,10 @@ if [ $extractRatios -eq 1 ]; then
 .L Secondary.cpp+
 .L Spectra.cpp+
 SignalBinned("$cutSettings",$roiNsigma,$argumentSignal,"$fileData","$signalName","update")
-Secondary("$cutSettings","$fileData","$fileMC","$PrimaryHe3")//,true)
+Secondary("$cutSettings",$dcaxycut,"$fileData","$fileMC","$PrimaryHe3")//,true) // uncomment to use roofit
 .q
 EOF
 fi
-
-echo "CIAOCIAOCIAOCIAOCIAOCIAOCIAO"
 
 if [ $extractRatios -eq 1 ]; then
     root -b -l <<EOF
@@ -67,7 +67,7 @@ if [ $extractRatios -eq 1 ]; then
 .L EfficiencyNew.cpp+
 .L SecondaryMC.cpp+
 SignalBinnedMC("$cutSettings",$argumentSignal,"$fileDataEff","$signalNameEff","recreate")
-SecondaryMC("$cutSettings","$fileDataEff","$fileDataEff","$PrimaryHe3Eff")
+SecondaryMC("$cutSettings",$dcaxycut,"$fileDataEff","$fileDataEff","$PrimaryHe3Eff")
 EfficiencyNew("$cutSettings","$fileDataEff","$EfficiencyHe3","$signalNameEff","$PrimaryHe3Eff","update")
 .q
 EOF

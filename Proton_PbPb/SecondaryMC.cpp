@@ -31,7 +31,7 @@ using namespace proton;
 bool use_uniform = false;
 bool use_roofit = false;
 
-void SecondaryMC(const char *cutSettings = "", const char *inFileDatName = "AnalysisResults_largeNsigma", const char *inFileMCName = "mc_20g7_20210929", const char *outFileName = "PrimaryProtonMC")
+void SecondaryMC(const char *cutSettings = "", const double DCAxyCut = 0.07, const char *inFileDatName = "AnalysisResults_largeNsigma", const char *inFileMCName = "mc_20g7_20210929", const char *outFileName = "PrimaryProtonMC")
 {
   gStyle->SetPadTickX(1);
   gStyle->SetPadTickY(1);
@@ -51,7 +51,7 @@ void SecondaryMC(const char *cutSettings = "", const char *inFileDatName = "Anal
 
   for (int iMatt = 0; iMatt < 2; ++iMatt)
   {
-    double noSecMaterialThreshold = 1.79f;
+    double noSecMaterialThreshold = 1.99f;
     if (iMatt == 0)noSecMaterialThreshold = 0.f;
 
     // make plot subdirectory
@@ -164,9 +164,9 @@ void SecondaryMC(const char *cutSettings = "", const char *inFileDatName = "Anal
         // compute wd template fraction
         // compute fraction of primaries and material secondaries
         double intPrimDCAcutError = 0.;
-        double intPrimDCAcut = fDCAMcProjPrim->Integral(fDCAMcProjPrim->FindBin(-0.12), fDCAMcProjPrim->FindBin(0.115));
-        double intSecDCAcut = fDCAMcProjSec->Integral(fDCAMcProjSec->FindBin(-0.12), fDCAMcProjSec->FindBin(0.115));
-        double intSecWDDCAcut = fDCAMcProjSecWD->Integral(fDCAMcProjSecWD->FindBin(-0.12), fDCAMcProjSecWD->FindBin(0.115));
+        double intPrimDCAcut = fDCAMcProjPrim->Integral(fDCAMcProjPrim->FindBin(-DCAxyCut), fDCAMcProjPrim->FindBin(DCAxyCut-0.001));
+        double intSecDCAcut = fDCAMcProjSec->Integral(fDCAMcProjSec->FindBin(-DCAxyCut), fDCAMcProjSec->FindBin(DCAxyCut-0.001));
+        double intSecWDDCAcut = fDCAMcProjSecWD->Integral(fDCAMcProjSecWD->FindBin(-DCAxyCut), fDCAMcProjSecWD->FindBin(DCAxyCut-0.001));
         double dataIntegralDCAcut = intPrimDCAcut+intSecDCAcut+intSecWDDCAcut;
         std::cout << "primary integral = " << intPrimDCAcut << std::endl;
         //double intSecDCAcut = mc3->Integral(result->FindBin(-0.12), result->FindBin(0.115));

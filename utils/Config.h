@@ -148,7 +148,6 @@ namespace deuteron
 namespace proton
 {
   const bool ADD20g7 = false;
-  const double kDCAxyCut = 0.05;
 
   // directories
   const char *kDataDir = "../data/Proton_PbPb";
@@ -160,11 +159,13 @@ namespace proton
   // pt binning
   //const int kNPtBins = 84; // analysis train binning
   //const int kNPtBins = 2;
-  const int kNPtBins = 32;
+  //const int kNPtBins = 32;
+  const int kNPtBins = 28;
   //const int kNPtBins = 70; // analysis binning
   //const int kNPtBins = 11;
   //double kPtBins[kNPtBins+1] = {1.00f, 1.50f, 2.00f};
-  double kPtBins[85]={0.8f, 0.85f, 0.9f, 0.95f, 1.00f, 1.05f, 1.1f, 1.15f, 1.2f, 1.25f, 1.3f, 1.35f, 1.4f, 1.45f, 1.5f, 1.55f, 1.6f, 1.65f, 1.7f, 1.75f, 1.8f, 1.85f, 1.9f, 1.95f, 2.00f, 2.05f, 2.1f, 2.15f, 2.2f, 2.25f, 2.3f, 2.35f, 2.4f, 2.45f, 2.5f, 2.55f, 2.6f, 2.65f, 2.7f, 2.75f, 2.8f, 2.85f, 2.9f, 2.95f, 3.00f, 3.05f, 3.1f, 3.15f, 3.2f, 3.25f, 3.3f, 3.35f, 3.4f, 3.45f, 3.5f, 3.55f, 3.6f, 3.65f, 3.7f, 3.75f, 3.8f, 3.85f, 3.9f, 3.95f, 4.00f, 4.05f, 4.1f, 4.15f, 4.2f, 4.25f, 4.3f, 4.35f, 4.4f, 4.45f, 4.5f, 4.55f, 4.6f, 4.65f, 4.7f, 4.75f, 4.8f, 4.85f, 4.9f, 4.95f, 5.00f}; // binning from trains
+  //double kPtBins[85]={0.8f, 0.85f, 0.9f, 0.95f, 1.00f, 1.05f, 1.1f, 1.15f, 1.2f, 1.25f, 1.3f, 1.35f, 1.4f, 1.45f, 1.5f, 1.55f, 1.6f, 1.65f, 1.7f, 1.75f, 1.8f, 1.85f, 1.9f, 1.95f, 2.00f, 2.05f, 2.1f, 2.15f, 2.2f, 2.25f, 2.3f, 2.35f, 2.4f, 2.45f, 2.5f, 2.55f, 2.6f, 2.65f, 2.7f, 2.75f, 2.8f, 2.85f, 2.9f, 2.95f, 3.00f, 3.05f, 3.1f, 3.15f, 3.2f, 3.25f, 3.3f, 3.35f, 3.4f, 3.45f, 3.5f, 3.55f, 3.6f, 3.65f, 3.7f, 3.75f, 3.8f, 3.85f, 3.9f, 3.95f, 4.00f, 4.05f, 4.1f, 4.15f, 4.2f, 4.25f, 4.3f, 4.35f, 4.4f, 4.45f, 4.5f, 4.55f, 4.6f, 4.65f, 4.7f, 4.75f, 4.8f, 4.85f, 4.9f, 4.95f, 5.00f}; // binning from trains
+  double kPtBins[29]={0.8f,0.85f,0.9f,0.95f,1.f,1.05f,1.1f,1.15f,1.2f,1.25f,1.3f,1.35f,1.4f,1.45f,1.5f,1.55f,1.6f,1.65f,1.7f,1.75f,1.8f,1.85f,1.9f,1.95f,2.f,2.05f,2.1f,2.15f,2.2f};
   //double kPtBins[45]={0.8f, 0.85f, 0.9f, 0.95f, 1.00f, 1.05f, 1.1f, 1.15f, 1.2f, 1.25f, 1.3f, 1.35f, 1.4f, 1.45f, 1.5f, 1.55f, 1.6f, 1.65f, 1.7f, 1.75f, 1.8f, 1.85f, 1.9f, 1.95f, 2.00f, 2.1f, 2.2f, 2.3f,2.4f, 2.5f, 2.6f, 2.7f, 2.8f, 2.9f, 3.00f, 3.2f, 3.4f, 3.6f, 3.8f, 4.00f, 4.2f, 4.4f, 4.6f, 4.8f, 5.00f};
   //double kPtBins[33]={0.8f, 0.85f, 0.9f, 0.95f, 1.00f, 1.1f, 1.2f, 1.3f, 1.4f, 1.5f, 1.6f, 1.7f, 1.8f, 1.9f, 2.00f, 2.1f, 2.2f, 2.3f, 2.4f, 2.5f, 2.6f, 2.8f, 3.00f, 3.2f, 3.4f, 3.6f, 3.8f, 4.00f, 4.2f, 4.4f, 4.6f, 4.8f, 5.00f};
 
@@ -200,16 +201,20 @@ namespace proton
   const double kDCABinsMedium[kNDCABinsMedium + 1] = {-1.30f, -1.00f, -0.80f, -0.50f, -0.20f, -0.12f, -0.06f, -0.03f, 0.00f, 0.03f, 0.06f, 0.12f, 0.20f, 0.50f, 0.80f, 1.00f, 1.30f};
    */
   // systematics variations
+  const int kNCutDCAxy = 5;
+  const double kCutDCAxy[] = {0.05, 0.06, 0.07, 0.08, 0.09};
+  const int kNCutDCAxyVariations = 4;
+  const double kCutDCAxyVariations[] = {0.05, 0.06, 0.08, 0.09};
   const int kNCutDCAz = 5;
   const double kCutDCAz[] = {0.5, 0.75, 1.0, 1.5, 2.0};
   const int kNCutTPCClusters = 5;
   const double kCutTPCClusters[] = {59., 64., 69., 74., 79.};
   const int kNTPCPidSigmas = 3;
   const double kTPCPidSigmas[] = {3.0, 3.25, 3.50};
-  const char *cutSettings[] = {"dcaz", "pid", "tpc"};
-  const int kNTrackCuts = 11;
-  const int trackCutIndexes[kNTrackCuts] = {0,0,1,2,3,0,1,0,1,2,3};
-  const char* trackCutSettings[kNTrackCuts] = {"","dcaz","dcaz","dcaz","dcaz","pid","pid","tpc","tpc","tpc","tpc"};
+  const char *cutSettings[] = {"dcaz", "pid", "tpc", "dcaxy"};
+  const int kNTrackCuts = 15;
+  const int trackCutIndexes[kNTrackCuts] = {0,0,1,2,3,0,1,0,1,2,3,0,1,2,3};
+  const char* trackCutSettings[kNTrackCuts] = {"","dcaz","dcaz","dcaz","dcaz","pid","pid","tpc","tpc","tpc","tpc","dcaxy","dcaxy","dcaxy","dcaxy"};
 }
 
 #endif // CONFIGFILE_H
