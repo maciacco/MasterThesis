@@ -31,7 +31,9 @@ using namespace proton;
 
 bool use_uniform = false;
 
-void Secondary(const char *cutSettings = "", const char *inFileDatName = "AnalysisResults_LHC21l5", const char *inFileMCName = "mc", const char *outFileName = "PrimaryProton", const bool use_roofit = false, const bool useAntiProtonsAsPrimaries = false)
+const double fitRange = 0.5;
+
+void Secondary(const char *cutSettings = "", const char *inFileDatName = "AnalysisResults", const char *inFileMCName = "mc", const char *outFileName = "PrimaryProton", const bool use_roofit = false, const bool useAntiProtonsAsPrimaries = false)
 {
   // killing RooFit output
   RooMsgService::instance().setGlobalKillBelow(RooFit::ERROR);
@@ -51,15 +53,15 @@ void Secondary(const char *cutSettings = "", const char *inFileDatName = "Analys
   // open files
   //TFile *inFileDat = TFile::Open(Form("%s/%s.root", kDataDir, inFileDatName));
   TFile *inFileDat = TFile::Open(Form("%s/%s_largeNsigma.root", kDataDir, inFileDatName));
-  TFile *inFileMC20g7 = TFile::Open(Form("%s/%s.root", kDataDir, "AnalysisResults_LHC21l5_full"/* inFileMCName */));
-  TFile *inFileMC20e3a_1 = TFile::Open(Form("%s/%s_20e3a_runlist1_20210929.root", kDataDir, "mc"));
-  TFile *inFileMC20e3a_2 = TFile::Open(Form("%s/%s_20e3a_runlist2_20210929.root", kDataDir, "mc"));
+  TFile *inFileMC21l5 = TFile::Open(Form("%s/%s.root", kDataDir, "AnalysisResults_LHC21l5_full"/* inFileMCName */));
+  TFile *inFileMC20e3a_1 = TFile::Open(Form("%s/%s.root", kDataDir, "AnalysisResults_LHC20e3"));
+  //TFile *inFileMC20e3a_2 = TFile::Open(Form("%s/%s_20e3a_runlist2_20210929.root", kDataDir, "mc"));
   //TFile *inFileMC1 = TFile::Open(Form("%s/%s.root", kDataDir, inFileMCName));
   TFile *outFile = TFile::Open(Form("%s/%s.root", kOutDir, outFileName), "recreate");
 
   for (int iMatt = 0; iMatt < 2; ++iMatt)
   {
-    double noSecMaterialThreshold = /* 1.24f; */ 1.59f;
+    double noSecMaterialThreshold = 0.f;/* 1.24f; */ //1.59f; // DO NOT USE SECONDARIES FROM MATERIAL
     if (iMatt == 0)
       noSecMaterialThreshold = 0.f;
 
@@ -70,9 +72,9 @@ void Secondary(const char *cutSettings = "", const char *inFileDatName = "Analys
     std::string listName_true = Form("nuclei_proton_mcTrue_%s", cutSettings);
     std::string listName = Form("nuclei_proton_%s", cutSettings);
     TTList *listData = (TTList *)inFileDat->Get(listName.data());
-    TTList *listMc20g7 = (TTList *)inFileMC20g7->Get(listName_true.data());
-    TTList *listMc20e3a_1 = (TTList *)inFileMC20e3a_1->Get(listName.data());
-    TTList *listMc20e3a_2 = (TTList *)inFileMC20e3a_2->Get(listName.data());
+    TTList *listMc21l5 = (TTList *)inFileMC21l5->Get(listName_true.data());
+    TTList *listMc20e3a_1 = (TTList *)inFileMC20e3a_1->Get(listName_true.data());
+    //TTList *listMc20e3a_2 = (TTList *)inFileMC20e3a_2->Get(listName.data());
 
     // get histograms from files
     TH3F *fDCAdat = (TH3F *)listData->Get(Form("f%sDCAxyTOF", kAntimatterMatter[iMatt]));
@@ -84,23 +86,23 @@ void Secondary(const char *cutSettings = "", const char *inFileDatName = "Analys
     else
     {
       fDCAprim1 = (TH3F *)listMc20e3a_1->Get(Form("f%sDCAPrimaryTOF", kAntimatterMatter[iMatt]));
-      fDCAprim2 = (TH3F *)listMc20e3a_2->Get(Form("f%sDCAPrimaryTOF", kAntimatterMatter[0]));
+      //fDCAprim2 = (TH3F *)listMc20e3a_2->Get(Form("f%sDCAPrimaryTOF", kAntimatterMatter[0]));
       //fDCAprim3 = (TH3F *)listMc3->Get(Form("f%sDCAPrimaryTOF", kAntimatterMatter[0]));
       fDCAprim = (TH3F *)fDCAprim1->Clone(fDCAprim1->GetName());
-      fDCAprim->Add(fDCAprim2);
+      //fDCAprim->Add(fDCAprim2);
       //fDCAprim->Add(fDCAprim3);
     }
     TH3F *fDCAsec1 = (TH3F *)listMc20e3a_1->Get(Form("f%sDCASecondaryTOF", kAntimatterMatter[iMatt]));
-    TH3F *fDCAsec2 = (TH3F *)listMc20e3a_2->Get(Form("f%sDCASecondaryTOF", kAntimatterMatter[iMatt]));
+    //TH3F *fDCAsec2 = (TH3F *)listMc20e3a_2->Get(Form("f%sDCASecondaryTOF", kAntimatterMatter[iMatt]));
     //TH3F *fDCAsec3 = (TH3F *)listMc3->Get(Form("f%sDCASecondaryTOF", kAntimatterMatter[iMatt]));
     TH3F *fDCAsec = (TH3F *)fDCAsec1->Clone(fDCAsec1->GetName());
-    fDCAsec->Add(fDCAsec2);
+    //fDCAsec->Add(fDCAsec2);
     //fDCAsec->Add(fDCAsec3);
     TH3F *fDCAsecWD1 = (TH3F *)listMc20e3a_1->Get(Form("f%sDCASecondaryWeakTOF", kAntimatterMatter[iMatt]));
-    TH3F *fDCAsecWD2 = (TH3F *)listMc20e3a_2->Get(Form("f%sDCASecondaryWeakTOF", kAntimatterMatter[iMatt]));
+    //TH3F *fDCAsecWD2 = (TH3F *)listMc20e3a_2->Get(Form("f%sDCASecondaryWeakTOF", kAntimatterMatter[iMatt]));
     //TH3F *fDCAsecWD3 = (TH3F *)listMc3->Get(Form("f%sDCASecondaryWeakTOF", kAntimatterMatter[iMatt]));
     TH3F *fDCAsecWD = (TH3F *)fDCAsecWD1->Clone(fDCAsecWD1->GetName());
-    fDCAsecWD->Add(fDCAsecWD2);
+    //fDCAsecWD->Add(fDCAsecWD2);
     //fDCAsecWD->Add(fDCAsecWD3);
 
     for (int iCent = 0; iCent < kNCentClasses; ++iCent)
@@ -195,7 +197,7 @@ void Secondary(const char *cutSettings = "", const char *inFileDatName = "Analys
         {
           // std::cout << "No RooFit implementation yet!" << std::endl;
           // return;
-          RooRealVar *dca = new RooRealVar("DCA_{xy}", "DCAxy", -1.3, 1.3, "cm");
+          RooRealVar *dca = new RooRealVar("DCA_{xy}", "DCAxy", -fitRange, fitRange, "cm");
           RooDataHist *data = new RooDataHist("data", "data", *dca, fDCAdatProj);
           RooDataHist *prim_tmp = new RooDataHist("prim_tmp", "prim_tmp", *dca, fDCAMcProjPrim);
           RooHistPdf *prim = new RooHistPdf("prim", "prim", *dca, *prim_tmp);
@@ -204,8 +206,8 @@ void Secondary(const char *cutSettings = "", const char *inFileDatName = "Analys
           RooDataHist *sec_wd_tmp = new RooDataHist("sec_wd_tmp", "sec_wd_tmp", *dca, fDCAMcProjSecWD);
           RooHistPdf *sec_wd = new RooHistPdf("sec_wd", "sec_wd", *dca, *sec_wd_tmp);
           RooRealVar *primfrac;
-          if (iMatt == 1) primfrac = new RooRealVar("#it{f_{prim}}","primfrac",0.7,0.6,1.);
-          else primfrac = new RooRealVar("#it{f_{prim}}","primfrac",0.85,0.,1.);
+          /* if (iMatt == 1) primfrac = new RooRealVar("#it{f_{prim}}","primfrac",0.7,0.6,1.);
+          else */ primfrac = new RooRealVar("#it{f_{prim}}","primfrac",0.,1.);
           RooRealVar *sec_wd_frac = new RooRealVar("#it{f_{sec_wd}}","sec_wd_frac",0.0,0.7);
           RooAddPdf *model;
           if (iMatt == 1 && ptMin < noSecMaterialThreshold)
@@ -216,7 +218,7 @@ void Secondary(const char *cutSettings = "", const char *inFileDatName = "Analys
           RooFitResult* res = model->fitTo(*data,RooFit::Save());
 
           // integrate primaries (-0.12,0.12)
-          dca->setRange("intRange",-0.12,0.12);
+          dca->setRange("intRange",-kDCAxyCut,kDCAxyCut);
           Double_t prim_integral = (prim->createIntegral(*dca,RooFit::NormSet(*dca),RooFit::Range("intRange")))->getVal();
           //std::cout << setprecision(8) << prim_integral << std::endl;
           // integrate model
@@ -231,7 +233,7 @@ void Secondary(const char *cutSettings = "", const char *inFileDatName = "Analys
             primfrac->setMax(0.9);
             res = model->fitTo(*data,RooFit::Save());
 
-            dca->setRange("intRange",-0.12,0.12);
+            dca->setRange("intRange",-kDCAxyCut,kDCAxyCut);
             prim_integral = (prim->createIntegral(*dca,RooFit::NormSet(*dca),RooFit::Range("intRange")))->getVal();
             //std::cout << setprecision(8) << prim_integral << std::endl;
             // integrate model
@@ -266,24 +268,24 @@ void Secondary(const char *cutSettings = "", const char *inFileDatName = "Analys
 
           // print fit results
           std::cout << "f_prim_fit = " << primfrac->getVal() << std::endl;
-          std::cout << "fraction = " << prim_integral/tot_integral << std::endl;
+          std::cout << "fraction = " << primfrac->getVal()*prim_integral/tot_integral << std::endl;
         }
 
         TFractionFitter *fit = new TFractionFitter(fDCAdatProj, mc, "Q"); // initialise
         ROOT::Fit::Fitter *fitter = fit->GetFitter();
 
         // compute wd template fraction
-        double dataIntegralDCAcut = fDCAdatProj->Integral(fDCAdatProj->FindBin(-0.12), fDCAdatProj->FindBin(0.115));
+        double dataIntegralDCAcut = fDCAdatProj->Integral(fDCAdatProj->FindBin(-kDCAxyCut), fDCAdatProj->FindBin(kDCAxyCut-0.001));
         double dataIntegral = fDCAdatProj->Integral();
 
-        fit->SetRangeX(fDCAdatProj->FindBin(-1.25), fDCAdatProj->FindBin(1.25));
+        fit->SetRangeX(fDCAdatProj->FindBin(-fitRange), fDCAdatProj->FindBin(fitRange-0.001));
         ROOT::Math::MinimizerOptions::SetDefaultStrategy(0);
         if (ptMin < noSecMaterialThreshold)
-        {
-          fit->Constrain(2, 0., 0.05);
+        { 
+          fit->Constrain(2, 0., 0.06);
         }
-        if(iMatt == 1)
-          fit->Constrain(1, 0., 0.9);
+        if (iMatt == 0 && iCent == 2)
+          fit->Constrain(0, 0., 0.9);
 
         TVirtualFitter::SetMaxIterations(MAX_ITER);    
         /* TVirtualFitter::SetPrecision(1e-2);  */
@@ -297,9 +299,9 @@ void Secondary(const char *cutSettings = "", const char *inFileDatName = "Analys
           TVirtualFitter::SetMaxIterations(MAX_ITER);
          // TVirtualFitter::SetPrecision(0.01);
 
-          fit->SetRangeX(fDCAdatProj->FindBin(-1.25), fDCAdatProj->FindBin(1.25));
+          fit->SetRangeX(fDCAdatProj->FindBin(-fitRange), fDCAdatProj->FindBin(fitRange-0.001));
           fitter->Config().ParSettings(0).SetValue(0.710);
-          fitter->Config().ParSettings(0).SetLimits(0.500, 0.990);
+          fitter->Config().ParSettings(0).SetLimits(0.600, 0.990);
           fitter->Config().ParSettings(0).Release();
           fitter->Config().ParSettings(0).SetStepSize(1.e-3);
           fitter->Config().ParSettings(1).SetValue(0.300);
@@ -353,6 +355,7 @@ void Secondary(const char *cutSettings = "", const char *inFileDatName = "Analys
           double chi2 = fit->GetChisquare();
           gStyle->SetOptStat(0);
           fDCAdatProj->Scale(1, "width");
+          fDCAdatProj->GetXaxis()->SetRangeUser(-fitRange,fitRange);
           result->Scale(1, "width");
           fDCAdatProj->Draw("Ep");
           result->Draw("histosame");
@@ -387,10 +390,10 @@ void Secondary(const char *cutSettings = "", const char *inFileDatName = "Analys
 
           // compute fraction of primaries and material secondaries
           double intPrimDCAcutError = 0.;
-          double intPrimDCAcut = mc1->IntegralAndError(result->FindBin(-0.12), result->FindBin(0.115), intPrimDCAcutError);
+          double intPrimDCAcut = mc1->IntegralAndError(result->FindBin(-kDCAxyCut), result->FindBin(kDCAxyCut-0.001), intPrimDCAcutError);
           //double intSecDCAcut = mc3->Integral(result->FindBin(-0.12), result->FindBin(0.115));
           double intResDCAcutError = 0.;
-          double intResDCAcut = result->IntegralAndError(result->FindBin(-0.12), result->FindBin(0.115), intResDCAcutError);
+          double intResDCAcut = result->IntegralAndError(result->FindBin(-kDCAxyCut), result->FindBin(kDCAxyCut-0.001), intResDCAcutError);
           double primaryRatio = intPrimDCAcut / intResDCAcut;
           double primaryRatioError = errFracMc1/fracMc1*primaryRatio;//primaryRatio * TMath::Sqrt(intPrimDCAcutError * intPrimDCAcutError / intPrimDCAcut / intPrimDCAcut + intResDCAcutError * intResDCAcutError / intResDCAcut / intResDCAcut); // TMath::Sqrt(primaryRatio * (1.f - primaryRatio) / intResDCAcut);
           //double primaryRatioError = TMath::Sqrt(primaryRatio * (1.f - primaryRatio) / intResDCAcut);

@@ -104,7 +104,12 @@ void Spectra(const char *cutSettings = "", const double roi_nsigma = 8., const b
 
         double primary = 1.;
         double primaryError = 0.;
-        if (sigmoidCorrection){
+        if (!sigmoidCorrection) {
+          primary = sec->GetBinContent(iPtBin);
+          primaryError = sec->GetBinError(iPtBin);
+          if (primary < 0.5) continue;
+        }
+        else {
           primary = sec_f->Eval(raw->GetXaxis()->GetBinCenter(iPtBin));
           double pt_center = raw->GetXaxis()->GetBinCenter(iPtBin);
           double par_0 = sec_f->GetParameter(0);
@@ -119,10 +124,6 @@ void Spectra(const char *cutSettings = "", const double roi_nsigma = 8., const b
 
           primaryError = TMath::Sqrt(first_derivative_par_0*first_derivative_par_0*var_par_0+first_derivative_par_1*first_derivative_par_1*var_par_1+2*first_derivative_par_0*first_derivative_par_1*cov);
           std::cout<<"error (fit) = "<<primaryError<<"; error (hist) = "<<sec->GetBinError(iPtBin)<<std::endl;
-        }
-        else {
-          primary = sec->GetBinContent(iPtBin);
-          primaryError = sec->GetBinError(iPtBin);
         }
         //primaryError = sec->GetBinError(iPtBin);
         fSpectra[iMatt]->SetBinContent(iPtBin, /* rawYield * primary / */ rawYield * primary / efficiency );
@@ -144,6 +145,7 @@ void Spectra(const char *cutSettings = "", const double roi_nsigma = 8., const b
     }
 
     // compute ratios
+    TH1D SysError(Form("fSysError_%.0f_%.0f",kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1]),Form("%.0f-%.0f%%",kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1]),kNPtBins,kPtBins);
     int pTbinMax = 24;
     for (int iPtBin = 5; iPtBin < pTbinMax + 1; ++iPtBin)
     {
@@ -163,6 +165,8 @@ void Spectra(const char *cutSettings = "", const double roi_nsigma = 8., const b
           fRatio[iCent]->SetBinError(iPtBin,TMath::Sqrt(sys_err*sys_err+prim_err*prim_err)*fRatio[iCent]->GetBinContent(iPtBin));
         }
       }
+      SysError.SetBinContent(iPtBin,fRatio[iCent]->GetBinError(iPtBin));
+      SysError.SetBinError(0,fRatio[iCent]->GetBinError(iPtBin));
     }
     fRatio[iCent]->GetXaxis()->SetTitle(kAxisTitlePt);
     fRatio[iCent]->GetYaxis()->SetTitle(Form("Ratio %s/%s", kAntimatterMatterLabel[0], kAntimatterMatterLabel[1]));
@@ -170,6 +174,15 @@ void Spectra(const char *cutSettings = "", const double roi_nsigma = 8., const b
     fRatio[iCent]->Fit("pol0");
     fRatio[iCent]->GetXaxis()->SetRangeUser(1.0,2.0);
     fRatio[iCent]->Write();
+
+    SysError.GetXaxis()->SetRangeUser(1.,2.);
+    SysError.GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
+    SysError.GetYaxis()->SetTitle("Systematic Uncertainty");
+    SysError.SetMinimum(0.);
+    TCanvas cSysError(SysError.GetName(),SysError.GetTitle());
+    SysError.Draw("histo");
+    cSysError.Print(Form("%s.pdf",SysError.GetName()));
+    SysError.Write();
     
     TCanvas cRatio(Form("cRatio_%.0f_%.0f", kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1]), "cRatio");
     cRatio.SetTicks(1, 1);

@@ -12,7 +12,7 @@ const int kMarkerSize[] = {20,24};
 const char* kFittingMethod[] = {"TFF","RooFit"};
 const Color_t kHistColor[] = {kRed,kBlue};
 
-void PlotSecondaryCorrection(const char *inFileRooFitName = "PrimaryProton_ROO", const char *inFileTFFName = "PrimaryProton", const char *outFileCompareName = "PrimaryCompareRooFitTFF", const char *inFileSpectraTFFName = "SpectraProton_MC21l5_raw", const char* inFileSpectraRooName = "SpectraProton_MC21l5_raw_ROO"){
+void PlotSecondaryCorrection(const char *inFileRooFitName = "PrimaryProtonRooNew", const char *inFileTFFName = "PrimaryProton", const char *outFileCompareName = "PrimaryCompareRooFitTFF", const char *inFileSpectraTFFName = "SpectraProton_MC21l5_raw", const char* inFileSpectraRooName = "SpectraProton_MC21l5_raw_ROO"){
   gStyle->SetOptFit(0000);
   gStyle->SetOptStat(0000);
   // compare RooFit and ROOT::TFractionFitter
