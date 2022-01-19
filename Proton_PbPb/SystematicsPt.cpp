@@ -62,9 +62,9 @@ void SystematicsPt(const int points = kNPoints, const bool cutVar = true, const 
     int bkgFlag = 1;
     int sigmoidFlag = 1;
     int iNsigma = 1;
-    for (int iTrackCuts=0; iTrackCuts<kNTrackCuts; ++iTrackCuts){
+    for (int iTrackCuts=0; iTrackCuts<kNTrackCuts-4; ++iTrackCuts){
       for (int iROI=0; iROI<3; ++iROI){
-        for (int iSigmoid=0; iSigmoid<2; ++iSigmoid){
+        for (int iSigmoid=1; iSigmoid<2; ++iSigmoid){
           auto tmpCutSettings = trackCutSettings[iTrackCuts];
           auto cutIndex = trackCutIndexes[iTrackCuts];
           auto tmpCutIndex = Form("%d",cutIndex);
@@ -88,7 +88,7 @@ void SystematicsPt(const int points = kNPoints, const bool cutVar = true, const 
     bkgFlag = 1;
     sigmoidFlag = 1;
     iNsigma = 1;
-    for (int iTrackCuts=0; iTrackCuts<kNTrackCuts; ++iTrackCuts){
+    for (int iTrackCuts=0; iTrackCuts<kNTrackCuts-4; ++iTrackCuts){
       auto tmpCutSettings = trackCutSettings[iTrackCuts];
       auto cutIndex = trackCutIndexes[iTrackCuts];
       auto tmpCutIndex = Form("%d",cutIndex);
@@ -136,8 +136,8 @@ void SystematicsPt(const int points = kNPoints, const bool cutVar = true, const 
     cutVariable=0;
     iNsigma = 1;
     for (int iPrim=0; iPrim<2; ++iPrim){
-      auto tmpCutSettings = Form("");
-      auto tmpCutIndex = Form("");
+      auto tmpCutSettings = Form("dcaz");
+      auto tmpCutIndex = Form("2");
       sigmoidFlag=iPrim;
       auto fullCutSettingsSigm = Form("%s%s_%d_%d_%d", tmpCutSettings, tmpCutIndex, bkgFlag, sigmoidFlag, iNsigma);
       std::cout << fullCutSettingsSigm <<std::endl;
@@ -165,6 +165,25 @@ void SystematicsPt(const int points = kNPoints, const bool cutVar = true, const 
 
       // tot
       proj=fRatiosVsPtTot.ProjectionY("py",iPtBins,iPtBins);
+      double mean = proj->GetMean();
+      double rms = proj->GetRMS();
+      // reject outliers
+      double rejection_criterion=3.; // 3 sigma rejection
+      int count_outliers = 999;
+      while (count_outliers>0){
+        count_outliers = 0;
+        mean=proj->GetMean();
+        rms=proj->GetRMS();
+        for(int iB=1;iB<=proj->GetNbinsX();++iB){
+          double tmp=proj->GetBinCenter(iB);
+          bool isFilled=proj->GetBinContent(iB)>0;
+          if (std::abs(tmp-mean)>rejection_criterion*rms && isFilled){
+            proj->SetBinContent(iB,0.);
+            count_outliers++;
+          }
+        }
+        std::cout << "outliers found = " << count_outliers << std::endl;
+      }
       double totSys=TMath::Sqrt(fSystematicUncertaintyEff.GetBinContent(iPtBins)*fSystematicUncertaintyEff.GetBinContent(iPtBins)+proj->GetRMS()*proj->GetRMS()/proj->GetMean()/proj->GetMean());
       fSystematicUncertaintyTot.SetBinContent(iPtBins,totSys);
       fSystematicUncertaintyTot.SetBinError(iPtBins,0);

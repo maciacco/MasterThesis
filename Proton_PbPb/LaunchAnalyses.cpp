@@ -55,13 +55,16 @@ void LaunchAnalyses(const bool analyse = false)
     }
     std::cout << "fullCutSettings = " << fullCutSettings << std::endl;
 
+    double DCAxyCut = 0.07;
+    if (cutVariable == 3) DCAxyCut = kCutDCAxyVariations[cutIndex];
+
     for (int iBkg = 1; iBkg < 2; ++iBkg)
     {
       for(int iNsigma = 0; iNsigma < 3; ++iNsigma) {
-        std::cout << "bkg selection = " << iBkg << "; roiNsigma = " << roi_n_sigma[iNsigma] << std::endl;
+        std::cout << "bkg selection = " << iBkg << "; roiNsigma = " << roi_n_sigma[iNsigma] << "; dcaxycut = " << DCAxyCut << std::endl;
         if (analyse)
         {
-          gSystem->Exec(Form("bash ~/Code/MasterThesis/Proton_PbPb/scripts/LaunchAnalysisSignEffPrim.sh %s 1 1 %f %f", fullCutSettings, roi_n_sigma[iNsigma], kCutDCAxyVariations[cutIndex]));
+          gSystem->Exec(Form("bash ~/Code/MasterThesis/Proton_PbPb/scripts/LaunchAnalysisSignEffPrim.sh %s 1 1 %f %f", fullCutSettings, roi_n_sigma[iNsigma], DCAxyCut));
         }
 
         for (int iSgm = 0; iSgm < 2; ++iSgm)

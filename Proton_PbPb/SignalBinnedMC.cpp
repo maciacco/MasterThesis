@@ -79,8 +79,8 @@ void SignalBinnedMC(const char *cutSettings = "", const bool binCounting = false
   // get TTList
   std::string listName_21l5 = Form("nuclei_proton_mcFalse_%s", cutSettings);
   TTList *list_21l5 = (TTList *)mcFile_21l5->Get(listName_21l5.data());
-  std::string listName_20g7 = Form("nuclei_proton_%s", cutSettings);
-  TTList *list_20g7 = (TTList *)mcFile_20g7->Get(listName_20g7.data());
+  // std::string listName_20g7 = Form("nuclei_proton_%s", cutSettings);
+  // TTList *list_20g7 = (TTList *)mcFile_20g7->Get(listName_20g7.data());
   //TTList *list2 = (TTList *)dataFile2->Get(listName.data());
 
   // merge antimatter + matter histograms
@@ -117,8 +117,8 @@ void SignalBinnedMC(const char *cutSettings = "", const bool binCounting = false
     std::string histName = Form("f%sTOFnSigma", kAntimatterMatter[iMatt]);
     TH3F *fTOFSignal1 = (TH3F *)list_21l5->Get(histName.data());
     fTOFSignal1->SetName("A");
-    TH3F *fTOFSignal2 = (TH3F *)list_20g7->Get(histName.data());
-    fTOFSignal1->SetName("B");
+    // TH3F *fTOFSignal2 = (TH3F *)list_20g7->Get(histName.data());
+    // fTOFSignal1->SetName("B");
     if (!fTOFSignal1)
     {
       std::cout << "Hstogram not found!" << std::endl; // check data TFile opening
@@ -126,8 +126,8 @@ void SignalBinnedMC(const char *cutSettings = "", const bool binCounting = false
     }
 
     TH3F *fTOFSignal = (TH3F *)fTOFSignal1->Clone(histName.data());
-    if (ADD20g7)
-      fTOFSignal->Add(fTOFSignal2);
+    // if (ADD20g7)
+    //   fTOFSignal->Add(fTOFSignal2);
 
     // make plot subdirectory
     system(Form("mkdir %s/signal_extraction/%s_%s_%d_%d", kPlotDir, kAntimatterMatter[iMatt], cutSettings, binCounting, bkg_shape));

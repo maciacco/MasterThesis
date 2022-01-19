@@ -575,7 +575,7 @@ void SignalBinned(const char *cutSettings = "", const double roi_nsigma = 8., co
           //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
           // FIT PROTON PEAK
           //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-          nBackground1->setConstant(true);
+          /* nBackground1->setConstant(true);
           nBackground2->setConstant(true);
           slope1->setConstant(true);
           slope2->setConstant(true);
@@ -603,13 +603,13 @@ void SignalBinned(const char *cutSettings = "", const double roi_nsigma = 8., co
             fitParameterSigma[iCent][iPtBin]=sigma->getVal();
             fitParameterAlphaL[iCent][iPtBin]=alphaL->getVal();
             fitParameterAlphaR[iCent][iPtBin]=alphaR->getVal();
-          }
+          } */
           //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-          if (iMatt ==1)
+          /* if (iMatt ==1)
             modelPeak->plotOn(xframe, RooFit::Name("modelPeak"), RooFit::LineColor(kRed), RooFit::NormRange("signalRange"), RooFit::Range("signalRange"));
           else
             modelPeak->plotOn(xframe, RooFit::Name("modelPeak"), RooFit::LineColor(kRed), RooFit::NormRange("aFitRange"), RooFit::Range("signalRange"));
-
+ */
           // background integral
           double bkgIntegral = ((RooAbsPdf *)model->createIntegral(RooArgSet(tofSignal), RooFit::NormSet(RooArgSet(tofSignal)), RooFit::Range("signalRange")))->getVal();
           double bkgIntegral_val = (nBackground1->getVal() + nBackground2->getVal()) * bkgIntegral;
