@@ -52,7 +52,7 @@ void SecondaryMC(const char *cutSettings = "", const double DCAxyCut = 0.07, con
   for (int iMatt = 0; iMatt < 2; ++iMatt)
   {
     double noSecMaterialThreshold = 1.99f;
-    if (iMatt == 0)noSecMaterialThreshold = 0.f;
+    //if (iMatt == 0)noSecMaterialThreshold = 0.f;
 
     // make plot subdirectory
     system(Form("mkdir %s/primary_fraction/%s_%s", kPlotDir, kAntimatterMatter[iMatt], cutSettings));

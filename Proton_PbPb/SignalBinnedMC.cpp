@@ -301,8 +301,8 @@ void SignalBinnedMC(const char *cutSettings = "", const bool binCounting = false
         double maxProton = tofSignalProjection->GetMaximum(); */
         TF1 signalRegionFit("signalRegionFit", "gaus", -20., 20.);
         signalRegionFit.SetParLimits(0, 1., 1.e7);
-        signalRegionFit.SetParLimits(1, 0.2, 0.4);
-        signalRegionFit.SetParLimits(2, 1.2, 1.6);
+        signalRegionFit.SetParLimits(1, -0.4, 0.4);
+        signalRegionFit.SetParLimits(2, 0.8, 1.6);
         signalRegionFit.SetLineColor(kBlue);
         tofSignalProjection->GetXaxis()->SetRangeUser(-.5, .5);
         double maximum_signal = tofSignalProjection->GetBinCenter(tofSignalProjection->GetMaximumBin());

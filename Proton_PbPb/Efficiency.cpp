@@ -15,14 +15,14 @@
 using namespace utils;
 using namespace proton;
 
-void Efficiency(const char *cutSettings = "", const char *inFileNameMC = "mc", const char *outFileNameEff = "EfficiencyProton_LongMCTracks")
+void Efficiency(const char *cutSettings = "", const char *inFileNameMC = "AnalysisResults_LHC21l5_full", const char *outFileNameEff = "EfficiencyProton_NoNSigmaFit")
 {
   // make signal extraction plots directory
   system(Form("mkdir %s/efficiency", kPlotDir));
 
-  TFile inFile1(Form("%s/%s_finePtBinning2.root", kDataDir, inFileNameMC));
-  TFile inFile2(Form("%s/%s_dataSet1.root", kDataDir, inFileNameMC));
-  TFile inFile3(Form("%s/%s_20g7_20210929.root", kDataDir, inFileNameMC));
+  TFile inFile3(Form("%s/%s.root", kDataDir, inFileNameMC));
+  //TFile inFile2(Form("%s/%s_dataSet1.root", kDataDir, inFileNameMC));
+  //TFile inFile3(Form("%s/%s_20g7_20210929.root", kDataDir, inFileNameMC));
   //TFile inFile1(Form("%s/%s.root", kDataDir, inFileNameMC));
   TFile outFile(Form("%s/%s.root", kOutDir, outFileNameEff), "RECREATE");
 
@@ -34,7 +34,7 @@ void Efficiency(const char *cutSettings = "", const char *inFileNameMC = "mc", c
     system(Form("mkdir %s/efficiency/%s_%s_", kPlotDir, kAntimatterMatter[iMatt], cutSettings));
 
     // get TTList
-    std::string listName = Form("nuclei_proton_%s", cutSettings);
+    std::string listName = Form("nuclei_proton_mcTrue_%s", cutSettings);
     /* TTList *list1 = (TTList *)inFile1.Get(listName.data()); */
     //TTList *list2 = (TTList *)inFile2.Get(listName.data());
     TTList *list3 = (TTList *)inFile3.Get(listName.data());
@@ -94,7 +94,7 @@ void Efficiency(const char *cutSettings = "", const char *inFileNameMC = "mc", c
       fEffPt.SetMarkerStyle(20);
       fEffPt.SetMarkerSize(0.8);
       fEffPt.GetYaxis()->SetRangeUser(0., 1.);
-      fEffPt.GetXaxis()->SetRangeUser(1., 5.);
+      fEffPt.GetXaxis()->SetRangeUser(1., 2.);
       fEffPt.GetXaxis()->SetTitle("#it{p}_{T}");
       fEffPt.GetYaxis()->SetTitle("#epsilon #times A");
       fEffPt.SetOption("PE");
