@@ -442,7 +442,7 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
     TH1D hRatio(Form("fRatio_%.0f_%.0f", kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]),Form("%.0f-%.0f%%", kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]),kNPtBins,kPtBins);
     for (int iPtBin=5;iPtBin<kNPtBins;++iPtBin){
       hRatio.SetBinContent(iPtBin,fRatioFromVariationsTot.GetBinContent(iPtBin));
-      hRatio.SetBinError(iPtBin,fSystematicUncertaintyTotal.GetBinContent(iPtBin));
+      hRatio.SetBinError(iPtBin,hRatio.GetBinContent(iPtBin)*fSystematicUncertaintyTotal.GetBinContent(iPtBin));
     }
     hRatio.Fit("pol0");
     hRatio.Write();
@@ -453,7 +453,7 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
       double nsigma=gRandom->Gaus(0,1);
       for (int iPtBin=5;iPtBin<kNPtBins;++iPtBin){
         h_trial.SetBinContent(iPtBin,fRatioFromVariationsTot.GetBinContent(iPtBin)+nsigma*fSystematicUncertaintyTotalPtCorrelated.GetBinContent(iPtBin));
-        h_trial.SetBinError(iPtBin,fSystematicUncertaintyTotal.GetBinContent(iPtBin));
+        h_trial.SetBinError(iPtBin,hRatio.GetBinContent(iPtBin)*fSystematicUncertaintyTotal.GetBinContent(iPtBin));
       }
       h_trial.Fit("pol0");
       fRatioDistributionTrials.Fill(h_trial.GetFunction("pol0")->GetParameter(0));
