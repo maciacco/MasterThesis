@@ -168,7 +168,7 @@ void SystematicsPt(const int points = kNPoints, const bool cutVar = true, const 
       double mean = proj->GetMean();
       double rms = proj->GetRMS();
       // reject outliers
-      double rejection_criterion=3.; // 3 sigma rejection
+      /* double rejection_criterion=3.; // 3 sigma rejection
       int count_outliers = 999;
       while (count_outliers>0){
         count_outliers = 0;
@@ -183,7 +183,7 @@ void SystematicsPt(const int points = kNPoints, const bool cutVar = true, const 
           }
         }
         std::cout << "outliers found = " << count_outliers << std::endl;
-      }
+      } */
       double totSys=TMath::Sqrt(fSystematicUncertaintyEff.GetBinContent(iPtBins)*fSystematicUncertaintyEff.GetBinContent(iPtBins)+proj->GetRMS()*proj->GetRMS()/proj->GetMean()/proj->GetMean());
       fSystematicUncertaintyTot.SetBinContent(iPtBins,totSys);
       fSystematicUncertaintyTot.SetBinError(iPtBins,0);

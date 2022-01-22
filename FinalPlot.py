@@ -17,7 +17,7 @@ ROOT.gStyle.SetTextFont(44)
 
 file_he3 = ROOT.TFile.Open(path_he3 + '/SpectraHe3.root')
 file_hyp = ROOT.TFile.Open(path_hyp + '/Ratio.root')
-file_proton = ROOT.TFile.Open(path_proton + '/SpectraProton_MC21l5_raw.root')
+file_proton = ROOT.TFile.Open(path_proton + '/SpectraProtonOld.root')
 file_he3_syst = ROOT.TFile.Open(path_he3 + '/SystematicsAll.root')
 file_he3_syst_abs = ROOT.TFile.Open(path_he3 + '/AbsError.root')
 file_hyp_syst = ROOT.TFile.Open(path_hyp + '/Systematics.root')
