@@ -9,7 +9,7 @@ dcaxycut="$5"
 extractRatios=1
 
 fileData="AnalysisResults"
-fileDataEff="AnalysisResults_LHC21l5_full"
+fileDataEff="AnalysisResults_LHC21l5_full_largeDCA"
 fileMC="mc"
 signalNameEff="SignalProtonSysEff"
 spectraNameEff="SpectraProtonSysEff"

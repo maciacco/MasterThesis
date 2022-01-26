@@ -62,7 +62,7 @@ void SystematicsPt(const int points = kNPoints, const bool cutVar = true, const 
     int bkgFlag = 1;
     int sigmoidFlag = 1;
     int iNsigma = 1;
-    for (int iTrackCuts=0; iTrackCuts<kNTrackCuts-4; ++iTrackCuts){
+    for (int iTrackCuts=0; iTrackCuts<kNTrackCuts; ++iTrackCuts){
       for (int iROI=0; iROI<3; ++iROI){
         for (int iSigmoid=1; iSigmoid<2; ++iSigmoid){
           auto tmpCutSettings = trackCutSettings[iTrackCuts];

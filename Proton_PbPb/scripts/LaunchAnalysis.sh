@@ -9,10 +9,10 @@ spectraHistNameId=""
 extractRatios=1
 
 fileData="AnalysisResults"
-fileMC="AnalysisResults_LHC21l5"
+fileMC="AnalysisResults_LHC21l5_full_largeDCA"
 signalName="SignalProtonGausDExpSignal1_LongMCTracks"
 spectraName="SpectraProton_MC21l5_raw"
-EfficiencyHe3="EfficiencyProtonMC_21l5_false"
+EfficiencyHe3="EfficiencyProtonMC_21l5_false_"
 PrimaryHe3="PrimaryProton"
 
 # create output directories
@@ -46,9 +46,9 @@ if [ $extractRatios -eq 1 ]; then
 .L Secondary.cpp+
 .L Spectra.cpp+
 .L AbsorptionError.cpp+
-//SignalBinned("$cutSettings",8,$argumentSignal,"$fileData","$signalName","recreate")
-//Secondary("$cutSettings",0.07,"$fileData","$fileMC","$PrimaryHe3")//,true)
-Spectra("$cutSettings",8,$argumentSignal,$sigmoidFlag,"$spectraHistNameId","$spectraName","recreate","AnalysisResults","$signalName","$EfficiencyHe3","$PrimaryHe3",true)
+SignalBinned("$cutSettings",8,$argumentSignal,"$fileData","$signalName","recreate")
+Secondary("$cutSettings",0.12,"$fileData","$fileMC","$PrimaryHe3")//,true)
+Spectra("$cutSettings",8,$argumentSignal,$sigmoidFlag,"$spectraHistNameId","$spectraName","recreate","AnalysisResults","$signalName","$EfficiencyHe3","$PrimaryHe3")//,true)
 //AbsorptionError("AbsErrorMCorrection","recreate","$spectraName")
 .q
 EOF

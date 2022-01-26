@@ -31,7 +31,7 @@ using namespace proton;
 bool use_uniform = false;
 bool use_roofit = false;
 
-void SecondaryMC(const char *cutSettings = "", const double DCAxyCut = 0.07, const char *inFileDatName = "AnalysisResults_largeNsigma", const char *inFileMCName = "mc_20g7_20210929", const char *outFileName = "PrimaryProtonMC")
+void SecondaryMC(const char *cutSettings = "", const double DCAxyCut = 0.12, const char *inFileDatName = "AnalysisResults_largeNsigma", const char *inFileMCName = "mc_20g7_20210929", const char *outFileName = "PrimaryProtonMC")
 {
   gStyle->SetPadTickX(1);
   gStyle->SetPadTickY(1);

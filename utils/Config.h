@@ -211,10 +211,10 @@ namespace proton
   const double kCutTPCClusters[] = {59., 64., 69., 74., 79.};
   const int kNTPCPidSigmas = 3;
   const double kTPCPidSigmas[] = {3.0, 3.25, 3.50};
-  const char *cutSettings[] = {"dcaz", "pid", "tpc", "dcaxy"};
-  const int kNTrackCuts = 15;
-  const int trackCutIndexes[kNTrackCuts] = {0,0,1,2,3,0,1,0,1,2,3,0,1,2,3};
-  const char* trackCutSettings[kNTrackCuts] = {"","dcaz","dcaz","dcaz","dcaz","pid","pid","tpc","tpc","tpc","tpc","dcaxy","dcaxy","dcaxy","dcaxy"};
+  const char *cutSettings[] = {"dcaz", "pid", "tpc"};//, "dcaxy"};
+  const int kNTrackCuts = 11;//15;
+  const int trackCutIndexes[kNTrackCuts] = {0,0,1,2,3,0,1,0,1,2,3};//,0,1,2,3};
+  const char* trackCutSettings[kNTrackCuts] = {"","dcaz","dcaz","dcaz","dcaz","pid","pid","tpc","tpc","tpc","tpc"};//,"dcaxy","dcaxy","dcaxy","dcaxy"};
 }
 
 //////////////////////////////////////////////////////////////
