@@ -11,9 +11,9 @@
 
 #include "../utils/Config.h"
 
-using namespace proton;
+using namespace pion;
 
-double roi_n_sigma[] = {7.5, 8., 8.5};
+double roi_n_sigma[] = {14.,15.,16.};
 
 void LaunchAnalyses(const bool analyse = false)
 {
@@ -64,7 +64,7 @@ void LaunchAnalyses(const bool analyse = false)
         std::cout << "bkg selection = " << iBkg << "; roiNsigma = " << roi_n_sigma[iNsigma] << "; dcaxycut = " << DCAxyCut << std::endl;
         if (analyse)
         {
-          gSystem->Exec(Form("bash ~/Code/MasterThesis/Proton_PbPb/scripts/LaunchAnalysisSignEffPrim.sh %s 1 1 %f %f", fullCutSettings, roi_n_sigma[iNsigma], DCAxyCut));
+          gSystem->Exec(Form("bash ~/Code/MasterThesis/Pion_PbPb/scripts/LaunchAnalysisSignEffPrim.sh %s 1 1 %f %f", fullCutSettings, roi_n_sigma[iNsigma], DCAxyCut));
         }
 
         for (int iSgm = 0; iSgm < 2; ++iSgm)
@@ -80,7 +80,7 @@ void LaunchAnalyses(const bool analyse = false)
 
           if (analyse)
           {
-            gSystem->Exec(Form("bash ~/Code/MasterThesis/Proton_PbPb/scripts/LaunchAnalysisSpec.sh %s 1 %d %d %s %f", fullCutSettings, iBkg, sigmoidFlag, spectraNameId, roi_n_sigma[iNsigma]));
+            gSystem->Exec(Form("bash ~/Code/MasterThesis/Pion_PbPb/scripts/LaunchAnalysisSpec.sh %s 1 %d %d %s %f", fullCutSettings, iBkg, sigmoidFlag, spectraNameId, roi_n_sigma[iNsigma]));
           }
         }
       }

@@ -11,12 +11,12 @@ extractRatios=1
 fileData="AnalysisResults"
 fileDataEff="AnalysisResults_LHC21l5_full"
 fileMC="mc"
-signalNameEff="SignalProtonSysEff"
-spectraNameEff="SpectraProtonSysEff"
-signalName="SignalProtonSys"
-spectraName="SpectraProtonSys"
-EfficiencyHe3="EfficiencyProtonSys"
-PrimaryHe3="PrimaryProtonSys"
+signalNameEff="SignalPionSysEff"
+spectraNameEff="SpectraPionSysEff"
+signalName="SignalPionSys"
+spectraName="SpectraPionSys"
+EfficiencyHe3="EfficiencyPionSys"
+PrimaryHe3="PrimaryPionSys"
 
 # create output directories
 DIR_OUT=out

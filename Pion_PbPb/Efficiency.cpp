@@ -13,9 +13,9 @@
 #include "../utils/Config.h"
 
 using namespace utils;
-using namespace proton;
+using namespace pion;
 
-void Efficiency(const char *cutSettings = "", const char *inFileNameMC = "AnalysisResults_LHC21l5_full", const char *outFileNameEff = "EfficiencyProton_NoNSigmaFit")
+void Efficiency(const char *cutSettings = "", const char *inFileNameMC = "AnalysisResults_LHC21l5_full", const char *outFileNameEff = "EfficiencyPion_NoNSigmaFit")
 {
   // make signal extraction plots directory
   system(Form("mkdir %s/efficiency", kPlotDir));
@@ -34,7 +34,7 @@ void Efficiency(const char *cutSettings = "", const char *inFileNameMC = "Analys
     system(Form("mkdir %s/efficiency/%s_%s_", kPlotDir, kAntimatterMatter[iMatt], cutSettings));
 
     // get TTList
-    std::string listName = Form("nuclei_proton_mcTrue_%s", cutSettings);
+    std::string listName = Form("nuclei_pion_mcTrue_%s", cutSettings);
     /* TTList *list1 = (TTList *)inFile1.Get(listName.data()); */
     //TTList *list2 = (TTList *)inFile2.Get(listName.data());
     TTList *list3 = (TTList *)inFile3.Get(listName.data());
@@ -63,10 +63,10 @@ void Efficiency(const char *cutSettings = "", const char *inFileNameMC = "Analys
 
     for (int iCent = 0; iCent < kNCentClasses + 1; ++iCent) // SET FIRST CENTRALITY BIN TO 1 EXCEPT FOR LHC16h7c_g4_2
     {                                                       // loop over centrality
-      int cent_bin_min = kCentBinsProton[iCent][0];
-      int cent_bin_max = kCentBinsProton[iCent][1];
-      double cent_bin_lim_min = kCentBinsLimitsProton[iCent][0];
-      double cent_bin_lim_max = kCentBinsLimitsProton[iCent][1];
+      int cent_bin_min = kCentBinsPion[iCent][0];
+      int cent_bin_max = kCentBinsPion[iCent][1];
+      double cent_bin_lim_min = kCentBinsLimitsPion[iCent][0];
+      double cent_bin_lim_max = kCentBinsLimitsPion[iCent][1];
 
       TH1D *fTotal_Pt;       // = fTotal->ProjectionY(TString::Format("f%sTotal_Pt", kAntimatterMatter[iMatt]), cent_bin_min, cent_bin_max);
       TH1D *fITS_TPC_TOF_Pt; // = fITS_TPC_TOF->ProjectionY(TString::Format("f%sITS_TPC_TOF_Pt", kAntimatterMatter[iMatt]), cent_bin_min, cent_bin_max);
@@ -83,7 +83,7 @@ void Efficiency(const char *cutSettings = "", const char *inFileNameMC = "Analys
       }
       fTotal_Pt = (TH1D *)fTotal_Pt->Rebin(kNPtBins, TString::Format("f%sTotal_Pt", kAntimatterMatter[iMatt]), kPtBins);
       fITS_TPC_TOF_Pt = (TH1D *)fITS_TPC_TOF_Pt->Rebin(kNPtBins, TString::Format("f%sITS_TPC_TOF_Pt", kAntimatterMatter[iMatt]), kPtBins);
-      TH1D fEffPt(TString::Format("f%sEff_TOF_%.0f_%.0f", kAntimatterMatter[iMatt], cent_bin_lim_min, cent_bin_lim_max), TString::Format("%s Efficiency #times Acceptance, %.0f-%.0f%%", kAntimatterMatterLabel[iMatt], kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1]), kNPtBins, kPtBins);
+      TH1D fEffPt(TString::Format("f%sEff_TOF_%.0f_%.0f", kAntimatterMatter[iMatt], cent_bin_lim_min, cent_bin_lim_max), TString::Format("%s Efficiency #times Acceptance, %.0f-%.0f%%", kAntimatterMatterLabel[iMatt], kCentBinsLimitsPion[iCent][0], kCentBinsLimitsPion[iCent][1]), kNPtBins, kPtBins);
 
       /* for (int iPtBin = 1; iPtBin < fEffPt.GetNbinsX() + 1; ++iPtBin)
       {

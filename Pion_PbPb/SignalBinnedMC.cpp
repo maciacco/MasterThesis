@@ -49,6 +49,7 @@ const double kNSigma = 3; // define interval for bin counting
 
 void SignalBinnedMC(const char *cutSettings = "", const bool binCounting = false, const int bkg_shape = 1, const char *inFileDat = "mc_20g7_likeData_largeNsigma", const char *outFileName = "SignalProton", const char *outFileOption = "recreate", const bool extractSignal = true, const bool useDSCB = false, const bool binCountingNoFit = false)
 {
+  double roi_max_limit=15.;
 
   // make signal extraction plots directory
   system(Form("mkdir %s/signal_extraction", kPlotDir));
@@ -167,8 +168,8 @@ void SignalBinnedMC(const char *cutSettings = "", const bool binCounting = false
         // DEFINE SIGNAL REGION
         TF1 signalRegionFit("signalRegionFit", "gaus", -20., 20.);
         signalRegionFit.SetParLimits(0, 1., 1.e7);
-        signalRegionFit.SetParLimits(1, 0.2, 0.4);
-        signalRegionFit.SetParLimits(2, 1.2, 1.6);
+        signalRegionFit.SetParLimits(1, -0.4, 0.4);
+        signalRegionFit.SetParLimits(2, 0.8, 1.6);
         signalRegionFit.SetLineColor(kBlue);
         tofSignalProjection->GetXaxis()->SetRangeUser(-.5, .5);
         double maximum_signal = tofSignalProjection->GetBinCenter(tofSignalProjection->GetMaximumBin());
@@ -207,7 +208,7 @@ void SignalBinnedMC(const char *cutSettings = "", const bool binCounting = false
 
         int covQ = -999;
         double intersectionBinCenter=-20.;
-        double signalRightLimit=15.;
+        double signalRightLimit=roi_max_limit;
         if (extractSignal)
         {
           // fit model

@@ -44,10 +44,8 @@ using namespace pion;
 
 const double kNSigma = 3; // define interval for bin counting
 
-void SignalBinned(const char *cutSettings = "", const double roi_nsigma = 8., const bool binCounting = false, const int bkg_shape = 1, const char *inFileDat = "AnalysisResults", const char *outFileName = "SignalPion", const char *outFileOption = "recreate", const bool extractSignal = true, const bool useDSCB = false, const bool binCountingNoFit = false)
+void SignalBinned(const char *cutSettings = "", const double roi_max_limit = 15., const bool binCounting = false, const int bkg_shape = 1, const char *inFileDat = "AnalysisResults", const char *outFileName = "SignalPion", const char *outFileOption = "recreate", const bool extractSignal = true, const bool useDSCB = false, const bool binCountingNoFit = false)
 {
-  double roi_nsigma_up = roi_nsigma;
-  double roi_nsigma_down = roi_nsigma;
 
   // make signal extraction plots directory
   system(Form("mkdir %s/signal_extraction", kPlotDir));
@@ -61,8 +59,8 @@ void SignalBinned(const char *cutSettings = "", const double roi_nsigma = 8., co
   gStyle->SetOptFit(1111);
 
   int iNsigma = 0;
-  if (roi_nsigma > 7.8 && roi_nsigma < 8.1) iNsigma = 1;
-  else if (roi_nsigma > 8.1) iNsigma = 2; 
+  if (roi_max_limit > 14.9 && roi_max_limit < 15.1) iNsigma = 1;
+  else if (roi_max_limit > 15.9) iNsigma = 2; 
   TFile *outFile = TFile::Open(TString::Format("%s/%s.root", kOutDir, outFileName), outFileOption); // output file
   if (outFile->GetDirectory(Form("%s_%d_%d_%d", cutSettings, binCounting, bkg_shape,iNsigma)))
     return;
@@ -155,8 +153,8 @@ void SignalBinned(const char *cutSettings = "", const double roi_nsigma = 8., co
         // DEFINE SIGNAL REGION
         TF1 signalRegionFit("signalRegionFit", "gaus", -20., 20.);
         signalRegionFit.SetParLimits(0, 1., 1.e7);
-        signalRegionFit.SetParLimits(1, 0.2, 0.4);
-        signalRegionFit.SetParLimits(2, 1.2, 1.6);
+        signalRegionFit.SetParLimits(1, -0.4, 0.4);
+        signalRegionFit.SetParLimits(2, 0.8, 1.6);
         signalRegionFit.SetLineColor(kBlue);
         tofSignalProjection->GetXaxis()->SetRangeUser(-.5, .5);
         double maximum_signal = tofSignalProjection->GetBinCenter(tofSignalProjection->GetMaximumBin());
@@ -195,7 +193,7 @@ void SignalBinned(const char *cutSettings = "", const double roi_nsigma = 8., co
 
         int covQ = -999;
         double intersectionBinCenter=-20.;
-        double signalRightLimit=15.;
+        double signalRightLimit=roi_max_limit;
         if (extractSignal)
         {
           // fit model

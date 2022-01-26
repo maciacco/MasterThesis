@@ -250,7 +250,7 @@ namespace pion
   const int kCentBinsPion[][2] = {{1, 1}, {2, 2}, {5, 6}, {1, 10}, {1,4}}; // centrality classes bin indexes in He3 analysis
 
   // antimatter / matter
-  const char *kAntimatterMatterLabel[2] = {"#bar{p}", "p"};
+  const char *kAntimatterMatterLabel[2] = {"#pi^{-}", "#pi^{+}"};
   const char *kAntimatterMatterLabelExtended[2] = {"antiprotons", "protons"};
 
   // DCAxy binning
