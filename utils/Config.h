@@ -201,6 +201,7 @@ namespace proton
   const double kDCABinsMedium[kNDCABinsMedium + 1] = {-1.30f, -1.00f, -0.80f, -0.50f, -0.20f, -0.12f, -0.06f, -0.03f, 0.00f, 0.03f, 0.06f, 0.12f, 0.20f, 0.50f, 0.80f, 1.00f, 1.30f};
    */
   // systematics variations
+  const double kROIVariation[] = {7.5,8.,8.5};
   const int kNCutDCAxy = 5;
   const double kCutDCAxy[] = {0.05, 0.06, 0.07, 0.08, 0.09};
   const int kNCutDCAxyVariations = 4;

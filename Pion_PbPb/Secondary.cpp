@@ -127,8 +127,8 @@ void Secondary(const char *cutSettings = "", const double DCAxyCut=0.07, const c
         TH1D *fDCAMcProjSecWD;
         TString canvTitleTOF;
         TString canvNameTOF;
-        TH1D fRatioDCAPrim("", "", kNDCABinsMedium, kDCABinsMedium);
-        TH1D fRatioDCASec("", "", kNDCABinsMedium, kDCABinsMedium);
+        TH1D fRatioDCAPrim("", "", kNDCABinsMediumOld, kDCABinsMediumOld);
+        TH1D fRatioDCASec("", "", kNDCABinsMediumOld, kDCABinsMediumOld);
 
         TString projTitle = TString::Format("%.2f#leq #it{p}_{T}<%.2f GeV/#it{c}, %.0f-%.0f%%", fDCAdat->GetYaxis()->GetBinLowEdge(pTbinsIndexMin), fDCAdat->GetYaxis()->GetBinUpEdge(pTbinsIndexMax), fDCAdat->GetXaxis()->GetBinLowEdge(kCentBinsPion[iCent][0]), fDCAdat->GetXaxis()->GetBinUpEdge(kCentBinsPion[iCent][1]));
         fDCAdatProj = fDCAdat->ProjectionZ(TString::Format("f%sDCAxyTOF_%.0f_%.0f_%.2f_%.2f", kAntimatterMatter[iMatt], fDCAdat->GetXaxis()->GetBinLowEdge(kCentBinsPion[iCent][0]), fDCAdat->GetXaxis()->GetBinUpEdge(kCentBinsPion[iCent][1]), fDCAdat->GetYaxis()->GetBinLowEdge(pTbinsIndexMin), fDCAdat->GetYaxis()->GetBinUpEdge(pTbinsIndexMax)), kCentBinsPion[iCent][0], kCentBinsPion[iCent][1], pTbinsIndexMin, pTbinsIndexMax);
@@ -141,10 +141,10 @@ void Secondary(const char *cutSettings = "", const double DCAxyCut=0.07, const c
         fDCAMcProjSecWD->SetTitle(projTitle);
 
         // rebin
-        fDCAdatProj = (TH1D *)fDCAdatProj->Rebin(kNDCABinsMedium, fRatioDCASec.GetName(), kDCABinsMedium);
-        fDCAMcProjPrim = (TH1D *)fDCAMcProjPrim->Rebin(kNDCABinsMedium, fRatioDCASec.GetName(), kDCABinsMedium);
-        fDCAMcProjSec = (TH1D *)fDCAMcProjSec->Rebin(kNDCABinsMedium, fRatioDCASec.GetName(), kDCABinsMedium);
-        fDCAMcProjSecWD = (TH1D *)fDCAMcProjSecWD->Rebin(kNDCABinsMedium, fRatioDCASec.GetName(), kDCABinsMedium);
+        fDCAdatProj = (TH1D *)fDCAdatProj->Rebin(kNDCABinsMediumOld, fRatioDCASec.GetName(), kDCABinsMediumOld);
+        fDCAMcProjPrim = (TH1D *)fDCAMcProjPrim->Rebin(kNDCABinsMediumOld, fRatioDCASec.GetName(), kDCABinsMediumOld);
+        fDCAMcProjSec = (TH1D *)fDCAMcProjSec->Rebin(kNDCABinsMediumOld, fRatioDCASec.GetName(), kDCABinsMediumOld);
+        fDCAMcProjSecWD = (TH1D *)fDCAMcProjSecWD->Rebin(kNDCABinsMediumOld, fRatioDCASec.GetName(), kDCABinsMediumOld);
         /* 
         fDCAdatProj = (TH1D*)fDCAdatProj->Rebin(kNDCABinsLarge, fRatioDCASec.GetName(), kDCABinsLarge);
         fDCAMcProjPrim = (TH1D*)fDCAMcProjPrim->Rebin(kNDCABinsLarge, fRatioDCASec.GetName(), kDCABinsLarge);
@@ -397,6 +397,7 @@ void Secondary(const char *cutSettings = "", const double DCAxyCut=0.07, const c
             primaryRatioError = 1. / intResDCAcut;
           //double secondaryRatio = intSecDCAcut / intResDCAcut;
           //double secondaryRatioError = TMath::Sqrt(secondaryRatio * (1.f - secondaryRatio) / intResDCAcut);
+          if (primaryRatio>1.)continue;
           fPrimaryFrac.SetBinContent(fPrimaryFrac.FindBin(ptMin + 0.005f), primaryRatio);
           fPrimaryFrac.SetBinError(fPrimaryFrac.FindBin(ptMin + 0.005f), primaryRatioError);
 
@@ -437,7 +438,7 @@ void Secondary(const char *cutSettings = "", const double DCAxyCut=0.07, const c
           fRatioDCASec.SetName(Form("f%sRatioDCASec_%.0f_%.0f_%.2f_%.2f", kAntimatterMatter[iMatt], kCentBinsLimitsPion[iCent][0], kCentBinsLimitsPion[iCent][1], fDCAdat->GetYaxis()->GetBinLowEdge(pTbinsIndexMin), fDCAdat->GetYaxis()->GetBinUpEdge(pTbinsIndexMax)));
           fRatioDCASec.SetTitle(fRatioDCASec.GetName());
 
-          auto kNDCABins = kNDCABinsMedium;
+          auto kNDCABins = kNDCABinsMediumOld;
           for (int iDCA = 1; iDCA < kNDCABins + 1; ++iDCA)
           {
             double primPrediction = mc1->GetBinContent(iDCA);
