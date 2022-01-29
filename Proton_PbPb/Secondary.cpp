@@ -33,7 +33,7 @@ bool use_uniform = false;
 
 const double fitRange = 1.25;
 
-void Secondary(const char *cutSettings = "", const double DCAxyCut=0.12, const char *inFileDatName = "AnalysisResults", const char *inFileMCName = "mc", const char *outFileName = "PrimaryProton", const bool use_roofit = false, const bool useAntiProtonsAsPrimaries = false)
+void Secondary(const char *cutSettings = "", const double DCAxyCut=0.12, const char *inFileDatName = "AnalysisResults", const char *inFileMCName = "mc", const char *outFileName = "PrimaryProton", const bool use_injected_protons = false, const bool use_roofit = false, const bool useAntiProtonsAsPrimaries = false)
 {
   // killing RooFit output
   RooMsgService::instance().setGlobalKillBelow(RooFit::ERROR);
@@ -83,13 +83,22 @@ void Secondary(const char *cutSettings = "", const double DCAxyCut=0.12, const c
     {
       fDCAprim = (TH3F *)listData->Get(Form("f%sDCAxyTOF", kAntimatterMatter[0]));
     }
-    else
+    else if (use_injected_protons)
     {
       fDCAprim1 = (TH3F *)listMc20e3a_1->Get(Form("f%sDCAPrimaryTOF", kAntimatterMatter[iMatt]));
       fDCAprim2 = (TH3F *)listMc20e3a_2->Get(Form("f%sDCAPrimaryTOF", kAntimatterMatter[0]));
       //fDCAprim3 = (TH3F *)listMc3->Get(Form("f%sDCAPrimaryTOF", kAntimatterMatter[0]));
       fDCAprim = (TH3F *)fDCAprim1->Clone(fDCAprim1->GetName());
       fDCAprim->Add(fDCAprim2);
+      //fDCAprim->Add(fDCAprim3);
+    }
+    else if (!use_injected_protons)
+    {
+      fDCAprim1 = (TH3F *)listMc21l5->Get(Form("f%sDCAPrimaryTOF", kAntimatterMatter[iMatt]));
+      //fDCAprim2 = (TH3F *)listMc20e3a_2->Get(Form("f%sDCAPrimaryTOF", kAntimatterMatter[iMatt]));
+      //fDCAprim3 = (TH3F *)listMc3->Get(Form("f%sDCAPrimaryTOF", kAntimatterMatter[0]));
+      fDCAprim = (TH3F *)fDCAprim1->Clone(fDCAprim1->GetName());
+      //fDCAprim->Add(fDCAprim2);
       //fDCAprim->Add(fDCAprim3);
     }
     TH3F *fDCAsec1 = (TH3F *)listMc20e3a_1->Get(Form("f%sDCASecondaryTOF", kAntimatterMatter[iMatt]));

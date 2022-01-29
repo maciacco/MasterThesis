@@ -49,7 +49,7 @@ const double kNSigma = 3; // define interval for bin counting
 
 void SignalBinnedMC(const char *cutSettings = "", const bool binCounting = false, const int bkg_shape = 1, const char *inFileDat = "mc_20g7_likeData_largeNsigma", const char *outFileName = "SignalProton", const char *outFileOption = "recreate", const bool extractSignal = true, const bool useDSCB = false, const bool binCountingNoFit = false)
 {
-  double roi_max_limit=15.;
+  double roi_max_limit=12.;
 
   // make signal extraction plots directory
   system(Form("mkdir %s/signal_extraction", kPlotDir));
@@ -135,7 +135,7 @@ void SignalBinnedMC(const char *cutSettings = "", const bool binCounting = false
       TH1D fMean("fMean", "fMean", kNPtBins, kPtBins);
       TH1D fAlphaL("fAlphaL", "fAlphaL", kNPtBins, kPtBins);
       TH1D fAlphaR("fAlphaR", "fAlphaR", kNPtBins, kPtBins);
-      int nUsedPtBins = 14; // up to 2.00 GeV/c
+      int nUsedPtBins = 21; // up to 2.00 GeV/c
       //int nUsedPtBins = 39;
 
       for (int iPtBin = 7; iPtBin < nUsedPtBins + 1; ++iPtBin)
@@ -179,7 +179,9 @@ void SignalBinnedMC(const char *cutSettings = "", const bool binCounting = false
         double rms_tmp = signalRegionFit.GetParameter(2);
 
         // roofit data
-        double maxNsigma=20.;
+        double maxNsigma=17.;
+        if (ptMin>1.09)
+        maxNsigma=14.;
         RooRealVar tofSignal("tofSignal", "n#sigma_{p}", nSigmaLeft, maxNsigma, "a.u.");
 
         // roofit histogram
@@ -191,24 +193,36 @@ void SignalBinnedMC(const char *cutSettings = "", const bool binCounting = false
         std::cout << "Number of entries (root) = " << tofSignalProjectionAll->GetEntries() << std::endl;
 
         RooAbsPdf *background1;
+        RooAbsPdf *background2;
         RooRealVar *slope1;
         RooRealVar *slope2;
         RooRealVar *nBackground1;
+        RooRealVar *nBackground2;
         RooAddPdf *model;
+        RooAbsPdf *modelAll;
 
         slope1 = new RooRealVar("#tau_{1}", "slope1", -10., 10.);
-        nBackground1 = new RooRealVar("#it{N}_{Bkg,1}", "nBackground1", 1., 1.e7);
-        if (bkg_shape == 1)
+        nBackground1 = new RooRealVar("#it{N}_{Bkg,1}", "nBackground1", 0.,1.);
+        if (bkg_shape == 1 && ptMin < 0.99)
         { // expo
           background1 = (RooAbsPdf *)new RooExponential("background1", "background1", tofSignal, *slope1);
-          model = new RooAddPdf("model", "model", RooArgList(*background1), RooArgList(*nBackground1));
+          modelAll = (RooAbsPdf*)new RooExponential("modelAll", "modelAll", tofSignal, *slope1);
+        }
+        else if (bkg_shape == 1 && ptMin > 0.99)
+        { // double expo
+          slope2 = new RooRealVar("#tau_{2}", "slope2", 0., 10.);
+          background1 = (RooAbsPdf *)new RooExponential("background1", "background1", tofSignal, *slope1);
+          background2 = (RooAbsPdf *)new RooExponential("background2", "background2", tofSignal, *slope2);
+          modelAll = (RooAbsPdf*)new RooAddPdf("modelAll", "modelAll", RooArgList(*background1,*background2), RooArgList(*nBackground1));
         }
         else
           std::cout << "!!!!!" << std::endl; // TODO: UPDATE FOLLOWING BLOCK
 
         int covQ = -999;
         double intersectionBinCenter=-20.;
-        double signalRightLimit=roi_max_limit;
+        double signalRightLimit=roi_max_limit-1.;
+        if(ptMin>1.09)
+        signalRightLimit=roi_max_limit-3.;
         if (extractSignal)
         {
           // fit model
@@ -217,9 +231,27 @@ void SignalBinnedMC(const char *cutSettings = "", const bool binCounting = false
           tofSignal.setRange("rightSideband", signalRightLimit, maxNsigma);
           // fit TOF signal distribution
 
+          modelAll->fitTo(dataAll, RooFit::Range("rightSideband"));
+          r = modelAll->fitTo(dataAll, RooFit::Save(), RooFit::Range("rightSideband"));
+
+          slope1->setConstant();
+          if (ptMin > 0.99)
+          slope2->setConstant();
+          nBackground1->setConstant();
+
+          if (bkg_shape == 1 && ptMin < 0.99)
+          { // expo
+            nBackground2 = new RooRealVar("#it{N}_{Bkg,2}", "nBackground2", 1., 1.e7);
+            model = new RooAddPdf("model", "model", RooArgList(*modelAll), RooArgList(*nBackground2));
+          }
+          else if (bkg_shape == 1 && ptMin > 0.99)
+          { // double expo
+            nBackground2 = new RooRealVar("#it{N}_{Bkg,2}", "nBackground2", 1., 1.e7);
+            model = new RooAddPdf("model", "model", RooArgList(*modelAll), RooArgList(*nBackground2));
+          }
           model->fitTo(data, RooFit::Range("rightSideband"));
           r = model->fitTo(data, RooFit::Save(), RooFit::Range("rightSideband"));
-
+          
           // find signal region
           double leftSignalLimit=-10;
           bool intersection=false;

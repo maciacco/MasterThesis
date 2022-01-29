@@ -64,20 +64,22 @@ void SystematicsPt(const int points = kNPoints, const bool cutVar = true, const 
     int iNsigma = 1;
     for (int iTrackCuts=0; iTrackCuts<kNTrackCuts; ++iTrackCuts){
       for (int iROI=0; iROI<3; ++iROI){
-        for (int iSigmoid=1; iSigmoid<2; ++iSigmoid){
-          auto tmpCutSettings = trackCutSettings[iTrackCuts];
-          auto cutIndex = trackCutIndexes[iTrackCuts];
-          auto tmpCutIndex = Form("%d",cutIndex);
-          if ( iTrackCuts == 0 )
-          {
-            tmpCutIndex = Form("");
-            tmpCutSettings = Form("");
-          }
-          auto fullCutSettingsSigm = Form("%s%s_%d_%d_%d", tmpCutSettings, tmpCutIndex, bkgFlag, iSigmoid, iROI);
-          std::cout << fullCutSettingsSigm <<std::endl;
-          TH1D *h = (TH1D *)specFile->Get(Form("%s/fRatio_%.0f_%.0f", fullCutSettingsSigm, kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]));
-          for(int iPtBins=4;iPtBins<24;++iPtBins){
-            fRatiosVsPtTot.Fill(kPtBins[iPtBins],h->GetBinContent(iPtBins+1));
+        for (int iG3G4Prim=0; iG3G4Prim<2; ++iG3G4Prim){
+          for (int iSigmoid=1; iSigmoid<2; ++iSigmoid){
+            auto tmpCutSettings = trackCutSettings[iTrackCuts];
+            auto cutIndex = trackCutIndexes[iTrackCuts];
+            auto tmpCutIndex = Form("%d",cutIndex);
+            if ( iTrackCuts == 0 )
+            {
+              tmpCutIndex = Form("");
+              tmpCutSettings = Form("");
+            }
+            auto fullCutSettingsSigm = Form("%s%s_%d_%d_%d_%d", tmpCutSettings, tmpCutIndex, bkgFlag, iSigmoid, iROI, iG3G4Prim);
+            std::cout << fullCutSettingsSigm <<std::endl;
+            TH1D *h = (TH1D *)specFile->Get(Form("%s/fRatio_%.0f_%.0f", fullCutSettingsSigm, kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]));
+            for(int iPtBins=4;iPtBins<24;++iPtBins){
+              fRatiosVsPtTot.Fill(kPtBins[iPtBins],h->GetBinContent(iPtBins+1));
+            }
           }
         }
       }
@@ -97,7 +99,7 @@ void SystematicsPt(const int points = kNPoints, const bool cutVar = true, const 
         tmpCutIndex = Form("");
         tmpCutSettings = Form("");
       }
-      auto fullCutSettingsSigm = Form("%s%s_%d_%d_%d", tmpCutSettings, tmpCutIndex, bkgFlag, sigmoidFlag, iNsigma);
+      auto fullCutSettingsSigm = Form("%s%s_%d_%d_%d_1", tmpCutSettings, tmpCutIndex, bkgFlag, sigmoidFlag, iNsigma);
       std::cout << fullCutSettingsSigm <<std::endl;
       TH1D *h = (TH1D *)specFile->Get(Form("%s/fRatio_%.0f_%.0f", fullCutSettingsSigm, kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]));
       for(int iPtBins=4;iPtBins<24;++iPtBins){
@@ -124,7 +126,7 @@ void SystematicsPt(const int points = kNPoints, const bool cutVar = true, const 
       auto tmpCutSettings = Form("");
       auto tmpCutIndex = Form("");
       iNsigma=iRoi;
-      auto fullCutSettingsSigm = Form("%s%s_%d_%d_%d", tmpCutSettings, tmpCutIndex, bkgFlag, sigmoidFlag, iNsigma);
+      auto fullCutSettingsSigm = Form("%s%s_%d_%d_%d_1", tmpCutSettings, tmpCutIndex, bkgFlag, sigmoidFlag, iNsigma);
       std::cout << fullCutSettingsSigm <<std::endl;
       TH1D *h = (TH1D *)specFile->Get(Form("%s/fRatio_%.0f_%.0f", fullCutSettingsSigm, kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]));
       for(int iPtBins=4;iPtBins<24;++iPtBins){
@@ -139,7 +141,7 @@ void SystematicsPt(const int points = kNPoints, const bool cutVar = true, const 
       auto tmpCutSettings = Form("dcaz");
       auto tmpCutIndex = Form("2");
       sigmoidFlag=iPrim;
-      auto fullCutSettingsSigm = Form("%s%s_%d_%d_%d", tmpCutSettings, tmpCutIndex, bkgFlag, sigmoidFlag, iNsigma);
+      auto fullCutSettingsSigm = Form("%s%s_%d_%d_%d_1", tmpCutSettings, tmpCutIndex, bkgFlag, sigmoidFlag, iNsigma);
       std::cout << fullCutSettingsSigm <<std::endl;
       TH1D *h = (TH1D *)specFile->Get(Form("%s/fRatio_%.0f_%.0f", fullCutSettingsSigm, kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]));
       for(int iPtBins=4;iPtBins<24;++iPtBins){
@@ -168,7 +170,7 @@ void SystematicsPt(const int points = kNPoints, const bool cutVar = true, const 
       double mean = proj->GetMean();
       double rms = proj->GetRMS();
       // reject outliers
-      /* double rejection_criterion=3.; // 3 sigma rejection
+      double rejection_criterion=3.; // 3 sigma rejection
       int count_outliers = 999;
       while (count_outliers>0){
         count_outliers = 0;
@@ -183,7 +185,7 @@ void SystematicsPt(const int points = kNPoints, const bool cutVar = true, const 
           }
         }
         std::cout << "outliers found = " << count_outliers << std::endl;
-      } */
+      }
       double totSys=TMath::Sqrt(fSystematicUncertaintyEff.GetBinContent(iPtBins)*fSystematicUncertaintyEff.GetBinContent(iPtBins)+proj->GetRMS()*proj->GetRMS()/proj->GetMean()/proj->GetMean());
       fSystematicUncertaintyTot.SetBinContent(iPtBins,totSys);
       fSystematicUncertaintyTot.SetBinError(iPtBins,0);

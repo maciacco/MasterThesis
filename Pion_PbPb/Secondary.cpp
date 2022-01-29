@@ -31,9 +31,9 @@ using namespace pion;
 
 bool use_uniform = false;
 
-const double fitRange = 0.5;
+const double fitRange = 1.25;
 
-void Secondary(const char *cutSettings = "", const double DCAxyCut=0.07, const char *inFileDatName = "AnalysisResults", const char *inFileMCName = "mc", const char *outFileName = "PrimaryPion", const bool use_roofit = false, const bool useAntiPionsAsPrimaries = false)
+void Secondary(const char *cutSettings = "", const double DCAxyCut=0.12, const char *inFileDatName = "AnalysisResults", const char *inFileMCName = "mc", const char *outFileName = "PrimaryPion", const bool use_roofit = false, const bool useAntiPionsAsPrimaries = false)
 {
   // killing RooFit output
   RooMsgService::instance().setGlobalKillBelow(RooFit::ERROR);
@@ -52,9 +52,9 @@ void Secondary(const char *cutSettings = "", const double DCAxyCut=0.07, const c
 
   // open files
   //TFile *inFileDat = TFile::Open(Form("%s/%s.root", kDataDir, inFileDatName));
-  TFile *inFileDat = TFile::Open(Form("%s/%s_largeNsigma.root", kDataDir, inFileDatName));
-  TFile *inFileMC21l5 = TFile::Open(Form("%s/%s.root", kDataDir, "AnalysisResults_LHC21l5_full"/* inFileMCName */));
-  TFile *inFileMC20e3a_1 = TFile::Open(Form("%s/%s.root", kDataDir, "AnalysisResults_LHC20e3"));
+  TFile *inFileDat = TFile::Open(Form("%s/%s_largeNsigma_pion.root", kDataDir, inFileDatName));
+  TFile *inFileMC21l5 = TFile::Open(Form("%s/%s.root", kDataDir, "AnalysisResults_LHC21l5_full_largeDCA"/* inFileMCName */));
+  TFile *inFileMC20e3a_1 = TFile::Open(Form("%s/%s.root", kDataDir, "LHC20e3a"));
   //TFile *inFileMC20e3a_2 = TFile::Open(Form("%s/%s_20e3a_runlist2_20210929.root", kDataDir, "mc"));
   //TFile *inFileMC1 = TFile::Open(Form("%s/%s.root", kDataDir, inFileMCName));
   TFile *outFile = TFile::Open(Form("%s/%s.root", kOutDir, outFileName), "recreate");
@@ -108,7 +108,7 @@ void Secondary(const char *cutSettings = "", const double DCAxyCut=0.07, const c
       TH1D fPrimaryFrac(Form("f%sPrimFrac_%.0f_%.0f", kAntimatterMatter[iMatt], kCentBinsLimitsPion[iCent][0], kCentBinsLimitsPion[iCent][1]), Form("%.0f-%.0f%%", kCentBinsLimitsPion[iCent][0], kCentBinsLimitsPion[iCent][1]), kNPtBins, kPtBins);
       TH1D fSecondaryFrac(Form("f%sSecFrac_%.0f_%.0f", kAntimatterMatter[iMatt], kCentBinsLimitsPion[iCent][0], kCentBinsLimitsPion[iCent][1]), Form("%.0f-%.0f%%", kCentBinsLimitsPion[iCent][0], kCentBinsLimitsPion[iCent][1]), kNPtBins, kPtBins);
 
-      int nUsedPtBins = 14;
+      int nUsedPtBins = 21;
 
       for (int iPtBin = 7; iPtBin < nUsedPtBins + 1; ++iPtBin)
       { // loop on pT bins

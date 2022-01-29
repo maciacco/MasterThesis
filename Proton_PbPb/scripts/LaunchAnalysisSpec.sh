@@ -7,6 +7,7 @@ expFlag="$3" # 1->sum of 2 exp
 sigmoidFlag="$4"
 spectraHistNameId="$5"
 roiNsigma="$6"
+G3G4Prim="$7"
 extractRatios=1
 
 fileData="AnalysisResults"
@@ -43,7 +44,7 @@ argumentSignal="$binCountingFlag,$expFlag"
 if [ $extractRatios -eq 1 ]; then
     root -b -l <<EOF
 .L Spectra.cpp+
-Spectra("$cutSettings",$roiNsigma,$argumentSignal,$sigmoidFlag,"$spectraHistNameId","$spectraName","update","AnalysisResults","$signalName","$EfficiencyHe3","$PrimaryHe3")
+Spectra("$cutSettings",$roiNsigma,$G3G4Prim,$argumentSignal,$sigmoidFlag,"$spectraHistNameId","$spectraName","update","AnalysisResults","$signalName","$EfficiencyHe3","$PrimaryHe3")
 .q
 EOF
 fi

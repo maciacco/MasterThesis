@@ -61,26 +61,28 @@ void LaunchAnalyses(const bool analyse = false)
     for (int iBkg = 1; iBkg < 2; ++iBkg)
     {
       for(int iNsigma = 0; iNsigma < 3; ++iNsigma) {
-        std::cout << "bkg selection = " << iBkg << "; roiNsigma = " << roi_n_sigma[iNsigma] << "; dcaxycut = " << DCAxyCut << std::endl;
-        if (analyse)
-        {
-          gSystem->Exec(Form("bash ~/Code/MasterThesis/Proton_PbPb/scripts/LaunchAnalysisSignEffPrim.sh %s 1 1 %f %f", fullCutSettings, roi_n_sigma[iNsigma], DCAxyCut));
-        }
-
-        for (int iSgm = 0; iSgm < 2; ++iSgm)
-        {
-          // bool binCountingFlag = 1 - iBin;
-          bool sigmoidFlag = 1 - iSgm;
-          auto tmpFullCutSettings = fullCutSettings;
-          if (iCutSettings == -1) tmpFullCutSettings = Form("");
-          auto spectraNameId = Form("%s_%d_%d_%d",tmpFullCutSettings, iBkg, sigmoidFlag, iNsigma);
-          std::cout << "SigmoidCorrection = " << kBoolString[sigmoidFlag] << "; cutSettings = " << fullCutSettings << "..." << std::endl;
-          outFile << "SigmoidCorrection = " << kBoolString[sigmoidFlag] << "; cutSettings = " << fullCutSettings << "..."
-                  << "\n";
-
+        for (int iG3G4Prim = 0; iG3G4Prim < 2; ++iG3G4Prim){
+          std::cout << "bkg selection = " << iBkg << "; roiNsigma = " << roi_n_sigma[iNsigma] << "; dcaxycut = " << DCAxyCut << "; G3G4Prim = " << iG3G4Prim << std::endl;
           if (analyse)
           {
-            gSystem->Exec(Form("bash ~/Code/MasterThesis/Proton_PbPb/scripts/LaunchAnalysisSpec.sh %s 1 %d %d %s %f", fullCutSettings, iBkg, sigmoidFlag, spectraNameId, roi_n_sigma[iNsigma]));
+            gSystem->Exec(Form("bash ~/Code/MasterThesis/Proton_PbPb/scripts/LaunchAnalysisSignEffPrim.sh %s 1 1 %f %f %d", fullCutSettings, roi_n_sigma[iNsigma], DCAxyCut, iG3G4Prim));
+          }
+
+          for (int iSgm = 0; iSgm < 2; ++iSgm)
+          {
+            // bool binCountingFlag = 1 - iBin;
+            bool sigmoidFlag = 1 - iSgm;
+            auto tmpFullCutSettings = fullCutSettings;
+            if (iCutSettings == -1) tmpFullCutSettings = Form("");
+            auto spectraNameId = Form("%s_%d_%d_%d_%d",tmpFullCutSettings, iBkg, sigmoidFlag, iNsigma, iG3G4Prim);
+            std::cout << "SigmoidCorrection = " << kBoolString[sigmoidFlag] << "; cutSettings = " << fullCutSettings << "..." << std::endl;
+            outFile << "SigmoidCorrection = " << kBoolString[sigmoidFlag] << "; cutSettings = " << fullCutSettings << "..."
+                    << "\n";
+
+            if (analyse)
+            {
+              gSystem->Exec(Form("bash ~/Code/MasterThesis/Proton_PbPb/scripts/LaunchAnalysisSpec.sh %s 1 %d %d %s %f %d", fullCutSettings, iBkg, sigmoidFlag, spectraNameId, roi_n_sigma[iNsigma], iG3G4Prim));
+            }
           }
         }
       }

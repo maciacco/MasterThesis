@@ -6,6 +6,7 @@ binCountingFlag="$2"
 expFlag="$3" # 1->sum of 2 exp
 roiNsigma="$4"
 dcaxycut="$5"
+G3G4Prim="$6"
 extractRatios=1
 
 fileData="AnalysisResults"
@@ -53,7 +54,7 @@ if [ $extractRatios -eq 1 ]; then
 .L Secondary.cpp+
 .L Spectra.cpp+
 SignalBinned("$cutSettings",$roiNsigma,$argumentSignal,"$fileData","$signalName","update")
-Secondary("$cutSettings",$dcaxycut,"$fileData","$fileMC","$PrimaryHe3")//,true) // uncomment to use roofit
+Secondary("$cutSettings",$dcaxycut,"$fileData","$fileMC","$PrimaryHe3",$G3G4Prim)
 .q
 EOF
 fi

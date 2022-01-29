@@ -23,7 +23,7 @@ double protonCorrectionPt(int iMatt,double pt){
   return 1;
 };
 
-void Spectra(const char *cutSettings = "", const double roi_nsigma = 8., const bool binCounting = false, const int bkg_shape = 1, const bool sigmoidCorrection = true, const char *histoNameDir = ".", const char *outFileName = "SpectraProton1", const char *outFileOption = "recreate", const char *dataFile = "AnalysisResults", const char *signalFile = "SignalProton", const char *effFile = "EfficiencyProton", const char *primFile = "PrimaryProton", const bool sys=false,const bool useEfficiencyMB = false)
+void Spectra(const char *cutSettings = "", const double roi_nsigma = 8., const bool G3G4Prim = true, const bool binCounting = false, const int bkg_shape = 1, const bool sigmoidCorrection = true, const char *histoNameDir = ".", const char *outFileName = "SpectraProton1", const char *outFileOption = "recreate", const char *dataFile = "AnalysisResults", const char *signalFile = "SignalProton", const char *effFile = "EfficiencyProton", const char *primFile = "PrimaryProton", const bool sys=false,const bool useEfficiencyMB = false)
 {
   std::cout << "cutSettings = " << cutSettings << std::endl;
   gStyle->SetOptFit(0);
@@ -101,6 +101,8 @@ void Spectra(const char *cutSettings = "", const double roi_nsigma = 8., const b
         double rawYieldError = raw->GetBinError(iPtBin);
         double efficiency = eff->GetBinContent(eff->FindBin(raw->GetBinCenter(iPtBin)));
         double effError = eff->GetBinError(eff->FindBin(raw->GetBinCenter(iPtBin)));
+        /* double efficiency = eff->GetFunction("fitEff")->Eval(raw->GetBinCenter(iPtBin));
+        double effError = 0.; */
 
         double primary = 1.;
         double primaryError = 0.;
@@ -159,6 +161,7 @@ void Spectra(const char *cutSettings = "", const double roi_nsigma = 8., const b
         fRatio[iCent]->SetBinError(iPtBin, antiSpec / spec * TMath::Sqrt(antiSpecErr * antiSpecErr / antiSpec / antiSpec + specErr * specErr / spec / spec));
         //std::cout<<h_sys->GetBinContent(iPtBin)<<std::endl;
         if(sys){
+          fRatio[iCent]->SetBinError(iPtBin, TMath::Sqrt(antiSpecErr * antiSpecErr / antiSpec / antiSpec + specErr * specErr / spec / spec));
           fRatio[iCent]->SetBinContent(iPtBin,h_ratio_from_var->GetBinContent(iPtBin));
           double sys_err = h_sys->GetBinContent(iPtBin);
           double prim_err = fRatio[iCent]->GetBinError(iPtBin);

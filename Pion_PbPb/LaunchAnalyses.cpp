@@ -27,7 +27,7 @@ void LaunchAnalyses(const bool analyse = false)
   auto tmpNCutTPCClusters = kNCutTPCClusters-1;
   auto tmpNCutDCAxy = kNCutDCAxy-1;
 
-  for (int iCutSettings = -1; iCutSettings < tmpNCutDCAz + tmpNTPCPidSigmas + tmpNCutTPCClusters + tmpNCutDCAxy; ++iCutSettings)
+  for (int iCutSettings = -1; iCutSettings < tmpNCutDCAz + tmpNTPCPidSigmas + tmpNCutTPCClusters /* + tmpNCutDCAxy */; ++iCutSettings)
   {
     char hname[100];
 
@@ -55,7 +55,7 @@ void LaunchAnalyses(const bool analyse = false)
     }
     std::cout << "fullCutSettings = " << fullCutSettings << std::endl;
 
-    double DCAxyCut = 0.07;
+    double DCAxyCut = 0.12;
     if (cutVariable == 3) DCAxyCut = kCutDCAxyVariations[cutIndex];
 
     for (int iBkg = 1; iBkg < 2; ++iBkg)

@@ -106,7 +106,7 @@ void EfficiencyNew(const char *cutSettings = "", const char *inFileNameMC = "mc_
       fEffPt.SetMarkerStyle(20);
       fEffPt.SetMarkerSize(0.8);
       fEffPt.GetYaxis()->SetRangeUser(0., 1.);
-      fEffPt.GetXaxis()->SetRangeUser(0.5,0.9);
+      fEffPt.GetXaxis()->SetRangeUser(0.5,1.25);
       fEffPt.GetXaxis()->SetTitle("#it{p}_{T}");
       fEffPt.GetYaxis()->SetTitle("#epsilon #times A");
       fEffPt.SetOption("PE");

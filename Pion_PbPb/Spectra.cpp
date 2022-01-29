@@ -94,7 +94,7 @@ void Spectra(const char *cutSettings = "", const double roi_nsigma = 8., const b
 
       //sec->Fit(&fitFuncSec,"R");
       fSpectra[iMatt] = new TH1D(*raw);
-      int pTbinMax = 14;
+      int pTbinMax = 21;
       std::cout<<"entering pt loop..."<<std::endl;
       for (int iPtBin = 7; iPtBin < pTbinMax + 1; ++iPtBin)
       {
@@ -128,7 +128,7 @@ void Spectra(const char *cutSettings = "", const double roi_nsigma = 8., const b
           std::cout<<"error (fit) = "<<primaryError<<"; error (hist) = "<<sec->GetBinError(iPtBin)<<std::endl;
         }
         //primaryError = sec->GetBinError(iPtBin);
-        fSpectra[iMatt]->SetBinContent(iPtBin, /* rawYield * primary / */ /* primary* */rawYield/efficiency );
+        fSpectra[iMatt]->SetBinContent(iPtBin, /* rawYield * primary / */ primary*rawYield/efficiency );
         fSpectra[iMatt]->SetBinError(iPtBin, primaryError*rawYield/efficiency);//rawYield * primary / efficiency * TMath::Sqrt(rawYieldError*rawYieldError/rawYield/rawYield + primaryError*primaryError/primary/primary));//(rawYield * primary / efficiency / pionCorrection) * TMath::Sqrt(primaryError * primaryError / primary / primary + effError * effError / efficiency / efficiency + rawYieldError * rawYieldError / rawYield / rawYield));
 
         std::cout<<"eff="<<efficiency<<"; raw="<<rawYield<<"; rawError="<<rawYieldError<<"; primary="<<primary<<std::endl;
@@ -148,8 +148,8 @@ void Spectra(const char *cutSettings = "", const double roi_nsigma = 8., const b
 
     // compute ratios
     TH1D SysError(Form("fSysError_%.0f_%.0f",kCentBinsLimitsPion[iCent][0], kCentBinsLimitsPion[iCent][1]),Form("%.0f-%.0f%%",kCentBinsLimitsPion[iCent][0], kCentBinsLimitsPion[iCent][1]),kNPtBins,kPtBins);
-    int pTbinMax = 24;
-    for (int iPtBin = 5; iPtBin < pTbinMax + 1; ++iPtBin)
+    int pTbinMax = 21;
+    for (int iPtBin = 7; iPtBin < pTbinMax + 1; ++iPtBin)
     {
       double antiSpec = fSpectra[0]->GetBinContent(iPtBin);
       double spec = fSpectra[1]->GetBinContent(iPtBin);
@@ -160,7 +160,7 @@ void Spectra(const char *cutSettings = "", const double roi_nsigma = 8., const b
         fRatio[iCent]->SetBinContent(iPtBin, antiSpec / spec);
         fRatio[iCent]->SetBinError(iPtBin, /*antiSpec / spec * */TMath::Sqrt(antiSpecErr * antiSpecErr / antiSpec / antiSpec + specErr * specErr / spec / spec));
         //std::cout<<h_sys->GetBinContent(iPtBin)<<std::endl;
-        if(!sys){
+        if(sys){
           fRatio[iCent]->SetBinContent(iPtBin,h_ratio_from_var->GetBinContent(iPtBin));
           double sys_err = h_sys->GetBinContent(iPtBin);
           double prim_err = fRatio[iCent]->GetBinError(iPtBin);
@@ -174,10 +174,10 @@ void Spectra(const char *cutSettings = "", const double roi_nsigma = 8., const b
     fRatio[iCent]->GetYaxis()->SetTitle(Form("Ratio %s/%s", kAntimatterMatterLabel[0], kAntimatterMatterLabel[1]));
     fRatio[iCent]->SetTitle(Form("%.0f-%.0f%%", kCentBinsLimitsPion[iCent][0], kCentBinsLimitsPion[iCent][1]));
     fRatio[iCent]->Fit("pol0");
-    fRatio[iCent]->GetXaxis()->SetRangeUser(0.5,0.89);
+    fRatio[iCent]->GetXaxis()->SetRangeUser(0.5,1.25);
     fRatio[iCent]->Write();
 
-    SysError.GetXaxis()->SetRangeUser(0.5,0.9);
+    SysError.GetXaxis()->SetRangeUser(0.5,1.25);
     SysError.GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
     SysError.GetYaxis()->SetTitle("Systematic Uncertainty");
     SysError.SetMinimum(0.);
@@ -189,7 +189,7 @@ void Spectra(const char *cutSettings = "", const double roi_nsigma = 8., const b
     TCanvas cRatio(Form("cRatio_%.0f_%.0f", kCentBinsLimitsPion[iCent][0], kCentBinsLimitsPion[iCent][1]), "cRatio");
     cRatio.SetTicks(1, 1);
     cRatio.cd();
-    fRatio[iCent]->GetXaxis()->SetRangeUser(0.5,0.89);
+    fRatio[iCent]->GetXaxis()->SetRangeUser(0.5,1.25);
     fRatio[iCent]->GetYaxis()->SetRangeUser(0.88, 1.12);
     fRatio[iCent]->Draw("");
     TLatex chi2(1.5, 1.08, Form("#chi^{2}/NDF = %.2f/%d", fRatio[iCent]->GetFunction("pol0")->GetChisquare(), fRatio[iCent]->GetFunction("pol0")->GetNDF()));

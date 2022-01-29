@@ -86,7 +86,7 @@ void SecondaryMC(const char *cutSettings = "", const double DCAxyCut = 0.07, con
     {
       TH1D fPrimaryFrac(Form("f%sPrimFrac_%.0f_%.0f", kAntimatterMatter[iMatt], kCentBinsLimitsPion[iCent][0], kCentBinsLimitsPion[iCent][1]), Form("%.0f-%.0f%%", kCentBinsLimitsPion[iCent][0], kCentBinsLimitsPion[iCent][1]), kNPtBins, kPtBins);
 
-      int nUsedPtBins = 14;
+      int nUsedPtBins = 21;
 
       for (int iPtBin = 7; iPtBin < nUsedPtBins + 1; ++iPtBin)
       { // loop on pT bins
