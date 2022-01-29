@@ -50,7 +50,6 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
 {
   gStyle->SetTextFont(44);
   gStyle->SetOptFit(0);
-  gStyle->SetOptStat(0);
   gStyle->SetStatX(0.87);
   gStyle->SetStatY(0.85);
   TStopwatch swatch;
@@ -65,6 +64,7 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
 
   for (int iC = 0; iC < kNCentClasses; ++iC) // TODO: extend the analysis to the third centrality class as well
   {
+    gStyle->SetOptStat(1);
     //TH1D fSystematicUncertaintyDCAxy(Form("fSystematicUncertaintyDCAxy_%.0f_%.0f", kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]), Form("%.0f-%.0f%%", kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]), kNPtBins, kPtBins);
     TH1D fSystematicUncertaintyDCAz(Form("fSystematicUncertaintyDCAz_%.0f_%.0f", kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]), Form("%.0f-%.0f%%", kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]), kNPtBins, kPtBins);
     TH1D fSystematicUncertaintyTPCCls(Form("fSystematicUncertaintyTPCCls_%.0f_%.0f", kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]), Form("%.0f-%.0f%%", kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]), kNPtBins, kPtBins);
@@ -538,6 +538,36 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
       if( (h_trial.GetFunction("pol0")->GetChisquare()/h_trial.GetFunction("pol0")->GetNDF())<2.)
       fRatioDistributionTrials.Fill(h_trial.GetFunction("pol0")->GetParameter(0));
     }
+
+    TCanvas cRatio(Form("cRatio_%.0f_%.0f", kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]), "cRatio");
+    cRatio.SetTicks(1, 1);
+    hRatio.SetMarkerStyle(20);
+    hRatio.SetMarkerSize(0.8);
+    hRatio.GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
+    hRatio.GetYaxis()->SetTitle("Systematic Uncertainty");
+    hRatio.GetXaxis()->SetRangeUser(1.0,2.0);
+    hRatio.GetYaxis()->SetRangeUser(0.88, 1.12);
+    hRatio.SetStats(0);
+    hRatio.Draw("");
+    TLatex chi2(1.5, 1.08, Form("#chi^{2}/NDF = %.2f/%d", hRatio.GetFunction("pol0")->GetChisquare(), hRatio.GetFunction("pol0")->GetNDF()));
+    chi2.SetTextSize(28);
+    TLatex p0(1.5, 1.10, Form("R = %.4f #pm %.4f", hRatio.GetFunction("pol0")->GetParameter(0), hRatio.GetFunction("pol0")->GetParError(0)));
+    p0.SetTextSize(28);
+    chi2.Draw("same");
+    p0.Draw("same");
+    cRatio.Modified();
+    cRatio.Print(Form("%s/%s.pdf", kPlotDir, hRatio.GetName()));
+
+    TCanvas cPtCorrelatedError(fRatioDistributionTrials.GetName(),fRatioDistributionTrials.GetTitle());
+    fRatioDistributionTrials.GetXaxis()->SetRangeUser(fRatioDistributionTrials.GetMean()-5*fRatioDistributionTrials.GetRMS(),fRatioDistributionTrials.GetMean()+5*fRatioDistributionTrials.GetRMS());
+    fRatioDistributionTrials.GetXaxis()->SetTitle("R(#bar{p}/p)");
+    fRatioDistributionTrials.GetYaxis()->SetTitle("Entries");
+    fRatioDistributionTrials.Draw("");
+    gPad->Update();
+    TPaveStats* paveStat = (TPaveStats *)fRatioDistributionTrials.FindObject("stats");
+    paveStat->SetOptStat(110001110);
+    cPtCorrelatedError.Modified();
+    cPtCorrelatedError.Print(Form("plots/%s.pdf",fRatioDistributionTrials.GetName()));
     fRatioDistributionTrials.Write();
     //std::cout<<"Correlations fitEff = "<<fSystematicsCorrelationsEffFit.GetCorrelationFactor()<<std::endl;
 
@@ -548,27 +578,13 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
     fSystematicUncertaintyTotal.SetMinimum(0.);
     TCanvas cSysError(fSystematicUncertaintyTotal.GetName(),fSystematicUncertaintyTotal.GetTitle());
     fSystematicUncertaintyTotal.Draw("histo");
+    gPad->Update();
+    paveStat = (TPaveStats *)fSystematicUncertaintyTotal.FindObject("stats");
+    paveStat->SetOptStat(0);
+    cSysError.Modified();
     cSysError.Print(Form("plots/%s.pdf",fSystematicUncertaintyTotal.GetName()));
     cSysError.Write();
     
-    TCanvas cRatio(Form("cRatio_%.0f_%.0f", kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]), "cRatio");
-    cRatio.SetTicks(1, 1);
-    cRatio.cd();
-    hRatio.SetMarkerStyle(20);
-    hRatio.SetMarkerSize(0.8);
-    hRatio.GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
-    hRatio.GetYaxis()->SetTitle("Systematic Uncertainty");
-    hRatio.GetXaxis()->SetRangeUser(1.0,2.0);
-    hRatio.GetYaxis()->SetRangeUser(0.88, 1.12);
-    hRatio.Draw("");
-    cRatio.cd();
-    TLatex chi2(1.5, 1.08, Form("#chi^{2}/NDF = %.2f/%d", hRatio.GetFunction("pol0")->GetChisquare(), hRatio.GetFunction("pol0")->GetNDF()));
-    chi2.SetTextSize(28);
-    TLatex p0(1.5, 1.10, Form("R = %.4f #pm %.4f", hRatio.GetFunction("pol0")->GetParameter(0), hRatio.GetFunction("pol0")->GetParError(0)));
-    p0.SetTextSize(28);
-    chi2.Draw("same");
-    p0.Draw("same");
-    cRatio.Print(Form("%s/%s.pdf", kPlotDir, hRatio.GetName()));
   }
   outFile->Close();
   swatch.Stop();
