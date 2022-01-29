@@ -17,7 +17,7 @@ ROOT.gStyle.SetTextFont(44)
 
 file_he3 = ROOT.TFile.Open(path_he3 + '/SpectraHe3.root')
 file_hyp = ROOT.TFile.Open(path_hyp + '/Ratio.root')
-file_proton = ROOT.TFile.Open(path_proton + '/SpectraProtonOld.root')
+file_proton = ROOT.TFile.Open(path_proton + '/SystematicsAllEPtNotCombined.root')
 file_he3_syst = ROOT.TFile.Open(path_he3 + '/SystematicsAll.root')
 file_he3_syst_abs = ROOT.TFile.Open(path_he3 + '/AbsError.root')
 file_hyp_syst = ROOT.TFile.Open(path_hyp + '/Systematics.root')
@@ -39,6 +39,7 @@ for i_cent, cent in enumerate(centrality_classes):
     ratio_hyp_distribution = file_hyp_syst.Get(f'fParameterDistribution_{cent[0]}_{cent[1]}')
     ratio_hyp_distribution_abs = file_hyp_syst_abs.Get(f'fParameterDistribution_{cent[0]}_{cent[1]}')
     ratio_proton_distribution = file_proton_syst.Get(f'hist/fFitPar_{cent[0]}_{cent[1]}')
+    ratio_proton_pt_correlated = file_proton.Get(f'fRatioDistributionTrials_{cent[0]}_{cent[1]}')
     ratio_proton_distribution_abs = file_proton_syst_abs.Get(f'fFitPar_{cent[0]}_{cent[1]}')
 
     # get fit functions
@@ -64,8 +65,8 @@ for i_cent, cent in enumerate(centrality_classes):
     syst_hyp_abs = ratio_hyp_distribution_abs.GetRMS()
     #syst_hyp = np.sqrt(syst_hyp*syst_hyp+syst_hyp_abs*syst_hyp_abs)
     syst_proton = fit_proton.GetParError(0)#ratio_proton_distribution.GetRMS()
-    syst_proton_abs = ratio_proton_distribution_abs.GetRMS()
-    #syst_proton = np.sqrt(syst_proton*syst_proton+syst_proton_abs*syst_proton_abs)
+    syst_proton_pt_correlated = ratio_proton_pt_correlated.GetRMS()
+    syst_proton = np.sqrt(syst_proton*syst_proton+syst_proton_pt_correlated*syst_proton_pt_correlated)
 
     # final plot
     ratios_vs_b = ROOT.TH1D(f'fRatio_vs_b_{cent[0]}_{cent[1]}', ';B+S/3; Antimatter / Matter', 10, -0.5, 9.5)
@@ -121,7 +122,8 @@ for i_cent, cent in enumerate(centrality_classes):
     # fit to data (exponential)
     fit_expo = ROOT.TF1(f"fit_expo_{cent[0]}_{cent[1]}", "TMath::Exp(-2./3.*[0]*x)", -0.5, 9.5)
     fit_expo.SetNpx(10000)
-    ratios_vs_b_fit.Fit(f"fit_expo_{cent[0]}_{cent[1]}")#,"R","",6.5,9.5)
+    # ratios_vs_b_fit.Fit(f"fit_expo_{cent[0]}_{cent[1]}","RS","",-0.5,3.5)
+    ratios_vs_b_fit.Fit(f"fit_expo_{cent[0]}_{cent[1]}","RS","",-0.5,9.5)
     
     # chi2 and fit parameter
     formatted_chi2 = "{:.2f}".format(fit_expo.GetChisquare())
@@ -151,9 +153,15 @@ for i_cent, cent in enumerate(centrality_classes):
     text_mu_b_over_T.SetTextColor(ROOT.kBlack)
     
     # mu_b at T = 155 MeV
-    text_mu_b = ROOT.TLatex(0.5, 0.75, "#mu_{#it{B}} = "+formatted_mu_b+" #pm "+formatted_mu_b_error+" MeV, #it{T} = 155 MeV")
+    formatted_temperature_error = "{:.2f}".format(fit_parameter*2)
+    text_mu_b = ROOT.TLatex(0.5, 0.75, "#mu_{#it{B}} = "+formatted_mu_b+" #pm "+formatted_mu_b_error+" #pm "+formatted_temperature_error+" MeV")
     text_mu_b.SetTextSize(TLATEX_TEXT_SIZE)
     text_mu_b.SetTextColor(ROOT.kBlack)
+
+    # T = 155 +/- 2 MeV
+    text_T = ROOT.TLatex(0.5, 0.7, "#it{T} = 155 #pm 2 MeV")
+    text_T.SetTextSize(TLATEX_TEXT_SIZE)
+    text_T.SetTextColor(ROOT.kBlack)
 
     # write to file
     ratios_vs_b.Write()
@@ -168,6 +176,7 @@ for i_cent, cent in enumerate(centrality_classes):
     text_chi2.Draw("same")
     text_mu_b_over_T.Draw("same")
     text_mu_b.Draw("same")
+    text_T.Draw("same")
     c.Write()
     fit_expo.Write()
     c.Print(f"Ratios_{cent[0]}_{cent[1]}.pdf")

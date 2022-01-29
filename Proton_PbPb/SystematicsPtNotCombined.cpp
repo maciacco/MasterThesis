@@ -48,7 +48,9 @@ const int nTrials=10000;
 
 void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = true, const bool binCountingVar = true, const bool expVar = true, const bool sigmoidVar = true, const char *outFileName = "SystematicsAllEPtNotCombined")
 {
-  gStyle->SetOptStat(110001110);
+  gStyle->SetTextFont(44);
+  gStyle->SetOptFit(0);
+  gStyle->SetOptStat(0);
   gStyle->SetStatX(0.87);
   gStyle->SetStatY(0.85);
   TStopwatch swatch;
@@ -529,7 +531,7 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
     for (int iTrial=0;iTrial<nTrials;++iTrial){
       double nsigma=gRandom->Gaus(0,1);
       for (int iPtBin=5;iPtBin<kNPtBins;++iPtBin){
-        h_trial.SetBinContent(iPtBin,fRatioFromVariationsTot.GetBinContent(iPtBin)+nsigma*fSystematicUncertaintyTotalPtCorrelated.GetBinContent(iPtBin));
+        h_trial.SetBinContent(iPtBin,fRatioFromVariationsTot.GetBinContent(iPtBin)+nsigma*fSystematicUncertaintyTotalPtCorrelated.GetBinContent(iPtBin)*fRatioFromVariationsTot.GetBinContent(iPtBin));
         h_trial.SetBinError(iPtBin,hRatio.GetBinContent(iPtBin)*fSystematicUncertaintyTotal.GetBinContent(iPtBin));
       }
       h_trial.Fit("pol0","Q");
@@ -538,6 +540,35 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
     }
     fRatioDistributionTrials.Write();
     //std::cout<<"Correlations fitEff = "<<fSystematicsCorrelationsEffFit.GetCorrelationFactor()<<std::endl;
+
+    // save ratio plots
+    fSystematicUncertaintyTotal.GetXaxis()->SetRangeUser(1.,2.);
+    fSystematicUncertaintyTotal.GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
+    fSystematicUncertaintyTotal.GetYaxis()->SetTitle("Systematic Uncertainty");
+    fSystematicUncertaintyTotal.SetMinimum(0.);
+    TCanvas cSysError(fSystematicUncertaintyTotal.GetName(),fSystematicUncertaintyTotal.GetTitle());
+    fSystematicUncertaintyTotal.Draw("histo");
+    cSysError.Print(Form("plots/%s.pdf",fSystematicUncertaintyTotal.GetName()));
+    cSysError.Write();
+    
+    TCanvas cRatio(Form("cRatio_%.0f_%.0f", kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]), "cRatio");
+    cRatio.SetTicks(1, 1);
+    cRatio.cd();
+    hRatio.SetMarkerStyle(20);
+    hRatio.SetMarkerSize(0.8);
+    hRatio.GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
+    hRatio.GetYaxis()->SetTitle("Systematic Uncertainty");
+    hRatio.GetXaxis()->SetRangeUser(1.0,2.0);
+    hRatio.GetYaxis()->SetRangeUser(0.88, 1.12);
+    hRatio.Draw("");
+    cRatio.cd();
+    TLatex chi2(1.5, 1.08, Form("#chi^{2}/NDF = %.2f/%d", hRatio.GetFunction("pol0")->GetChisquare(), hRatio.GetFunction("pol0")->GetNDF()));
+    chi2.SetTextSize(28);
+    TLatex p0(1.5, 1.10, Form("R = %.4f #pm %.4f", hRatio.GetFunction("pol0")->GetParameter(0), hRatio.GetFunction("pol0")->GetParError(0)));
+    p0.SetTextSize(28);
+    chi2.Draw("same");
+    p0.Draw("same");
+    cRatio.Print(Form("%s/%s.pdf", kPlotDir, hRatio.GetName()));
   }
   outFile->Close();
   swatch.Stop();
