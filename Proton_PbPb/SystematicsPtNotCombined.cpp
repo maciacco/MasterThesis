@@ -99,8 +99,8 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
     int iNsigma = 1;
     for (int iTrackCuts=0; iTrackCuts<kNTrackCuts; ++iTrackCuts){
       for (int iROI=0; iROI<3; ++iROI){
-        for (int iG3G4Prim=0; iG3G4Prim<2; ++iG3G4Prim){
-          for (int iSigmoid=1; iSigmoid<2; ++iSigmoid){
+        for (int iG3G4Prim=1; iG3G4Prim<2; ++iG3G4Prim){
+          for (int iSigmoid=0; iSigmoid<2; ++iSigmoid){
             auto tmpCutSettings = trackCutSettings[iTrackCuts];
             auto cutIndex = trackCutIndexes[iTrackCuts];
             auto tmpCutIndex = Form("%d",cutIndex);
@@ -226,6 +226,9 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
     for(int iPtBin=5;iPtBin<25;++iPtBin){
       double primaryRelativeError[2];
       for (int iMatt = 0; iMatt < 2; ++iMatt){
+        /* TH1D *h_sec = (TH1D*)inFileSec->Get(Form("f%sPrimFrac_%.0f_%.0f", kAntimatterMatter[iMatt], kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]));
+        double primaryError=h_sec->GetBinError(iPtBin);
+        double primary=h_sec->GetBinContent(iPtBin); */
         TF1 *sec_f = (TF1 *)inFileSec->Get(Form("f%sFunctionFit_%.0f_%.0f", kAntimatterMatter[iMatt], kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]));
         TH2D *sec_f_cov = (TH2D *)inFileSec->Get(Form("f%sCovMat_%.0f_%.0f", kAntimatterMatter[iMatt], kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]));
         TH1D h_tmp("h_tmp","h_tmp",kNPtBins,kPtBins);
@@ -475,7 +478,6 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
         //+sigma_DCAxy*sigma_DCAxy*fraction_uncorr_DCAxy*fraction_uncorr_DCAxy
         +sigma_ROI*sigma_ROI*fraction_uncorr_ROI*fraction_uncorr_ROI
         +sigma_Prim*sigma_Prim
-        +sigma_Prim_G3G4*sigma_Prim_G3G4
         +sigma_Eff*sigma_Eff
         +sigma_TFF*sigma_TFF
         /* +sigma_EffFit*sigma_EffFit */);
@@ -486,6 +488,7 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
         +sigma_PID*sigma_PID*correlationPID*correlationPID
         +sigma_TPCCls*sigma_TPCCls*correlationTPCCls*correlationTPCCls
         +sigma_ROI*sigma_ROI*correlationROI*correlationROI
+        //+sigma_Prim_G3G4*sigma_Prim_G3G4
         //+sigma_DCAxy*sigma_DCAxy*correlationDCAxy*correlationDCAxy
         );
       }
@@ -508,6 +511,7 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
         //+sigma_PID*sigma_PID*correlationPID*correlationPID
         +sigma_TPCCls*sigma_TPCCls*correlationTPCCls*correlationTPCCls
         +sigma_ROI*sigma_ROI*correlationROI*correlationROI
+        //+sigma_Prim_G3G4*sigma_Prim_G3G4
         //+sigma_DCAxy*sigma_DCAxy*correlationDCAxy*correlationDCAxy
         );
       }

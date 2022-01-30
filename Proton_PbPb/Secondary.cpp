@@ -83,7 +83,7 @@ void Secondary(const char *cutSettings = "", const double DCAxyCut=0.12, const c
     {
       fDCAprim = (TH3F *)listData->Get(Form("f%sDCAxyTOF", kAntimatterMatter[0]));
     }
-    else if (use_injected_protons)
+    else if (!use_injected_protons)
     {
       fDCAprim1 = (TH3F *)listMc20e3a_1->Get(Form("f%sDCAPrimaryTOF", kAntimatterMatter[iMatt]));
       fDCAprim2 = (TH3F *)listMc20e3a_2->Get(Form("f%sDCAPrimaryTOF", kAntimatterMatter[0]));
@@ -92,7 +92,7 @@ void Secondary(const char *cutSettings = "", const double DCAxyCut=0.12, const c
       fDCAprim->Add(fDCAprim2);
       //fDCAprim->Add(fDCAprim3);
     }
-    else if (!use_injected_protons)
+    else if (use_injected_protons)
     {
       fDCAprim1 = (TH3F *)listMc21l5->Get(Form("f%sDCAPrimaryTOF", kAntimatterMatter[iMatt]));
       //fDCAprim2 = (TH3F *)listMc20e3a_2->Get(Form("f%sDCAPrimaryTOF", kAntimatterMatter[iMatt]));
@@ -118,6 +118,7 @@ void Secondary(const char *cutSettings = "", const double DCAxyCut=0.12, const c
     {
       TH1D fPrimaryFrac(Form("f%sPrimFrac_%.0f_%.0f", kAntimatterMatter[iMatt], kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1]), Form("%.0f-%.0f%%", kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1]), kNPtBins, kPtBins);
       TH1D fSecondaryFrac(Form("f%sSecFrac_%.0f_%.0f", kAntimatterMatter[iMatt], kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1]), Form("%.0f-%.0f%%", kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1]), kNPtBins, kPtBins);
+      TH1D fChi2(Form("f%sChi2_%.0f_%.0f", kAntimatterMatter[iMatt], kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1]), Form("%.0f-%.0f%%", kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1]), kNPtBins, kPtBins);
 
       int nUsedPtBins = 24;
 
@@ -295,6 +296,8 @@ void Secondary(const char *cutSettings = "", const double DCAxyCut=0.12, const c
         }
         if (iMatt == 1 /* && iCent == 2 */)
           fit->Constrain(1, 0., 0.9);
+        else if (iMatt == 0 && iCent == 2 && use_injected_protons)
+          fit->Constrain(0, 0., 0.9);
 
         TVirtualFitter::SetMaxIterations(MAX_ITER);    
         /* TVirtualFitter::SetPrecision(1e-2);  */
@@ -412,6 +415,7 @@ void Secondary(const char *cutSettings = "", const double DCAxyCut=0.12, const c
           //double secondaryRatioError = TMath::Sqrt(secondaryRatio * (1.f - secondaryRatio) / intResDCAcut);
           fPrimaryFrac.SetBinContent(fPrimaryFrac.FindBin(ptMin + 0.005f), primaryRatio);
           fPrimaryFrac.SetBinError(fPrimaryFrac.FindBin(ptMin + 0.005f), primaryRatioError);
+          fChi2.SetBinContent(iPtBin,fit->GetChisquare()/fit->GetNDF());
 
           std::cout << "fraction = " << intPrimDCAcut / intResDCAcut << std::endl;
           std::cout << " * * * * * * * * * * * * * * * * * " << std::endl;
@@ -517,6 +521,7 @@ void Secondary(const char *cutSettings = "", const double DCAxyCut=0.12, const c
       }
       hCovMat.Write();
       fFitFunc.Write();
+      fChi2.Write();
 
       fPrimaryFrac.SetMarkerStyle(20);
       fPrimaryFrac.SetMarkerSize(0.8);

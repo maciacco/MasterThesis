@@ -13,7 +13,7 @@ fileMC="AnalysisResults_LHC21l5_full_largeDCA"
 signalName="SignalProtonGausDExpSignal1_LongMCTracks"
 spectraName="SpectraProton_MC21l5_raw_primary"
 EfficiencyHe3="EfficiencyProtonMC_21l5_false_"
-PrimaryHe3="PrimaryProton"
+PrimaryHe3="PrimaryProtonInj"
 
 # create output directories
 DIR_OUT=out
