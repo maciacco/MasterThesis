@@ -226,10 +226,10 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
     for(int iPtBin=5;iPtBin<25;++iPtBin){
       double primaryRelativeError[2];
       for (int iMatt = 0; iMatt < 2; ++iMatt){
-        /* TH1D *h_sec = (TH1D*)inFileSec->Get(Form("f%sPrimFrac_%.0f_%.0f", kAntimatterMatter[iMatt], kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]));
+        TH1D *h_sec = (TH1D*)inFileSec->Get(Form("f%sPrimFrac_%.0f_%.0f", kAntimatterMatter[iMatt], kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]));
         double primaryError=h_sec->GetBinError(iPtBin);
-        double primary=h_sec->GetBinContent(iPtBin); */
-        TF1 *sec_f = (TF1 *)inFileSec->Get(Form("f%sFunctionFit_%.0f_%.0f", kAntimatterMatter[iMatt], kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]));
+        double primary=h_sec->GetBinContent(iPtBin);
+        /* TF1 *sec_f = (TF1 *)inFileSec->Get(Form("f%sFunctionFit_%.0f_%.0f", kAntimatterMatter[iMatt], kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]));
         TH2D *sec_f_cov = (TH2D *)inFileSec->Get(Form("f%sCovMat_%.0f_%.0f", kAntimatterMatter[iMatt], kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]));
         TH1D h_tmp("h_tmp","h_tmp",kNPtBins,kPtBins);
         double primary = sec_f->Eval(h_tmp.GetXaxis()->GetBinCenter(iPtBin));
@@ -244,7 +244,7 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
         double first_derivative_par_0 = -exponential/denominator/denominator;
         double first_derivative_par_1 = -par_0*exponential*pt_center/denominator/denominator;
         double primaryError = TMath::Sqrt(first_derivative_par_0*first_derivative_par_0*var_par_0+first_derivative_par_1*first_derivative_par_1*var_par_1+2*first_derivative_par_0*first_derivative_par_1*cov);
-        primaryRelativeError[iMatt]=primaryError/primary;
+        */primaryRelativeError[iMatt]=primaryError/primary;
       }
       fSystematicUncertaintyTFF.SetBinContent(iPtBin,TMath::Sqrt(primaryRelativeError[0]*primaryRelativeError[0]+primaryRelativeError[1]*primaryRelativeError[1]));
       fSystematicUncertaintyTFF.SetBinError(iPtBin,0);
