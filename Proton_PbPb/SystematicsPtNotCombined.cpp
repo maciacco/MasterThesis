@@ -99,7 +99,7 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
     int iNsigma = 1;
     for (int iTrackCuts=0; iTrackCuts<kNTrackCuts; ++iTrackCuts){
       for (int iROI=0; iROI<3; ++iROI){
-        for (int iG3G4Prim=1; iG3G4Prim<2; ++iG3G4Prim){
+        for (int iG3G4Prim=1; iG3G4Prim<2; ++iG3G4Prim){ // 1 = use G3 (DO NOT USE G4 in this case)
           for (int iSigmoid=0; iSigmoid<2; ++iSigmoid){
             auto tmpCutSettings = trackCutSettings[iTrackCuts];
             auto cutIndex = trackCutIndexes[iTrackCuts];
@@ -226,10 +226,7 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
     for(int iPtBin=5;iPtBin<25;++iPtBin){
       double primaryRelativeError[2];
       for (int iMatt = 0; iMatt < 2; ++iMatt){
-        TH1D *h_sec = (TH1D*)inFileSec->Get(Form("f%sPrimFrac_%.0f_%.0f", kAntimatterMatter[iMatt], kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]));
-        double primaryError=h_sec->GetBinError(iPtBin);
-        double primary=h_sec->GetBinContent(iPtBin);
-        /* TF1 *sec_f = (TF1 *)inFileSec->Get(Form("f%sFunctionFit_%.0f_%.0f", kAntimatterMatter[iMatt], kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]));
+        TF1 *sec_f = (TF1 *)inFileSec->Get(Form("f%sFunctionFit_%.0f_%.0f", kAntimatterMatter[iMatt], kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]));
         TH2D *sec_f_cov = (TH2D *)inFileSec->Get(Form("f%sCovMat_%.0f_%.0f", kAntimatterMatter[iMatt], kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]));
         TH1D h_tmp("h_tmp","h_tmp",kNPtBins,kPtBins);
         double primary = sec_f->Eval(h_tmp.GetXaxis()->GetBinCenter(iPtBin));
@@ -244,7 +241,7 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
         double first_derivative_par_0 = -exponential/denominator/denominator;
         double first_derivative_par_1 = -par_0*exponential*pt_center/denominator/denominator;
         double primaryError = TMath::Sqrt(first_derivative_par_0*first_derivative_par_0*var_par_0+first_derivative_par_1*first_derivative_par_1*var_par_1+2*first_derivative_par_0*first_derivative_par_1*cov);
-        */primaryRelativeError[iMatt]=primaryError/primary;
+        primaryRelativeError[iMatt]=primaryError/primary;
       }
       fSystematicUncertaintyTFF.SetBinContent(iPtBin,TMath::Sqrt(primaryRelativeError[0]*primaryRelativeError[0]+primaryRelativeError[1]*primaryRelativeError[1]));
       fSystematicUncertaintyTFF.SetBinError(iPtBin,0);
@@ -500,7 +497,7 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
         //+sigma_DCAxy*sigma_DCAxy*fraction_uncorr_DCAxy*fraction_uncorr_DCAxy
         +sigma_ROI*sigma_ROI*fraction_uncorr_ROI*fraction_uncorr_ROI
         +sigma_Prim*sigma_Prim
-        +sigma_Prim_G3G4*sigma_Prim_G3G4
+        //+sigma_Prim_G3G4*sigma_Prim_G3G4
         +sigma_Eff*sigma_Eff
         +sigma_TFF*sigma_TFF
         /* +sigma_EffFit*sigma_EffFit */);
@@ -539,7 +536,7 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
         h_trial.SetBinError(iPtBin,hRatio.GetBinContent(iPtBin)*fSystematicUncertaintyTotal.GetBinContent(iPtBin));
       }
       h_trial.Fit("pol0","Q");
-      if( (h_trial.GetFunction("pol0")->GetChisquare()/h_trial.GetFunction("pol0")->GetNDF())<2.)
+      if( h_trial.GetFunction("pol0")->GetProb()>0.025 && h_trial.GetFunction("pol0")->GetProb()<0.975/* (h_trial.GetFunction("pol0")->GetChisquare()/h_trial.GetFunction("pol0")->GetNDF())<2. */)
       fRatioDistributionTrials.Fill(h_trial.GetFunction("pol0")->GetParameter(0));
     }
 

@@ -103,13 +103,13 @@ void EfficiencyNew(const char *cutSettings = "", const char *inFileNameMC = "mc_
         fEffPt.SetBinError(iPtBin, EffErr(&fEffPt, fTotal_Pt, fEffPt.GetXaxis()->GetBinCenter(iPtBin)));
       } */
       fEffPt.Divide(fITS_TPC_TOF_Pt, fTotal_Pt, 1, 1, "B");
-      TF1 fitEff("fitEff","[0]+[1]*TMath::Exp([2]*x)+[3]/x+[4]/x/x",1.,2.);
+      /* TF1 fitEff("fitEff","[0]+[1]*TMath::Exp([2]*x)+[3]/x+[4]/x/x",1.,2.);
       fitEff.SetParLimits(0,0,100);
       fitEff.SetParLimits(1,-20,0);
       fitEff.SetParLimits(2,-10,10);
       fitEff.SetParLimits(3,-100,100);
       fitEff.SetParLimits(4,-100,100);
-      fEffPt.Fit("fitEff");
+      fEffPt.Fit("fitEff"); */
       fEffPt.SetMarkerStyle(20);
       fEffPt.SetMarkerSize(0.8);
       fEffPt.GetYaxis()->SetRangeUser(0., 1.);

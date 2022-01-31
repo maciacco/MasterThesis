@@ -30,8 +30,8 @@ void PlotSecondaryCorrection(const char *inFileRooFitName = "PrimaryPionRoo", co
       c.cd();
       for (int iFit = 0; iFit < 2; ++iFit){
         hPrimary[iM][iFit] = (TH1D*)InFile[iFit]->Get(Form("f%sPrimFrac_%.0f_%.0f",kAntimatterMatter[iM],kCentBinsLimitsPion[iC][0],kCentBinsLimitsPion[iC][1])); 
-        hPrimary[iM][iFit]->GetXaxis()->SetRangeUser(0.5,0.9);
-        hPrimary[iM][iFit]->GetYaxis()->SetRangeUser(0.97,1.0);
+        hPrimary[iM][iFit]->GetXaxis()->SetRangeUser(0.5,1.25);
+        hPrimary[iM][iFit]->GetYaxis()->SetRangeUser(0.96,1.0);
         hPrimary[iM][iFit]->Draw("");
         hPrimary[iM][iFit]->SetLineColor(kHistColor[iFit]);
         hPrimary[iM][iFit]->SetMarkerColor(kHistColor[iFit]);

@@ -195,12 +195,12 @@ void Secondary(const char *cutSettings = "", const double DCAxyCut=0.12, const c
         {
           // std::cout << "No RooFit implementation yet!" << std::endl;
           // return;
-          RooRealVar *dca = new RooRealVar("DCA_{xy}", "DCAxy", -fitRange, fitRange, "cm");
+          RooRealVar *dca = new RooRealVar("DCA_{xy}", "DCAxy", -1.3, 1.3, "cm");
           RooDataHist *data = new RooDataHist("data", "data", *dca, fDCAdatProj);
           RooDataHist *prim_tmp = new RooDataHist("prim_tmp", "prim_tmp", *dca, fDCAMcProjPrim);
           RooHistPdf *prim = new RooHistPdf("prim", "prim", *dca, *prim_tmp);
-          RooDataHist *sec_tmp = new RooDataHist("sec_tmp", "sec_tmp", *dca, fDCAMcProjSec);
-          RooHistPdf *sec = new RooHistPdf("sec", "sec", *dca, *sec_tmp);
+          /* RooDataHist *sec_tmp = new RooDataHist("sec_tmp", "sec_tmp", *dca, fDCAMcProjSec);
+          RooHistPdf *sec = new RooHistPdf("sec", "sec", *dca, *sec_tmp); */
           RooDataHist *sec_wd_tmp = new RooDataHist("sec_wd_tmp", "sec_wd_tmp", *dca, fDCAMcProjSecWD);
           RooHistPdf *sec_wd = new RooHistPdf("sec_wd", "sec_wd", *dca, *sec_wd_tmp);
           RooRealVar *primfrac;
@@ -208,9 +208,9 @@ void Secondary(const char *cutSettings = "", const double DCAxyCut=0.12, const c
           else */ primfrac = new RooRealVar("#it{f_{prim}}","primfrac",0.,1.);
           RooRealVar *sec_wd_frac = new RooRealVar("#it{f_{sec_wd}}","sec_wd_frac",0.0,0.7);
           RooAddPdf *model;
-          if (iMatt == 1 && ptMin < noSecMaterialThreshold)
+          /* if (iMatt == 1 && ptMin < noSecMaterialThreshold)
             model = new RooAddPdf("model", "model", RooArgList(*prim, *sec_wd, *sec), RooArgList(*primfrac, *sec_wd_frac));
-          else
+          else */
             model = new RooAddPdf("model", "model", RooArgList(*prim, *sec_wd), RooArgList(*primfrac));
 
           RooFitResult* res = model->fitTo(*data,RooFit::Save());
@@ -225,7 +225,7 @@ void Secondary(const char *cutSettings = "", const double DCAxyCut=0.12, const c
           Double_t ratio_err = primfrac->getError()*prim_integral/tot_integral;//TMath::Sqrt(ratio * (1. - ratio) / (tot_integral*fDCAdatProj->Integral()));
           std::cout << "Prim frac error = " << primfrac->getError()*prim_integral/tot_integral << std::endl;
 
-          if (ratio < 0.95){continue;
+          if (ratio < 0.7){continue;
             primfrac->setVal(0.85);
             primfrac->setMin(0.65);
             primfrac->setMax(0.9);
@@ -244,8 +244,8 @@ void Secondary(const char *cutSettings = "", const double DCAxyCut=0.12, const c
           data->plotOn(xframe,RooFit::Name("data"));
           model->plotOn(xframe, RooFit::Components("prim"), RooFit::LineColor(kBlue));
           model->plotOn(xframe, RooFit::Components("sec_wd"), RooFit::LineColor(kOrange));
-          if (iMatt == 1 && ptMin < noSecMaterialThreshold)
-            model->plotOn(xframe, RooFit::Components("sec"), RooFit::LineColor(kRed));
+          /* if (iMatt == 1 && ptMin < noSecMaterialThreshold)
+            model->plotOn(xframe, RooFit::Components("sec"), RooFit::LineColor(kRed)); */
           model->plotOn(xframe, RooFit::Name("model"), RooFit::LineColor(kGreen));
           std::cout << "Chi2 = " << xframe->chiSquare("model", "data") << std::endl;
           xframe->Write();
@@ -282,6 +282,7 @@ void Secondary(const char *cutSettings = "", const double DCAxyCut=0.12, const c
         { 
           fit->Constrain(2, 0., 0.06);
         }
+        fit->Constrain(1, 0., 0.9);
 
         TVirtualFitter::SetMaxIterations(MAX_ITER);    
         /* TVirtualFitter::SetPrecision(1e-2);  */
