@@ -106,7 +106,7 @@ void Spectra(const char *cutSettings = "", const double roi_nsigma = 8., const b
 
         double primary = 1.;
         double primaryError = 0.;
-        if (!sigmoidCorrection) {
+        if (sigmoidCorrection) {
           primary = sec->GetBinContent(iPtBin);
           primaryError = sec->GetBinError(iPtBin);
           //if (primary < 0.5) continue;

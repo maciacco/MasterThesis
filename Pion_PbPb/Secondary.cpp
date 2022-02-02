@@ -282,7 +282,10 @@ void Secondary(const char *cutSettings = "", const double DCAxyCut=0.12, const c
         { 
           fit->Constrain(2, 0., 0.06);
         }
-        fit->Constrain(1, 0., 0.9);
+        if (iCent < 2)
+          fit->Constrain(1, 0., 0.9);
+        else if (iCent==2 && ptMin < 0.9)
+          fit->Constrain(0, 0., 1.);
 
         TVirtualFitter::SetMaxIterations(MAX_ITER);    
         /* TVirtualFitter::SetPrecision(1e-2);  */

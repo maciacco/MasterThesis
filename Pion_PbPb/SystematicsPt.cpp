@@ -64,7 +64,7 @@ void SystematicsPt(const int points = kNPoints, const bool cutVar = true, const 
     int iNsigma = 1;
     for (int iTrackCuts=0; iTrackCuts<kNTrackCuts; ++iTrackCuts){
       for (int iROI=0; iROI<3; ++iROI){
-        for (int iSigmoid=1; iSigmoid<2; ++iSigmoid){
+        for (int iSigmoid=0; iSigmoid<2; ++iSigmoid){
           auto tmpCutSettings = trackCutSettings[iTrackCuts];
           auto cutIndex = trackCutIndexes[iTrackCuts];
           auto tmpCutIndex = Form("%d",cutIndex);
@@ -88,7 +88,7 @@ void SystematicsPt(const int points = kNPoints, const bool cutVar = true, const 
     bkgFlag = 1;
     sigmoidFlag = 1;
     iNsigma = 1;
-    for (int iTrackCuts=0; iTrackCuts<kNTrackCuts-4; ++iTrackCuts){
+    for (int iTrackCuts=0; iTrackCuts<kNTrackCuts; ++iTrackCuts){
       auto tmpCutSettings = trackCutSettings[iTrackCuts];
       auto cutIndex = trackCutIndexes[iTrackCuts];
       auto tmpCutIndex = Form("%d",cutIndex);
