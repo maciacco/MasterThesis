@@ -8,12 +8,14 @@ sigmoidFlag=1
 spectraHistNameId=""
 extractRatios=1
 
-fileData="AnalysisResults_LHC21l5_full_largeDCA"
-fileMC="AnalysisResults_LHC21l5_full_largeDCA"
-signalName="SignalProtonMC_21l5_false"
-spectraName="SpectraProtonMCMC_21l5_false"
-EfficiencyHe3="EfficiencyProtonMC_21l5_false_"
-PrimaryHe3="PrimaryProtonMC_21l5_false"
+# fileData="AnalysisResults_LHC21l5_full_largeDCA"
+# fileMC="AnalysisResults_LHC21l5_full_largeDCA"
+fileData="AnalysisResults-8"
+fileMC="AnalysisResults-8"
+signalName="SignalProtonMC_21l5_false_XS+"
+spectraName="SpectraProtonMCMC_21l5_false_XS+"
+EfficiencyHe3="EfficiencyProtonMC_21l5_false_XS+"
+PrimaryHe3="PrimaryProtonMC_21l5_false_XS+"
 
 # create output directories
 DIR_OUT=out
@@ -45,8 +47,8 @@ if [ $extractRatios -eq 1 ]; then
 .L SecondaryMC.cpp+
 .L EfficiencyNew.cpp+
 //.L Spectra.cpp+
-//SignalBinnedMC("$cutSettings",8.,$argumentSignal,"$fileData","$signalName","recreate")
-//SecondaryMC("$cutSettings",0.12,"$fileData","$fileMC","$PrimaryHe3")
+SignalBinnedMC("$cutSettings",8.,$argumentSignal,"$fileData","$signalName","recreate")
+SecondaryMC("$cutSettings",0.12,"$fileData","$fileMC","$PrimaryHe3")
 EfficiencyNew("$cutSettings","$fileMC","$EfficiencyHe3","$signalName","$PrimaryHe3")
 .q
 EOF

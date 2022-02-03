@@ -77,8 +77,9 @@ void EfficiencyNew(const char *cutSettings = "", const char *inFileNameMC = "mc_
     TH1D *fITS_TPC_TOF_Pt; // = fITS_TPC_TOF->ProjectionY(TString::Format("f%sITS_TPC_TOF_Pt", kAntimatterMatter[iMatt]), cent_bin_min, cent_bin_max);
     //TF1 *sec_f;
     TH1D *fSec;
-
-    for (int iCent = 0; iCent < kNCentClasses; ++iCent) // SET FIRST CENTRALITY BIN TO 1 EXCEPT FOR LHC16h7c_g4_2
+    
+    for (int iCent = 4; iCent < 5; ++iCent)
+    /* for (int iCent = 0; iCent < kNCentClasses; ++iCent) */ // SET FIRST CENTRALITY BIN TO 1 EXCEPT FOR LHC16h7c_g4_2
     {                                                       // loop over centrality
       int cent_bin_min = kCentBinsProton[iCent][0];
       int cent_bin_max = kCentBinsProton[iCent][1];

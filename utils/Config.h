@@ -170,8 +170,8 @@ namespace proton
   //double kPtBins[33]={0.8f, 0.85f, 0.9f, 0.95f, 1.00f, 1.1f, 1.2f, 1.3f, 1.4f, 1.5f, 1.6f, 1.7f, 1.8f, 1.9f, 2.00f, 2.1f, 2.2f, 2.3f, 2.4f, 2.5f, 2.6f, 2.8f, 3.00f, 3.2f, 3.4f, 3.6f, 3.8f, 4.00f, 4.2f, 4.4f, 4.6f, 4.8f, 5.00f};
 
   // centrality binning
-  const double kCentBinsLimitsProton[][2] = {{0, 5}, {5, 10}, {30, 50}, {0, 90}};
-  const int kCentBinsProton[][2] = {{1, 1}, {2, 2}, {5, 6}, {1, 10}, {1,4}}; // centrality classes bin indexes in He3 analysis
+  const double kCentBinsLimitsProton[][2] = {{0, 5}, {5, 10}, {30, 50}, {0, 90}, {-10, 0}};
+  const int kCentBinsProton[][2] = {{1, 1}, {2, 2}, {5, 6}, {1, 10}, {1, 1}}; // centrality classes bin indexes in He3 analysis
 
   // antimatter / matter
   const char *kAntimatterMatterLabel[2] = {"#bar{p}", "p"};

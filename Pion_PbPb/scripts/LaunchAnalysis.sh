@@ -9,7 +9,7 @@ spectraHistNameId=""
 extractRatios=1
 
 fileData="AnalysisResults"
-fileMC="AnalysisResults_LHC21l5"
+fileMC="AnalysisResults_LHC21l5_full_largeDCA"
 signalName="SignalPion"
 spectraName="SpectraPion"
 EfficiencyHe3="EfficiencyPionMC_21l5_false_"
@@ -46,7 +46,7 @@ if [ $extractRatios -eq 1 ]; then
 .L Secondary.cpp+
 .L Spectra.cpp+
 .L AbsorptionError.cpp+
-//SignalBinned("$cutSettings",15.,$argumentSignal,"$fileData","$signalName","recreate")
+SignalBinned("$cutSettings",15.,$argumentSignal,"$fileData","$signalName","recreate")
 Secondary("$cutSettings",0.12,"$fileData","$fileMC","$PrimaryHe3")//,true)
 Spectra("$cutSettings",15.,$argumentSignal,$sigmoidFlag,"$spectraHistNameId","$spectraName","recreate","AnalysisResults","$signalName","$EfficiencyHe3","$PrimaryHe3",true)
 //AbsorptionError("AbsErrorMCorrection","recreate","$spectraName")

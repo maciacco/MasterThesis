@@ -137,7 +137,8 @@ void SignalBinnedMC(const char *cutSettings = "", const double roi_nsigma = 8., 
     system(Form("mkdir %s/signal_extraction_preliminary/%s_%s_%d_%d", kPlotDir, kAntimatterMatter[iMatt], cutSettings, binCounting, bkg_shape));
 
     dirOutFile->cd();
-    for (int iCent = 0; iCent < kNCentClasses; ++iCent)
+    /* for (int iCent = 0; iCent < kNCentClasses; ++iCent) */
+    for (int iCent = 4; iCent < 5; ++iCent)
     {                                                                          // loop over centrality classes
       TH1D fTOFrawYield("fRawYield", "fRawYield", kNPtBins, kPtBins);          // declare raw yields histogram
       TH1D fSignificance("fSignificance", "fSignificance", kNPtBins, kPtBins); // declare significance
@@ -234,11 +235,12 @@ void SignalBinnedMC(const char *cutSettings = "", const double roi_nsigma = 8., 
         RooAddPdf *modelPeak;
 
         RooAddPdf *model;
-        RooRealVar nSignal("N_{sig}", "nSignal", 1., 1.e7);
+        RooRealVar nSignal("N_{sig}", "nSignal", 1., 1.e2);
 
         slope1 = new RooRealVar("#tau_{1}", "slope1", -10., 10.);
         slope2 = new RooRealVar("#tau_{2}", "slope2", 0.955,  -1.100, -0.850);
-        nBackground1 = new RooRealVar("#it{N}_{Bkg,1}", "nBackground1", 1., 1.e5);
+        slope2->setConstant();
+        nBackground1 = new RooRealVar("#it{N}_{Bkg,1}", "nBackground1", 10., 0., 1.e2);
 
         if (bkg_shape == 1)
         { // expo
@@ -247,7 +249,7 @@ void SignalBinnedMC(const char *cutSettings = "", const double roi_nsigma = 8., 
           {
             background1 = (RooAbsPdf *)new RooExponential("background1", "background1", tofSignal, *slope1);
             background2 = (RooAbsPdf *)new RooExponential("background2", "background2", tofSignal, *slope2);
-            nBackground2 = new RooRealVar("#it{N}_{Bkg,2}", "nBackground2", 0., 1., 1.e5);
+            nBackground2 = new RooRealVar("#it{N}_{Bkg,2}", "nBackground2", 0., 0., 1.e2);
             nBackground2->setConstant();
             model = new RooAddPdf("model", "model", RooArgList(*background1), RooArgList(*nBackground1));
           }
@@ -255,7 +257,8 @@ void SignalBinnedMC(const char *cutSettings = "", const double roi_nsigma = 8., 
           {
             background1 = (RooAbsPdf *)new RooExponential("background1", "background1", tofSignal, *slope1);
             background2 = (RooAbsPdf *)new RooExponential("background2", "background2", tofSignal, *slope2);
-            nBackground2 = new RooRealVar("#it{N}_{Bkg,2}", "nBackground2", 1., 1.e5);
+            nBackground2 = new RooRealVar("#it{N}_{Bkg,2}", "nBackground2",0,  0., 1.e2);
+            nBackground2->setConstant();
             model = new RooAddPdf("model", "model", RooArgList(*background1, *background2), RooArgList(*nBackground1, *nBackground2));
           }
         }

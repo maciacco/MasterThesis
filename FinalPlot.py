@@ -17,8 +17,8 @@ ROOT.gStyle.SetTextFont(44)
 
 file_he3 = ROOT.TFile.Open(path_he3 + '/SpectraHe3.root')
 file_hyp = ROOT.TFile.Open(path_hyp + '/Ratio.root')
-#file_proton = ROOT.TFile.Open(path_proton + '/SystematicsAllEPtNotCombined.root')
-file_proton = ROOT.TFile.Open(path_proton + '/SpectraProtonOld.root')
+file_proton = ROOT.TFile.Open(path_proton + '/SystematicsAllEPtNotCombined.root')
+#file_proton = ROOT.TFile.Open(path_proton + '/SpectraProtonOld.root')
 file_he3_syst = ROOT.TFile.Open(path_he3 + '/SystematicsAll.root')
 file_he3_syst_abs = ROOT.TFile.Open(path_he3 + '/AbsError.root')
 file_hyp_syst = ROOT.TFile.Open(path_hyp + '/Systematics.root')
@@ -66,8 +66,8 @@ for i_cent, cent in enumerate(centrality_classes):
     syst_hyp_abs = ratio_hyp_distribution_abs.GetRMS()
     #syst_hyp = np.sqrt(syst_hyp*syst_hyp+syst_hyp_abs*syst_hyp_abs)
     syst_proton = fit_proton.GetParError(0)#ratio_proton_distribution.GetRMS()
-    #syst_proton_pt_correlated = ratio_proton_pt_correlated.GetRMS()
-    #syst_proton = np.sqrt(syst_proton*syst_proton+syst_proton_pt_correlated*syst_proton_pt_correlated)
+    syst_proton_pt_correlated = ratio_proton_pt_correlated.GetRMS()
+    syst_proton = np.sqrt(syst_proton*syst_proton+syst_proton_pt_correlated*syst_proton_pt_correlated+0.0178182*0.0178182*ratio_proton*ratio_proton)
 
     # final plot
     ratios_vs_b = ROOT.TH1D(f'fRatio_vs_b_{cent[0]}_{cent[1]}', ';B+S/3; Antimatter / Matter', 10, -0.5, 9.5)

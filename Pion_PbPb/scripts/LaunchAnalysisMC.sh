@@ -8,10 +8,10 @@ sigmoidFlag=1
 spectraHistNameId=""
 extractRatios=1
 
-# fileData="AnalysisResults_LHC21l5_full_largeDCA"
-# fileMC="AnalysisResults_LHC21l5_full_largeDCA"
-fileData="LHC20e3a"
-fileMC="LHC20e3a"
+fileData="AnalysisResults_LHC21l5_full_largeDCA"
+fileMC="AnalysisResults_LHC21l5_full_largeDCA"
+# fileData="LHC20e3a"
+# fileMC="LHC20e3a"
 signalName="SignalPionMC_21l5_false"
 spectraName="SpectraPionMCMC_21l5_false"
 EfficiencyHe3="EfficiencyPionMC_21l5_false_"

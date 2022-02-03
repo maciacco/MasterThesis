@@ -44,7 +44,7 @@ using namespace pion;
 
 const double kNSigma = 3; // define interval for bin counting
 
-void SignalBinned(const char *cutSettings = "", const double roi_max_limit = 15., const bool binCounting = false, const int bkg_shape = 1, const char *inFileDat = "AnalysisResults", const char *outFileName = "SignalPion", const char *outFileOption = "recreate", const bool extractSignal = true, const bool useDSCB = false, const bool binCountingNoFit = false)
+void SignalBinned(const char *cutSettings = "", const double roi_max_limit_input = 15., const bool binCounting = false, const int bkg_shape = 1, const char *inFileDat = "AnalysisResults", const char *outFileName = "SignalPion", const char *outFileOption = "recreate", const bool extractSignal = true, const bool useDSCB = false, const bool binCountingNoFit = false)
 {
 
   // make signal extraction plots directory
@@ -59,8 +59,8 @@ void SignalBinned(const char *cutSettings = "", const double roi_max_limit = 15.
   gStyle->SetOptFit(1111);
 
   int iNsigma = 0;
-  if (roi_max_limit > 14.9 && roi_max_limit < 15.1) iNsigma = 1;
-  else if (roi_max_limit > 15.9) iNsigma = 2; 
+  if (roi_max_limit_input > 14.9 && roi_max_limit_input < 15.1) iNsigma = 1;
+  else if (roi_max_limit_input > 15.9) iNsigma = 2; 
   TFile *outFile = TFile::Open(TString::Format("%s/%s.root", kOutDir, outFileName), outFileOption); // output file
   if (outFile->GetDirectory(Form("%s_%d_%d_%d", cutSettings, binCounting, bkg_shape,iNsigma)))
     return;
@@ -156,12 +156,13 @@ void SignalBinned(const char *cutSettings = "", const double roi_max_limit = 15.
         signalRegionFit.SetParLimits(1, -0.4, 0.4);
         signalRegionFit.SetParLimits(2, 0.8, 1.6);
         signalRegionFit.SetLineColor(kBlue);
-        tofSignalProjection->GetXaxis()->SetRangeUser(-.5, .5);
-        double maximum_signal = tofSignalProjection->GetBinCenter(tofSignalProjection->GetMaximumBin());
-        tofSignalProjection->GetXaxis()->SetRangeUser(-20., 20.);
-        tofSignalProjection->Fit("signalRegionFit", "QRL+", "", maximum_signal - 1., maximum_signal + 1.);
+        tofSignalProjectionAll->GetXaxis()->SetRangeUser(-.5, .5);
+        double maximum_signal = tofSignalProjectionAll->GetBinCenter(tofSignalProjectionAll->GetMaximumBin());
+        tofSignalProjectionAll->GetXaxis()->SetRangeUser(-20., 20.);
+        tofSignalProjectionAll->Fit("signalRegionFit", "QRL+", "", maximum_signal - 1., maximum_signal + 1.);
         double mean_tmp = signalRegionFit.GetParameter(1);
         double rms_tmp = signalRegionFit.GetParameter(2);
+        double roi_max_limit = mean_tmp+11*rms_tmp+roi_max_limit_input-15.;
 
         // roofit data
         double maxNsigma=20.;
@@ -190,7 +191,7 @@ void SignalBinned(const char *cutSettings = "", const double roi_max_limit = 15.
         RooAddPdf *model;
         RooAbsPdf *modelAll;
 
-        slope1 = new RooRealVar("#tau_{1}", "slope1", -10., 10.);
+        slope1 = new RooRealVar("#tau_{1}", "slope1", -1., 0.);
         nBackground1 = new RooRealVar("#it{N}_{Bkg,1}", "nBackground1", 0.,1.);
         if (bkg_shape == 1 && ptMin < 0.89)
         { // expo
@@ -199,7 +200,7 @@ void SignalBinned(const char *cutSettings = "", const double roi_max_limit = 15.
         }
         else if (bkg_shape == 1 && ptMin > 0.89)
         { // double expo
-          slope2 = new RooRealVar("#tau_{2}", "slope2", 0., 10.);
+          slope2 = new RooRealVar("#tau_{2}", "slope2", 0., 2.);
           background1 = (RooAbsPdf *)new RooExponential("background1", "background1", tofSignal, *slope1);
           background2 = (RooAbsPdf *)new RooExponential("background2", "background2", tofSignal, *slope2);
           modelAll = (RooAbsPdf*)new RooAddPdf("modelAll", "modelAll", RooArgList(*background1,*background2), RooArgList(*nBackground1));
@@ -209,13 +210,13 @@ void SignalBinned(const char *cutSettings = "", const double roi_max_limit = 15.
 
         int covQ = -999;
         double intersectionBinCenter=-20.;
-        double signalRightLimit=roi_max_limit-1.;
-        if(ptMin>0.99)
-        signalRightLimit=roi_max_limit-5.;
-        if(ptMin>1.09)
+        double signalRightLimit=roi_max_limit;
+        /* if(ptMin>0.89)
+        signalRightLimit=roi_max_limit-4.;
+        if(ptMin>1.04)
         signalRightLimit=roi_max_limit-7.;
-        if(ptMin>1.19)
-        signalRightLimit=roi_max_limit-8.;
+        if(ptMin>1.09)
+        signalRightLimit=roi_max_limit-8.; */
         if (extractSignal)
         {
           // fit model
@@ -226,20 +227,20 @@ void SignalBinned(const char *cutSettings = "", const double roi_max_limit = 15.
 
           modelAll->fitTo(dataAll, RooFit::Range("rightSideband"));
           r = modelAll->fitTo(dataAll, RooFit::Save(), RooFit::Range("rightSideband"));
-
+          
           slope1->setConstant();
           if (ptMin > 0.89)
-          slope2->setConstant();
+            slope2->setConstant();
           nBackground1->setConstant();
 
           if (bkg_shape == 1 && ptMin < 0.89)
           { // expo
-            nBackground2 = new RooRealVar("#it{N}_{Bkg,2}", "nBackground2", 1., 1.e7);
+            nBackground2 = new RooRealVar("#it{N}_{Bkg,2}", "nBackground2", 1., 1.e9);
             model = new RooAddPdf("model", "model", RooArgList(*modelAll), RooArgList(*nBackground2));
           }
           else if (bkg_shape == 1 && ptMin > 0.89)
           { // double expo
-            nBackground2 = new RooRealVar("#it{N}_{Bkg,2}", "nBackground2", 1., 1.e7);
+            nBackground2 = new RooRealVar("#it{N}_{Bkg,2}", "nBackground2", 1., 1.e9);
             model = new RooAddPdf("model", "model", RooArgList(*modelAll), RooArgList(*nBackground2));
           }
           model->fitTo(data, RooFit::Range("rightSideband"));
@@ -248,12 +249,28 @@ void SignalBinned(const char *cutSettings = "", const double roi_max_limit = 15.
           double leftSignalLimit=-10;
           bool intersection=false;
           int iB=1;
-          auto bkgFunction=model->asTF(tofSignal,RooArgList(*slope1));
+          
           int binShiftIndex=tofSignalProjection->FindBin(leftSignalLimit);
-          double normBkgFunction=nBackground1->getVal() * tofSignalProjection->GetBinWidth(1) / bkgFunction->Integral(-10.,maxNsigma);
           while (!intersection){
+            double pdfValue=0;
             double binContent=data.weight(iB);
-            double pdfValue=normBkgFunction*bkgFunction->Eval(tofSignalProjection->GetBinCenter(iB+binShiftIndex));
+            if (ptMin<0.89){
+              TF1* bkgFunction=modelAll->asTF(tofSignal,RooArgList(*slope1));
+              double normBkgFunction=nBackground2->getVal() * tofSignalProjection->GetBinWidth(1) / bkgFunction->Integral(-10.,maxNsigma);
+              pdfValue=normBkgFunction*bkgFunction->Eval(tofSignalProjection->GetBinCenter(iB+binShiftIndex));
+            }
+            else if (ptMin>0.89) {
+              TF1* bkgFunction1=background1->asTF(tofSignal,RooArgList(*slope1));
+              TF1* bkgFunction2=background2->asTF(tofSignal,RooArgList(*slope2));
+              double val1=bkgFunction1->Eval(tofSignalProjection->GetBinCenter(iB+binShiftIndex));
+              double val2=bkgFunction2->Eval(tofSignalProjection->GetBinCenter(iB+binShiftIndex));
+              double frac=nBackground1->getVal();
+              double integral_1 = bkgFunction1->Integral(-10.,maxNsigma);
+              double integral_2 = bkgFunction2->Integral(-10.,maxNsigma);
+              double val_tot = val1/integral_1+frac*val2/integral_2;
+              double normBkgFunction=nBackground2->getVal() * tofSignalProjection->GetBinWidth(1);
+              pdfValue=normBkgFunction*val_tot;
+            }
             if(binContent>pdfValue)
             {
               intersection=true;
@@ -290,7 +307,7 @@ void SignalBinned(const char *cutSettings = "", const double roi_max_limit = 15.
 
           // background integral
           double bkgIntegral = ((RooAbsPdf *)model->createIntegral(RooArgSet(tofSignal), RooFit::NormSet(RooArgSet(tofSignal)), RooFit::Range("signalRange")))->getVal();
-          double bkgIntegral_val = (nBackground1->getVal()) * bkgIntegral;
+          double bkgIntegral_val = (nBackground2->getVal()) * bkgIntegral;
 
           double rawYield, rawYieldError, counts;
           if (binCounting)

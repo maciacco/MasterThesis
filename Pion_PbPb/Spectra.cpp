@@ -160,7 +160,7 @@ void Spectra(const char *cutSettings = "", const double roi_nsigma = 8., const b
         fRatio[iCent]->SetBinContent(iPtBin, antiSpec / spec);
         fRatio[iCent]->SetBinError(iPtBin, /*antiSpec / spec * */TMath::Sqrt(antiSpecErr * antiSpecErr / antiSpec / antiSpec + specErr * specErr / spec / spec));
         //std::cout<<h_sys->GetBinContent(iPtBin)<<std::endl;
-        if(sys){
+        if(!sys){
           fRatio[iCent]->SetBinContent(iPtBin,h_ratio_from_var->GetBinContent(iPtBin));
           double sys_err = h_sys->GetBinContent(iPtBin);
           double prim_err = fRatio[iCent]->GetBinError(iPtBin);
