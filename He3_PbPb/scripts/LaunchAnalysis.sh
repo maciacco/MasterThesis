@@ -8,14 +8,14 @@ binCountingFlag=1
 expFlag=1 # 0->pol1, 1->expo, 2->pol2
 sigmoidFlag=1
 spectraHistNameId="1.0_89_1_1_1"
-readTree=0
+readTree=1
 extractRatios=1
 
 treeData="TreeOutData"
-treeMC="TreeOutMC"
+treeMC="TreeOutMC_XSPlus"
 signalName="SignalHe3"
 spectraName="SpectraHe3"
-EfficiencyHe3="EfficiencyHe3"
+EfficiencyHe3="EfficiencyHe3_XSPlus"
 EfficiencyHe3SecWD="EfficiencyHe3SecWD"
 PrimaryHe3="PrimaryHe3"
 
@@ -55,7 +55,7 @@ if [ $readTree -eq 1 ]; then
 // ReadTreeData($argumentCuts,"TreeOutData_NoPID","recreate","true") // no PID
 // ReadTreeData($argumentCuts,"TreeOutData_He3PID","recreate","trackingPID==7") // kHe3
 // ReadTreeData($argumentCuts,"TreeOutData_AlphaPID","recreate","trackingPID==8") // kHe4
-ReadTreeData($argumentCuts,"$treeData","recreate","( ( (std::abs(pt)<2.5f) && (trackingPID==7) ) || !(std::abs(pt)<2.5f) )")
+//ReadTreeData($argumentCuts,"$treeData","recreate","( ( (std::abs(pt)<2.5f) && (trackingPID==7) ) || !(std::abs(pt)<2.5f) )")
 ReadTreeMC($argumentCuts,"$treeMC","recreate","( ( (std::abs(pt)<2.5f) && (trackingPID==7) ) || !(std::abs(pt)<2.5f) )")
 EOF
 fi
@@ -86,12 +86,12 @@ if [ $extractRatios -eq 1 ]; then
 // SignalUnbinned($argumentCuts,$argumentSignal,"TreeOutData_He3PID","SignalHe3_He3PID","recreate",true,false)
 // SignalUnbinned($argumentCuts,$argumentSignal,"TreeOutData_AlphaPID","SignalHe3_AlphaPID","recreate",true,true)
 //SignalUnbinned($argumentCuts,$argumentSignal,"$treeData","$signalName","recreate")
-//Efficiency($argumentCuts,"$treeMC","$EfficiencyHe3")
+Efficiency($argumentCuts,"$treeMC","$EfficiencyHe3")
 //EfficiencySec($argumentCuts,"$treeMC","$EfficiencyHe3SecWD",$HYPER_TO_HE3_RATIO)
 //Secondary($argumentCuts,"$treeData","$treeMC","$EfficiencyHe3SecWD","$PrimaryHe3")
-Spectra($argumentCuts,$argumentSignal,$sigmoidFlag,"$spectraHistNameId","$spectraName","recreate","AnalysisResults","$signalName","$EfficiencyHe3","$PrimaryHe3")
+//Spectra($argumentCuts,$argumentSignal,$sigmoidFlag,"$spectraHistNameId","$spectraName","recreate","AnalysisResults","$signalName","$EfficiencyHe3","$PrimaryHe3")
 // SignalLoss()
-AbsorptionError("AbsError","recreate","$spectraName")
+//AbsorptionError("AbsError","recreate","$spectraName")
 .q
 EOF
 fi

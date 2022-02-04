@@ -60,14 +60,14 @@ for i_cent, cent in enumerate(centrality_classes):
 
     # systematic error
     syst_he3 = ratio_he3_distribution.GetRMS()
-    syst_he3_abs = ratio_he3_distribution_abs.GetRMS()
-    #syst_he3 = np.sqrt(syst_he3*syst_he3+syst_he3_abs*syst_he3_abs)
+    syst_he3_abs = np.sqrt(0.00861352*0.00861352+0.00473124*0.00473124)*ratio_he3 # from absorption cross section variation
+    syst_he3 = np.sqrt(syst_he3*syst_he3+syst_he3_abs*syst_he3_abs)
     syst_hyp = ratio_hyp_distribution.GetRMS()
-    syst_hyp_abs = ratio_hyp_distribution_abs.GetRMS()
-    #syst_hyp = np.sqrt(syst_hyp*syst_hyp+syst_hyp_abs*syst_hyp_abs)
+    syst_hyp_abs = np.sqrt(0.00861352*0.00861352+0.00473124*0.00473124)*ratio_hyp # from absorption cross section variation
+    syst_hyp = np.sqrt(syst_hyp*syst_hyp+syst_hyp_abs*syst_hyp_abs)
     syst_proton = fit_proton.GetParError(0)#ratio_proton_distribution.GetRMS()
     syst_proton_pt_correlated = ratio_proton_pt_correlated.GetRMS()
-    syst_proton = np.sqrt(syst_proton*syst_proton+syst_proton_pt_correlated*syst_proton_pt_correlated+0.0178182*0.0178182*ratio_proton*ratio_proton)
+    syst_proton = np.sqrt(syst_proton*syst_proton+syst_proton_pt_correlated*syst_proton_pt_correlated)
 
     # final plot
     ratios_vs_b = ROOT.TH1D(f'fRatio_vs_b_{cent[0]}_{cent[1]}', ';B+S/3; Antimatter / Matter', 10, -0.5, 9.5)

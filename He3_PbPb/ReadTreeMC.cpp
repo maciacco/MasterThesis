@@ -29,9 +29,9 @@ void ReadTreeMC(const float cutDCAz = 1.f, const int cutTPCcls = 89, const char 
 
   // read tree
   ROOT::EnableImplicitMT();                                                  // use all cores
-  ROOT::RDataFrame dataFrameR("RTree", Form("%s/mc.root", kDataDir));        // get reconstructed tree from file
+  ROOT::RDataFrame dataFrameR("RTree", Form("%s/AnalysisResults-8.root", kDataDir));        // get reconstructed tree from file
   ROOT::RDataFrame dataFrameRSec("RTree", Form("%s/mc_sec.root", kDataDir)); // get reconstructed (deuteron) tree from file
-  ROOT::RDataFrame dataFrameS("STree", Form("%s/mc.root", kDataDir));        // get simulated tree from file
+  ROOT::RDataFrame dataFrameS("STree", Form("%s/AnalysisResults-8.root", kDataDir));        // get simulated tree from file
 
   dirOutFile->cd();
   // track selection
@@ -45,8 +45,8 @@ void ReadTreeMC(const float cutDCAz = 1.f, const int cutTPCcls = 89, const char 
   // select matter/antimatter
   auto antiHe3R = trackSelectRPrimary.Filter("pt<0"); // select antimatter and change pt sign (primary)
   auto he3R = trackSelectRPrimary.Filter("pt>0");     // select matter (primary)
-  auto antiHe3RSecWeak = trackSelectR.Filter(Form("pt<0 && (%s)", flagSelections));
-  auto he3RSecWeak = trackSelectR.Filter(Form("pt>0 && (%s)", flagSelections));
+  auto antiHe3RSecWeak = trackSelectRSecondaryWeak.Filter(Form("pt<0 && (%s)", flagSelections));
+  auto he3RSecWeak = trackSelectRSecondaryWeak.Filter(Form("pt>0 && (%s)", flagSelections));
 
   // DCAxy histograms
   auto fADCAPrimary = antiHe3R.Histo3D({"fADCAPrimary", "fADCAPrimary", kNCentBins, kCentBins, kNPtBins, pTbins, kNDCABins, kDCABins}, "centrality", "pT", "dcaxy");
@@ -62,8 +62,8 @@ void ReadTreeMC(const float cutDCAz = 1.f, const int cutTPCcls = 89, const char 
   auto he3RSecWeakCutDCA = he3RSecWeak.Filter(kTrackSelectionsDCAxy);
   auto fAITS_TPC = antiHe3RCutDCA.Histo2D({"fAITS_TPC", "fAITS_TPC", kNCentBins, kCentBins, kNPtBins, pTbins}, "centrality", "pT");
   auto fMITS_TPC = he3RCutDCA.Histo2D({"fMITS_TPC", "fMITS_TPC", kNCentBins, kCentBins, kNPtBins, pTbins}, "centrality", "pT");
-  auto fAITS_TPCwd = antiHe3RCutDCA.Histo2D({"fAITS_TPCwd", "fAITS_TPCwd", kNCentBins, kCentBins, kNPtBins, pTbins}, "centrality", "pT");
-  auto fMITS_TPCwd = he3RCutDCA.Histo2D({"fMITS_TPCwd", "fMITS_TPCwd", kNCentBins, kCentBins, kNPtBins, pTbins}, "centrality", "pT");
+  auto fAITS_TPCwd = antiHe3RSecWeakCutDCA.Histo2D({"fAITS_TPCwd", "fAITS_TPCwd", kNCentBins, kCentBins, kNPtBins, pTbins}, "centrality", "pT");
+  auto fMITS_TPCwd = he3RSecWeakCutDCA.Histo2D({"fMITS_TPCwd", "fMITS_TPCwd", kNCentBins, kCentBins, kNPtBins, pTbins}, "centrality", "pT");
 
   // total generated (also for wd efficiency)
   auto antiHe3Swd = dataFrameS.Filter("pdg<0 && ((flag & BIT(2))==4)").Define("pT", "pt");

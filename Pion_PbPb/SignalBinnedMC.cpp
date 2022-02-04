@@ -47,7 +47,7 @@ double computeExponentialNormalisation(double, double, double);
 
 const double kNSigma = 3; // define interval for bin counting
 
-void SignalBinnedMC(const char *cutSettings = "", const bool binCounting = false, const int bkg_shape = 1, const char *inFileDat = "mc_20g7_likeData_largeNsigma", const char *outFileName = "SignalProton", const char *outFileOption = "recreate", const bool extractSignal = true, const bool useDSCB = false, const bool binCountingNoFit = false)
+void SignalBinnedMC(const char *cutSettings = "", const double roi_min_limit_input = 1.5, const double roi_max_limit_input = 11., const bool binCounting = false, const int bkg_shape = 1, const char *inFileDat = "mc_20g7_likeData_largeNsigma", const char *outFileName = "SignalProton", const char *outFileOption = "recreate", const bool extractSignal = true, const bool useDSCB = false, const bool binCountingNoFit = false)
 {
   //double roi_max_limit=12.;
 
@@ -177,7 +177,7 @@ void SignalBinnedMC(const char *cutSettings = "", const bool binCounting = false
         tofSignalProjectionAll->Fit("signalRegionFit", "QRL+", "", maximum_signal - 1., maximum_signal + 1.);
         double mean_tmp = signalRegionFit.GetParameter(1);
         double rms_tmp = signalRegionFit.GetParameter(2);
-        double roi_max_limit = mean_tmp+9*rms_tmp;
+        double roi_max_limit = mean_tmp+(roi_max_limit_input-2.)*rms_tmp; // smaller signal window in MC than in data
 
         // roofit data
         double maxNsigma=17.;
@@ -225,6 +225,7 @@ void SignalBinnedMC(const char *cutSettings = "", const bool binCounting = false
 
         int covQ = -999;
         double intersectionBinCenter=-20.;
+        intersectionBinCenter=mean_tmp-roi_min_limit_input*rms_tmp;
         double signalRightLimit=roi_max_limit;/* -1.;
         if(ptMin>0.89)
         signalRightLimit=roi_max_limit-2.;
@@ -294,7 +295,7 @@ void SignalBinnedMC(const char *cutSettings = "", const bool binCounting = false
             }
             else iB++;
           }
-          intersectionBinCenter=/* mean_tmp-2*rms_tmp; */tofSignalProjection->GetBinCenter(iB+binShiftIndex);
+          //intersectionBinCenter=tofSignalProjection->GetBinCenter(iB+binShiftIndex);
           std::cout << "intersection bin center = " << intersectionBinCenter << std::endl;
           tofSignal.setRange("signalRange", intersectionBinCenter, signalRightLimit);
 

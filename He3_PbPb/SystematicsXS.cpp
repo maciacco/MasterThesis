@@ -13,9 +13,9 @@
 #include "../utils/Config.h"
 
 using utils::TTList;
-using namespace proton;
+using namespace he3;
 
-double protonCorrectionPt(int iMatt,double pt){
+double He3CorrectionPt(int iMatt,double pt){
   if (iMatt == 1) 
     return 1;
     //return 0.99876*TMath::Power(pt,0.00036);
@@ -23,7 +23,7 @@ double protonCorrectionPt(int iMatt,double pt){
   return 1;
 };
 
-void SystematicsXS(const char *cutSettings = "", const char *outFileName = "SystematicsXS", const char *outFileOption = "recreate", const char *effFile = "EfficiencyProtonMC_21l5_false_XS")
+void SystematicsXS(const char *cutSettings = "", const char *outFileName = "SystematicsXS", const char *outFileOption = "recreate", const char *effFile = "EfficiencyHe3_XS")
 {
   std::cout << "cutSettings = " << cutSettings << std::endl;
   gStyle->SetOptFit(0);
@@ -31,9 +31,9 @@ void SystematicsXS(const char *cutSettings = "", const char *outFileName = "Syst
   gStyle->SetTextFont(44);
 
   TFile *inFileEff[3];
-  inFileEff[0] = TFile::Open(Form("%s/%s.root", kOutDir, effFile));
-  inFileEff[1] = TFile::Open(Form("%s/%s-.root", kOutDir, effFile));
-  inFileEff[2] = TFile::Open(Form("%s/%s+.root", kOutDir, effFile));
+  inFileEff[0] = TFile::Open(Form("%s/%sDefault.root", kOutDir, effFile));
+  inFileEff[1] = TFile::Open(Form("%s/%sMinus.root", kOutDir, effFile));
+  inFileEff[2] = TFile::Open(Form("%s/%sPlus.root", kOutDir, effFile));
   if (!inFileEff)
   {
     std::cout << "Input files do not exist!" << std::endl;
@@ -48,21 +48,23 @@ void SystematicsXS(const char *cutSettings = "", const char *outFileName = "Syst
   for (int iXS=0; iXS<3; ++iXS)
   {
     for (int iMatt=0; iMatt<2; ++iMatt){
-      // std::cout << "read: " << Form("%s_%d_%d/fATOFrawYield_%.0f_%.0f", cutSettings, binCounting, bkg_shape, kCentBinsLimitsProton[iXS][0], kCentBinsLimitsProton[iXS][1]) << std::endl;
-      fRatio[iXS][iMatt] = new TH1D(Form("f%sRatio%s",kAntimatterMatter[iMatt],XSLowUp[iXS]),Form("f%sRatio",kAntimatterMatter[iMatt]),kNPtBins,kPtBins);
+      int nPtBins=18;
+      double ptBins[]={1.,1.5,2.,2.5,3.,3.5,4.,4.5,5.,5.5,6.,6.5,7.,7.5,8.,8.5,9.,9.5,10.};
+      // std::cout << "read: " << Form("%s_%d_%d/fATOFrawYield_%.0f_%.0f", cutSettings, binCounting, bkg_shape, kCentBinsLimitsHe3[iXS][0], kCentBinsLimitsHe3[iXS][1]) << std::endl;
+      fRatio[iXS][iMatt] = new TH1D(Form("f%sRatio%s",kAntimatterMatter[iMatt],XSLowUp[iXS]),Form("f%sRatio",kAntimatterMatter[iMatt]),nPtBins,ptBins);
     }
   }
 
-  int pTbinMax = 24;
+  int pTbinMax = 14;
   TH1D *eff_A[3];
   TH1D *eff_M[3]; 
   for (int iXS=0;iXS<3;++iXS)
   {
-    eff_A[iXS] = (TH1D *)inFileEff[iXS]->Get(Form("%s_/f%sEff_TOF_%.0f_%.0f", cutSettings, kAntimatterMatter[0], kCentBinsLimitsProton[4][0], kCentBinsLimitsProton[4][1]));
-    eff_M[iXS] = (TH1D *)inFileEff[iXS]->Get(Form("%s_/f%sEff_TOF_%.0f_%.0f", cutSettings, kAntimatterMatter[1], kCentBinsLimitsProton[4][0], kCentBinsLimitsProton[4][1]));
+    eff_A[iXS] = (TH1D *)inFileEff[iXS]->Get(Form("f%sEff_TPC_%.0f_%.0f", kAntimatterMatter[0], kCentBinsLimitsHe3[0][0], kCentBinsLimitsHe3[0][1]));
+    eff_M[iXS] = (TH1D *)inFileEff[iXS]->Get(Form("f%sEff_TPC_%.0f_%.0f", kAntimatterMatter[1], kCentBinsLimitsHe3[0][0], kCentBinsLimitsHe3[0][1]));
 
     if (iXS > 0){
-      for (int iPtBin = 5; iPtBin < pTbinMax + 1; ++iPtBin)
+      for (int iPtBin = 3; iPtBin < pTbinMax + 1; ++iPtBin)
       {
         double NumXS = eff_A[iXS]->GetBinContent(iPtBin);
         double XS = eff_A[0]->GetBinContent(iPtBin);
@@ -88,8 +90,8 @@ void SystematicsXS(const char *cutSettings = "", const char *outFileName = "Syst
   }
 
   // antimatter curve
-  double range_XS[][2]={{0.925,1.075},{0.925,1.075}};
-  double x_XS[][3]={{0.8,0.913,1.5},{0.8,0.993,1.5}};
+  double range_XS[][2]={{0.76,0.9},{0.81,0.93}};
+  double x_XS[][3]={{0.7,0.83,1.5},{0.7,1.058,1.5}};
   for (int iMatt=0;iMatt<2;++iMatt){
     TCanvas cXS(Form("c%s",kAntimatterMatter[iMatt]),Form("c%s",kAntimatterMatter[iMatt]));
     double x_err_antip[]={0,0,0};
@@ -98,13 +100,13 @@ void SystematicsXS(const char *cutSettings = "", const char *outFileName = "Syst
     TGraphErrors gXS(3,x_XS[iMatt],y_antip,x_err_antip,y_err_antip);
     //TF1 f("f","[0]*x*x+[1]*x+1-[0]-[1]");
     TF1 f("f","[0]*x+1-[0]");
-    gXS.Fit("f","QR","",0.86,1.6);
+    gXS.Fit("f","QR","",0.72,1.6);
     gXS.SetTitle(kAntimatterMatterLabel[iMatt]);
     gXS.SetMinimum(0);
     gXS.SetMaximum(1.1);
     gXS.SetMarkerStyle(20);
     gXS.SetMarkerSize(0.8);
-    gXS.GetXaxis()->SetRangeUser(0.86,1.6);
+    gXS.GetXaxis()->SetRangeUser(0.72,1.6);
     gXS.GetYaxis()->SetTitle("Efficiency ratio to default");
     gXS.GetXaxis()->SetTitle("Cross section scaling factor");
     gXS.SetMarkerSize(0.8);

@@ -6,6 +6,10 @@
 #include <TGraphErrors.h>
 #include <TLatex.h>
 
+#include "../utils/Config.h"
+
+using namespace he3;
+
 Double_t scalingFactorMine(Double_t *x, Double_t *par){
   double fit_c_proton = 0.868419;
   double fit_c_proton_error = 0.0579547;
@@ -40,7 +44,7 @@ void fitXsection(){
   gStyle->SetOptFit(00000);
   gStyle->SetOptStat(00000);
 
-  TFile fileIn("He3inelXS_LHC18q_0_10_pass3_20211028.root");
+  TFile fileIn(Form("%s/He3inelXS_LHC18q_0_10_pass3_20211028.root",kDataDir));
   TFile fileOut("XSOut.root","recreate");
 
   TCanvas *canv = (TCanvas*)fileIn.Get("c1");

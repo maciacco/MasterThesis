@@ -13,7 +13,8 @@
 
 using namespace pion;
 
-double roi_n_sigma[] = {14.,15.,16.};
+double roi_n_sigma_down[] = {1.0,1.5,2.0};
+double roi_n_sigma_up[] = {10.,11.,12.};
 
 void LaunchAnalyses(const bool analyse = false)
 {
@@ -31,56 +32,59 @@ void LaunchAnalyses(const bool analyse = false)
   {
     char hname[100];
 
-    // bool binCountingFlag = 1 - iBin;
-    int cutVariable = 0;
-    int cutIndex = iCutSettings;
-    char *fullCutSettings = Form("999");
-    if (iCutSettings > -1) {
-      if (iCutSettings >= tmpNCutDCAz && iCutSettings < (tmpNCutDCAz + tmpNTPCPidSigmas))
-      {
-        cutVariable = 1;
-        cutIndex -= tmpNCutDCAz;
-      }
-      else if (iCutSettings >= (tmpNCutDCAz + tmpNTPCPidSigmas) && iCutSettings < (tmpNCutDCAz + tmpNTPCPidSigmas + tmpNCutTPCClusters))
-      {
-        cutVariable = 2;
-        cutIndex -= (tmpNCutDCAz + tmpNTPCPidSigmas);
-      }
-      else if (iCutSettings >= (tmpNCutDCAz + tmpNTPCPidSigmas + tmpNCutTPCClusters))
-      {
-        cutVariable = 3;
-        cutIndex -= (tmpNCutDCAz + tmpNTPCPidSigmas + tmpNCutTPCClusters);
-      }
-      fullCutSettings = Form("%s%d", cutSettings[cutVariable], cutIndex);
-    }
-    std::cout << "fullCutSettings = " << fullCutSettings << std::endl;
-
-    double DCAxyCut = 0.12;
-    if (cutVariable == 3) DCAxyCut = kCutDCAxyVariations[cutIndex];
-
     for (int iBkg = 1; iBkg < 2; ++iBkg)
     {
-      for(int iNsigma = 0; iNsigma < 3; ++iNsigma) {
-        std::cout << "bkg selection = " << iBkg << "; roiNsigma = " << roi_n_sigma[iNsigma] << "; dcaxycut = " << DCAxyCut << std::endl;
-        if (analyse)
-        {
-          gSystem->Exec(Form("bash ~/Code/MasterThesis/Pion_PbPb/scripts/LaunchAnalysisSignEffPrim.sh %s 1 1 %f %f", fullCutSettings, roi_n_sigma[iNsigma], DCAxyCut));
-        }
-
-        for (int iSgm = 0; iSgm < 2; ++iSgm)
-        {
+      for(int iNsigmaUp = 0; iNsigmaUp < 3; ++iNsigmaUp) {
+        for(int iNsigmaDown = 0; iNsigmaDown < 3; ++iNsigmaDown) {
+          
           // bool binCountingFlag = 1 - iBin;
-          bool sigmoidFlag = 1 - iSgm;
-          auto tmpFullCutSettings = fullCutSettings;
-          if (iCutSettings == -1) tmpFullCutSettings = Form("");
-          auto spectraNameId = Form("%s_%d_%d_%d",tmpFullCutSettings, iBkg, sigmoidFlag, iNsigma);
-          std::cout << "SigmoidCorrection = " << kBoolString[sigmoidFlag] << "; cutSettings = " << fullCutSettings << "..." << std::endl;
-          outFile << "SigmoidCorrection = " << kBoolString[sigmoidFlag] << "; cutSettings = " << fullCutSettings << "..."
-                  << "\n";
+          int cutVariable = 0;
+          int cutIndex = iCutSettings;
+          char *fullCutSettings = Form("999");
+          if (iCutSettings > -1) {
+            if (iCutSettings >= tmpNCutDCAz && iCutSettings < (tmpNCutDCAz + tmpNTPCPidSigmas))
+            {
+              cutVariable = 1;
+              cutIndex -= tmpNCutDCAz;
+            }
+            else if (iCutSettings >= (tmpNCutDCAz + tmpNTPCPidSigmas) && iCutSettings < (tmpNCutDCAz + tmpNTPCPidSigmas + tmpNCutTPCClusters))
+            {
+              cutVariable = 2;
+              cutIndex -= (tmpNCutDCAz + tmpNTPCPidSigmas);
+            }
+            else if (iCutSettings >= (tmpNCutDCAz + tmpNTPCPidSigmas + tmpNCutTPCClusters))
+            {
+              cutVariable = 3;
+              cutIndex -= (tmpNCutDCAz + tmpNTPCPidSigmas + tmpNCutTPCClusters);
+            }
+            fullCutSettings = Form("%s%d", cutSettings[cutVariable], cutIndex);
+          }
+          std::cout << "fullCutSettings = " << fullCutSettings << std::endl;
 
+          double DCAxyCut = 0.12;
+          //if (cutVariable == 3) DCAxyCut = kCutDCAxyVariations[cutIndex];
+
+          std::cout << "bkg selection = " << iBkg << "; roiNsigmaDown = " << roi_n_sigma_down[iNsigmaDown] << "; roiNsigmaUp = " << roi_n_sigma_up[iNsigmaUp] << "; dcaxycut = " << DCAxyCut << std::endl;
           if (analyse)
           {
-            gSystem->Exec(Form("bash ~/Code/MasterThesis/Pion_PbPb/scripts/LaunchAnalysisSpec.sh %s 1 %d %d %s %f", fullCutSettings, iBkg, sigmoidFlag, spectraNameId, roi_n_sigma[iNsigma]));
+            gSystem->Exec(Form("bash ~/Code/MasterThesis/Pion_PbPb/scripts/LaunchAnalysisSignEffPrim.sh %s 1 1 %f %f %f", fullCutSettings, roi_n_sigma_down[iNsigmaDown], roi_n_sigma_up[iNsigmaUp], DCAxyCut));
+          }
+
+          for (int iSgm = 0; iSgm < 1; ++iSgm)
+          {
+            // bool binCountingFlag = 1 - iBin;
+            bool sigmoidFlag = 1 - iSgm;
+            auto tmpFullCutSettings = fullCutSettings;
+            if (iCutSettings == -1) tmpFullCutSettings = Form("");
+            auto spectraNameId = Form("%s_%d_%d_%d_%d",tmpFullCutSettings, iBkg, sigmoidFlag, iNsigmaDown, iNsigmaUp);
+            std::cout << "SigmoidCorrection = " << kBoolString[sigmoidFlag] << "; cutSettings = " << fullCutSettings << "..." << std::endl;
+            outFile << "SigmoidCorrection = " << kBoolString[sigmoidFlag] << "; cutSettings = " << fullCutSettings << "..."
+                    << "\n";
+
+            if (analyse)
+            {
+              gSystem->Exec(Form("bash ~/Code/MasterThesis/Pion_PbPb/scripts/LaunchAnalysisSpec.sh %s 1 %d %d %s %f %f", fullCutSettings, iBkg, sigmoidFlag, spectraNameId, roi_n_sigma_down[iNsigmaDown], roi_n_sigma_up[iNsigmaUp]));
+            }
           }
         }
       }

@@ -44,7 +44,7 @@ using namespace pion;
 
 const double kNSigma = 3; // define interval for bin counting
 
-void SignalBinned(const char *cutSettings = "", const double roi_max_limit_input = 15., const bool binCounting = false, const int bkg_shape = 1, const char *inFileDat = "AnalysisResults", const char *outFileName = "SignalPion", const char *outFileOption = "recreate", const bool extractSignal = true, const bool useDSCB = false, const bool binCountingNoFit = false)
+void SignalBinned(const char *cutSettings = "", const double roi_min_limit_input = 1.5, const double roi_max_limit_input = 11., const bool binCounting = false, const int bkg_shape = 1, const char *inFileDat = "AnalysisResults", const char *outFileName = "SignalPion", const char *outFileOption = "recreate", const bool extractSignal = true, const bool useDSCB = false, const bool binCountingNoFit = false)
 {
 
   // make signal extraction plots directory
@@ -58,13 +58,16 @@ void SignalBinned(const char *cutSettings = "", const double roi_max_limit_input
   gStyle->SetOptStat(0);
   gStyle->SetOptFit(1111);
 
-  int iNsigma = 0;
-  if (roi_max_limit_input > 14.9 && roi_max_limit_input < 15.1) iNsigma = 1;
-  else if (roi_max_limit_input > 15.9) iNsigma = 2; 
+  int iNsigmaDown = 0;
+  if (roi_min_limit_input > 1.4 && roi_min_limit_input < 1.6) iNsigmaDown = 1;
+  else if (roi_min_limit_input > 1.9) iNsigmaDown = 2; 
+  int iNsigmaUp = 0;
+  if (roi_max_limit_input > 10.9 && roi_max_limit_input < 11.1) iNsigmaUp = 1;
+  else if (roi_max_limit_input > 11.9) iNsigmaUp = 2; 
   TFile *outFile = TFile::Open(TString::Format("%s/%s.root", kOutDir, outFileName), outFileOption); // output file
-  if (outFile->GetDirectory(Form("%s_%d_%d_%d", cutSettings, binCounting, bkg_shape,iNsigma)))
+  if (outFile->GetDirectory(Form("%s_%d_%d_%d_%d", cutSettings, binCounting, bkg_shape,iNsigmaDown,iNsigmaUp)))
     return;
-  TDirectory *dirOutFile = outFile->mkdir(Form("%s_%d_%d_%d", cutSettings, binCounting, bkg_shape, iNsigma));
+  TDirectory *dirOutFile = outFile->mkdir(Form("%s_%d_%d_%d_%d", cutSettings, binCounting, bkg_shape, iNsigmaDown, iNsigmaUp));
   //TFile *dataFile = TFile::Open(TString::Format("%s/%s_largeNsigma.root", kDataDir, inFileDat)); // open data TFile
   TFile *dataFile = TFile::Open(TString::Format("%s/%s_largeNsigma_pion.root", kDataDir, inFileDat)); // open data TFile
 
@@ -162,7 +165,7 @@ void SignalBinned(const char *cutSettings = "", const double roi_max_limit_input
         tofSignalProjectionAll->Fit("signalRegionFit", "QRL+", "", maximum_signal - 1., maximum_signal + 1.);
         double mean_tmp = signalRegionFit.GetParameter(1);
         double rms_tmp = signalRegionFit.GetParameter(2);
-        double roi_max_limit = mean_tmp+11*rms_tmp+roi_max_limit_input-15.;
+        double roi_max_limit = mean_tmp+roi_max_limit_input*rms_tmp;
 
         // roofit data
         double maxNsigma=20.;
@@ -278,7 +281,7 @@ void SignalBinned(const char *cutSettings = "", const double roi_max_limit_input
             }
             else iB++;
           }
-          intersectionBinCenter=/* mean_tmp-2*rms_tmp; */tofSignalProjection->GetBinCenter(iB+binShiftIndex);
+          intersectionBinCenter=mean_tmp-roi_min_limit_input*rms_tmp; //tofSignalProjection->GetBinCenter(iB+binShiftIndex);
           std::cout << "intersection bin center = " << intersectionBinCenter << std::endl;
           tofSignal.setRange("signalRange", intersectionBinCenter, signalRightLimit);
 
