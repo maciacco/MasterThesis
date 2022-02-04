@@ -278,7 +278,7 @@ void SignalBinned(const char *cutSettings = "", const double roi_max_limit_input
             }
             else iB++;
           }
-          intersectionBinCenter=tofSignalProjection->GetBinCenter(iB+binShiftIndex);
+          intersectionBinCenter=/* mean_tmp-2*rms_tmp; */tofSignalProjection->GetBinCenter(iB+binShiftIndex);
           std::cout << "intersection bin center = " << intersectionBinCenter << std::endl;
           tofSignal.setRange("signalRange", intersectionBinCenter, signalRightLimit);
 

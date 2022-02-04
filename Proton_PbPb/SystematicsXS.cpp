@@ -98,7 +98,8 @@ void SystematicsXS(const char *cutSettings = "", const double roi_nsigma = 8., c
   double y_antip[]={fRatio[1][0]->GetFunction("pol0")->GetParameter(0),fRatio[2][0]->GetFunction("pol0")->GetParameter(0)};
   double y_err_antip[]={fRatio[1][0]->GetFunction("pol0")->GetParError(0),fRatio[2][0]->GetFunction("pol0")->GetParError(0)};
   TGraphErrors gAntip(2,x_antip,y_antip,x_err_antip,y_err_antip);
-  TF1 f("f","[0]*x*x+[1]*x+1-[0]-[1]");
+  //TF1 f("f","[0]*x*x+[1]*x+1-[0]-[1]");
+  TF1 f("f","[0]*x+1-[0]");
   gAntip.Fit("f");
   double lower_ratio = f.Eval(1.075);
   double upper_ratio = f.Eval(0.925);

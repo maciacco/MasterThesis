@@ -52,10 +52,10 @@ namespace he3
   const int kNPt[2] = {12, 9};
 
   // centrality binning
-  const int kNCentBins = 11; // total number of V0M multiplicity classes
-  const double kCentBins[kNCentBins + 1] = {0.f, 5.f, 7.5f, 10.f, 20.f, 30.f, 40.f, 50.f, 60.f, 70.f, 80.f, 90.f};
-  const int kCentBinsHe3[][2] = {{1, 1}, {2, 3}, {6, 7}};             // centrality classes bin indexes in He3 analysis
-  const double kCentBinsLimitsHe3[][2] = {{0, 5}, {5, 10}, {30, 50}}; // centrality classes bin limits in He3 analysis
+  const int kNCentBins = 12; // total number of V0M multiplicity classes
+  const double kCentBins[kNCentBins + 1] = {-10.f, 0.f, 5.f, 7.5f, 10.f, 20.f, 30.f, 40.f, 50.f, 60.f, 70.f, 80.f, 90.f};
+  const int kCentBinsHe3[][2] = {{1, 1}, {2, 3}, {6, 7}, {1, 1}};             // centrality classes bin indexes in He3 analysis
+  const double kCentBinsLimitsHe3[][2] = {{0, 5}, {5, 10}, {30, 50}, {-10, 0}}; // centrality classes bin limits in He3 analysis
 
   // TPC nsigma binning
   const int kNSigmaBins = 240;
