@@ -53,7 +53,7 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
     TH1D fSystematicUncertaintyTotal(Form("fSystematicUncertaintyTotal_%.0f_%.0f", kCentBinsLimitsPion[iC][0], kCentBinsLimitsPion[iC][1]), Form("%.0f-%.0f%%", kCentBinsLimitsPion[iC][0], kCentBinsLimitsPion[iC][1]), kNPtBins, kPtBins);
     TH1D fSystematicUncertaintyTotalPtCorrelated(Form("fSystematicUncertaintyTotalPtCorrelated_%.0f_%.0f", kCentBinsLimitsPion[iC][0], kCentBinsLimitsPion[iC][1]), Form("%.0f-%.0f%%", kCentBinsLimitsPion[iC][0], kCentBinsLimitsPion[iC][1]), kNPtBins, kPtBins);
     TH1D fRatioFromVariationsTot(Form("fRatioFromVariationsTot_%.0f_%.0f", kCentBinsLimitsPion[iC][0], kCentBinsLimitsPion[iC][1]), Form("%.0f-%.0f%%", kCentBinsLimitsPion[iC][0], kCentBinsLimitsPion[iC][1]), kNPtBins, kPtBins);
-    double ratioBins[1000];
+    double ratioBins[3000];
     for (int iRatioBins = 0; iRatioBins < 3000; iRatioBins++){
       ratioBins[iRatioBins]=0.85+iRatioBins*0.0001;
     }
@@ -465,7 +465,7 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
     hRatio.Write();
 
     TH1D h_trial("h_trial","h_trial",kNPtBins,kPtBins);
-    TH1D fRatioDistributionTrials(Form("fRatioDistributionTrials_%.0f_%.0f", kCentBinsLimitsPion[iC][0], kCentBinsLimitsPion[iC][1]),Form("%.0f-%.0f%%", kCentBinsLimitsPion[iC][0], kCentBinsLimitsPion[iC][1]),500,0.95,1.05);
+    TH1D fRatioDistributionTrials(Form("fRatioDistributionTrials_%.0f_%.0f", kCentBinsLimitsPion[iC][0], kCentBinsLimitsPion[iC][1]),Form("%.0f-%.0f%%", kCentBinsLimitsPion[iC][0], kCentBinsLimitsPion[iC][1]),5000,0.95,1.05);
     for (int iTrial=0;iTrial<nTrials;++iTrial){
       double nsigma=gRandom->Gaus(0,1);
       for (int iPtBin=5;iPtBin<kNPtBins;++iPtBin){
@@ -475,7 +475,7 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
       h_trial.Fit("pol0","QR","",0.7,1.1);
       fRatioDistributionTrials.Fill(h_trial.GetFunction("pol0")->GetParameter(0));
     }
-    fRatioDistributionTrials.Write();
+    //fRatioDistributionTrials.Write();
 
     TCanvas cRatio(Form("cRatio_%.0f_%.0f", kCentBinsLimitsPion[iC][0], kCentBinsLimitsPion[iC][1]), "cRatio");
     cRatio.SetTicks(1, 1);
@@ -514,6 +514,7 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
     fSystematicUncertaintyTotal.GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
     fSystematicUncertaintyTotal.GetYaxis()->SetTitle("Systematic Uncertainty");
     fSystematicUncertaintyTotal.SetMinimum(0.);
+    fSystematicUncertaintyTotal.SetMaximum(0.01);
     TCanvas cSysError(fSystematicUncertaintyTotal.GetName(),fSystematicUncertaintyTotal.GetTitle());
     fSystematicUncertaintyTotal.Draw("histo");
     gPad->Update();

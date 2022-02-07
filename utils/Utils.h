@@ -27,6 +27,19 @@ using ROOT::RDataFrame;
 namespace utils
 {
 
+  class TH2TF { // https://root-forum.cern.ch/t/create-a-tf1-from-a-th1f/41429/7
+    public:
+      void SetInputHist (TH1D* h_in) {h_input = (TH1D*)h_in;}
+      double Eval (double *x, double *p) {
+        double xx = x[0];
+        if (xx < h_input->GetBinLowEdge(1) || xx > h_input->GetBinLowEdge(h_input->GetNbinsX())+ h_input->GetBinWidth(1))
+          return 0.;
+        return p[0]*h_input->GetBinContent(h_input->FindBin(xx)); // add scaling parameter
+      }
+    private:
+      TH1D* h_input;
+  };
+
   bool replace(std::string &str, const std::string &from, const std::string &to)
   {
     size_t start_pos = str.find(from);

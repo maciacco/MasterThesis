@@ -383,7 +383,7 @@ void Secondary(const char *cutSettings = "", const double DCAxyCut=0.12, const c
           chiSq.SetTextSize(22);
           covStatus.SetTextSize(22);
           chiSq.Draw("same");
-          covStatus.Draw("same");
+          // covStatus.Draw("same");
 
           // print fit results
           std::cout << "f_prim_TFFfit = " << fracMc1 << " +/- " << errFracMc1 << std::endl;

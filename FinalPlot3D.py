@@ -25,7 +25,7 @@ file_pion = ROOT.TFile.Open(path_pion + '/SystematicsAllEPtNotCombined.root')
 file_he3_syst = ROOT.TFile.Open(path_he3 + '/SystematicsAll.root')
 file_hyp_syst = ROOT.TFile.Open(path_hyp + '/Systematics.root')
 
-file_out = ROOT.TFile.Open('FinalPlot.root', 'recreate')
+file_out = ROOT.TFile.Open('FinalPlot3D.root', 'recreate')
 
 for i_cent, cent in enumerate(centrality_classes):
 
@@ -68,7 +68,8 @@ for i_cent, cent in enumerate(centrality_classes):
     syst_proton = fit_proton.GetParError(0)
     syst_pion = fit_pion.GetParError(0)
     syst_proton_pt_correlated = ratio_proton_pt_correlated.GetRMS()
-    syst_proton = np.sqrt(syst_proton*syst_proton+syst_proton_pt_correlated*syst_proton_pt_correlated)
+    syst_proton_abs = np.sqrt(0.00227815*0.00227815+0.000943191*0.000943191)*ratio_proton # from absorption cross section variation
+    syst_proton = np.sqrt(syst_proton*syst_proton+syst_proton_pt_correlated*syst_proton_pt_correlated+syst_proton_abs*syst_proton_abs)
     syst_pion_pt_correlated = ratio_pion_pt_correlated.GetRMS()
     syst_pion = np.sqrt(syst_pion*syst_pion+syst_pion_pt_correlated*syst_pion_pt_correlated)
 
@@ -110,7 +111,7 @@ for i_cent, cent in enumerate(centrality_classes):
     fit_parameter_error_1 = fit_expo.GetParError(1)
     print(f"mu_B / T = {fit_parameter_0} +/- {fit_parameter_error_0}; mu_I3 / T =  {fit_parameter_1} +/- {fit_parameter_error_1}")
     temperature = 155. # MeV
-    print(f"mu_B (T = 155 MeV) = {fit_parameter_0*155} +/- {fit_parameter_error_0*155}; mu_I3 (T = 155 MeV) = {fit_parameter_1*155} +/- {fit_parameter_error_1*155}")
+    print(f"mu_B (T = 155 MeV) = {fit_parameter_0*155} +/- {fit_parameter_error_0*155} +/- {fit_parameter_0*2} MeV; mu_I3 (T = 155 MeV) = {fit_parameter_1*155} +/- {fit_parameter_error_1*155} +/- {fit_parameter_1*2} MeV")
     
     # # format fit parameter and baryon chemical potential values and errors
     # formatted_fit_parameter = "{:.4f}".format(fit_parameter)

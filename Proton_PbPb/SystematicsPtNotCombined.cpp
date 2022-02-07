@@ -78,7 +78,7 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
     TH1D fSystematicUncertaintyTotal(Form("fSystematicUncertaintyTotal_%.0f_%.0f", kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]), Form("%.0f-%.0f%%", kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]), kNPtBins, kPtBins);
     TH1D fSystematicUncertaintyTotalPtCorrelated(Form("fSystematicUncertaintyTotalPtCorrelated_%.0f_%.0f", kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]), Form("%.0f-%.0f%%", kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]), kNPtBins, kPtBins);
     TH1D fRatioFromVariationsTot(Form("fRatioFromVariationsTot_%.0f_%.0f", kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]), Form("%.0f-%.0f%%", kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]), kNPtBins, kPtBins);
-    double ratioBins[1000];
+    double ratioBins[3000];
     for (int iRatioBins = 0; iRatioBins < 3000; iRatioBins++){
       ratioBins[iRatioBins]=0.85+iRatioBins*0.0001;
     }
