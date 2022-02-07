@@ -83,7 +83,7 @@ void SecondaryMC(const char *cutSettings = "", const double DCAxyCut = 0.12, con
     //fDCAprim->Add(fDCAprim3);
 
     /* for (int iCent = 0; iCent < kNCentClasses; ++iCent) */
-    for (int iCent = 4; iCent < 5; ++iCent)
+    for (int iCent = 0; iCent < kNCentClasses; ++iCent)
     {
       TH1D fPrimaryFrac(Form("f%sPrimFrac_%.0f_%.0f", kAntimatterMatter[iMatt], kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1]), Form("%.0f-%.0f%%", kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1]), kNPtBins, kPtBins);
 

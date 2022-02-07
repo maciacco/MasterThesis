@@ -29,9 +29,9 @@ void fitXsection(){
   // convert th1 to tf1
   TH2TF *th2tf=new TH2TF();
   th2tf->SetInputHist(hXSectGEANT4);
-  auto inputG4AntiP=new TF1("inputG4AntiP",th2tf,&TH2TF::Eval,hXSectGEANT4->GetXaxis()->GetXmin(),2.5,1);
+  auto inputG4AntiP=new TF1("inputG4AntiP",th2tf,&TH2TF::Eval,0.95,2.7,1);
 
-  gXSectMeasrd->Fit("inputG4AntiP","WR","",0.5,2.5);
+  gXSectMeasrd->Fit("inputG4AntiP","WR","",0.95,2.7);
   gXSectMeasrd->GetFunction("inputG4AntiP")->SetNpx(10000);
   gXSectMeasrd->GetYaxis()->SetRangeUser(-0.5,2.5);
   c.cd();

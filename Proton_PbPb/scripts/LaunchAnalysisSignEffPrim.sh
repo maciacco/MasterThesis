@@ -38,7 +38,7 @@ fi
 # launch analysis
 if (($cutSettings==999)); then
     cutSettings=""
-    dcaxycut=0.07
+    dcaxycut=0.12
 fi
 
 echo $cutSettings
@@ -69,7 +69,7 @@ if [ $extractRatios -eq 1 ]; then
 .L SecondaryMC.cpp+
 SignalBinnedMC("$cutSettings",$roiNsigma,$argumentSignal,"$fileDataEff","$signalNameEff","recreate")
 SecondaryMC("$cutSettings",$dcaxycut,"$fileDataEff","$fileDataEff","$PrimaryHe3Eff")
-EfficiencyNew("$cutSettings","$fileDataEff","$EfficiencyHe3","$signalNameEff","$PrimaryHe3Eff","update")
+EfficiencyNew("$cutSettings","$fileDataEff","$EfficiencyHe3","$signalNameEff","$PrimaryHe3Eff")//,"update")
 .q
 EOF
 fi

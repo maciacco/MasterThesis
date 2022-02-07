@@ -59,7 +59,7 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
   //TFile *fileEffFit=TFile::Open("out/SpectraProton_MC21l5_raw_fitEff.root");
   TFile *fG4 = TFile::Open("out/SpectraProton_MC21l5_raw_primaryInjected.root");      
   TFile *inFileSec = TFile::Open(Form("%s/PrimaryProton.root", kOutDir));
-  TFile *effFile = TFile::Open(Form("%s/EfficiencyProtonSys.root", kOutDir));
+  TFile *effFile = TFile::Open(Form("%s/EfficiencyProtonMC_21l5_false_.root", kOutDir));
   TFile *outFile = TFile::Open(Form("%s/%s.root", kOutDir, outFileName), "recreate");
 
   for (int iC = 0; iC < kNCentClasses; ++iC) // TODO: extend the analysis to the third centrality class as well
@@ -99,7 +99,7 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
     int iNsigma = 1;
     for (int iTrackCuts=0; iTrackCuts<kNTrackCuts; ++iTrackCuts){
       for (int iROI=0; iROI<3; ++iROI){
-        for (int iG3G4Prim=1; iG3G4Prim<2; ++iG3G4Prim){ // 1 = use G3 (DO NOT USE G4 in this case)
+        for (int iG3G4Prim=0; iG3G4Prim<1; ++iG3G4Prim){ // 0 = use G3 (DO NOT USE G4 in this case)
           for (int iSigmoid=0; iSigmoid<1; ++iSigmoid){ // 0 = directly from TFF -> do not use fit function
             auto tmpCutSettings = trackCutSettings[iTrackCuts];
             auto cutIndex = trackCutIndexes[iTrackCuts];
@@ -343,6 +343,7 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
     }
     fRatioFromVariationsTot.Write();
     //fRatiosVsPtDCAxy.Write();
+    fRatiosVsPtTot.Write();
     fRatiosVsPtDCAz.Write();
     fRatiosVsPtPID.Write();
     fRatiosVsPtTPCCls.Write();
@@ -471,7 +472,7 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
       // double fraction_uncorr_DCAxy=1.-std::abs(correlationDCAxy);
       double totSys=0;
       double totSysPtCorrelated=0;
-      if (iC<2 || (iC==2 && iPtBins!=18)){
+      if (iC>0){
         totSys=TMath::Sqrt(sigma_DCAz*sigma_DCAz*fraction_uncorr_DCAz*fraction_uncorr_DCAz
         +sigma_PID*sigma_PID*fraction_uncorr_PID*fraction_uncorr_PID
         +sigma_TPCCls*sigma_TPCCls*fraction_uncorr_TPCCls*fraction_uncorr_TPCCls
@@ -524,8 +525,9 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
     // Compute pt correlated systematic uncertainty
     TH1D hRatio(Form("fRatio_%.0f_%.0f", kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]),Form("%.0f-%.0f%%", kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]),kNPtBins,kPtBins);
     for (int iPtBin=5;iPtBin<kNPtBins;++iPtBin){
-      hRatio.SetBinContent(iPtBin,fRatioFromVariationsTot.GetBinContent(iPtBin));
-      hRatio.SetBinError(iPtBin,hRatio.GetBinContent(iPtBin)*fSystematicUncertaintyTotal.GetBinContent(iPtBin));
+      double scalingFactor = scale_factor_antip(hRatio.GetBinCenter(iPtBin));
+      hRatio.SetBinContent(iPtBin,fRatioFromVariationsTot.GetBinContent(iPtBin)/scalingFactor);
+      hRatio.SetBinError(iPtBin,hRatio.GetBinContent(iPtBin)*fSystematicUncertaintyTotal.GetBinContent(iPtBin)/scalingFactor);
     }
     hRatio.Fit("pol0");
     hRatio.Write();

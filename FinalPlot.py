@@ -181,6 +181,6 @@ for i_cent, cent in enumerate(centrality_classes):
     text_T.Draw("same")
     c.Write()
     fit_expo.Write()
-    c.Print(f"Ratios_{cent[0]}_{cent[1]}.pdf")
+    c.Print(f"Ratios_{cent[0]}_{cent[1]}_noHe3Hyp.pdf")
 
 file_out.Close()

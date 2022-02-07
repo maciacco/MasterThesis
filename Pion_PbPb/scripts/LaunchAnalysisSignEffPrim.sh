@@ -69,7 +69,7 @@ if [ $extractRatios -eq 1 ]; then
 .L SecondaryMC.cpp+
 SignalBinnedMC("$cutSettings",$roiNsigmaMin,$roiNsigmaMax,$argumentSignal,"$fileDataEff","$signalNameEff","recreate")
 SecondaryMC("$cutSettings",$dcaxycut,"$fileDataEff","$fileDataEff","$PrimaryHe3Eff")
-EfficiencyNew("$cutSettings","$fileDataEff","$EfficiencyHe3","$signalNameEff","$PrimaryHe3Eff","update")
+EfficiencyNew("$cutSettings","$fileDataEff","$EfficiencyHe3","$signalNameEff","$PrimaryHe3Eff")//,"update")
 .q
 EOF
 fi

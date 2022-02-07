@@ -78,7 +78,7 @@ void EfficiencyNew(const char *cutSettings = "", const char *inFileNameMC = "mc_
     //TF1 *sec_f;
     TH1D *fSec;
     
-    for (int iCent = 4; iCent < 5; ++iCent)
+    for (int iCent = 0; iCent < kNCentClasses; ++iCent)
     /* for (int iCent = 0; iCent < kNCentClasses; ++iCent) */ // SET FIRST CENTRALITY BIN TO 1 EXCEPT FOR LHC16h7c_g4_2
     {                                                       // loop over centrality
       int cent_bin_min = kCentBinsProton[iCent][0];
