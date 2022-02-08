@@ -16,21 +16,9 @@ using utils::TTList;
 using namespace he3;
 
 double he3CorrectionPt(int iMatt, double pt){
-  double fit_c_proton = 0.868419;
-  double fit_c_proton_error = 0.0579547;
-  /* if (iMatt == 1)
-    return 0.99274*TMath::Power(pt,0.00143);
-  return 1.04948*TMath::Power(pt,-0.01525); */
-  //return 1;
-  double f=1.-(1./0.029)* /* (0.738506/1.058)*(0.738506-1.) */ (1.058-1.)*0.00294*TMath::Power(pt,-0.19483);
-  double f_note=0.99274*TMath::Power(pt,0.00143);
-  double f_new = 0;
-  if (iMatt == 1){
-    f_new = 1.-(1./0.029)*(fit_c_proton/1.058)*(fit_c_proton-1.)*0.00294*TMath::Power(pt,-0.19483);
-  }
-  else f_new = 1.+(0.02088*TMath::Power(pt,-0.48766))/(0.084)*(1.-0.83);
-  //return f_new*(1+(f-f_note)/f_note);
-  return 1;
+  if (iMatt == 1)
+    return 1.010*TMath::Power(pt, -0.00000239);
+  return 1.034*TMath::Power(pt, -0.007623);
 };
 
 void Spectra(const float cutDCAz = 1.f, const int cutTPCcls = 89, const bool binCounting = true, const int bkg_shape = 1, const bool sigmoidCorrection = true, const char *histoNameDir = ".", const char *outFileName = "SpectraHe3", const char *outFileOption = "recreate", const char *dataFile = "AnalysisResults", const char *signalFile = "SignalHe3", const char *effFile = "EfficiencyHe3", const char *primFile = "PrimaryHe3")

@@ -6,6 +6,8 @@ import ROOT
 data_path_proton = "data/Proton_PbPb"
 data_path_he3 = "data/He3_PbPb"
 
+ROOT.gStyle.SetOptStat(00000000000)
+
 input_file_eff_default_proton = ROOT.TFile.Open(f"{data_path_proton}/EfficiencyProtonMC_21l5_false_XS.root")
 input_file_eff_increased_proton = ROOT.TFile.Open(f"{data_path_proton}/EfficiencyProtonMC_21l5_false_XS+.root")
 input_file_eff_default_he3 = ROOT.TFile.Open(f"{data_path_he3}/EfficiencyHe3_XSDefault.root")
@@ -61,6 +63,7 @@ scaling_factor.Fit(fit_func,"MR","",1.,2.)
 scaling_factor.Write()
 
 out_file.cd() 
+cHe3 = ROOT.TCanvas("cHe3","cHe3")
 eff_default_he3 = input_file_eff_default_he3.Get("fMEff_TPC_0_5;1")
 eff_increased_he3 = input_file_eff_increased_he3.Get("fMEff_TPC_0_5;1")
 eff_difference_he3 = ROOT.TH1D(eff_default_he3)
@@ -77,9 +80,14 @@ for iB in range(scaling_factor.GetNbinsX()+1):
 fit_func = ROOT.TF1("fit_func_2","[0]*TMath::Power(x,[1])",1.,10.,2)
 fit_func.SetParLimits(0,0.,1.1)
 scaling_factor.Fit(fit_func,"MR","",1.,10.)
+scaling_factor.SetTitle("^{3}He")
+scaling_factor.GetYaxis().SetTitle("Scaling factor")
 scaling_factor.Write()
+scaling_factor.Draw("")
+cHe3.Print("ScalingFactorHe3.pdf")
 
 out_file.cd() 
+cAntiHe3 = ROOT.TCanvas("cAntiHe3","cAntiHe3")
 eff_default_antihe3 = input_file_eff_default_he3.Get("fAEff_TPC_0_5;1")
 eff_increased_antihe3 = input_file_eff_increased_he3.Get("fAEff_TPC_0_5;1")
 eff_difference_antihe3 = ROOT.TH1D(eff_default_antihe3)
@@ -96,6 +104,10 @@ for iB in range(scaling_factor.GetNbinsX()+1):
 fit_func = ROOT.TF1("fit_func_3","[0]*TMath::Power(x,[1])",1.,10.,2)
 fit_func.SetParLimits(0,0.,1.1)
 scaling_factor.Fit(fit_func,"MR","",1.,10.)
+scaling_factor.SetTitle("^{3}#bar{He}")
+scaling_factor.GetYaxis().SetTitle("Scaling factor")
 scaling_factor.Write()
+scaling_factor.Draw("")
+cAntiHe3.Print("ScalingFactorAntiHe3.pdf")
 
 out_file.Close()

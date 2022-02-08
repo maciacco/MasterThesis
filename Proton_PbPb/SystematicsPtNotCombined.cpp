@@ -525,9 +525,9 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
     // Compute pt correlated systematic uncertainty
     TH1D hRatio(Form("fRatio_%.0f_%.0f", kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]),Form("%.0f-%.0f%%", kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]),kNPtBins,kPtBins);
     for (int iPtBin=5;iPtBin<kNPtBins;++iPtBin){
-      double scalingFactor = scale_factor_antip(hRatio.GetBinCenter(iPtBin));
-      hRatio.SetBinContent(iPtBin,fRatioFromVariationsTot.GetBinContent(iPtBin)/scalingFactor);
-      hRatio.SetBinError(iPtBin,hRatio.GetBinContent(iPtBin)*fSystematicUncertaintyTotal.GetBinContent(iPtBin)/scalingFactor);
+      //double scalingFactor = scaling_factor_antip(hRatio.GetBinCenter(iPtBin));
+      hRatio.SetBinContent(iPtBin,fRatioFromVariationsTot.GetBinContent(iPtBin));
+      hRatio.SetBinError(iPtBin,hRatio.GetBinContent(iPtBin)*fSystematicUncertaintyTotal.GetBinContent(iPtBin));
     }
     hRatio.Fit("pol0");
     hRatio.Write();
@@ -550,7 +550,7 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
     hRatio.SetMarkerStyle(20);
     hRatio.SetMarkerSize(0.8);
     hRatio.GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
-    hRatio.GetYaxis()->SetTitle("Systematic Uncertainty");
+    hRatio.GetYaxis()->SetTitle("Ratio #bar{p}/p");
     hRatio.GetXaxis()->SetRangeUser(1.0,2.0);
     hRatio.GetYaxis()->SetRangeUser(0.88, 1.12);
     hRatio.SetStats(0);

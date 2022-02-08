@@ -559,7 +559,7 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
     hRatio.SetMarkerStyle(20);
     hRatio.SetMarkerSize(0.8);
     hRatio.GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
-    hRatio.GetYaxis()->SetTitle("Systematic Uncertainty");
+    hRatio.GetYaxis()->SetTitle("Ratio #pi^{-}/#pi^{+}");
     hRatio.GetXaxis()->SetRangeUser(0.7,1.1);
     hRatio.GetYaxis()->SetRangeUser(0.92, 1.08);
     hRatio.SetStats(0);
@@ -575,7 +575,7 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
 
     TCanvas cPtCorrelatedError(fRatioDistributionTrials.GetName(),fRatioDistributionTrials.GetTitle());
     fRatioDistributionTrials.GetXaxis()->SetRangeUser(fRatioDistributionTrials.GetMean()-5*fRatioDistributionTrials.GetRMS(),fRatioDistributionTrials.GetMean()+5*fRatioDistributionTrials.GetRMS());
-    fRatioDistributionTrials.GetXaxis()->SetTitle("R(#bar{p}/p)");
+    fRatioDistributionTrials.GetXaxis()->SetTitle("R(#pi^{-}/#pi^{+})");
     fRatioDistributionTrials.GetYaxis()->SetTitle("Entries");
     fRatioDistributionTrials.Draw("");
     gPad->Update();

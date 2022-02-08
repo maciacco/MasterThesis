@@ -213,6 +213,7 @@ void SignalBinned(const char *cutSettings = "", const double roi_min_limit_input
 
         int covQ = -999;
         double intersectionBinCenter=-20.;
+        double intersectionHistogramFit=-10.;
         double signalRightLimit=roi_max_limit;
         /* if(ptMin>0.89)
         signalRightLimit=roi_max_limit-4.;
@@ -281,6 +282,7 @@ void SignalBinned(const char *cutSettings = "", const double roi_min_limit_input
             }
             else iB++;
           }
+          intersectionHistogramFit=-5.;//tofSignalProjection->GetBinCenter(iB+binShiftIndex);
           intersectionBinCenter=mean_tmp-roi_min_limit_input*rms_tmp; //tofSignalProjection->GetBinCenter(iB+binShiftIndex);
           std::cout << "intersection bin center = " << intersectionBinCenter << std::endl;
           tofSignal.setRange("signalRange", intersectionBinCenter, signalRightLimit);
@@ -373,7 +375,7 @@ void SignalBinned(const char *cutSettings = "", const double roi_min_limit_input
         xframe->Draw("");
         xframe->GetXaxis()->SetLabelSize(0.06);
         xframe->GetYaxis()->SetLabelSize(0.06);
-        //xframe->GetYaxis()->SetRangeUser(-1.e4, 2.e4);
+        xframe->GetXaxis()->SetRangeUser(intersectionHistogramFit,maxNsigma);
         xframe->GetYaxis()->SetTitleSize(0.07);
         xframe->GetYaxis()->SetTitleOffset(0.72);
         tofSignalProjection->GetXaxis()->SetRangeUser(-0.5, 0.5);
@@ -412,13 +414,13 @@ void SignalBinned(const char *cutSettings = "", const double roi_min_limit_input
         pad2->cd();
         frame2->Draw("");
         frame2->GetXaxis()->SetLabelOffset(0.005);
-        frame2->GetXaxis()->SetTitle("n#sigma_{p} (a.u.)");
+        frame2->GetXaxis()->SetTitle("n#sigma_{#pi} (a.u.)");
         frame2->GetXaxis()->SetTitleOffset(0.9);
         frame2->GetYaxis()->SetNdivisions(5);
         frame2->GetXaxis()->SetTitleSize(0.11);
         frame2->GetXaxis()->SetLabelSize(0.095);
         frame2->GetYaxis()->SetLabelSize(0.09);
-        //frame2->GetYaxis()->SetRangeUser(-1.e4, 2.e4);
+        frame2->GetXaxis()->SetRangeUser(intersectionHistogramFit,maxNsigma);
         frame2->GetYaxis()->SetTitleSize(0.095);
         frame2->GetYaxis()->SetTitleOffset(0.52);
         frame2->GetYaxis()->SetTitle(Form("#frac{ Ev. - Bg. }{ %.1f a.u. }", tofSignalProjection->GetXaxis()->GetBinWidth(2)));
@@ -431,7 +433,7 @@ void SignalBinned(const char *cutSettings = "", const double roi_min_limit_input
         TLine ldx1(signalRightLimit, -1.e4, signalRightLimit, 2.e4);
         ldx1.SetLineStyle(kDashed);
         //ldx1.Draw("same");
-        TLine zero(nSigmaLeft, 0, maxNsigma, 0);
+        TLine zero(intersectionHistogramFit, 0, maxNsigma, 0);
         zero.SetLineStyle(kDashed);
         zero.Draw("same");
         pad2->Update();

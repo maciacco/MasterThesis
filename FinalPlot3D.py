@@ -113,28 +113,28 @@ for i_cent, cent in enumerate(centrality_classes):
     temperature = 155. # MeV
     print(f"mu_B (T = 155 MeV) = {fit_parameter_0*155} +/- {fit_parameter_error_0*155} +/- {fit_parameter_0*2} MeV; mu_I3 (T = 155 MeV) = {fit_parameter_1*155} +/- {fit_parameter_error_1*155} +/- {fit_parameter_1*2} MeV")
     
-    # # format fit parameter and baryon chemical potential values and errors
-    # formatted_fit_parameter = "{:.4f}".format(fit_parameter)
-    # formatted_fit_parameter_error = "{:.4f}".format(fit_parameter_error)
-    # formatted_mu_b = "{:.2f}".format(fit_parameter*155)
-    # mu_b_error = np.sqrt(fit_parameter_error*fit_parameter_error/fit_parameter/fit_parameter)*fit_parameter*155
-    # formatted_mu_b_error = "{:.2f}".format(fit_parameter_error*155)
+    # format fit parameter and baryon chemical potential values and errors
+    formatted_fit_parameter_0 = "{:.4f}".format(fit_parameter_0)
+    formatted_fit_parameter_error_0 = "{:.4f}".format(fit_parameter_error_0)
+    formatted_mu_b = "{:.2f}".format(fit_parameter_0*155)
+    mu_b_error = np.sqrt(fit_parameter_error_0*fit_parameter_error_0/fit_parameter_0/fit_parameter_0)*fit_parameter_0*155
+    formatted_mu_b_error = "{:.2f}".format(fit_parameter_error_0*155)
     
-    # # chi2 text
-    # text_chi2 = ROOT.TLatex(0.5, 0.85, "#chi^{2}/NDF = "+formatted_chi2+"/"+str(fit_expo.GetNDF()))
-    # text_chi2.SetTextSize(TLATEX_TEXT_SIZE)
-    # text_chi2.SetTextColor(ROOT.kBlack)
+    # chi2 text
+    text_chi2 = ROOT.TLatex(-0.15, -0.40, "#chi^{2}/NDF = "+formatted_chi2+"/"+str(fit_expo.GetNDF()))
+    text_chi2.SetTextSize(TLATEX_TEXT_SIZE)
+    text_chi2.SetTextColor(ROOT.kBlack)
     
     # # mu_b / T ratio
     # text_mu_b_over_T = ROOT.TLatex(0.5, 0.8, "#mu_{#it{B}}/#it{T} = "+formatted_fit_parameter+" #pm "+formatted_fit_parameter_error)
     # text_mu_b_over_T.SetTextSize(TLATEX_TEXT_SIZE)
     # text_mu_b_over_T.SetTextColor(ROOT.kBlack)
     
-    # # mu_b at T = 155 MeV
-    # formatted_temperature_error = "{:.2f}".format(fit_parameter*2)
-    # text_mu_b = ROOT.TLatex(0.5, 0.75, "#mu_{#it{B}} = "+formatted_mu_b+" #pm "+formatted_mu_b_error+" #pm "+formatted_temperature_error+" MeV")
-    # text_mu_b.SetTextSize(TLATEX_TEXT_SIZE)
-    # text_mu_b.SetTextColor(ROOT.kBlack)
+    # mu_b at T = 155 MeV
+    formatted_temperature_error = "{:.2f}".format(fit_parameter_0*2)
+    text_mu_b = ROOT.TLatex(-0.15, -0.53, "#mu_{#it{B}} = "+formatted_mu_b+" #pm "+formatted_mu_b_error+" #pm "+formatted_temperature_error+" MeV")
+    text_mu_b.SetTextSize(TLATEX_TEXT_SIZE)
+    text_mu_b.SetTextColor(ROOT.kBlack)
 
     # # T = 155 +/- 2 MeV
     # text_T = ROOT.TLatex(0.5, 0.7, "#it{T} = 155 #pm 2 MeV")
@@ -151,7 +151,7 @@ for i_cent, cent in enumerate(centrality_classes):
     ratios_vs_b.SetMarkerSize(0.8)
     ratios_vs_b.SetTitle(f"{cent[0]}-{cent[1]}%")
     fit_expo.SetMinimum(0.6)
-    fit_expo.SetMaximum(1.23)
+    fit_expo.SetMaximum(1.2) # 1.23 to correctly visualise in file
     fit_expo.SetNpx(10)
     fit_expo.SetNpy(10)
     #ratios_vs_b.SetMinimum(0.6)
@@ -161,12 +161,12 @@ for i_cent, cent in enumerate(centrality_classes):
     fit_expo.Draw("surf0 same")
     # ratios_vs_b.Draw("same")
     # ratios_vs_b_graph.Draw("P5 same")
-    # text_chi2.Draw("same")
+    text_chi2.Draw("same")
     # text_mu_b_over_T.Draw("same")
-    # text_mu_b.Draw("same")
+    text_mu_b.Draw("same")
     # text_T.Draw("same")
     c.Write()
     fit_expo.Write()
-    # c.Print(f"Ratios_{cent[0]}_{cent[1]}.pdf")
+    c.Print(f"Ratios_{cent[0]}_{cent[1]}_3D.pdf")
 
 file_out.Close()
