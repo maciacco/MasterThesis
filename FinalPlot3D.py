@@ -121,7 +121,7 @@ for i_cent, cent in enumerate(centrality_classes):
     formatted_mu_b_error = "{:.2f}".format(fit_parameter_error_0*155)
     
     # chi2 text
-    text_chi2 = ROOT.TLatex(-0.15, -0.40, "#chi^{2}/NDF = "+formatted_chi2+"/"+str(fit_expo.GetNDF()))
+    text_chi2 = ROOT.TLatex(-0.17, -0.44, "#chi^{2}/NDF = "+formatted_chi2+"/"+str(fit_expo.GetNDF()))
     text_chi2.SetTextSize(TLATEX_TEXT_SIZE)
     text_chi2.SetTextColor(ROOT.kBlack)
     
@@ -132,7 +132,7 @@ for i_cent, cent in enumerate(centrality_classes):
     
     # mu_b at T = 155 MeV
     formatted_temperature_error = "{:.2f}".format(fit_parameter_0*2)
-    text_mu_b = ROOT.TLatex(-0.15, -0.53, "#mu_{#it{B}} = "+formatted_mu_b+" #pm "+formatted_mu_b_error+" #pm "+formatted_temperature_error+" MeV")
+    text_mu_b = ROOT.TLatex(-0.17, -0.59, "#mu_{#it{B}} = "+formatted_mu_b+" #pm "+formatted_mu_b_error+" #pm "+formatted_temperature_error+" MeV")
     text_mu_b.SetTextSize(TLATEX_TEXT_SIZE)
     text_mu_b.SetTextColor(ROOT.kBlack)
 
@@ -148,7 +148,9 @@ for i_cent, cent in enumerate(centrality_classes):
     c = ROOT.TCanvas(f"c_{cent[0]}_{cent[1]}", "c")
     c.cd()
     ratios_vs_b.SetMarkerStyle(20)
-    ratios_vs_b.SetMarkerSize(0.8)
+    ratios_vs_b.SetMarkerSize(1.1)
+    ratios_vs_b.SetLineColor(centrality_colors[i_cent])
+    ratios_vs_b.SetMarkerColor(centrality_colors[i_cent])
     ratios_vs_b.SetTitle(f"{cent[0]}-{cent[1]}%")
     fit_expo.SetMinimum(0.6)
     fit_expo.SetMaximum(1.2) # 1.23 to correctly visualise in file
@@ -159,7 +161,7 @@ for i_cent, cent in enumerate(centrality_classes):
     ratios_vs_b.Draw("pe")
     ratios_vs_b.GetZaxis().SetRangeUser(0.6,1.2)
     fit_expo.Draw("surf0 same")
-    # ratios_vs_b.Draw("same")
+    ratios_vs_b.Draw("pe same")
     # ratios_vs_b_graph.Draw("P5 same")
     text_chi2.Draw("same")
     # text_mu_b_over_T.Draw("same")

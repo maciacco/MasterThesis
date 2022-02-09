@@ -239,12 +239,12 @@ void SignalBinned(const char *cutSettings = "", const double roi_min_limit_input
 
           if (bkg_shape == 1 && ptMin < 0.89)
           { // expo
-            nBackground2 = new RooRealVar("#it{N}_{Bkg,2}", "nBackground2", 1., 1.e9);
+            nBackground2 = new RooRealVar("#it{N}_{Bkg}", "nBackground2", 1., 1.e9);
             model = new RooAddPdf("model", "model", RooArgList(*modelAll), RooArgList(*nBackground2));
           }
           else if (bkg_shape == 1 && ptMin > 0.89)
           { // double expo
-            nBackground2 = new RooRealVar("#it{N}_{Bkg,2}", "nBackground2", 1., 1.e9);
+            nBackground2 = new RooRealVar("#it{N}_{Bkg}", "nBackground2", 1., 1.e9);
             model = new RooAddPdf("model", "model", RooArgList(*modelAll), RooArgList(*nBackground2));
           }
           model->fitTo(data, RooFit::Range("rightSideband"));
@@ -369,6 +369,7 @@ void SignalBinned(const char *cutSettings = "", const double roi_min_limit_input
         pad2->SetBottomMargin(0.25);
         pad2->Draw();
         pad1->cd();
+        //pad1->SetLogy();
         xframe->GetXaxis()->SetLabelOffset(0.005);
         xframe->GetXaxis()->SetTitle("");
         xframe->GetXaxis()->SetTitleOffset(-0.005);
@@ -384,6 +385,7 @@ void SignalBinned(const char *cutSettings = "", const double roi_min_limit_input
         TLine lsx(intersectionBinCenter, 0, intersectionBinCenter, peakMaximum);
         lsx.SetLineStyle(kDashed);
         lsx.Draw("same");
+        //TLine ldx(signalRightLimit, 0, signalRightLimit, peakMaximum*0.1);
         TLine ldx(signalRightLimit, 0, signalRightLimit, peakMaximum*0.75);
         if(ptMin>1.19)ldx.SetY2(peakMaximum*0.6);
         ldx.SetLineStyle(kDashed);
