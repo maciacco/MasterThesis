@@ -58,7 +58,7 @@ def expected_signal(cent_class, ct_range, eff, n_events):
     he3_yield_0_90 = 2.74e4
     return correction*he3_yield_0_90
 
-def he3_correction_pt(int iMatt, double pt):
+def he3_correction_pt(iMatt, pt):
     if iMatt == 1:
         return 1.010*ROOT.TMath.Power(pt, -0.00000239)
     return 1.034*ROOT.TMath.Power(pt, -0.007623)

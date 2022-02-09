@@ -29,9 +29,9 @@ void ReadTreeMC(const float cutDCAz = 1.f, const int cutTPCcls = 89, const char 
 
   // read tree
   ROOT::EnableImplicitMT();                                                  // use all cores
-  ROOT::RDataFrame dataFrameR("RTree", Form("%s/AnalysisResults-8.root", kDataDir));        // get reconstructed tree from file
+  ROOT::RDataFrame dataFrameR("RTree", Form("%s/mc.root", kDataDir));        // get reconstructed tree from file
   ROOT::RDataFrame dataFrameRSec("RTree", Form("%s/mc_sec.root", kDataDir)); // get reconstructed (deuteron) tree from file
-  ROOT::RDataFrame dataFrameS("STree", Form("%s/AnalysisResults-8.root", kDataDir));        // get simulated tree from file
+  ROOT::RDataFrame dataFrameS("STree", Form("%s/mc.root", kDataDir));        // get simulated tree from file
 
   dirOutFile->cd();
   // track selection
