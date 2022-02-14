@@ -150,6 +150,7 @@ for i_cent, cent in enumerate(centrality_classes):
     ratios_vs_b.SetMarkerStyle(20)
     ratios_vs_b.SetMarkerSize(1.1)
     ratios_vs_b.SetLineColor(centrality_colors[i_cent])
+    ratios_vs_b.SetLineWidth(2)
     ratios_vs_b.SetMarkerColor(centrality_colors[i_cent])
     ratios_vs_b.SetTitle(f"{cent[0]}-{cent[1]}%")
     fit_expo.SetMinimum(0.6)

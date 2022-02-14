@@ -12,9 +12,9 @@ fileData="AnalysisResults_LHC21l5_full_largeDCA"
 fileMC="AnalysisResults_LHC21l5_full_largeDCA"
 # fileData="AnalysisResults-6"
 # fileMC="AnalysisResults-6"
-signalName="SignalProtonMC_21l5_false"
+signalName="SignalProtonMC_21l5_false__"
 spectraName="SpectraProtonMCMC_21l5_false"
-EfficiencyHe3="EfficiencyProtonMC_21l5_false"
+EfficiencyHe3="EfficiencyProtonMC_21l5_false__"
 PrimaryHe3="PrimaryProtonMC_21l5_false"
 
 # create output directories

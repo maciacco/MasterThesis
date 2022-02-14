@@ -22,6 +22,7 @@
 #include <RooPlot.h>
 #include <TFitResult.h>
 #include <RooFitResult.h>
+#include <TLine.h>
 
 #include "../utils/Utils.h"
 #include "../utils/Config.h"
@@ -31,6 +32,7 @@ using namespace pion;
 
 bool use_uniform = false;
 
+const bool fit_gaus = false;
 const double fitRange = 1.25;
 
 void Secondary(const char *cutSettings = "", const double DCAxyCut=0.12, const char *inFileDatName = "AnalysisResults", const char *inFileMCName = "mc", const char *outFileName = "PrimaryPion", const bool use_roofit = false, const bool useAntiPionsAsPrimaries = false)
@@ -106,6 +108,7 @@ void Secondary(const char *cutSettings = "", const double DCAxyCut=0.12, const c
     for (int iCent = 0; iCent < kNCentClasses; ++iCent)
     {
       TH1D fPrimaryFrac(Form("f%sPrimFrac_%.0f_%.0f", kAntimatterMatter[iMatt], kCentBinsLimitsPion[iCent][0], kCentBinsLimitsPion[iCent][1]), Form("%.0f-%.0f%%", kCentBinsLimitsPion[iCent][0], kCentBinsLimitsPion[iCent][1]), kNPtBins, kPtBins);
+      TH1D fPrimaryRMS(Form("f%sPrimRMS_%.0f_%.0f", kAntimatterMatter[iMatt], kCentBinsLimitsPion[iCent][0], kCentBinsLimitsPion[iCent][1]), Form("%.0f-%.0f%%", kCentBinsLimitsPion[iCent][0], kCentBinsLimitsPion[iCent][1]), kNPtBins, kPtBins);
       TH1D fSecondaryFrac(Form("f%sSecFrac_%.0f_%.0f", kAntimatterMatter[iMatt], kCentBinsLimitsPion[iCent][0], kCentBinsLimitsPion[iCent][1]), Form("%.0f-%.0f%%", kCentBinsLimitsPion[iCent][0], kCentBinsLimitsPion[iCent][1]), kNPtBins, kPtBins);
 
       int nUsedPtBins = 21;
@@ -133,6 +136,11 @@ void Secondary(const char *cutSettings = "", const double DCAxyCut=0.12, const c
         TString projTitle = TString::Format("%.2f#leq #it{p}_{T}<%.2f GeV/#it{c}, %.0f-%.0f%%", fDCAdat->GetYaxis()->GetBinLowEdge(pTbinsIndexMin), fDCAdat->GetYaxis()->GetBinUpEdge(pTbinsIndexMax), fDCAdat->GetXaxis()->GetBinLowEdge(kCentBinsPion[iCent][0]), fDCAdat->GetXaxis()->GetBinUpEdge(kCentBinsPion[iCent][1]));
         fDCAdatProj = fDCAdat->ProjectionZ(TString::Format("f%sDCAxyTOF_%.0f_%.0f_%.2f_%.2f", kAntimatterMatter[iMatt], fDCAdat->GetXaxis()->GetBinLowEdge(kCentBinsPion[iCent][0]), fDCAdat->GetXaxis()->GetBinUpEdge(kCentBinsPion[iCent][1]), fDCAdat->GetYaxis()->GetBinLowEdge(pTbinsIndexMin), fDCAdat->GetYaxis()->GetBinUpEdge(pTbinsIndexMax)), kCentBinsPion[iCent][0], kCentBinsPion[iCent][1], pTbinsIndexMin, pTbinsIndexMax);
         fDCAdatProj->SetTitle(projTitle);
+        if (fit_gaus){
+          fDCAdatProj->Fit("gaus","R","",-0.1,0.1);
+          fPrimaryRMS.SetBinContent(iPtBin,fDCAdatProj->GetFunction("gaus")->GetParameter(2));
+        }
+        else fPrimaryRMS.SetBinContent(iPtBin,fDCAdatProj->GetRMS());
         fDCAMcProjPrim = fDCAprim->ProjectionZ(TString::Format("f%sDCAPrimaryTOF_%.0f_%.0f_%.2f_%.2f", kAntimatterMatter[iMatt], fDCAdat->GetXaxis()->GetBinLowEdge(kCentBinsPion[iCent][0]), fDCAdat->GetXaxis()->GetBinUpEdge(kCentBinsPion[iCent][1]), fDCAdat->GetYaxis()->GetBinLowEdge(pTbinsIndexMin), fDCAdat->GetYaxis()->GetBinUpEdge(pTbinsIndexMax)), kCentBinsPion[iCent][0], kCentBinsPion[iCent][1], pTbinsIndexMin, pTbinsIndexMax);
         fDCAMcProjPrim->SetTitle(projTitle);
         fDCAMcProjSec = fDCAsec->ProjectionZ(TString::Format("f%sDCASecondaryTOF_%.0f_%.0f_%.2f_%.2f", kAntimatterMatter[iMatt], fDCAdat->GetXaxis()->GetBinLowEdge(kCentBinsPion[iCent][0]), fDCAdat->GetXaxis()->GetBinUpEdge(kCentBinsPion[iCent][1]), fDCAdat->GetYaxis()->GetBinLowEdge(pTbinsIndexMin), fDCAdat->GetYaxis()->GetBinUpEdge(pTbinsIndexMax)), kCentBinsPion[3][0], kCentBinsPion[3][1], pTbinsIndexMin, pTbinsIndexMax);
@@ -518,10 +526,30 @@ void Secondary(const char *cutSettings = "", const double DCAxyCut=0.12, const c
       fPrimaryFrac.GetXaxis()->SetRangeUser(0.5, 5.0);
       fPrimaryFrac.Write();
 
+      TCanvas cRMS(Form("c%sPrimaryRMS_%.0f_%.0f",kAntimatterMatter[iMatt],kCentBinsLimitsPion[iCent][0], kCentBinsLimitsPion[iCent][1]),"cPrimaryRMS");
+      TLegend ll(0.5,0.5,0.7,0.7);
+      fPrimaryRMS.GetXaxis()->SetRangeUser(0.7,1.1);
+      fPrimaryRMS.SetMinimum(0.);
+      fPrimaryRMS.GetYaxis()->SetRangeUser(0.,0.15);
+      fPrimaryRMS.GetYaxis()->SetTitle("DCA_{xy} (cm)");
+      fPrimaryRMS.GetXaxis()->SetTitle(kAxisTitlePt);
+      fPrimaryRMS.Draw("histo");
+      fPrimaryRMS.SetLineWidth(2);
+      ll.AddEntry(&fPrimaryRMS,"#sigma_{DCA_{xy}}^{prim}");
+      TLine lCut(0.7,0.12,1.1,0.12);
+      lCut.SetLineStyle(kDashed);
+      lCut.SetLineWidth(2);
+      ll.AddEntry(&lCut,"DCA_{xy} cut");
+      lCut.Draw("same");
+      ll.Draw("same");
+      cRMS.Write();
+      cRMS.Print(Form("c%sPrimaryRMS_%.0f_%.0f.pdf",kAntimatterMatter[iMatt],kCentBinsLimitsPion[iCent][0], kCentBinsLimitsPion[iCent][1]));
+      fPrimaryRMS.Write();
+
       system(Form("mkdir %s/primary_plots", kPlotDir));
       TCanvas cPrim("cPrim", "cPrim");
       cPrim.cd();
-      fPrimaryFrac.GetXaxis()->SetRangeUser(1., 2.0);
+      fPrimaryFrac.GetXaxis()->SetRangeUser(0.7, 1.1);
       fPrimaryFrac.GetYaxis()->SetRangeUser(0.0, 1.1);
       fPrimaryFrac.Draw("");
       cPrim.Print(Form("%s/primary_plots/%s.pdf", kPlotDir, fPrimaryFrac.GetName()));

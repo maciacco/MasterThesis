@@ -338,7 +338,7 @@ void SignalBinnedMC(const char *cutSettings = "", const double roi_nsigma = 8., 
 
           // background integral
           double bkgIntegral = ((RooAbsPdf *)model->createIntegral(RooArgSet(tofSignal), RooFit::NormSet(RooArgSet(tofSignal)), RooFit::Range("signalRange")))->getVal();
-          double bkgIntegral_val = (nBackground1->getVal() + nBackground2->getVal()) * bkgIntegral;
+          double bkgIntegral_val = 0;//(nBackground1->getVal() + nBackground2->getVal()) * bkgIntegral;
 
           double rawYield, rawYieldError, counts;
           if (binCounting)

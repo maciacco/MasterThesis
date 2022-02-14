@@ -132,7 +132,7 @@ void SignalBinned(const char *cutSettings = "", const double roi_nsigma = 8., co
       TH1D fMean("fMean", "fMean", kNPtBins, kPtBins);
       TH1D fAlphaL("fAlphaL", "fAlphaL", kNPtBins, kPtBins);
       TH1D fAlphaR("fAlphaR", "fAlphaR", kNPtBins, kPtBins);
-      int nUsedPtBins = 24; // up to 2.00 GeV/c
+      int nUsedPtBins = 34; // up to 2.00 GeV/c
 
       for (int iPtBin = 5; iPtBin < nUsedPtBins + 1; ++iPtBin)
       { // loop on pT bins
@@ -164,6 +164,11 @@ void SignalBinned(const char *cutSettings = "", const double roi_nsigma = 8., co
           if (ptMin > 1.81)
           {
             nSigmaLeft = -17.;
+            nSigmaRight = -12.;
+          };
+          if (ptMin > 2.05)
+          {
+            nSigmaLeft = -15.;
             nSigmaRight = -12.;
           };
           tofSignalProjectionAll->GetXaxis()->SetRangeUser(nSigmaLeft, nSigmaRight);

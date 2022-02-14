@@ -16,11 +16,17 @@
 #include <Fit/Fitter.h>
 #include <TCanvas.h>
 #include <TLegend.h>
+#include <TLine.h>
 
 #include "../utils/Utils.h"
 #include "../utils/Config.h"
 
+bool superimpose_centrality_plots = false;
+bool gaus_fit = false;
+
 using namespace he3;
+
+const double fit_range = 1.3;
 
 void Secondary(const float cutDCAz = 1.f, const int cutTPCcls = 89, const char *inFileDatName = "TreeOutData", const char *inFileMCName = "TreeOutMC", const char *inFileWDName = "EfficiencyHe3SecWd", const char *outFileName = "PrimaryHe3", const bool useWdInFit = false, const bool rebinLowStatisticsBin = true)
 {
@@ -47,6 +53,8 @@ void Secondary(const float cutDCAz = 1.f, const int cutTPCcls = 89, const char *
     TH3F *fDCAsec = (TH3F *)inFileMC->Get(Form("%1.1f_%d_/fMDCASecondary", cutDCAz, cutTPCcls));
     TH3F *fDCAsecWeak = (TH3F *)inFileMC->Get(Form("%1.1f_%d_/f%sDCASecondaryWeak", cutDCAz, cutTPCcls, kAntimatterMatter[iMatt]));
 
+    TH1D *fPrim_0_5;
+
     for (int iCent = 0; iCent < kNCentClasses; ++iCent)
     {
       // get wd fraction
@@ -66,6 +74,7 @@ void Secondary(const float cutDCAz = 1.f, const int cutTPCcls = 89, const char *
         pTbins[iPtBins] = pTbins[iPtBins - 1] + kDeltaPt;
       }
       TH1D fPrimaryFrac(Form("f%sPrimFrac_%.0f_%.0f", kAntimatterMatter[iMatt], kCentBinsLimitsHe3[iCent][0], kCentBinsLimitsHe3[iCent][1]), Form("%.0f-%.0f%%", kCentBinsLimitsHe3[iCent][0], kCentBinsLimitsHe3[iCent][1]), nPtBinsSec, pTbins);
+      TH1D fPrimaryRMS(Form("f%sPrimRMS_%.0f_%.0f", kAntimatterMatter[iMatt], kCentBinsLimitsHe3[iCent][0], kCentBinsLimitsHe3[iCent][1]), Form("%.0f-%.0f%%", kCentBinsLimitsHe3[iCent][0], kCentBinsLimitsHe3[iCent][1]), nPtBinsSec, pTbins);
       TH1D fSecondaryFrac(Form("f%sSecFrac_%.0f_%.0f", kAntimatterMatter[iMatt], kCentBinsLimitsHe3[iCent][0], kCentBinsLimitsHe3[iCent][1]), Form("%.0f-%.0f%%", kCentBinsLimitsHe3[iCent][0], kCentBinsLimitsHe3[iCent][1]), nPtBinsSec, pTbins);
 
       int nUsedPtBins = 11;
@@ -86,10 +95,19 @@ void Secondary(const float cutDCAz = 1.f, const int cutTPCcls = 89, const char *
         double maxPt = fDCAdat->GetYaxis()->GetBinUpEdge(upperPtBinIndex);
         outFile->cd();
 
+        TH1D *fDCAdatProj;
+        TString projTitle = TString::Format("%.2f#leq #it{p}_{T}<%.2f GeV/#it{c}, %.0f-%.0f%%", fDCAdat->GetYaxis()->GetBinLowEdge(lowerPtBinIndex), fDCAdat->GetYaxis()->GetBinUpEdge(upperPtBinIndex), fDCAdat->GetXaxis()->GetBinLowEdge(kCentBinsHe3[iCent][0]), fDCAdat->GetXaxis()->GetBinUpEdge(kCentBinsHe3[iCent][1]));
+        fDCAdatProj = fDCAdat->ProjectionZ(TString::Format("f%sDCAxyTPC_%.0f_%.0f_%.2f_%.2f", kAntimatterMatter[iMatt], fDCAdat->GetXaxis()->GetBinLowEdge(kCentBinsHe3[iCent][0]), fDCAdat->GetXaxis()->GetBinUpEdge(kCentBinsHe3[iCent][1]), fDCAdat->GetYaxis()->GetBinLowEdge(lowerPtBinIndex), fDCAdat->GetYaxis()->GetBinUpEdge(upperPtBinIndex)), kCentBinsHe3[iCent][0], kCentBinsHe3[iCent][1], lowerPtBinIndex, upperPtBinIndex);
+        fDCAdatProj->SetTitle(projTitle);
+        if (gaus_fit){
+        fDCAdatProj->Fit("gaus","R","",-1.,1.);
+        fPrimaryRMS.SetBinContent(iPtBin,fDCAdatProj->GetFunction("gaus")->GetParameter(2));
+        }
+        else fPrimaryRMS.SetBinContent(iPtBin,fDCAdatProj->GetRMS());
+
         if (/* (iMatt == 1) && ( (minPt < 3.45f && iCent < 2) ||  */(minPt < 2.95f /* && iCent > 1 ) */ ))
         {
           // project TH3 histogram
-          TH1D *fDCAdatProj;
           TH1D *fDCAMcProjPrim;
           TH1D *fDCAMcProjSec;
           TH1D *fDCAMcProjSecWeak;
@@ -98,9 +116,6 @@ void Secondary(const float cutDCAz = 1.f, const int cutTPCcls = 89, const char *
           TH1D fRatioDCAPrim("", "", kNDCABins, kDCABins);
           TH1D fRatioDCASec("", "", kNDCABins, kDCABins);
 
-          TString projTitle = TString::Format("%.2f#leq #it{p}_{T}<%.2f GeV/#it{c}, %.0f-%.0f%%", fDCAdat->GetYaxis()->GetBinLowEdge(lowerPtBinIndex), fDCAdat->GetYaxis()->GetBinUpEdge(upperPtBinIndex), fDCAdat->GetXaxis()->GetBinLowEdge(kCentBinsHe3[iCent][0]), fDCAdat->GetXaxis()->GetBinUpEdge(kCentBinsHe3[iCent][1]));
-          fDCAdatProj = fDCAdat->ProjectionZ(TString::Format("f%sDCAxyTPC_%.0f_%.0f_%.2f_%.2f", kAntimatterMatter[iMatt], fDCAdat->GetXaxis()->GetBinLowEdge(kCentBinsHe3[iCent][0]), fDCAdat->GetXaxis()->GetBinUpEdge(kCentBinsHe3[iCent][1]), fDCAdat->GetYaxis()->GetBinLowEdge(lowerPtBinIndex), fDCAdat->GetYaxis()->GetBinUpEdge(upperPtBinIndex)), kCentBinsHe3[iCent][0], kCentBinsHe3[iCent][1], lowerPtBinIndex, upperPtBinIndex);
-          fDCAdatProj->SetTitle(projTitle);
           fDCAMcProjPrim = fDCAprim->ProjectionZ(TString::Format("f%sDCAPrimary_%.0f_%.0f_%.2f_%.2f", kAntimatterMatter[iMatt], fDCAdat->GetXaxis()->GetBinLowEdge(kCentBinsHe3[iCent][0]), fDCAdat->GetXaxis()->GetBinUpEdge(kCentBinsHe3[iCent][1]), fDCAdat->GetYaxis()->GetBinLowEdge(lowerPtBinIndex), fDCAdat->GetYaxis()->GetBinUpEdge(upperPtBinIndex)), kCentBinsHe3[iCent][0], kCentBinsHe3[iCent][1], lowerPtBinIndex, upperPtBinIndex);
           fDCAMcProjPrim->SetTitle(projTitle);
           fDCAMcProjSec = fDCAsec->ProjectionZ(TString::Format("f%sDCASecondary_%.0f_%.0f_%.2f_%.2f", kAntimatterMatter[iMatt], fDCAdat->GetXaxis()->GetBinLowEdge(kCentBinsHe3[iCent][0]), fDCAdat->GetXaxis()->GetBinUpEdge(kCentBinsHe3[iCent][1]), fDCAdat->GetYaxis()->GetBinLowEdge(lowerPtBinIndex), fDCAdat->GetYaxis()->GetBinUpEdge(upperPtBinIndex)), kCentBinsHe3[iCent][0], kCentBinsHe3[iCent][1], lowerPtBinIndex, upperPtBinIndex);
@@ -169,7 +184,7 @@ void Secondary(const float cutDCAz = 1.f, const int cutTPCcls = 89, const char *
             fitter->Config().ParSettings(2).Set("wd", wdTemplateFrac);
             fitter->Config().ParSettings(2).Fix();
           }
-          fit->SetRangeX(fDCAdatProj->FindBin(-1.3), fDCAdatProj->FindBin(1.2));
+          fit->SetRangeX(fDCAdatProj->FindBin(-fit_range), fDCAdatProj->FindBin(fit_range-0.05));
           fit->Constrain(0, 0.0, 1.0); // constrain fraction 1 to be between 0 and 1
           fit->Constrain(1, 0.0, 1.0);
 
@@ -187,8 +202,8 @@ void Secondary(const float cutDCAz = 1.f, const int cutTPCcls = 89, const char *
             fit->GetResult(0, fracMc1, errFracMc1);
             fit->GetResult(1, fracMc2, errFracMc2);
             fit->GetResult(2, fracMc3, errFracMc3);
-            mc1->Scale(fracMc1 * integralData / mc1->Integral(), "width");
-            mc2->Scale(fracMc2 * integralData / mc2->Integral(), "width");
+            mc1->Scale(fracMc1 * integralData / mc1->Integral(fDCAdatProj->FindBin(-fit_range), fDCAdatProj->FindBin(fit_range-0.05)), "width");
+            mc2->Scale(fracMc2 * integralData / mc2->Integral(fDCAdatProj->FindBin(-fit_range), fDCAdatProj->FindBin(fit_range-0.05)), "width");
 
             // set color
             fDCAdatProj->SetMarkerStyle(20);
@@ -357,12 +372,32 @@ void Secondary(const float cutDCAz = 1.f, const int cutTPCcls = 89, const char *
       fPrimaryFrac.GetXaxis()->SetRangeUser(2.0, 8.);
       fPrimaryFrac.Write();
 
+      TCanvas cRMS(Form("c%sPrimaryRMS_%.0f_%.0f",kAntimatterMatter[iMatt],kCentBinsLimitsHe3[iCent][0], kCentBinsLimitsHe3[iCent][1]),"cPrimaryRMS");
+      TLegend ll1(0.5,0.3,0.7,0.5);
+      fPrimaryRMS.GetXaxis()->SetRangeUser(2.0,6.0);
+      fPrimaryRMS.SetMinimum(0.);
+      fPrimaryRMS.GetYaxis()->SetRangeUser(0.,0.15);
+      fPrimaryRMS.GetYaxis()->SetTitle("DCA_{xy} (cm)");
+      fPrimaryRMS.GetXaxis()->SetTitle(kAxisTitlePt);
+      fPrimaryRMS.Draw("histo");
+      fPrimaryRMS.SetLineWidth(2);
+      ll1.AddEntry(&fPrimaryRMS,"#sigma_{DCA_{xy}}^{prim}");
+      TLine lCut(2.0,0.1,6.0,0.1);
+      lCut.SetLineStyle(kDashed);
+      lCut.SetLineWidth(2);
+      ll1.AddEntry(&lCut,"DCA_{xy} cut");
+      lCut.Draw("same");
+      ll1.Draw("same");
+      cRMS.Write();
+      cRMS.Print(Form("c%sPrimaryRMS_%.0f_%.0f.pdf",kAntimatterMatter[iMatt],kCentBinsLimitsHe3[iCent][0], kCentBinsLimitsHe3[iCent][1]));
+      fPrimaryRMS.Write();
+
       system(Form("mkdir %s/primary_plots", kPlotDir));
       TCanvas cPrim("cPrim", "cPrim");
       cPrim.cd();
       fPrimaryFrac.Draw("");
-      cPrim.Print(Form("%s/primary_plots/%s.pdf", kPlotDir, fPrimaryFrac.GetName()));
 
+      TLegend ll(0.5,0.6,0.7,0.8);
       if (iMatt == 1)
       {
         fSecondaryFrac.SetMarkerStyle(20);
@@ -371,7 +406,25 @@ void Secondary(const float cutDCAz = 1.f, const int cutTPCcls = 89, const char *
         fSecondaryFrac.GetYaxis()->SetTitle("#it{f}_{#it{sec}}");
         fSecondaryFrac.GetXaxis()->SetTitle(kAxisTitlePt);
         fSecondaryFrac.Write();
+        if (iCent == 0 && superimpose_centrality_plots){
+          fPrim_0_5=new TH1D(fPrimaryFrac);
+          fPrim_0_5->Fit(&fSigmoid);
+          fPrim_0_5->SetLineColor(kRed+2);
+          fPrim_0_5->SetMarkerColor(kRed+2);
+        }
+        if (iCent == 2 && superimpose_centrality_plots){
+          fPrim_0_5->Draw("");
+          fPrimaryFrac.SetMarkerColor(kBlue+2);
+          fPrimaryFrac.SetLineColor(kBlue+2);
+          fPrimaryFrac.GetFunction(Form("f%sSigmoidFit_%.0f_%.0f", kAntimatterMatter[iMatt], kCentBinsLimitsHe3[iCent][0], kCentBinsLimitsHe3[iCent][1]))->SetLineStyle(kDashed);
+          fPrimaryFrac.GetFunction(Form("f%sSigmoidFit_%.0f_%.0f", kAntimatterMatter[iMatt], kCentBinsLimitsHe3[iCent][0], kCentBinsLimitsHe3[iCent][1]))->SetLineColor(kBlue);
+          ll.AddEntry(fPrim_0_5,"0-5%");
+          ll.AddEntry(&fPrimaryFrac,"30-50%");
+          ll.Draw("same");
+        }
       }
+      (iCent < 2 && superimpose_centrality_plots) ? fPrimaryFrac.Draw("") : fPrimaryFrac.Draw("same");
+      cPrim.Print(Form("%s/primary_plots/%s.pdf", kPlotDir, fPrimaryFrac.GetName()));
     }
   }
   outFile->Close();

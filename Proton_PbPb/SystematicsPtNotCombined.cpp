@@ -21,6 +21,8 @@
 
 using namespace proton;
 
+bool barlow_criterion = true;
+
 void remove_outliers(TH1D* proj, double rejection_criterion=3.){
   double mean = proj->GetMean();
   double rms = proj->GetRMS();
@@ -120,6 +122,8 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
       }
     }
 
+    TH1D *hDefault = (TH1D *)specFile->Get(Form("_1_1_1_0/fRatio_%.0f_%.0f", kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]));
+
     // DCAz cuts
     cutVariable=0;
     bkgFlag = 1;
@@ -134,11 +138,17 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
         tmpCutIndex = Form("");
         tmpCutSettings = Form("");
       }
-      auto fullCutSettingsSigm = Form("%s%s_%d_%d_%d_1", tmpCutSettings, tmpCutIndex, bkgFlag, sigmoidFlag, iNsigma);
+      auto fullCutSettingsSigm = Form("%s%s_%d_%d_%d_0", tmpCutSettings, tmpCutIndex, bkgFlag, sigmoidFlag, iNsigma);
       std::cout << fullCutSettingsSigm <<std::endl;
       TH1D *h = (TH1D *)specFile->Get(Form("%s/fRatio_%.0f_%.0f", fullCutSettingsSigm, kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]));
       for(int iPtBins=4;iPtBins<24;++iPtBins){
-        fRatiosVsPtDCAz.Fill(kPtBins[iPtBins],h->GetBinContent(iPtBins+1));
+        double h_content = h->GetBinContent(iPtBins+1);
+        double h_error = h->GetBinError(iPtBins+1);
+        double h_0_content = hDefault->GetBinContent(iPtBins+1);
+        double h_0_error = hDefault->GetBinError(iPtBins+1);
+        double z = (h_content-h_error)/TMath::Sqrt(h_0_error*h_0_error+h_error*h_error);
+        if ((std::abs(z)>2. && barlow_criterion) || !barlow_criterion)
+          fRatiosVsPtDCAz.Fill(kPtBins[iPtBins],h->GetBinContent(iPtBins+1));
       }
     }
 
@@ -156,11 +166,17 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
         tmpCutIndex = Form("");
         tmpCutSettings = Form("");
       }
-      auto fullCutSettingsSigm = Form("%s%s_%d_%d_%d_1", tmpCutSettings, tmpCutIndex, bkgFlag, sigmoidFlag, iNsigma);
+      auto fullCutSettingsSigm = Form("%s%s_%d_%d_%d_0", tmpCutSettings, tmpCutIndex, bkgFlag, sigmoidFlag, iNsigma);
       std::cout << fullCutSettingsSigm <<std::endl;
       TH1D *h = (TH1D *)specFile->Get(Form("%s/fRatio_%.0f_%.0f", fullCutSettingsSigm, kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]));
       for(int iPtBins=4;iPtBins<24;++iPtBins){
-        fRatiosVsPtPID.Fill(kPtBins[iPtBins],h->GetBinContent(iPtBins+1));
+        double h_content = h->GetBinContent(iPtBins+1);
+        double h_error = h->GetBinError(iPtBins+1);
+        double h_0_content = hDefault->GetBinContent(iPtBins+1);
+        double h_0_error = hDefault->GetBinError(iPtBins+1);
+        double z = (h_content-h_error)/TMath::Sqrt(h_0_error*h_0_error+h_error*h_error);
+        if ((std::abs(z)>2. && barlow_criterion) || !barlow_criterion)
+          fRatiosVsPtPID.Fill(kPtBins[iPtBins],h->GetBinContent(iPtBins+1));
       }
     }
 
@@ -182,7 +198,12 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
       std::cout << fullCutSettingsSigm <<std::endl;
       TH1D *h = (TH1D *)specFile->Get(Form("%s/fRatio_%.0f_%.0f", fullCutSettingsSigm, kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]));
       for(int iPtBins=4;iPtBins<24;++iPtBins){
-        fRatiosVsPtTPCCls.Fill(kPtBins[iPtBins],h->GetBinContent(iPtBins+1));
+        double h_content = h->GetBinContent(iPtBins+1);
+        double h_error = h->GetBinError(iPtBins+1);
+        double h_0_content = hDefault->GetBinContent(iPtBins+1);
+        double h_0_error = hDefault->GetBinError(iPtBins+1);
+        double z = (h_content-h_error)/TMath::Sqrt(h_0_error*h_0_error+h_error*h_error);
+        if ((std::abs(z)>2. && barlow_criterion) || !barlow_criterion) fRatiosVsPtTPCCls.Fill(kPtBins[iPtBins],h->GetBinContent(iPtBins+1));
       }
     }
 
@@ -207,8 +228,6 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
         fRatiosVsPtDCAxy.Fill(kPtBins[iPtBins],h->GetBinContent(iPtBins+1));
       }
     } */
-
-    TH1D *hDefault = (TH1D *)specFile->Get(Form("_1_1_1_1/fRatio_%.0f_%.0f", kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]));
 
     // efficiency error
     TH1D *h_a_eff = (TH1D *)effFile->Get(Form("_/fAEff_TOF_%.0f_%.0f", kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]));
@@ -257,11 +276,16 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
       auto tmpCutSettings = Form("");
       auto tmpCutIndex = Form("");
       iNsigma=iRoi;
-      auto fullCutSettingsSigm = Form("%s%s_%d_%d_%d_1", tmpCutSettings, tmpCutIndex, bkgFlag, sigmoidFlag, iNsigma);
+      auto fullCutSettingsSigm = Form("%s%s_%d_%d_%d_0", tmpCutSettings, tmpCutIndex, bkgFlag, sigmoidFlag, iNsigma);
       std::cout << fullCutSettingsSigm <<std::endl;
       TH1D *h = (TH1D *)specFile->Get(Form("%s/fRatio_%.0f_%.0f", fullCutSettingsSigm, kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]));
       for(int iPtBins=4;iPtBins<24;++iPtBins){
-        fRatiosVsPtROI.Fill(kPtBins[iPtBins],h->GetBinContent(iPtBins+1));
+        double h_content = h->GetBinContent(iPtBins+1);
+        double h_error = h->GetBinError(iPtBins+1);
+        double h_0_content = hDefault->GetBinContent(iPtBins+1);
+        double h_0_error = hDefault->GetBinError(iPtBins+1);
+        double z = (h_content-h_error)/TMath::Sqrt(h_0_error*h_0_error+h_error*h_error);
+        if ((std::abs(z)>2. && barlow_criterion) || !barlow_criterion) fRatiosVsPtROI.Fill(kPtBins[iPtBins],h->GetBinContent(iPtBins+1));
       }
     }
 
@@ -272,7 +296,7 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
       auto tmpCutSettings = Form("");
       auto tmpCutIndex = Form("");
       sigmoidFlag=iPrim;
-      auto fullCutSettingsSigm = Form("%s%s_%d_%d_%d_1", tmpCutSettings, tmpCutIndex, bkgFlag, sigmoidFlag, iNsigma);
+      auto fullCutSettingsSigm = Form("%s%s_%d_%d_%d_0", tmpCutSettings, tmpCutIndex, bkgFlag, sigmoidFlag, iNsigma);
       std::cout << fullCutSettingsSigm <<std::endl;
       TH1D *h = (TH1D *)specFile->Get(Form("%s/fRatio_%.0f_%.0f", fullCutSettingsSigm, kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]));
       for(int iPtBins=4;iPtBins<24;++iPtBins){
@@ -298,7 +322,7 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
     for(int iPtBins=5;iPtBins<25;++iPtBins){
       // track cuts
       TH1D *proj=fRatiosVsPtDCAz.ProjectionY("py",iPtBins,iPtBins);
-      remove_outliers(proj,1.55);
+      //remove_outliers(proj,2.);
       fSystematicUncertaintyDCAz.SetBinContent(iPtBins,proj->GetRMS()/proj->GetMean());
       fSystematicUncertaintyDCAz.SetBinError(iPtBins,0);
 
@@ -308,7 +332,7 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
       fSystematicUncertaintyPID.SetBinError(iPtBins,0);
 
       proj=fRatiosVsPtTPCCls.ProjectionY("py",iPtBins,iPtBins);
-      remove_outliers(proj,1.55);
+      //remove_outliers(proj,1.55);
       fSystematicUncertaintyTPCCls.SetBinContent(iPtBins,proj->GetRMS()/proj->GetMean());
       fSystematicUncertaintyTPCCls.SetBinError(iPtBins,0);
 
@@ -318,7 +342,7 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
 
       // roi
       proj=fRatiosVsPtROI.ProjectionY("py",iPtBins,iPtBins);
-      remove_outliers(proj,1.4);
+      //remove_outliers(proj,1.4);
       fSystematicUncertaintyROI.SetBinContent(iPtBins,proj->GetRMS()/proj->GetMean());
       fSystematicUncertaintyROI.SetBinError(iPtBins,0);
 
@@ -341,6 +365,12 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
       fRatioFromVariationsTot.SetBinContent(iPtBins,proj->GetMean());
       fRatioFromVariationsTot.SetBinError(iPtBins,0);
     }
+    TCanvas cVarTot(fRatiosVsPtTot.GetName(),fRatiosVsPtTot.GetTitle());
+    fRatiosVsPtTot.Draw("colz");
+    fRatiosVsPtTot.GetXaxis()->SetRangeUser(1.,2.);
+    fRatiosVsPtTot.GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
+    fRatiosVsPtTot.GetYaxis()->SetTitle("Ratio #bar{p}/p");
+    cVarTot.Print(Form("%s.pdf",fRatiosVsPtTot.GetName()));
     fRatioFromVariationsTot.Write();
     //fRatiosVsPtDCAxy.Write();
     fRatiosVsPtTot.Write();
@@ -373,17 +403,22 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
     bkgFlag = 1;
     sigmoidFlag = 1;
     iNsigma = 1;
-    hDefault = (TH1D *)specFile->Get(Form("_1_1_1_1/fRatio_%.0f_%.0f", kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]));
+    hDefault = (TH1D *)specFile->Get(Form("_1_1_1_0/fRatio_%.0f_%.0f", kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]));
     for (int iROI=0;iROI<3;++iROI){
       if (iROI==1)continue;
       TString tmpCutSettings = Form("");
       auto cutIndex = 0;
       auto tmpCutIndex = Form("",cutIndex);
-      auto fullCutSettingsSigm = Form("%s%s_%d_%d_%d_1", tmpCutSettings.Data(), tmpCutIndex, bkgFlag, sigmoidFlag, iROI);
+      auto fullCutSettingsSigm = Form("%s%s_%d_%d_%d_0", tmpCutSettings.Data(), tmpCutIndex, bkgFlag, sigmoidFlag, iROI);
       //std::cout << fullCutSettingsSigm <<std::endl;
       TH1D *h = (TH1D *)specFile->Get(Form("%s/fRatio_%.0f_%.0f", fullCutSettingsSigm, kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]));
       for(int iPtBins=4;iPtBins<24;++iPtBins){
-        fSystematicsCorrelationsROI.Fill(kROIVariation[iROI],h->GetBinContent(iPtBins+1)-hDefault->GetBinContent(iPtBins+1));
+        double h_content = h->GetBinContent(iPtBins+1);
+        double h_error = h->GetBinError(iPtBins+1);
+        double h_0_content = hDefault->GetBinContent(iPtBins+1);
+        double h_0_error = hDefault->GetBinError(iPtBins+1);
+        double z = (h_content-h_error)/TMath::Sqrt(h_0_error*h_0_error+h_error*h_error);
+        if ((std::abs(z)>2. && barlow_criterion) || !barlow_criterion) fSystematicsCorrelationsROI.Fill(kROIVariation[iROI],h->GetBinContent(iPtBins+1)-hDefault->GetBinContent(iPtBins+1));
       }
     }
         
@@ -392,37 +427,44 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
     bkgFlag = 1;
     sigmoidFlag = 1;
     iNsigma = 1;
-    hDefault = (TH1D *)specFile->Get(Form("_1_1_1_1/fRatio_%.0f_%.0f", kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]));
+    hDefault = (TH1D *)specFile->Get(Form("_1_1_1_0/fRatio_%.0f_%.0f", kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]));
     for (int iTrackCuts=1; iTrackCuts<kNTrackCuts; ++iTrackCuts){
       TString tmpCutSettings = trackCutSettings[iTrackCuts];
       auto cutIndex = trackCutIndexes[iTrackCuts];
       auto tmpCutIndex = Form("%d",cutIndex);
-      auto fullCutSettingsSigm = Form("%s%s_%d_%d_%d_1", tmpCutSettings.Data(), tmpCutIndex, bkgFlag, sigmoidFlag, iNsigma);
+      auto fullCutSettingsSigm = Form("%s%s_%d_%d_%d_0", tmpCutSettings.Data(), tmpCutIndex, bkgFlag, sigmoidFlag, iNsigma);
       //std::cout << fullCutSettingsSigm <<std::endl;
       TH1D *h = (TH1D *)specFile->Get(Form("%s/fRatio_%.0f_%.0f", fullCutSettingsSigm, kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]));
       for(int iPtBins=4;iPtBins<24;++iPtBins){
-        if (tmpCutSettings.EqualTo("dcaz"))
-        {
-          int cutVal = cutIndex;
-          if (cutIndex > 1) cutVal = cutIndex+1;
-          fSystematicsCorrelationsDCAz.Fill(kCutDCAz[cutVal],h->GetBinContent(iPtBins+1)-hDefault->GetBinContent(iPtBins+1));
-        }
-        /* if (tmpCutSettings.EqualTo("dcaxy"))
-        {
-          int cutVal = cutIndex;
-          if (cutIndex > 1) cutVal = cutIndex+1;
-          fSystematicsCorrelationsDCAxy.Fill(kCutDCAxy[cutVal],h->GetBinContent(iPtBins+1)-hDefault->GetBinContent(iPtBins+1));
-        } */
-        if (tmpCutSettings.EqualTo("tpc"))
-        {
-          int cutVal = cutIndex;
-          if (cutIndex > 1) cutVal = cutIndex+1;
-          fSystematicsCorrelationsTPCCls.Fill(kCutTPCClusters[cutVal],h->GetBinContent(iPtBins+1)-hDefault->GetBinContent(iPtBins+1));
-        }
-        if (tmpCutSettings.EqualTo("pid"))
-        {
-          int cutVal = cutIndex+1;
-          fSystematicsCorrelationsPID.Fill(kTPCPidSigmas[cutVal],h->GetBinContent(iPtBins+1)-hDefault->GetBinContent(iPtBins+1));
+        double h_content = h->GetBinContent(iPtBins+1);
+        double h_error = h->GetBinError(iPtBins+1);
+        double h_0_content = hDefault->GetBinContent(iPtBins+1);
+        double h_0_error = hDefault->GetBinError(iPtBins+1);
+        double z = (h_content-h_error)/TMath::Sqrt(h_0_error*h_0_error+h_error*h_error);
+        if ((std::abs(z)>2. && barlow_criterion) || !barlow_criterion){
+          if (tmpCutSettings.EqualTo("dcaz"))
+          {
+            int cutVal = cutIndex;
+            if (cutIndex > 1) cutVal = cutIndex+1;
+            fSystematicsCorrelationsDCAz.Fill(kCutDCAz[cutVal],h->GetBinContent(iPtBins+1)-hDefault->GetBinContent(iPtBins+1));
+          }
+          /* if (tmpCutSettings.EqualTo("dcaxy"))
+          {
+            int cutVal = cutIndex;
+            if (cutIndex > 1) cutVal = cutIndex+1;
+            fSystematicsCorrelationsDCAxy.Fill(kCutDCAxy[cutVal],h->GetBinContent(iPtBins+1)-hDefault->GetBinContent(iPtBins+1));
+          } */
+          if (tmpCutSettings.EqualTo("tpc"))
+          {
+            int cutVal = cutIndex;
+            if (cutIndex > 1) cutVal = cutIndex+1;
+            fSystematicsCorrelationsTPCCls.Fill(kCutTPCClusters[cutVal],h->GetBinContent(iPtBins+1)-hDefault->GetBinContent(iPtBins+1));
+          }
+          if (tmpCutSettings.EqualTo("pid"))
+          {
+            int cutVal = cutIndex+1;
+            fSystematicsCorrelationsPID.Fill(kTPCPidSigmas[cutVal],h->GetBinContent(iPtBins+1)-hDefault->GetBinContent(iPtBins+1));
+          }
         }
       }
     }
@@ -445,10 +487,37 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
     std::cout << "CorrelationROI = " << correlationROI <<std::endl;
     std::cout << "* * * * * * * * * *"<<std::endl;
 
+    TCanvas cCorrDCAz(fSystematicsCorrelationsDCAz.GetName(),fSystematicsCorrelationsDCAz.GetTitle());
+    fSystematicsCorrelationsDCAz.GetXaxis()->SetTitle("DCA_{z} cut (cm)");
+    fSystematicsCorrelationsDCAz.GetYaxis()->SetTitle("#it{p}_{T}-differential ratios - default");
+    fSystematicsCorrelationsDCAz.GetYaxis()->SetRangeUser(-0.1,0.1);
+    fSystematicsCorrelationsDCAz.Draw("colz");
+    cCorrDCAz.Print(Form("%s.pdf",cCorrDCAz.GetName()));
     fSystematicsCorrelationsDCAz.Write();
     //fSystematicsCorrelationsDCAxy.Write();
+
+    TCanvas cCorrTPCCls(fSystematicsCorrelationsTPCCls.GetName(),fSystematicsCorrelationsTPCCls.GetTitle());
+    fSystematicsCorrelationsTPCCls.GetXaxis()->SetTitle("n_{TPCcluster} cut");
+    fSystematicsCorrelationsTPCCls.GetYaxis()->SetTitle("#it{p}_{T}-differential ratios - default");
+    fSystematicsCorrelationsTPCCls.GetYaxis()->SetRangeUser(-0.05,0.05);
+    fSystematicsCorrelationsTPCCls.Draw("colz");
+    cCorrTPCCls.Print(Form("%s.pdf",cCorrTPCCls.GetName()));
     fSystematicsCorrelationsTPCCls.Write();
+    
+    TCanvas cCorrPID(fSystematicsCorrelationsPID.GetName(),fSystematicsCorrelationsPID.GetTitle());
+    fSystematicsCorrelationsPID.GetXaxis()->SetTitle("TPC PID cut (#sigma_{TPC})");
+    fSystematicsCorrelationsPID.GetYaxis()->SetTitle("#it{p}_{T}-differential ratios - default");
+    fSystematicsCorrelationsPID.GetYaxis()->SetRangeUser(-0.03,0.03);
+    fSystematicsCorrelationsPID.Draw("colz");
+    cCorrPID.Print(Form("%s.pdf",cCorrPID.GetName()));
     fSystematicsCorrelationsPID.Write();
+
+    TCanvas cCorrROI(fSystematicsCorrelationsROI.GetName(),fSystematicsCorrelationsROI.GetTitle());
+    fSystematicsCorrelationsROI.GetXaxis()->SetTitle("ROI width (#sigma_{TOF})");
+    fSystematicsCorrelationsROI.GetYaxis()->SetTitle("#it{p}_{T}-differential ratios - default");
+    fSystematicsCorrelationsROI.GetYaxis()->SetRangeUser(-0.05,0.05);
+    fSystematicsCorrelationsROI.Draw("colz");
+    cCorrROI.Print(Form("%s.pdf",cCorrROI.GetName()));
     fSystematicsCorrelationsROI.Write();
     
     for(int iPtBins=5;iPtBins<25;++iPtBins){
@@ -544,7 +613,10 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
       //if( /* h_trial.GetFunction("pol0")->GetProb()>0.025 &&  */h_trial.GetFunction("pol0")->GetProb()<0.95/* (h_trial.GetFunction("pol0")->GetChisquare()/h_trial.GetFunction("pol0")->GetNDF())<2. */)
       fRatioDistributionTrials.Fill(h_trial.GetFunction("pol0")->GetParameter(0));
     }
-
+    
+    for (int iPtBin=5;iPtBin<kNPtBins;++iPtBin){  
+      fSystematicUncertaintyTotalPtCorrelated.SetBinContent(iPtBin,fSystematicUncertaintyTotalPtCorrelated.GetBinContent(iPtBin)*fRatioFromVariationsTot.GetBinContent(iPtBin));
+    }
     TCanvas cRatio(Form("cRatio_%.0f_%.0f", kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]), "cRatio");
     cRatio.SetTicks(1, 1);
     hRatio.SetMarkerStyle(20);
@@ -578,12 +650,21 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
     //std::cout<<"Correlations fitEff = "<<fSystematicsCorrelationsEffFit.GetCorrelationFactor()<<std::endl;
 
     // save ratio plots
+    TLegend lSys(0.2,0.6,0.4,0.8);
     fSystematicUncertaintyTotal.GetXaxis()->SetRangeUser(1.,2.);
     fSystematicUncertaintyTotal.GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
     fSystematicUncertaintyTotal.GetYaxis()->SetTitle("Systematic Uncertainty");
     fSystematicUncertaintyTotal.SetMinimum(0.);
+    fSystematicUncertaintyTotal.GetYaxis()->SetRangeUser(0.,0.03);
     TCanvas cSysError(fSystematicUncertaintyTotal.GetName(),fSystematicUncertaintyTotal.GetTitle());
+    fSystematicUncertaintyTotal.SetLineWidth(2);
     fSystematicUncertaintyTotal.Draw("histo");
+    fSystematicUncertaintyTotalPtCorrelated.SetLineColor(kRed);
+    fSystematicUncertaintyTotalPtCorrelated.SetLineWidth(2);
+    fSystematicUncertaintyTotalPtCorrelated.Draw("histo same");
+    lSys.AddEntry(&fSystematicUncertaintyTotal,"#it{p}_{T}-uncorrelated");
+    lSys.AddEntry(&fSystematicUncertaintyTotalPtCorrelated,"#it{p}_{T}-correlated");
+    lSys.Draw("same");
     gPad->Update();
     paveStat = (TPaveStats *)fSystematicUncertaintyTotal.FindObject("stats");
     paveStat->SetOptStat(0);
