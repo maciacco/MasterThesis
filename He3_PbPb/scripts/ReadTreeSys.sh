@@ -3,6 +3,7 @@
 
 cutDCAz="$1"
 cutTPCcls="$2"
+cutDCAxy="$3"
 
 # create output directories
 DIR_OUT=out
@@ -22,7 +23,7 @@ fi
 
 # launch analysis
 
-argumentTree="$cutDCAz,$cutTPCcls"
+argumentTree="$cutDCAz,$cutTPCcls,$cutDCAxy"
 argumentSignal="$binCountingFlag,$expFlag"
 
 root -b -l <<EOF

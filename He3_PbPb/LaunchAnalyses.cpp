@@ -37,7 +37,7 @@ void LaunchAnalyses(const bool analyse = false)
               snprintf(hname, 16, "%1.1f_0%d_%1.2f_%d_%d", kCutDCAz[iDCA], kCutTPCClusters[iCls], kCutDCAxy[iDCAxy], binCountingFlag, expFlag);
             else
               snprintf(hname, 16, "%1.1f_%d_%1.2f_%d_%d", kCutDCAz[iDCA], kCutTPCClusters[iCls], kCutDCAxy[iDCAxy], binCountingFlag, expFlag);
-            sprintf(par, "bash ./scripts/AnalysisSysSignalEffPrim.sh %1.1f %d %1.1f %s %s %s", kCutDCAz[iDCA], kCutTPCClusters[iCls], kCutDCAxy[iDCAxy], kBoolString[binCountingFlag], kBoolString[expFlag], hname);
+            sprintf(par, "bash ./scripts/AnalysisSysSignalEffPrim.sh %1.1f %d %1.2f %s %s %s", kCutDCAz[iDCA], kCutTPCClusters[iCls], kCutDCAxy[iDCAxy], kBoolString[binCountingFlag], kBoolString[expFlag], hname);
 
             if (analyse)
               system(par);
