@@ -204,7 +204,7 @@ for i_cent_bins in range(len(CENTRALITY_LIST)):
     h_ratio.SetName(f'fRatio_{cent_bins[0]}_{cent_bins[1]}')
     h_ratio.SetTitle(f'{cent_bins[0]}-{cent_bins[1]}%')
     h_ratio.Divide(h_corrected_yields[0], h_corrected_yields[1], 1, 1)
-    h_ratio.GetYaxis().SetTitle("Ratio ^{3}_{#bar{#Lambda}}#overline{H} / ^{3}_{#Lambda}H")
+    h_ratio.GetYaxis().SetTitle("Ratio ^{3}_{#bar{#Lambda}}#bar{H} / ^{3}_{#Lambda}H")
     h_ratio.GetYaxis().SetRangeUser(0., 1.8)
     h_ratio.GetXaxis().SetRangeUser(0., 35.)
     h_ratio.SetMarkerStyle(20)
