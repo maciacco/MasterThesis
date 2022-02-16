@@ -28,7 +28,7 @@ using namespace he3;
 
 const double fit_range = 1.3;
 
-void Secondary(const float cutDCAz = 1.f, const int cutTPCcls = 89, const double cutDCAxy = 0.1f, const char *inFileDatName = "TreeOutData", const char *inFileMCName = "TreeOutMC", const char *inFileWDName = "EfficiencyHe3SecWd", const char *outFileName = "PrimaryHe3", const bool useWdInFit = false, const bool rebinLowStatisticsBin = true)
+void Secondary(const float cutDCAz = 1.f, const int cutTPCcls = 89, const double cutDCAxy = 0.10f, const char *inFileDatName = "TreeOutData", const char *inFileMCName = "TreeOutMC", const char *inFileWDName = "EfficiencyHe3SecWd", const char *outFileName = "PrimaryHe3", const bool useWdInFit = false, const bool rebinLowStatisticsBin = true)
 {
   gStyle->SetPadTickX(1);
   gStyle->SetPadTickY(1);
@@ -45,13 +45,13 @@ void Secondary(const float cutDCAz = 1.f, const int cutTPCcls = 89, const double
   for (int iMatt = 0; iMatt < 2; ++iMatt)
   {
     // make plot subdirectory
-    system(Form("mkdir %s/primary_fraction/%s_%1.1f_%d_%1.1f", kPlotDir, kAntimatterMatter[iMatt], cutDCAz, cutTPCcls, cutDCAxy));
+    system(Form("mkdir %s/primary_fraction/%s_%1.1f_%d_%1.2f", kPlotDir, kAntimatterMatter[iMatt], cutDCAz, cutTPCcls, cutDCAxy));
 
     // get histograms from files
-    TH3F *fDCAdat = (TH3F *)inFileDat->Get(Form("%1.1f_%d_%1.1f/f%sDCAxyTPC", cutDCAz, cutTPCcls, cutDCAxy, kAntimatterMatter[iMatt]));
-    TH3F *fDCAprim = (TH3F *)inFileMC->Get(Form("%1.1f_%d_%1.1f/f%sDCAPrimary", cutDCAz, cutTPCcls, cutDCAxy, kAntimatterMatter[iMatt]));
-    TH3F *fDCAsec = (TH3F *)inFileMC->Get(Form("%1.1f_%d_%1.1f/fMDCASecondary", cutDCAz, cutTPCcls, cutDCAxy));
-    TH3F *fDCAsecWeak = (TH3F *)inFileMC->Get(Form("%1.1f_%d_%1.1f/f%sDCASecondaryWeak", cutDCAz, cutTPCcls, cutDCAxy, kAntimatterMatter[iMatt]));
+    TH3F *fDCAdat = (TH3F *)inFileDat->Get(Form("%1.1f_%d_%1.2f/f%sDCAxyTPC", cutDCAz, cutTPCcls, cutDCAxy, kAntimatterMatter[iMatt]));
+    TH3F *fDCAprim = (TH3F *)inFileMC->Get(Form("%1.1f_%d_%1.2f/f%sDCAPrimary", cutDCAz, cutTPCcls, cutDCAxy, kAntimatterMatter[iMatt]));
+    TH3F *fDCAsec = (TH3F *)inFileMC->Get(Form("%1.1f_%d_%1.2f/fMDCASecondary", cutDCAz, cutTPCcls, cutDCAxy));
+    TH3F *fDCAsecWeak = (TH3F *)inFileMC->Get(Form("%1.1f_%d_%1.2f/f%sDCASecondaryWeak", cutDCAz, cutTPCcls, cutDCAxy, kAntimatterMatter[iMatt]));
 
     TH1D *fPrim_0_5;
 
@@ -329,7 +329,7 @@ void Secondary(const float cutDCAz = 1.f, const int cutTPCcls = 89, const double
               fDCAMcProjSecWeak->Write();
 
             // save canvas plot
-            canv.Print(Form("%s/primary_fraction/%s_%1.1f_%d/cent_%.0f_%.0f_pt_%.2f_%.2f.pdf", kPlotDir, kAntimatterMatter[iMatt], cutDCAz, cutTPCcls, kCentBinsLimitsHe3[iCent][0], kCentBinsLimitsHe3[iCent][1], minPt, maxPt));
+            canv.Print(Form("%s/primary_fraction/%s_%1.1f_%d_%1.2f/cent_%.0f_%.0f_pt_%.2f_%.2f.pdf", kPlotDir, kAntimatterMatter[iMatt], cutDCAz, cutTPCcls, cutDCAxy, kCentBinsLimitsHe3[iCent][0], kCentBinsLimitsHe3[iCent][1], minPt, maxPt));
           }
         }
         else

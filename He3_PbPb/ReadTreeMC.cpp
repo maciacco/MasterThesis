@@ -18,10 +18,10 @@
 using namespace utils;
 using namespace he3;
 
-void ReadTreeMC(const float cutDCAz = 1.f, const int cutTPCcls = 89, const float cutDCAxy = 0.1f, const char *outFileName = "TreeOutMC", const char *outFileOption = "recreate", const char *flagSelections = "( ( (std::abs(pt)<2.5f) && (trackingPID==7) ) || !(std::abs(pt)<2.5f) )")
+void ReadTreeMC(const float cutDCAz = 1.f, const int cutTPCcls = 89, const float cutDCAxy = 0.10f, const char *outFileName = "TreeOutMC", const char *outFileOption = "recreate", const char *flagSelections = "( ( (std::abs(pt)<2.5f) && (trackingPID==7) ) || !(std::abs(pt)<2.5f) )")
 {
   TFile *outFile = TFile::Open(Form("%s/%s.root", kResDir, outFileName), outFileOption);
-  TDirectory *dirOutFile = outFile->mkdir(Form("%1.1f_%d_%1.1f", cutDCAz, cutTPCcls, cutDCAxy));
+  TDirectory *dirOutFile = outFile->mkdir(Form("%1.1f_%d_%1.2f", cutDCAz, cutTPCcls, cutDCAxy));
   dirOutFile->cd();
 
   // define dcaxy track selections

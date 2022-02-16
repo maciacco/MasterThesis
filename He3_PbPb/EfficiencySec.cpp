@@ -35,8 +35,8 @@ void EfficiencySec(const float cutDCAz = 1.f, const int cutTPCcls = 89, const fl
   for (int iMatt = 0; iMatt < 2; ++iMatt)
   {
     // get histograms from file
-    TH2F *fTotal = (TH2F *)inFile.Get(TString::Format("%1.1f_%d_%1.1f/f%sTotalWd", cutDCAz, cutTPCcls, cutDCAxy, kAntimatterMatter[iMatt]));
-    TH2F *fITS_TPC = (TH2F *)inFile.Get(TString::Format("%1.1f_%d_%1.1f/f%sITS_TPCwd", cutDCAz, cutTPCcls, cutDCAxy, kAntimatterMatter[iMatt]));
+    TH2F *fTotal = (TH2F *)inFile.Get(TString::Format("%1.1f_%d_%1.2f/f%sTotalWd", cutDCAz, cutTPCcls, cutDCAxy, kAntimatterMatter[iMatt]));
+    TH2F *fITS_TPC = (TH2F *)inFile.Get(TString::Format("%1.1f_%d_%1.2f/f%sITS_TPCwd", cutDCAz, cutTPCcls, cutDCAxy, kAntimatterMatter[iMatt]));
 
     for (int iCent = 0; iCent < kNCentClasses; ++iCent)
     { // loop over centrality

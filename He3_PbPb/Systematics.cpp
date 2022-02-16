@@ -67,6 +67,9 @@ void Systematics(const int points = kNPoints, const bool cutVar = true, const bo
         double cutTPCclsRnd = 89;
         if (cutVar)
           cutTPCclsRnd = gRandom->Rndm() * (kNCutTPCClusters-1) + kCutTPCClusters[0];
+        double cutDCAxyRnd = 1.;
+        if (cutVar)
+          cutDCAxyRnd = gRandom->Rndm() * (kNCutDCAxy-1) * 0.01 + kCutDCAxy[0];
 
         int binCountingFlagRnd = 1;
         if (binCountingVar)
@@ -88,9 +91,9 @@ void Systematics(const int points = kNPoints, const bool cutVar = true, const bo
         }
 
         if (cutTPCclsRnd < 99.5)
-          snprintf(hname, 14, "%1.1f_0%.0f_%d_%d_%d", cutDCAzRnd, cutTPCclsRnd, binCountingFlagRnd, expFlag, sigmoidFlagRnd);
+          snprintf(hname, 14, "%1.1f_0%.0f_%1.2f_%d_%d_%d", cutDCAzRnd, cutTPCclsRnd, cutDCAxyRnd, binCountingFlagRnd, expFlag, sigmoidFlagRnd);
         else
-          snprintf(hname, 14, "%1.1f_%.0f_%d_%d_%d", cutDCAzRnd, cutTPCclsRnd, binCountingFlagRnd, expFlag, sigmoidFlagRnd);
+          snprintf(hname, 14, "%1.1f_%.0f_%1.2f_%d_%d_%d", cutDCAzRnd, cutTPCclsRnd, cutDCAxyRnd, binCountingFlagRnd, expFlag, sigmoidFlagRnd);
 
         // std::cout<<"hname="<<hname<<std::endl;
         TH1D *h = (TH1D *)specFile->Get(Form("%s/fRatio_%.0f_%.0f", hname, kCentBinsLimitsHe3[iC][0], kCentBinsLimitsHe3[iC][1]));

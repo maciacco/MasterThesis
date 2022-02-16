@@ -20,10 +20,10 @@
 using namespace utils;
 using namespace he3;
 
-void ReadTreeData(const float cutDCAz = 1.f, const int cutTPCcls = 89, const float cutDCAxy = 0.1f, const char *outFileName = "TreeOutData", const char *outFileOption = "recreate", const char *flagSelections = "( ( (std::abs(pt)<2.5f) && (trackingPID==7) ) || !(std::abs(pt)<2.5f) )", const bool data = true)
+void ReadTreeData(const float cutDCAz = 1.f, const int cutTPCcls = 89, const float cutDCAxy = 0.10f, const char *outFileName = "TreeOutData", const char *outFileOption = "recreate", const char *flagSelections = "( ( (std::abs(pt)<2.5f) && (trackingPID==7) ) || !(std::abs(pt)<2.5f) )", const bool data = true)
 {
   TFile *outFile = TFile::Open(Form("%s/%s.root", kResDir, outFileName), outFileOption);
-  TDirectory *dirOutFile = outFile->mkdir(Form("%1.1f_%d_%1.1f", cutDCAz, cutTPCcls, cutDCAxy));
+  TDirectory *dirOutFile = outFile->mkdir(Form("%1.1f_%d_%1.2f", cutDCAz, cutTPCcls, cutDCAxy));
   dirOutFile->cd();
 
   // define dcaxy track selections
@@ -99,7 +99,7 @@ void ReadTreeData(const float cutDCAz = 1.f, const int cutTPCcls = 89, const flo
 
   // merge files
   TFile *outFile2 = TFile::Open(Form("%s/%s.root", kResDir, outFileName), "update");
-  TDirectory *dirOut = outFile2->mkdir(Form("%1.1f_%d_%1.1f", cutDCAz, cutTPCcls, cutDCAxy), "", true);
+  TDirectory *dirOut = outFile2->mkdir(Form("%1.1f_%d_%1.2f", cutDCAz, cutTPCcls, cutDCAxy), "", true);
   TFile *outFileAnti = TFile::Open(Form("%s/%s_anti.root", kResDir, outFileName));
   TFile *outFileMatt = TFile::Open(Form("%s/%s_matt.root", kResDir, outFileName));
   TTree *fTreeAnti = (TTree *)outFileAnti->Get("fATreeTrackCuts");

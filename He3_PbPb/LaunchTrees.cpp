@@ -22,21 +22,24 @@ void LaunchTrees(const bool analyse = false)
   {
     for (int iCls = 0; iCls < kNCutTPCClusters; ++iCls)
     {
-      char hname[100];
-      char par[100];
+      for (int iDCAxy = 0; iDCAxy < kNCutDCAxy; ++iDCAxy)
+      {
+        char hname[100];
+        char par[100];
 
-      if (kCutTPCClusters[iCls] < 100)
-        snprintf(hname, 8, "%1.1f_0%d_", kCutDCAz[iDCA], kCutTPCClusters[iCls]);
-      else
-        snprintf(hname, 8, "%1.1f_%d_", kCutDCAz[iDCA], kCutTPCClusters[iCls]);
-      sprintf(par, "bash ./scripts/ReadTreeSys.sh %1.1f %d %s", kCutDCAz[iDCA], kCutTPCClusters[iCls], hname);
+        if (kCutTPCClusters[iCls] < 100)
+          snprintf(hname, 12, "%1.1f_0%d_%1.2f", kCutDCAz[iDCA], kCutTPCClusters[iCls], kCutDCAxy[iDCAxy]);
+        else
+          snprintf(hname, 12, "%1.1f_%d_%1.2f", kCutDCAz[iDCA], kCutTPCClusters[iCls], kCutDCAxy[iDCAxy]);
+        sprintf(par, "bash ./scripts/ReadTreeSys.sh %1.1f %d %1.2f %s", kCutDCAz[iDCA], kCutTPCClusters[iCls], kCutDCAxy[iDCAxy], hname);
 
-      std::cout << "|DCAz| < " << kCutDCAz[iDCA] << ", nClsTPC > " << kCutTPCClusters[iCls] << "; processing treeHe3_" << hname << "..." << std::endl;
-      outFile << "|DCAz| < " << kCutDCAz[iDCA] << ", nClsTPC > " << kCutTPCClusters[iCls] << "; processing treeHe3_" << hname << "..."
-              << "\n";
+        std::cout << "|DCAz| < " << kCutDCAz[iDCA] << ", nClsTPC > " << kCutTPCClusters[iCls] << ", |DCAxy| < " << kCutDCAxy[iDCAxy] << "; processing treeHe3_" << hname << "..." << std::endl;
+        outFile << "|DCAz| < " << kCutDCAz[iDCA] << ", nClsTPC > " << kCutTPCClusters[iCls] << ", |DCAxy| < " << kCutDCAxy[iDCAxy] << "; processing treeHe3_" << hname << "..."
+                << "\n";
 
-      if (analyse)
-        system(par);
+        if (analyse)
+          system(par);
+      }
     }
   }
 

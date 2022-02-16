@@ -32,11 +32,11 @@ void Efficiency(const float cutDCAz = 1.f, const int cutTPCcls = 89, const float
   for (int iMatt = 0; iMatt < 2; ++iMatt)
   {
     // make plot subdirectory
-    system(Form("mkdir %s/efficiency/%s_%1.1f_%d_%1.1f", kPlotDir, kAntimatterMatter[iMatt], cutDCAz, cutTPCcls, cutDCAxy));
+    system(Form("mkdir %s/efficiency/%s_%1.1f_%d_%1.2f", kPlotDir, kAntimatterMatter[iMatt], cutDCAz, cutTPCcls, cutDCAxy));
 
     // get histograms from file
-    TH2F *fTotal = (TH2F *)inFile.Get(TString::Format("%.1f_%d_%.1f/f%sTotal", cutDCAz, cutTPCcls, cutDCAxy, kAntimatterMatter[iMatt]));
-    TH2F *fITS_TPC = (TH2F *)inFile.Get(TString::Format("%.1f_%d_%.1f/f%sITS_TPC", cutDCAz, cutTPCcls, cutDCAxy, kAntimatterMatter[iMatt]));
+    TH2F *fTotal = (TH2F *)inFile.Get(TString::Format("%.1f_%d_%.2f/f%sTotal", cutDCAz, cutTPCcls, cutDCAxy, kAntimatterMatter[iMatt]));
+    TH2F *fITS_TPC = (TH2F *)inFile.Get(TString::Format("%.1f_%d_%.2f/f%sITS_TPC", cutDCAz, cutTPCcls, cutDCAxy, kAntimatterMatter[iMatt]));
 
     for (int iCent = 0; iCent < kNCentClasses; ++iCent)
     { // loop over centrality
