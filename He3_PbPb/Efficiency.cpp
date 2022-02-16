@@ -16,7 +16,7 @@ using utils::Eff;
 using utils::EffErr;
 using namespace he3;
 
-void Efficiency(const float cutDCAz = 1.f, const int cutTPCcls = 89, const char *inFileNameMC = "TreeOutMC", const char *outFileNameEff = "EfficiencyHe3")
+void Efficiency(const float cutDCAz = 1.f, const int cutTPCcls = 89, const float cutDCAxy = 0.1f, const char *inFileNameMC = "TreeOutMC", const char *outFileNameEff = "EfficiencyHe3")
 {
   // make signal extraction plots directory
   system(Form("mkdir %s/efficiency", kPlotDir));
@@ -32,11 +32,11 @@ void Efficiency(const float cutDCAz = 1.f, const int cutTPCcls = 89, const char 
   for (int iMatt = 0; iMatt < 2; ++iMatt)
   {
     // make plot subdirectory
-    system(Form("mkdir %s/efficiency/%s_%1.1f_%d", kPlotDir, kAntimatterMatter[iMatt], cutDCAz, cutTPCcls));
+    system(Form("mkdir %s/efficiency/%s_%1.1f_%d_%1.1f", kPlotDir, kAntimatterMatter[iMatt], cutDCAz, cutTPCcls, cutDCAxy));
 
     // get histograms from file
-    TH2F *fTotal = (TH2F *)inFile.Get(TString::Format("%.1f_%d_/f%sTotal", cutDCAz, cutTPCcls, kAntimatterMatter[iMatt]));
-    TH2F *fITS_TPC = (TH2F *)inFile.Get(TString::Format("%.1f_%d_/f%sITS_TPC", cutDCAz, cutTPCcls, kAntimatterMatter[iMatt]));
+    TH2F *fTotal = (TH2F *)inFile.Get(TString::Format("%.1f_%d_%.1f/f%sTotal", cutDCAz, cutTPCcls, cutDCAxy, kAntimatterMatter[iMatt]));
+    TH2F *fITS_TPC = (TH2F *)inFile.Get(TString::Format("%.1f_%d_%.1f/f%sITS_TPC", cutDCAz, cutTPCcls, cutDCAxy, kAntimatterMatter[iMatt]));
 
     for (int iCent = 0; iCent < kNCentClasses; ++iCent)
     { // loop over centrality
@@ -71,7 +71,7 @@ void Efficiency(const float cutDCAz = 1.f, const int cutTPCcls = 89, const char 
       // save plot image
       TCanvas canv;
       fEffPt.Draw("");
-      canv.Print(Form("%s/efficiency/%s_%1.1f_%d/cent_%.0f_%.0f.pdf", kPlotDir, kAntimatterMatter[iMatt], cutDCAz, cutTPCcls, kCentBinsLimitsHe3[iCent][0], kCentBinsLimitsHe3[iCent][1]));
+      canv.Print(Form("%s/efficiency/%s_%1.1f_%d_%1.1f/cent_%.0f_%.0f.pdf", kPlotDir, kAntimatterMatter[iMatt], cutDCAz, cutTPCcls, cutDCAxy, kCentBinsLimitsHe3[iCent][0], kCentBinsLimitsHe3[iCent][1]));
     }
   }
   outFile.Close();

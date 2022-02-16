@@ -146,7 +146,7 @@ void SignalBinnedMC(const char *cutSettings = "", const double roi_nsigma = 8., 
       TH1D fMean("fMean", "fMean", kNPtBins, kPtBins);
       TH1D fAlphaL("fAlphaL", "fAlphaL", kNPtBins, kPtBins);
       TH1D fAlphaR("fAlphaR", "fAlphaR", kNPtBins, kPtBins);
-      int nUsedPtBins = 24; // up to 2.00 GeV/c with train binning
+      int nUsedPtBins = 28; // up to 2.00 GeV/c with train binning
 
       for (int iPtBin = 5; iPtBin < nUsedPtBins + 1; ++iPtBin) // full train data binning
       { // loop on pT bins
@@ -189,8 +189,19 @@ void SignalBinnedMC(const char *cutSettings = "", const double roi_nsigma = 8., 
             nSigmaLeft = -13.;
             nSigmaRight = -5.;
           };
+          if (ptMin > 2.09)
+          {
+            nSigmaLeft = -13.;
+            nSigmaRight = -5.;
+          };
           tofSignalProjectionAll->GetXaxis()->SetRangeUser(nSigmaLeft, nSigmaRight);
           tofSignalProjection->GetXaxis()->SetRangeUser(nSigmaLeft, nSigmaRight);
+          double maximum = tofSignalProjectionAll->GetBinCenter(tofSignalProjectionAll->GetMaximumBin());
+          nSigmaLeft = maximum + 2.5;
+          if (ptMin > 2.1) nSigmaLeft = maximum + 2.;
+          if (ptMin > 2.49) nSigmaLeft = maximum + 1.;
+          nSigmaRight = nSigmaLeft + 3.;
+          std::cout << "nSigmaLeft = " << nSigmaLeft << std::endl;
         }
         double minNsigma = 15., maxNsigma = 20.;
 
@@ -272,6 +283,9 @@ void SignalBinnedMC(const char *cutSettings = "", const double roi_nsigma = 8., 
           // fit model
           RooFitResult *r;
 
+          if (ptMin > 2.0) roi_nsigma_down=roi_nsigma-3; // default = 5sigma
+          if (ptMin > 2.49) roi_nsigma_down=roi_nsigma-4; // default = 5sigma
+          if (ptMin > 2.69) roi_nsigma_down=roi_nsigma-4.5; // default = 5sigma
           tofSignal.setRange("leftSideband", nSigmaLeft, mean_tmp - roi_nsigma * rms_tmp);
           tofSignal.setRange("rightSideband", mean_tmp + roi_nsigma * rms_tmp, maxNsigma);
           
@@ -338,7 +352,7 @@ void SignalBinnedMC(const char *cutSettings = "", const double roi_nsigma = 8., 
 
           // background integral
           double bkgIntegral = ((RooAbsPdf *)model->createIntegral(RooArgSet(tofSignal), RooFit::NormSet(RooArgSet(tofSignal)), RooFit::Range("signalRange")))->getVal();
-          double bkgIntegral_val = 0;//(nBackground1->getVal() + nBackground2->getVal()) * bkgIntegral;
+          double bkgIntegral_val = (nBackground1->getVal() + nBackground2->getVal()) * bkgIntegral;
 
           double rawYield, rawYieldError, counts;
           if (binCounting)

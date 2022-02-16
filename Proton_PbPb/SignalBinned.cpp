@@ -47,8 +47,6 @@ const double kNSigma = 3; // define interval for bin counting
 
 void SignalBinned(const char *cutSettings = "", const double roi_nsigma = 8., const bool binCounting = false, const int bkg_shape = 1, const char *inFileDat = "AnalysisResults", const char *outFileName = "SignalProton", const char *outFileOption = "recreate", const bool extractSignal = true, const bool binCountingNoFit = false)
 {
-  double roi_nsigma_up = roi_nsigma;
-  double roi_nsigma_down = roi_nsigma;
 
   // make signal extraction plots directory
   system(Form("mkdir %s/signal_extraction", kPlotDir));
@@ -126,13 +124,15 @@ void SignalBinned(const char *cutSettings = "", const double roi_nsigma = 8., co
     dirOutFile->cd();
     for (int iCent = 0; iCent < kNCentClasses; ++iCent)
     {                                                                          // loop over centrality classes
+      double roi_nsigma_up = roi_nsigma;
+      double roi_nsigma_down = roi_nsigma;
       TH1D fTOFrawYield("fRawYield", "fRawYield", kNPtBins, kPtBins);          // declare raw yields histogram
       TH1D fSignificance("fSignificance", "fSignificance", kNPtBins, kPtBins); // declare significance
       TH1D fSigma("fSigma", "fSigma", kNPtBins, kPtBins);
       TH1D fMean("fMean", "fMean", kNPtBins, kPtBins);
       TH1D fAlphaL("fAlphaL", "fAlphaL", kNPtBins, kPtBins);
       TH1D fAlphaR("fAlphaR", "fAlphaR", kNPtBins, kPtBins);
-      int nUsedPtBins = 34; // up to 2.00 GeV/c
+      int nUsedPtBins = 44; // up to 2.00 GeV/c
 
       for (int iPtBin = 5; iPtBin < nUsedPtBins + 1; ++iPtBin)
       { // loop on pT bins
@@ -169,12 +169,24 @@ void SignalBinned(const char *cutSettings = "", const double roi_nsigma = 8., co
           if (ptMin > 2.05)
           {
             nSigmaLeft = -15.;
-            nSigmaRight = -12.;
+            nSigmaRight = -10.;
+          };
+          if (ptMin > 2.18)
+          {
+            nSigmaLeft = -13.;
+            nSigmaRight = -8.;
+          };
+          if (ptMin > 2.4)
+          {
+            nSigmaLeft = -10.;
+            nSigmaRight = -5.;
           };
           tofSignalProjectionAll->GetXaxis()->SetRangeUser(nSigmaLeft, nSigmaRight);
           tofSignalProjection->GetXaxis()->SetRangeUser(nSigmaLeft, nSigmaRight);
           double maximum = tofSignalProjectionAll->GetBinCenter(tofSignalProjectionAll->GetMaximumBin());
           nSigmaLeft = maximum + 2.5;
+          if (ptMin > 2.1) nSigmaLeft = maximum + 2.;
+          if (ptMin > 2.49) nSigmaLeft = maximum + 1.;
           nSigmaRight = nSigmaLeft + 3.;
           std::cout << "nSigmaLeft = " << nSigmaLeft << std::endl;
         }
@@ -234,7 +246,7 @@ void SignalBinned(const char *cutSettings = "", const double roi_nsigma = 8., co
           if (ptMin < 1.39)
           {
             background1 = (RooAbsPdf *)new RooExponential("background1", "background1", tofSignal, *slope1);
-            nBackground2 = new RooRealVar("#it{N}_{Bkg,2}", "nBackground2", 0., 1., 1.e9);
+            nBackground2 = new RooRealVar("#it{N}_{Bkg,2}", "nBackground2", 0., 0., 1.e9);
             nBackground2->setConstant();
             model = new RooAddPdf("model", "model", RooArgList(*background1), RooArgList(*nBackground1));
           }
@@ -256,11 +268,26 @@ void SignalBinned(const char *cutSettings = "", const double roi_nsigma = 8., co
           // fit model
           RooFitResult *r;
 
+          if (ptMin > 1.51) roi_nsigma_down=roi_nsigma-2; // default = 6sigma
+          if (ptMin > 2.0) {roi_nsigma_down=roi_nsigma-3; // default = 5sigma
+            roi_nsigma_up=roi_nsigma+1.;
+          }
+          if (ptMin > 2.49) roi_nsigma_down=roi_nsigma-4; // default = 4sigma
+          if (ptMin > 2.69) {
+            roi_nsigma_down=roi_nsigma-4.5; // default = 3sigma
+            roi_nsigma_up=roi_nsigma+2.;
+          }
           tofSignal.setRange("leftSideband", nSigmaLeft, mean_tmp - roi_nsigma_down * rms_tmp);
           tofSignal.setRange("rightSideband", mean_tmp + roi_nsigma_up * rms_tmp, maxNsigma);
           // fit TOF signal distribution
 
-          model->fitTo(data, RooFit::Range("leftSideband,rightSideband"));
+          if (ptMin>2.09){
+          background1->fitTo(data, RooFit::Range("rightSideband"));
+          slope1->setConstant();
+          }
+          else 
+            model->fitTo(dataAll, RooFit::Range("leftSideband,rightSideband"));
+          model->fitTo(data, RooFit::Save(), RooFit::Range("leftSideband,rightSideband"));
           r = model->fitTo(data, RooFit::Save(), RooFit::Range("leftSideband,rightSideband"));
 
           std::cout << "fit status: " << r->status() << ";" << std::endl;
@@ -268,8 +295,8 @@ void SignalBinned(const char *cutSettings = "", const double roi_nsigma = 8., co
           covQ = r->covQual();
           
           // signal range
-          tofSignal.setRange("signalRange", mean_tmp - (roi_nsigma_down+extend_roi) * rms_tmp, mean_tmp + (roi_nsigma_up+2) * rms_tmp);
-          tofSignal.setRange("aFitRange", mean_tmp - (2.) * rms_tmp, mean_tmp + (roi_nsigma_up+2) * rms_tmp);
+          tofSignal.setRange("signalRange", mean_tmp - (roi_nsigma_down+extend_roi) * rms_tmp, mean_tmp + (roi_nsigma_up+extend_roi) * rms_tmp);
+          tofSignal.setRange("aFitRange", mean_tmp - (roi_nsigma_down+extend_roi) * rms_tmp, mean_tmp + (roi_nsigma_up+extend_roi) * rms_tmp);
         }
 
         // frame

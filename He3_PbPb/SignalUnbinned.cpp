@@ -37,7 +37,7 @@ using namespace he3;
 
 const double kNSigma = 3; // define interval for bin counting
 
-void SignalUnbinned(const float cutDCAz = 1.f, const int cutTPCcls = 89, const bool binCounting = true, const int bkg_shape = 1, const char *inFileDat = "TreeOutData", const char *outFileName = "SignalHe3", const char *outFileOption = "recreate", const bool extractSignal = true, const bool binCountingNoFit = false)
+void SignalUnbinned(const float cutDCAz = 1.f, const int cutTPCcls = 89, const float cutDCAxy = 0.1f, const bool binCounting = true, const int bkg_shape = 1, const char *inFileDat = "TreeOutData", const char *outFileName = "SignalHe3", const char *outFileOption = "recreate", const bool extractSignal = true, const bool binCountingNoFit = false)
 {
   // make signal extraction plots directory
   system(Form("mkdir %s/signal_extraction", kPlotDir));
@@ -51,9 +51,9 @@ void SignalUnbinned(const float cutDCAz = 1.f, const int cutTPCcls = 89, const b
   TTree *inTree;
 
   TFile *outFile = TFile::Open(TString::Format("%s/%s.root", kOutDir, outFileName), outFileOption); // output file
-  if (outFile->GetDirectory(Form("%1.1f_%d_%d_%d", cutDCAz, cutTPCcls, binCounting, bkg_shape)))
+  if (outFile->GetDirectory(Form("%1.1f_%d_%1.1f_%d_%d", cutDCAz, cutTPCcls, cutDCAxy, binCounting, bkg_shape)))
     return;
-  TDirectory *dirOutFile = outFile->mkdir(Form("%1.1f_%d_%d_%d", cutDCAz, cutTPCcls, binCounting, bkg_shape));
+  TDirectory *dirOutFile = outFile->mkdir(Form("%1.1f_%d_%1.1f_%d_%d", cutDCAz, cutTPCcls, cutDCAxy, binCounting, bkg_shape));
   TFile *dataFile = TFile::Open(TString::Format("%s/%s.root", kResDir, inFileDat)); // open data TFile
   if (!dataFile)
   {
@@ -64,7 +64,7 @@ void SignalUnbinned(const float cutDCAz = 1.f, const int cutTPCcls = 89, const b
   for (int iMatt = 0; iMatt < 2; ++iMatt)
   { // loop on antimatter/matter
     // Get trees from file
-    std::string treeName = Form("%1.1f_%d_/f", cutDCAz, cutTPCcls);
+    std::string treeName = Form("%1.1f_%d_%1.1f/f", cutDCAz, cutTPCcls, cutDCAxy);
     treeName.append(kAntimatterMatter[iMatt]);
     treeName += "TreeTrackCuts";
     inTree = (TTree *)dataFile->Get(treeName.c_str());
@@ -75,7 +75,7 @@ void SignalUnbinned(const float cutDCAz = 1.f, const int cutTPCcls = 89, const b
     }
 
     // make plot subdirectory
-    system(Form("mkdir %s/signal_extraction/%s_%1.1f_%d_%d_%d", kPlotDir, kAntimatterMatter[iMatt], cutDCAz, cutTPCcls, binCounting, bkg_shape));
+    system(Form("mkdir %s/signal_extraction/%s_%1.1f_%d_%1.1f_%d_%d", kPlotDir, kAntimatterMatter[iMatt], cutDCAz, cutTPCcls, cutDCAxy, binCounting, bkg_shape));
 
     dirOutFile->cd();
     for (int iCent = 0; iCent < kNCentClasses; ++iCent)
@@ -222,7 +222,7 @@ void SignalUnbinned(const float cutDCAz = 1.f, const int cutTPCcls = 89, const b
         TCanvas canv;
         canv.SetName(plotTitle);
         xframe->Draw("");
-        canv.Print(Form("%s/signal_extraction/%s_%1.1f_%d_%d_%d/cent_%.0f_%.0f_pt_%.2f_%.2f.pdf", kPlotDir, kAntimatterMatter[iMatt], cutDCAz, cutTPCcls, binCounting, bkg_shape, kCentBinsLimitsHe3[iCent][0], kCentBinsLimitsHe3[iCent][1], minPt, maxPt));
+        canv.Print(Form("%s/signal_extraction/%s_%1.1f_%d_%1.1f_%d_%d/cent_%.0f_%.0f_pt_%.2f_%.2f.pdf", kPlotDir, kAntimatterMatter[iMatt], cutDCAz, cutTPCcls, cutDCAxy, binCounting, bkg_shape, kCentBinsLimitsHe3[iCent][0], kCentBinsLimitsHe3[iCent][1], minPt, maxPt));
 
       } // end of loop on pt bins
 

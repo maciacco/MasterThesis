@@ -23,7 +23,7 @@ double protonCorrectionPt(int iMatt,double pt){
   return 1;
 };
 
-void Spectra(const char *cutSettings = "", const double roi_nsigma = 8., const bool G3G4Prim = true, const bool binCounting = false, const int bkg_shape = 1, const bool sigmoidCorrection = true, const char *histoNameDir = ".", const char *outFileName = "SpectraProton1", const char *outFileOption = "recreate", const char *dataFile = "AnalysisResults", const char *signalFile = "SignalProton", const char *effFile = "EfficiencyProton", const char *primFile = "PrimaryProton", const bool sys=false,const bool useEfficiencyMB = false)
+void Spectra(const char *cutSettings = "", const double roi_nsigma = 8., const bool G3G4Prim = false, const bool binCounting = false, const int bkg_shape = 1, const bool sigmoidCorrection = true, const char *histoNameDir = ".", const char *outFileName = "SpectraProton1", const char *outFileOption = "recreate", const char *dataFile = "AnalysisResults", const char *signalFile = "SignalProton", const char *effFile = "EfficiencyProton", const char *primFile = "PrimaryProton", const bool sys=false,const bool useEfficiencyMB = false)
 {
   std::cout << "cutSettings = " << cutSettings << std::endl;
   gStyle->SetOptFit(0);
@@ -92,7 +92,7 @@ void Spectra(const char *cutSettings = "", const double roi_nsigma = 8., const b
 
       //sec->Fit(&fitFuncSec,"R");
       fSpectra[iMatt] = new TH1D(*raw);
-      int pTbinMax = 24;
+      int pTbinMax = 28;
       std::cout<<"entering pt loop..."<<std::endl;
       for (int iPtBin = 5; iPtBin < pTbinMax + 1; ++iPtBin)
       {
@@ -148,7 +148,7 @@ void Spectra(const char *cutSettings = "", const double roi_nsigma = 8., const b
 
     // compute ratios
     TH1D SysError(Form("fSysError_%.0f_%.0f",kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1]),Form("%.0f-%.0f%%",kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1]),kNPtBins,kPtBins);
-    int pTbinMax = 24;
+    int pTbinMax = 28;
     for (int iPtBin = 5; iPtBin < pTbinMax + 1; ++iPtBin)
     {
       double antiSpec = fSpectra[0]->GetBinContent(iPtBin);

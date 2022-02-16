@@ -10,6 +10,8 @@
 // Common
 //////////////////////////////////////////////////////////////
 
+Color_t centrality_colors[] = {kOrange+7, kAzure+4, kTeal+4};
+
 // directories
 const char *kResDir = "./results";
 const char *kOutDir = "./out";
@@ -82,7 +84,7 @@ namespace he3
 
   // track selections
   const char *kTrackSelectionsEta = "(std::abs(eta)<0.8)";
-  const char *kTrackSelectionsDCAxy = "std::abs(dcaxy)<0.1f";
+  //const char *kTrackSelectionsDCAxy = "std::abs(dcaxy)<0.1f";
 
   // cuts with variations (systematics computation)
   const int kNCutDCAz = 11;

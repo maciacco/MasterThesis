@@ -7,7 +7,7 @@ cutTPCcls=89
 binCountingFlag=1
 expFlag=1 # 0->pol1, 1->expo, 2->pol2
 sigmoidFlag=1
-spectraHistNameId="1.0_89_1_1_1"
+spectraHistNameId="1.0_89_0.1_1_1_1"
 readTree=0
 extractRatios=1
 
@@ -57,8 +57,8 @@ if [ $readTree -eq 1 ]; then
 // ReadTreeData($argumentCuts,"TreeOutData_NoPID","recreate","true") // no PID
 // ReadTreeData($argumentCuts,"TreeOutData_He3PID","recreate","trackingPID==7") // kHe3
 // ReadTreeData($argumentCuts,"TreeOutData_AlphaPID","recreate","trackingPID==8") // kHe4
-//ReadTreeData($argumentCuts,"$treeData","recreate","( ( (std::abs(pt)<2.5f) && (trackingPID==7) ) || !(std::abs(pt)<2.5f) )")
-ReadTreeMC($argumentCuts,"$treeMC","recreate","( ( (std::abs(pt)<2.5f) && (trackingPID==7) ) || !(std::abs(pt)<2.5f) )")
+ReadTreeData($argumentCuts,0.1,"$treeData","recreate","( ( (std::abs(pt)<2.5f) && (trackingPID==7) ) || !(std::abs(pt)<2.5f) )")
+ReadTreeMC($argumentCuts,0.1,"$treeMC","recreate","( ( (std::abs(pt)<2.5f) && (trackingPID==7) ) || !(std::abs(pt)<2.5f) )")
 EOF
 fi
 
@@ -87,11 +87,11 @@ if [ $extractRatios -eq 1 ]; then
 // SignalUnbinned($argumentCuts,$argumentSignal,"TreeOutData_NoPID","SignalHe3_NoPID","recreate",true,false)
 // SignalUnbinned($argumentCuts,$argumentSignal,"TreeOutData_He3PID","SignalHe3_He3PID","recreate",true,false)
 // SignalUnbinned($argumentCuts,$argumentSignal,"TreeOutData_AlphaPID","SignalHe3_AlphaPID","recreate",true,true)
-//SignalUnbinned($argumentCuts,$argumentSignal,"$treeData","$signalName","recreate")
-//Efficiency($argumentCuts,"$treeMC","$EfficiencyHe3")
-//EfficiencySec($argumentCuts,"$treeMC","$EfficiencyHe3SecWD",$HYPER_TO_HE3_RATIO)
-Secondary($argumentCuts,"$treeData","$treeMC","$EfficiencyHe3SecWD","$PrimaryHe3")
-Spectra($argumentCuts,$argumentSignal,$sigmoidFlag,"$spectraHistNameId","$spectraName","recreate","AnalysisResults","$signalName","$EfficiencyHe3","$PrimaryHe3")
+SignalUnbinned($argumentCuts,0.1f,$argumentSignal,"$treeData","$signalName","recreate")
+Efficiency($argumentCuts,0.1f,"$treeMC","$EfficiencyHe3")
+EfficiencySec($argumentCuts,0.1f,"$treeMC","$EfficiencyHe3SecWD",0.3365047128558935)
+Secondary($argumentCuts,0.1f,"$treeData","$treeMC","$EfficiencyHe3SecWD","$PrimaryHe3")
+Spectra($argumentCuts,0.1f,$argumentSignal,$sigmoidFlag,"$spectraHistNameId","$spectraName","recreate","AnalysisResults","$signalName","$EfficiencyHe3","$PrimaryHe3")
 // SignalLoss()
 //AbsorptionError("AbsError","recreate","$spectraName")
 .q

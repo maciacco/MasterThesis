@@ -28,7 +28,7 @@ using namespace he3;
 
 const double fit_range = 1.3;
 
-void Secondary(const float cutDCAz = 1.f, const int cutTPCcls = 89, const char *inFileDatName = "TreeOutData", const char *inFileMCName = "TreeOutMC", const char *inFileWDName = "EfficiencyHe3SecWd", const char *outFileName = "PrimaryHe3", const bool useWdInFit = false, const bool rebinLowStatisticsBin = true)
+void Secondary(const float cutDCAz = 1.f, const int cutTPCcls = 89, const double cutDCAxy = 0.1f, const char *inFileDatName = "TreeOutData", const char *inFileMCName = "TreeOutMC", const char *inFileWDName = "EfficiencyHe3SecWd", const char *outFileName = "PrimaryHe3", const bool useWdInFit = false, const bool rebinLowStatisticsBin = true)
 {
   gStyle->SetPadTickX(1);
   gStyle->SetPadTickY(1);
@@ -45,13 +45,13 @@ void Secondary(const float cutDCAz = 1.f, const int cutTPCcls = 89, const char *
   for (int iMatt = 0; iMatt < 2; ++iMatt)
   {
     // make plot subdirectory
-    system(Form("mkdir %s/primary_fraction/%s_%1.1f_%d", kPlotDir, kAntimatterMatter[iMatt], cutDCAz, cutTPCcls));
+    system(Form("mkdir %s/primary_fraction/%s_%1.1f_%d_%1.1f", kPlotDir, kAntimatterMatter[iMatt], cutDCAz, cutTPCcls, cutDCAxy));
 
     // get histograms from files
-    TH3F *fDCAdat = (TH3F *)inFileDat->Get(Form("%1.1f_%d_/f%sDCAxyTPC", cutDCAz, cutTPCcls, kAntimatterMatter[iMatt]));
-    TH3F *fDCAprim = (TH3F *)inFileMC->Get(Form("%1.1f_%d_/f%sDCAPrimary", cutDCAz, cutTPCcls, kAntimatterMatter[iMatt]));
-    TH3F *fDCAsec = (TH3F *)inFileMC->Get(Form("%1.1f_%d_/fMDCASecondary", cutDCAz, cutTPCcls));
-    TH3F *fDCAsecWeak = (TH3F *)inFileMC->Get(Form("%1.1f_%d_/f%sDCASecondaryWeak", cutDCAz, cutTPCcls, kAntimatterMatter[iMatt]));
+    TH3F *fDCAdat = (TH3F *)inFileDat->Get(Form("%1.1f_%d_%1.1f/f%sDCAxyTPC", cutDCAz, cutTPCcls, cutDCAxy, kAntimatterMatter[iMatt]));
+    TH3F *fDCAprim = (TH3F *)inFileMC->Get(Form("%1.1f_%d_%1.1f/f%sDCAPrimary", cutDCAz, cutTPCcls, cutDCAxy, kAntimatterMatter[iMatt]));
+    TH3F *fDCAsec = (TH3F *)inFileMC->Get(Form("%1.1f_%d_%1.1f/fMDCASecondary", cutDCAz, cutTPCcls, cutDCAxy));
+    TH3F *fDCAsecWeak = (TH3F *)inFileMC->Get(Form("%1.1f_%d_%1.1f/f%sDCASecondaryWeak", cutDCAz, cutTPCcls, cutDCAxy, kAntimatterMatter[iMatt]));
 
     TH1D *fPrim_0_5;
 
@@ -173,8 +173,8 @@ void Secondary(const float cutDCAz = 1.f, const int cutTPCcls = 89, const char *
           ROOT::Fit::Fitter *fitter = fit->GetFitter();
 
           // compute wd template fraction
-          double dataIntegralDCAcut = fDCAdatProj->Integral(fDCAdatProj->FindBin(-0.1), fDCAdatProj->FindBin(0.09));
-          double wdIntegralDCAcut = fDCAMcProjSecWeak->Integral(fDCAMcProjSecWeak->FindBin(-0.1), fDCAMcProjSecWeak->FindBin(0.09));
+          double dataIntegralDCAcut = fDCAdatProj->Integral(fDCAdatProj->FindBin(-cutDCAxy), fDCAdatProj->FindBin(cutDCAxy-0.01));
+          double wdIntegralDCAcut = fDCAMcProjSecWeak->Integral(fDCAMcProjSecWeak->FindBin(-cutDCAxy), fDCAMcProjSecWeak->FindBin(cutDCAxy-0.01));
           double dataIntegral = fDCAdatProj->Integral();
           double wdIntegral = fDCAMcProjSecWeak->Integral();
           double wdTemplateFrac = (fWDfrac->GetBinContent(iPtBin)) * (dataIntegralDCAcut / dataIntegral) / (wdIntegralDCAcut / wdIntegral);
@@ -261,10 +261,10 @@ void Secondary(const float cutDCAz = 1.f, const int cutTPCcls = 89, const char *
 
             // compute fraction of primaries and material secondaries
             double intPrimDCAcutError = 0.;
-            double intPrimDCAcut = mc1->IntegralAndError(result->FindBin(-0.1), result->FindBin(0.9), intPrimDCAcutError);
-            double intSecDCAcut = mc2->Integral(result->FindBin(-0.1), result->FindBin(0.9));
+            double intPrimDCAcut = mc1->IntegralAndError(result->FindBin(-cutDCAxy), result->FindBin(cutDCAxy-0.01), intPrimDCAcutError);
+            double intSecDCAcut = mc2->Integral(result->FindBin(-cutDCAxy), result->FindBin(cutDCAxy-0.01));
             double intResDCAcutError = 0.;
-            double intResDCAcut = result->IntegralAndError(result->FindBin(-0.1), result->FindBin(0.9), intResDCAcutError);
+            double intResDCAcut = result->IntegralAndError(result->FindBin(-cutDCAxy), result->FindBin(cutDCAxy-0.01), intResDCAcutError);
             double primaryRatio = intPrimDCAcut / intResDCAcut;
             double primaryRatioError = /* primaryRatio*TMath::Sqrt(intPrimDCAcutError*intPrimDCAcutError/intPrimDCAcut/intPrimDCAcut+intResDCAcutError*intResDCAcutError/intResDCAcut/intResDCAcut); */TMath::Sqrt(primaryRatio * (1.f - primaryRatio) / intResDCAcut);
             double secondaryRatio = intSecDCAcut / intResDCAcut;

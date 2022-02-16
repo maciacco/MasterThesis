@@ -18,7 +18,7 @@ using utils::Eff;
 using utils::EffErr;
 using namespace he3;
 
-void EfficiencySec(const float cutDCAz = 1.f, const int cutTPCcls = 89, const char *inFileNameMC = "TreeOutMC", const char *outFileNameEff = "EfficiencyHe3SecWd", const double hyperTritonToHe3Ratio = 1.)
+void EfficiencySec(const float cutDCAz = 1.f, const int cutTPCcls = 89, const float cutDCAxy = 0.1f, const char *inFileNameMC = "TreeOutMC", const char *outFileNameEff = "EfficiencyHe3SecWd", const double hyperTritonToHe3Ratio = 0.3365047128558935)
 {
   gStyle->SetPadTickX(1);
   gStyle->SetPadTickY(1);
@@ -35,8 +35,8 @@ void EfficiencySec(const float cutDCAz = 1.f, const int cutTPCcls = 89, const ch
   for (int iMatt = 0; iMatt < 2; ++iMatt)
   {
     // get histograms from file
-    TH2F *fTotal = (TH2F *)inFile.Get(TString::Format("%1.1f_%d_/f%sTotalWd", cutDCAz, cutTPCcls, kAntimatterMatter[iMatt]));
-    TH2F *fITS_TPC = (TH2F *)inFile.Get(TString::Format("%1.1f_%d_/f%sITS_TPCwd", cutDCAz, cutTPCcls, kAntimatterMatter[iMatt]));
+    TH2F *fTotal = (TH2F *)inFile.Get(TString::Format("%1.1f_%d_%1.1f/f%sTotalWd", cutDCAz, cutTPCcls, cutDCAxy, kAntimatterMatter[iMatt]));
+    TH2F *fITS_TPC = (TH2F *)inFile.Get(TString::Format("%1.1f_%d_%1.1f/f%sITS_TPCwd", cutDCAz, cutTPCcls, cutDCAxy, kAntimatterMatter[iMatt]));
 
     for (int iCent = 0; iCent < kNCentClasses; ++iCent)
     { // loop over centrality

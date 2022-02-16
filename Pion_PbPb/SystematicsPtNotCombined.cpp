@@ -16,6 +16,7 @@
 #include <TF1.h>
 #include <TCanvas.h>
 #include <TPaveStats.h>
+#include <TGraphErrors.h>
 
 #include "../utils/Config.h"
 
@@ -605,10 +606,26 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
     hRatio.SetMarkerSize(0.8);
     hRatio.GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
     hRatio.GetYaxis()->SetTitle("Ratio #pi^{-}/#pi^{+}");
-    hRatio.GetXaxis()->SetRangeUser(0.7,1.1);
+    hRatio.GetXaxis()->SetRangeUser(0.71,1.09);
     hRatio.GetYaxis()->SetRangeUser(0.92, 1.08);
     hRatio.SetStats(0);
-    hRatio.Draw("");
+    hRatio.SetLineColor(kWhite);
+    hRatio.SetMarkerColor(kWhite);
+    hRatio.Draw();
+    hRatio.SetLineColor(centrality_colors[iC]);
+    hRatio.SetMarkerColor(centrality_colors[iC]);
+    TGraphErrors gRatio(&hRatio);
+    for (int iPtBin=5;iPtBin<kNPtBins;++iPtBin){  
+      hRatio.SetBinError(iPtBin,fSystematicUncertaintyTotalPtCorrelated.GetBinContent(iPtBin)*fRatioFromVariationsTot.GetBinContent(iPtBin));
+    }
+    TGraphErrors gRatioCorr(&hRatio);
+    gRatio.Draw("P5");
+    gRatio.GetXaxis()->SetRangeUser(0.70,1.10);
+    gRatio.GetYaxis()->SetRangeUser(0.92, 1.08);
+    gRatioCorr.SetFillStyle(3145);
+    gRatioCorr.SetFillColor(centrality_colors[iC]); 
+    hRatio.GetFunction("pol0")->Draw("same");
+    gRatioCorr.Draw("P5 same");
     TLatex chi2(0.9, 1.06, Form("#chi^{2}/NDF = %.2f/%d", hRatio.GetFunction("pol0")->GetChisquare(), hRatio.GetFunction("pol0")->GetNDF()));
     chi2.SetTextSize(28);
     TLatex p0(0.9, 1.04, Form("R = %.4f #pm %.4f", hRatio.GetFunction("pol0")->GetParameter(0), hRatio.GetFunction("pol0")->GetParError(0)));

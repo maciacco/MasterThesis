@@ -20,11 +20,14 @@
 using namespace utils;
 using namespace he3;
 
-void ReadTreeData(const float cutDCAz = 1.f, const int cutTPCcls = 89, const char *outFileName = "TreeOutData", const char *outFileOption = "recreate", const char *flagSelections = "( ( (std::abs(pt)<2.5f) && (trackingPID==7) ) || !(std::abs(pt)<2.5f) )", const bool data = true)
+void ReadTreeData(const float cutDCAz = 1.f, const int cutTPCcls = 89, const float cutDCAxy = 0.1f, const char *outFileName = "TreeOutData", const char *outFileOption = "recreate", const char *flagSelections = "( ( (std::abs(pt)<2.5f) && (trackingPID==7) ) || !(std::abs(pt)<2.5f) )", const bool data = true)
 {
   TFile *outFile = TFile::Open(Form("%s/%s.root", kResDir, outFileName), outFileOption);
-  TDirectory *dirOutFile = outFile->mkdir(Form("%1.1f_%d_", cutDCAz, cutTPCcls));
+  TDirectory *dirOutFile = outFile->mkdir(Form("%1.1f_%d_%1.1f", cutDCAz, cutTPCcls, cutDCAxy));
   dirOutFile->cd();
+
+  // define dcaxy track selections
+  auto trackSelectionsDCAxy = Form("std::abs(dcaxy)<%f",cutDCAxy);
 
   // define pt bins
   double pTbins[kNPtBins + 1] = {1.f, 1.5f, 2.f, 2.5f, 3.f, 3.5f, 4.f, 4.5f, 5.f, 5.5f, 6.f, 6.5f, 7.f, 8.f, 10.f};
@@ -47,7 +50,7 @@ void ReadTreeData(const float cutDCAz = 1.f, const int cutTPCcls = 89, const cha
 
   dirOutFile->cd();
   // TPC counts
-  auto trackSelectCutDCA = trackSelect.Filter(Form("(%s) && (%s)", kTrackSelectionsDCAxy, flagSelections)); // apply track selections
+  auto trackSelectCutDCA = trackSelect.Filter(Form("(%s) && (%s)", trackSelectionsDCAxy, flagSelections)); // apply track selections
   auto antiHe3CutDCA = trackSelectCutDCA.Filter("pt<0");                                                    // select antimatter and change pt sign
   auto he3CutDCA = trackSelectCutDCA.Filter("pt>0");                                                        // select matter
   auto fATPCcounts = antiHe3CutDCA.Histo3D({"fATPCcounts", "fATPCcounts", kNCentBins, kCentBins, kNPtBins, pTbins, kNSigmaBins, sigmaBins}, "centrality", "pT", "tpcNsigma");
@@ -96,7 +99,7 @@ void ReadTreeData(const float cutDCAz = 1.f, const int cutTPCcls = 89, const cha
 
   // merge files
   TFile *outFile2 = TFile::Open(Form("%s/%s.root", kResDir, outFileName), "update");
-  TDirectory *dirOut = outFile2->mkdir(Form("%1.1f_%d_", cutDCAz, cutTPCcls), "", true);
+  TDirectory *dirOut = outFile2->mkdir(Form("%1.1f_%d_%1.1f", cutDCAz, cutTPCcls, cutDCAxy), "", true);
   TFile *outFileAnti = TFile::Open(Form("%s/%s_anti.root", kResDir, outFileName));
   TFile *outFileMatt = TFile::Open(Form("%s/%s_matt.root", kResDir, outFileName));
   TTree *fTreeAnti = (TTree *)outFileAnti->Get("fATreeTrackCuts");

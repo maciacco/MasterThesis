@@ -88,7 +88,7 @@ void SystematicsXS(const char *cutSettings = "", const char *outFileName = "Syst
   }
 
   // antimatter curve
-  double range_XS[][2]={{1.0209657,1.0356143},{0.958,1.028}};
+  double range_XS[][2]={{0.947,1.053},{0.958,1.028}};
   double x_XS[][3]={{0.8,0.913,1.5},{0.8,0.993,1.5}};
   for (int iMatt=0;iMatt<2;++iMatt){
     TCanvas cXS(Form("c%s",kAntimatterMatter[iMatt]),Form("c%s",kAntimatterMatter[iMatt]));

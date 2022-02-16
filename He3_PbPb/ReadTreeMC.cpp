@@ -18,11 +18,14 @@
 using namespace utils;
 using namespace he3;
 
-void ReadTreeMC(const float cutDCAz = 1.f, const int cutTPCcls = 89, const char *outFileName = "TreeOutMC", const char *outFileOption = "recreate", const char *flagSelections = "( ( (std::abs(pt)<2.5f) && (trackingPID==7) ) || !(std::abs(pt)<2.5f) )")
+void ReadTreeMC(const float cutDCAz = 1.f, const int cutTPCcls = 89, const float cutDCAxy = 0.1f, const char *outFileName = "TreeOutMC", const char *outFileOption = "recreate", const char *flagSelections = "( ( (std::abs(pt)<2.5f) && (trackingPID==7) ) || !(std::abs(pt)<2.5f) )")
 {
   TFile *outFile = TFile::Open(Form("%s/%s.root", kResDir, outFileName), outFileOption);
-  TDirectory *dirOutFile = outFile->mkdir(Form("%1.1f_%d_", cutDCAz, cutTPCcls));
+  TDirectory *dirOutFile = outFile->mkdir(Form("%1.1f_%d_%1.1f", cutDCAz, cutTPCcls, cutDCAxy));
   dirOutFile->cd();
+
+  // define dcaxy track selections
+  auto trackSelectionsDCAxy = Form("std::abs(dcaxy)<%f",cutDCAxy);
 
   // define pt bins
   double pTbins[kNPtBins + 1] = {1.f, 1.5f, 2.f, 2.5f, 3.f, 3.5f, 4.f, 4.5f, 5.f, 5.5f, 6.f, 6.5f, 7.f, 8.f, 10.f};
@@ -56,10 +59,10 @@ void ReadTreeMC(const float cutDCAz = 1.f, const int cutTPCcls = 89, const char 
   auto fMDCASecondaryWeak = he3RSecWeak.Histo3D({"fMDCASecondaryWeak", "fMDCASecondaryWeak", kNCentBins, kCentBins, kNPtBins, pTbins, kNDCABins, kDCABins}, "centrality", "pT", "dcaxy");
 
   // ITS-TPC (all data track selections applied) - also for wd efficiency
-  auto antiHe3RCutDCA = antiHe3R.Filter(kTrackSelectionsDCAxy); // cut on dcaxy
-  auto he3RCutDCA = he3R.Filter(kTrackSelectionsDCAxy);
-  auto antiHe3RSecWeakCutDCA = antiHe3RSecWeak.Filter(kTrackSelectionsDCAxy);
-  auto he3RSecWeakCutDCA = he3RSecWeak.Filter(kTrackSelectionsDCAxy);
+  auto antiHe3RCutDCA = antiHe3R.Filter(trackSelectionsDCAxy); // cut on dcaxy
+  auto he3RCutDCA = he3R.Filter(trackSelectionsDCAxy);
+  auto antiHe3RSecWeakCutDCA = antiHe3RSecWeak.Filter(trackSelectionsDCAxy);
+  auto he3RSecWeakCutDCA = he3RSecWeak.Filter(trackSelectionsDCAxy);
   auto fAITS_TPC = antiHe3RCutDCA.Histo2D({"fAITS_TPC", "fAITS_TPC", kNCentBins, kCentBins, kNPtBins, pTbins}, "centrality", "pT");
   auto fMITS_TPC = he3RCutDCA.Histo2D({"fMITS_TPC", "fMITS_TPC", kNCentBins, kCentBins, kNPtBins, pTbins}, "centrality", "pT");
   auto fAITS_TPCwd = antiHe3RSecWeakCutDCA.Histo2D({"fAITS_TPCwd", "fAITS_TPCwd", kNCentBins, kCentBins, kNPtBins, pTbins}, "centrality", "pT");
@@ -77,7 +80,7 @@ void ReadTreeMC(const float cutDCAz = 1.f, const int cutTPCcls = 89, const char 
   auto fMTotalWd = he3Swd.Histo2D({"fMTotalWd", "fMTotalWd", kNCentBins, kCentBins, kNPtBins, pTbins}, "centrality", "pT");
 
 #ifdef PID
-  auto trackSelectRNoPID = trackSelectR.Filter(Form("(%s)", kTrackSelectionsDCAxy)); // no tpcNsigma cut
+  auto trackSelectRNoPID = trackSelectR.Filter(Form("(%s)", trackSelectionsDCAxy)); // no tpcNsigma cut
   auto trackSelectRPID = trackSelectRNoPID.Filter("trackingPID==7");
   auto trackSelectRalphaPID = trackSelectRNoPID.Filter("trackingPID==8");
   auto antiHe3RPID = trackSelectRPID.Filter("pt<0");
