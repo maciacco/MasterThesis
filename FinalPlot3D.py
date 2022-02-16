@@ -9,6 +9,7 @@ path_proton = './Proton_PbPb/out'
 path_pion = './Pion_PbPb/out'
 centrality_classes = [[0, 5], [5, 10], [30, 50]]
 centrality_colors = [ROOT.kOrange+7, ROOT.kAzure+4, ROOT.kTeal+4]
+particle_ratios = ["#pi^{-} / #pi^{+}","#bar{p} / p"," _{#bar{#Lambda}}^{3}#bar{H} / ^{3}_{#Lambda}H","^{3}#bar{He} / ^{3}He"]
 
 TLATEX_TEXT_SIZE = 28
 
@@ -30,7 +31,7 @@ file_out = ROOT.TFile.Open('FinalPlot3D.root', 'recreate')
 for i_cent, cent in enumerate(centrality_classes):
 
     # get histograms
-    ratio_he3 = file_he3.Get(f'1.0_89_1_1_1/fRatio_{cent[0]}_{cent[1]}')
+    ratio_he3 = file_he3.Get(f'1.0_89_0.1_1_1_1/fRatio_{cent[0]}_{cent[1]}')
     ratio_hyp = file_hyp.Get(f'fRatio_{cent[0]}_{cent[1]}')
     ratio_proton = file_proton.Get(f'fRatio_{cent[0]}_{cent[1]}')
     ratio_pion = file_pion.Get(f'fRatio_{cent[0]}_{cent[1]}')
@@ -171,5 +172,55 @@ for i_cent, cent in enumerate(centrality_classes):
     c.Write()
     fit_expo.Write()
     c.Print(f"Ratios_{cent[0]}_{cent[1]}_3D.pdf")
+
+    # make final plot for approval
+    cRatiosParticle = ROOT.TCanvas(f"cRatiosParticle_{cent[0]}_{cent[1]}",f"cRatiosParticle_{cent[0]}_{cent[1]}")
+    hRatiosParticle = ROOT.TH1D(f"hRatiosParticle_{cent[0]}_{cent[1]}",f"{cent[0]}-{cent[1]}%",4,0,4)
+    hRatiosParticleFit = ROOT.TH1D(f"hRatiosParticleFit_{cent[0]}_{cent[1]}",f"{cent[0]}-{cent[1]}%",4,0,4)
+    for i_part in range(0,4):
+        hRatiosParticle.GetXaxis().SetBinLabel(i_part+1,particle_ratios[i_part])
+        ratio = 1
+        ratio_err = 0
+        fit = 1
+        if i_part == 0:
+            ratio = ratio_pion
+            ratio_err = np.sqrt(syst_pion*syst_pion+stat_pion*stat_pion)
+            fit = fit_expo.Eval(1,0)
+        if i_part == 1:
+            ratio = ratio_proton
+            ratio_err = np.sqrt(syst_proton*syst_proton+stat_proton*stat_proton)
+            fit = fit_expo.Eval(0.5,3)
+        if i_part == 2:
+            ratio = ratio_hyp
+            ratio_err = np.sqrt(syst_hyp*syst_hyp+stat_hyp*stat_hyp)
+            fit = fit_expo.Eval(0,8)
+        if i_part == 3:
+            ratio = ratio_he3
+            ratio_err = np.sqrt(syst_he3*syst_he3+stat_he3*stat_he3)
+            fit = fit_expo.Eval(0.5,9)
+        hRatiosParticle.SetBinContent(i_part+1,ratio)
+        hRatiosParticle.SetBinError(i_part+1,ratio_err)
+        hRatiosParticleFit.SetBinContent(i_part+1,fit)
+        hRatiosParticleFit.SetBinError(i_part+1,0)
+        print(f"fit = {fit}")
+    hRatiosParticle.GetYaxis().SetRangeUser(0.6,1.2)
+    gRatiosParticle = ROOT.TGraphErrors(hRatiosParticle)
+    gRatiosParticleFit = ROOT.TGraphErrors(hRatiosParticleFit)
+    for i_part in range(0,4):
+        gRatiosParticle.SetPointError(i_part,0,hRatiosParticle.GetBinError(i_part+1))
+        gRatiosParticleFit.SetPointError(i_part,0.4,0)
+    hRatiosParticle.SetLineColor(ROOT.kWhite)
+    hRatiosParticle.SetMarkerColor(ROOT.kWhite)
+    hRatiosParticle.Draw("")
+    gRatiosParticle.SetMarkerStyle(20)
+    gRatiosParticle.SetMarkerSize(0.8)
+    gRatiosParticle.SetLineColor(centrality_colors[i_cent])
+    gRatiosParticle.SetMarkerColor(centrality_colors[i_cent])
+    gRatiosParticleFit.SetMarkerSize(0)
+    gRatiosParticleFit.SetLineColor(ROOT.kRed)
+    gRatiosParticleFit.Draw("e same")
+    gRatiosParticle.Draw("pe same")
+    cRatiosParticle.Write()
+    #cRatiosParticle.Print(f"{cRatiosParticle.GetName()}.pdf")
 
 file_out.Close()
