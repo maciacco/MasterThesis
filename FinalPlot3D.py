@@ -9,7 +9,7 @@ path_proton = './Proton_PbPb/out'
 path_pion = './Pion_PbPb/out'
 centrality_classes = [[0, 5], [5, 10], [30, 50]]
 centrality_colors = [ROOT.kOrange+7, ROOT.kAzure+4, ROOT.kTeal+4]
-particle_ratios = ["#pi^{-} / #pi^{+}","#bar{p} / p"," _{#bar{#Lambda}}^{3}#bar{H} / ^{3}_{#Lambda}H","^{3}#bar{He} / ^{3}He"]
+particle_ratios = ["#pi^{-} / #pi^{+}","#bar{p} / p","{}_{#bar{#Lambda}}^{3}#bar{H} / ^{3}_{#Lambda}H","^{3}#bar{He} / ^{3}He"]
 
 TLATEX_TEXT_SIZE = 28
 
@@ -120,6 +120,10 @@ for i_cent, cent in enumerate(centrality_classes):
     formatted_mu_b = "{:.2f}".format(fit_parameter_0*155)
     mu_b_error = np.sqrt(fit_parameter_error_0*fit_parameter_error_0/fit_parameter_0/fit_parameter_0)*fit_parameter_0*155
     formatted_mu_b_error = "{:.2f}".format(fit_parameter_error_0*155)
+
+    formatted_mu_I = "{:.2f}".format(fit_parameter_1*155)
+    mu_I_error = np.sqrt(fit_parameter_error_1*fit_parameter_error_1/fit_parameter_1/fit_parameter_1)*fit_parameter_1*155
+    formatted_mu_I_error = "{:.2f}".format(fit_parameter_error_1*155)
     
     # chi2 text
     text_chi2 = ROOT.TLatex(-0.17, -0.44, "#chi^{2}/NDF = "+formatted_chi2+"/"+str(fit_expo.GetNDF()))
@@ -136,6 +140,12 @@ for i_cent, cent in enumerate(centrality_classes):
     text_mu_b = ROOT.TLatex(-0.17, -0.59, "#mu_{#it{B}} = "+formatted_mu_b+" #pm "+formatted_mu_b_error+" #pm "+formatted_temperature_error+" MeV")
     text_mu_b.SetTextSize(TLATEX_TEXT_SIZE)
     text_mu_b.SetTextColor(ROOT.kBlack)
+
+    # mu_I3 at T = 155 MeV
+    formatted_temperature_error = "{:.2f}".format(fit_parameter_0*2)
+    text_mu_I = ROOT.TLatex(-0.17, -0.59, "#mu_{#it{I}_{3}} = "+formatted_mu_I+" #pm "+formatted_mu_I_error+" #pm "+formatted_temperature_error+" MeV")
+    text_mu_I.SetTextSize(TLATEX_TEXT_SIZE)
+    text_mu_I.SetTextColor(ROOT.kBlack)
 
     # # T = 155 +/- 2 MeV
     # text_T = ROOT.TLatex(0.5, 0.7, "#it{T} = 155 #pm 2 MeV")
@@ -174,11 +184,13 @@ for i_cent, cent in enumerate(centrality_classes):
     c.Print(f"Ratios_{cent[0]}_{cent[1]}_3D.pdf")
 
     # make final plot for approval
+    leg_ratios_particle = ROOT.TLegend(0.201754,0.663478,0.417293,0.786957)
     cRatiosParticle = ROOT.TCanvas(f"cRatiosParticle_{cent[0]}_{cent[1]}",f"cRatiosParticle_{cent[0]}_{cent[1]}")
     hRatiosParticle = ROOT.TH1D(f"hRatiosParticle_{cent[0]}_{cent[1]}",f"{cent[0]}-{cent[1]}%",4,0,4)
     hRatiosParticleFit = ROOT.TH1D(f"hRatiosParticleFit_{cent[0]}_{cent[1]}",f"{cent[0]}-{cent[1]}%",4,0,4)
     for i_part in range(0,4):
         hRatiosParticle.GetXaxis().SetBinLabel(i_part+1,particle_ratios[i_part])
+        hRatiosParticle.GetXaxis().SetLabelSize(0.06)
         ratio = 1
         ratio_err = 0
         fit = 1
@@ -203,12 +215,12 @@ for i_cent, cent in enumerate(centrality_classes):
         hRatiosParticleFit.SetBinContent(i_part+1,fit)
         hRatiosParticleFit.SetBinError(i_part+1,0)
         print(f"fit = {fit}")
-    hRatiosParticle.GetYaxis().SetRangeUser(0.6,1.2)
+    hRatiosParticle.GetYaxis().SetRangeUser(0.6,1.4)
     gRatiosParticle = ROOT.TGraphErrors(hRatiosParticle)
     gRatiosParticleFit = ROOT.TGraphErrors(hRatiosParticleFit)
     for i_part in range(0,4):
         gRatiosParticle.SetPointError(i_part,0,hRatiosParticle.GetBinError(i_part+1))
-        gRatiosParticleFit.SetPointError(i_part,0.4,0)
+        gRatiosParticleFit.SetPointError(i_part,0.3,0)
     hRatiosParticle.SetLineColor(ROOT.kWhite)
     hRatiosParticle.SetMarkerColor(ROOT.kWhite)
     hRatiosParticle.Draw("")
@@ -220,7 +232,22 @@ for i_cent, cent in enumerate(centrality_classes):
     gRatiosParticleFit.SetLineColor(ROOT.kRed)
     gRatiosParticleFit.Draw("e same")
     gRatiosParticle.Draw("pe same")
+    leg_ratios_particle.AddEntry(gRatiosParticle,"Data")
+    leg_ratios_particle.AddEntry(gRatiosParticleFit,"Fit")
+    text_mu_b.SetTextSize(24)
+    text_mu_I.SetTextSize(24)
+    text_chi2.SetTextSize(24)
+    text_mu_b.SetX(2)
+    text_mu_b.SetY(1.22)
+    text_mu_I.SetX(2)
+    text_mu_I.SetY(1.16)
+    text_chi2.SetX(2)
+    text_chi2.SetY(1.28)
+    text_mu_b.Draw("same")
+    text_mu_I.Draw("same")
+    text_chi2.Draw("same")
+    leg_ratios_particle.Draw("same")
     cRatiosParticle.Write()
-    #cRatiosParticle.Print(f"{cRatiosParticle.GetName()}.pdf")
+    cRatiosParticle.Print(f"{cRatiosParticle.GetName()}.pdf")
 
 file_out.Close()

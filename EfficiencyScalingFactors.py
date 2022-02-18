@@ -36,8 +36,10 @@ for iB in range(scaling_factor.GetNbinsX()+1):
         continue
     tmp = scaling_factor.GetBinContent(iB)
     tmp_err = scaling_factor.GetBinError(iB)
-    scaling_factor.SetBinContent(iB,1.-tmp*(1.-par_fit2g4_antip))
-    scaling_factor.SetBinError(iB,tmp_err*(1.-par_fit2g4_antip))
+    #scaling_factor.SetBinContent(iB,1.-tmp*(1.-par_fit2g4_antip))
+    #scaling_factor.SetBinError(iB,tmp_err*(1.-par_fit2g4_antip))
+    scaling_factor.SetBinContent(iB,-tmp*0.0856785)
+    scaling_factor.SetBinError(iB,tmp_err*0.0856785)
 fit_func = ROOT.TF1("fit_func","[0]*TMath::Power(x,[1])",1.,2.,2)
 fit_func.SetParLimits(0,0.,1.1)
 scaling_factor.Fit(fit_func,"MR","",1.,2.)
