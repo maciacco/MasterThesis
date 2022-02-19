@@ -24,7 +24,7 @@ void LaunchTrees(const bool analyse = false)
     {
       for (int iDCAxy = 0; iDCAxy < kNCutDCAxy; ++iDCAxy)
       {
-        for (int iChi2TPC = 0; iChi2TPC < kNChi2TPC; ++iChi2TPC)
+        for (int iChi2TPC = 0; iChi2TPC < kNCutChi2TPC; ++iChi2TPC)
         {
           char hname[100];
           char par[100];

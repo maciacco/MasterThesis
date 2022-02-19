@@ -24,7 +24,7 @@ void LaunchAnalyses(const bool analyse = false)
     {
       for (int iDCAxy = 0; iDCAxy < kNCutDCAxy; ++iDCAxy)
       {
-        for (int iChi2TPC = 0; iChi2TPC < kNChi2TPC; ++iChi2TPC)
+        for (int iChi2TPC = 0; iChi2TPC < kNCutChi2TPC; ++iChi2TPC)
         {
           for (int iBin = 0; iBin < 2; ++iBin)
           {
@@ -53,9 +53,9 @@ void LaunchAnalyses(const bool analyse = false)
                 bool expFlag = 1 - iBkg;
                 bool sigmoidFlag = 1 - iSgm;
                 if (kCutTPCClusters[iCls] < 100)
-                  snprintf(hname2, 23, "%1.1f_0%d_%1.2f_%1.2f_%d_%d_%d", kCutDCAz[iDCA], kCutTPCClusters[iCls], kCutDCAxy[iDCAxy], kCutChi2TPC[iChi2TPC], binCountingFlag, expFlag, sigmoidFlag);
+                  snprintf(hname2, 24, "%1.1f_0%d_%1.2f_%1.2f_%d_%d_%d", kCutDCAz[iDCA], kCutTPCClusters[iCls], kCutDCAxy[iDCAxy], kCutChi2TPC[iChi2TPC], binCountingFlag, expFlag, sigmoidFlag);
                 else
-                  snprintf(hname2, 23, "%1.1f_%d_%1.2f_%1.2f_%d_%d_%d", kCutDCAz[iDCA], kCutTPCClusters[iCls], kCutDCAxy[iDCAxy], kCutChi2TPC[iChi2TPC], binCountingFlag, expFlag, sigmoidFlag);
+                  snprintf(hname2, 24, "%1.1f_%d_%1.2f_%1.2f_%d_%d_%d", kCutDCAz[iDCA], kCutTPCClusters[iCls], kCutDCAxy[iDCAxy], kCutChi2TPC[iChi2TPC], binCountingFlag, expFlag, sigmoidFlag);
                 sprintf(par2, "bash ./scripts/AnalysisSysSpectra.sh %1.1f %d %1.2f %1.2f %s %s %s %s", kCutDCAz[iDCA], kCutTPCClusters[iCls], kCutDCAxy[iDCAxy], kCutChi2TPC[iChi2TPC], kBoolString[binCountingFlag], kBoolString[expFlag], kBoolString[sigmoidFlag], hname2);
 
                 std::cout << "|DCAz| < " << kCutDCAz[iDCA] << ", nClsTPC > " << kCutTPCClusters[iCls] << ", |DCAxy| < " << kCutDCAxy[iDCAxy] << ", chi2TPC < " << kCutChi2TPC[iChi2TPC] << ", binCounting = " << kBoolString[binCountingFlag] << ", expBackground = " << kBoolString[expFlag] << ", sigmoidCorrection = " << kBoolString[sigmoidFlag] << "; processing treeHe3_" << hname2 << "..." << std::endl;
