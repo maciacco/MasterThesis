@@ -40,8 +40,6 @@
 using namespace utils;
 using namespace proton;
 
-double roi_nsigma_up = 8.;
-double roi_nsigma_down = 8.;
 
 const double fit_peak = false;
 
@@ -146,10 +144,13 @@ void SignalBinnedMC(const char *cutSettings = "", const double roi_nsigma = 8., 
       TH1D fMean("fMean", "fMean", kNPtBins, kPtBins);
       TH1D fAlphaL("fAlphaL", "fAlphaL", kNPtBins, kPtBins);
       TH1D fAlphaR("fAlphaR", "fAlphaR", kNPtBins, kPtBins);
-      int nUsedPtBins = 28; // up to 2.00 GeV/c with train binning
+      int nUsedPtBins = 32; // up to 2.00 GeV/c with train binning
 
       for (int iPtBin = 5; iPtBin < nUsedPtBins + 1; ++iPtBin) // full train data binning
       { // loop on pT bins
+        double roi_nsigma_up = roi_nsigma;
+        double roi_nsigma_down = roi_nsigma;
+
         double ptMin = kPtBins[iPtBin-1];//fTOFrawYield.GetXaxis()->GetBinLowEdge(iPtBin);
         double ptMax = kPtBins[iPtBin];//fTOFrawYield.GetXaxis()->GetBinUpEdge(iPtBin);
         double centMin = kCentBinsLimitsProton[iCent][0];
@@ -192,6 +193,16 @@ void SignalBinnedMC(const char *cutSettings = "", const double roi_nsigma = 8., 
           if (ptMin > 2.09)
           {
             nSigmaLeft = -13.;
+            nSigmaRight = -5.;
+          };
+          if (ptMin > 2.19)
+          {
+            nSigmaLeft = -11.;
+            nSigmaRight = -5.;
+          };
+          if (ptMin > 2.49)
+          {
+            nSigmaLeft = -9.;
             nSigmaRight = -5.;
           };
           tofSignalProjectionAll->GetXaxis()->SetRangeUser(nSigmaLeft, nSigmaRight);
@@ -283,11 +294,17 @@ void SignalBinnedMC(const char *cutSettings = "", const double roi_nsigma = 8., 
           // fit model
           RooFitResult *r;
 
-          if (ptMin > 2.0) roi_nsigma_down=roi_nsigma-3; // default = 5sigma
-          if (ptMin > 2.49) roi_nsigma_down=roi_nsigma-4; // default = 5sigma
-          if (ptMin > 2.69) roi_nsigma_down=roi_nsigma-4.5; // default = 5sigma
-          tofSignal.setRange("leftSideband", nSigmaLeft, mean_tmp - roi_nsigma * rms_tmp);
-          tofSignal.setRange("rightSideband", mean_tmp + roi_nsigma * rms_tmp, maxNsigma);
+          if (ptMin > 1.51) roi_nsigma_down=roi_nsigma-2; // default = 6sigma
+          if (ptMin > 2.0) {roi_nsigma_down=roi_nsigma-3; // default = 5sigma
+            roi_nsigma_up=roi_nsigma+1.;
+          }
+          if (ptMin > 2.49) roi_nsigma_down=roi_nsigma-4; // default = 4sigma
+          if (ptMin > 2.69) {
+            roi_nsigma_down=roi_nsigma-4.5; // default = 3sigma
+            roi_nsigma_up=roi_nsigma+2.;
+          }
+          tofSignal.setRange("leftSideband", nSigmaLeft, mean_tmp - roi_nsigma_down * rms_tmp);
+          tofSignal.setRange("rightSideband", mean_tmp + roi_nsigma_up * rms_tmp, maxNsigma);
           
           // fit TOF signal distribution
           model->fitTo(data, RooFit::Range("leftSideband,rightSideband"));
@@ -298,7 +315,7 @@ void SignalBinnedMC(const char *cutSettings = "", const double roi_nsigma = 8., 
           covQ = r->covQual();
           
           // signal range
-          tofSignal.setRange("signalRange", mean_tmp - roi_nsigma * rms_tmp, mean_tmp + roi_nsigma * rms_tmp);
+          tofSignal.setRange("signalRange", mean_tmp - roi_nsigma_down * rms_tmp, mean_tmp + roi_nsigma_up * rms_tmp);
         }
 
         // frame
@@ -358,7 +375,7 @@ void SignalBinnedMC(const char *cutSettings = "", const double roi_nsigma = 8., 
           if (binCounting)
           {
             // total counts
-            counts = data.sumEntries(Form("tofSignal>%f && tofSignal<%f", mean_tmp - roi_nsigma * rms_tmp, mean_tmp + roi_nsigma * rms_tmp));
+            counts = data.sumEntries(Form("tofSignal>%f && tofSignal<%f", mean_tmp - roi_nsigma_down * rms_tmp, mean_tmp + roi_nsigma_up * rms_tmp));
             rawYield = counts - bkgIntegral_val; // signal=counts-error
             std::cout << "Counts: " << counts << ", Background: "<< bkgIntegral_val << std::endl;
             rawYieldError = TMath::Sqrt(counts); // counts=signal+bkg => correct error from poisson statistics
@@ -431,10 +448,10 @@ void SignalBinnedMC(const char *cutSettings = "", const double roi_nsigma = 8., 
         tofSignalProjection->GetXaxis()->SetRangeUser(-0.5, 0.5);
         double peakMaximum = tofSignalProjection->GetBinContent(tofSignalProjection->GetMaximumBin());
         std::cout << "peakMaximum=" << peakMaximum << std::endl;
-        TLine lsx(mean_tmp - roi_nsigma * rms_tmp, 0, mean_tmp - roi_nsigma * rms_tmp, peakMaximum);
+        TLine lsx(mean_tmp - roi_nsigma_down * rms_tmp, 0, mean_tmp - roi_nsigma_down * rms_tmp, peakMaximum);
         lsx.SetLineStyle(kDashed);
         lsx.Draw("same");
-        TLine ldx(mean_tmp + roi_nsigma * rms_tmp, 0, mean_tmp + roi_nsigma * rms_tmp, peakMaximum*0.75);
+        TLine ldx(mean_tmp + roi_nsigma_up * rms_tmp, 0, mean_tmp + roi_nsigma_up * rms_tmp, peakMaximum*0.75);
         if(ptMin>1.19)ldx.SetY2(peakMaximum*0.6);
         ldx.SetLineStyle(kDashed);
         ldx.Draw("same");
@@ -477,10 +494,10 @@ void SignalBinnedMC(const char *cutSettings = "", const double roi_nsigma = 8., 
         frame2->SetTitle("   ");
         //covarianceQuality.Draw("same");
         //canv.SetLogy();
-        TLine lsx1(mean_tmp - roi_nsigma * rms_tmp, -1.e4, mean_tmp - roi_nsigma * rms_tmp, 2.e4);
+        TLine lsx1(mean_tmp - roi_nsigma_down * rms_tmp, -1.e4, mean_tmp - roi_nsigma_down * rms_tmp, 2.e4);
         lsx1.SetLineStyle(kDashed);
         //lsx1.Draw("same");
-        TLine ldx1(mean_tmp + roi_nsigma * rms_tmp, -1.e4, mean_tmp + roi_nsigma * rms_tmp, 2.e4);
+        TLine ldx1(mean_tmp + roi_nsigma_up * rms_tmp, -1.e4, mean_tmp + roi_nsigma_up * rms_tmp, 2.e4);
         ldx1.SetLineStyle(kDashed);
         //ldx1.Draw("same");
         TLine zero(nSigmaLeft, 0, maxNsigma, 0);

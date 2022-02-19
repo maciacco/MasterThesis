@@ -92,7 +92,7 @@ void Spectra(const char *cutSettings = "", const double roi_nsigma = 8., const b
 
       //sec->Fit(&fitFuncSec,"R");
       fSpectra[iMatt] = new TH1D(*raw);
-      int pTbinMax = 28;
+      int pTbinMax = 32;
       std::cout<<"entering pt loop..."<<std::endl;
       for (int iPtBin = 5; iPtBin < pTbinMax + 1; ++iPtBin)
       {
@@ -148,7 +148,7 @@ void Spectra(const char *cutSettings = "", const double roi_nsigma = 8., const b
 
     // compute ratios
     TH1D SysError(Form("fSysError_%.0f_%.0f",kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1]),Form("%.0f-%.0f%%",kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1]),kNPtBins,kPtBins);
-    int pTbinMax = 28;
+    int pTbinMax = 32;
     for (int iPtBin = 5; iPtBin < pTbinMax + 1; ++iPtBin)
     {
       double antiSpec = fSpectra[0]->GetBinContent(iPtBin);

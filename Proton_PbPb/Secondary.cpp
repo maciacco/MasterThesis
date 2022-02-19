@@ -56,8 +56,8 @@ void Secondary(const char *cutSettings = "", const double DCAxyCut=0.12, const c
   //TFile *inFileDat = TFile::Open(Form("%s/%s.root", kDataDir, inFileDatName));
   TFile *inFileDat = TFile::Open(Form("%s/%s_largeNsigma_largeBinningDCA.root", kDataDir, inFileDatName));
   TFile *inFileMC21l5 = TFile::Open(Form("%s/%s.root", kDataDir, "AnalysisResults_LHC21l5_full_largeDCA"/* inFileMCName */));
-  TFile *inFileMC20e3a_1 = TFile::Open(Form("%s/%s_20e3a_runlist1_20210929.root", kDataDir, "mc"));
-  TFile *inFileMC20e3a_2 = TFile::Open(Form("%s/%s_20e3a_runlist2_20210929.root", kDataDir, "mc"));
+  TFile *inFileMC20e3a_1 = TFile::Open(Form("%s/AnalysisResults_LHC20e3_DCAChi2TPC.root", kDataDir));
+  //TFile *inFileMC20e3a_2 = TFile::Open(Form("%s/%s_20e3a_runlist2_20210929.root", kDataDir, "mc"));
   //TFile *inFileMC1 = TFile::Open(Form("%s/%s.root", kDataDir, inFileMCName));
   TFile *outFile = TFile::Open(Form("%s/%s.root", kOutDir, outFileName), "recreate");
 
@@ -75,8 +75,8 @@ void Secondary(const char *cutSettings = "", const double DCAxyCut=0.12, const c
     std::string listName = Form("nuclei_proton_%s", cutSettings);
     TTList *listData = (TTList *)inFileDat->Get(listName.data());
     TTList *listMc21l5 = (TTList *)inFileMC21l5->Get(listName_true.data());
-    TTList *listMc20e3a_1 = (TTList *)inFileMC20e3a_1->Get(listName.data());
-    TTList *listMc20e3a_2 = (TTList *)inFileMC20e3a_2->Get(listName.data());
+    TTList *listMc20e3a_1 = (TTList *)inFileMC20e3a_1->Get(listName_true.data());
+    //TTList *listMc20e3a_2 = (TTList *)inFileMC20e3a_2->Get(listName.data());
 
     // get histograms from files
     TH3F *fDCAdat = (TH3F *)listData->Get(Form("f%sDCAxyTOF", kAntimatterMatter[iMatt]));
@@ -88,10 +88,10 @@ void Secondary(const char *cutSettings = "", const double DCAxyCut=0.12, const c
     else if (!use_injected_protons)
     {
       fDCAprim1 = (TH3F *)listMc20e3a_1->Get(Form("f%sDCAPrimaryTOF", kAntimatterMatter[iMatt]));
-      fDCAprim2 = (TH3F *)listMc20e3a_2->Get(Form("f%sDCAPrimaryTOF", kAntimatterMatter[0]));
+      //fDCAprim2 = (TH3F *)listMc20e3a_2->Get(Form("f%sDCAPrimaryTOF", kAntimatterMatter[0]));
       //fDCAprim3 = (TH3F *)listMc3->Get(Form("f%sDCAPrimaryTOF", kAntimatterMatter[0]));
       fDCAprim = (TH3F *)fDCAprim1->Clone(fDCAprim1->GetName());
-      fDCAprim->Add(fDCAprim2);
+      //fDCAprim->Add(fDCAprim2);
       //fDCAprim->Add(fDCAprim3);
     }
     else if (use_injected_protons)
@@ -104,16 +104,16 @@ void Secondary(const char *cutSettings = "", const double DCAxyCut=0.12, const c
       //fDCAprim->Add(fDCAprim3);
     }
     TH3F *fDCAsec1 = (TH3F *)listMc20e3a_1->Get(Form("f%sDCASecondaryTOF", kAntimatterMatter[iMatt]));
-    TH3F *fDCAsec2 = (TH3F *)listMc20e3a_2->Get(Form("f%sDCASecondaryTOF", kAntimatterMatter[iMatt]));
+    //TH3F *fDCAsec2 = (TH3F *)listMc20e3a_2->Get(Form("f%sDCASecondaryTOF", kAntimatterMatter[iMatt]));
     //TH3F *fDCAsec3 = (TH3F *)listMc3->Get(Form("f%sDCASecondaryTOF", kAntimatterMatter[iMatt]));
     TH3F *fDCAsec = (TH3F *)fDCAsec1->Clone(fDCAsec1->GetName());
-    fDCAsec->Add(fDCAsec2);
+    //fDCAsec->Add(fDCAsec2);
     //fDCAsec->Add(fDCAsec3);
     TH3F *fDCAsecWD1 = (TH3F *)listMc20e3a_1->Get(Form("f%sDCASecondaryWeakTOF", kAntimatterMatter[iMatt]));
-    TH3F *fDCAsecWD2 = (TH3F *)listMc20e3a_2->Get(Form("f%sDCASecondaryWeakTOF", kAntimatterMatter[iMatt]));
+    //TH3F *fDCAsecWD2 = (TH3F *)listMc20e3a_2->Get(Form("f%sDCASecondaryWeakTOF", kAntimatterMatter[iMatt]));
     //TH3F *fDCAsecWD3 = (TH3F *)listMc3->Get(Form("f%sDCASecondaryWeakTOF", kAntimatterMatter[iMatt]));
     TH3F *fDCAsecWD = (TH3F *)fDCAsecWD1->Clone(fDCAsecWD1->GetName());
-    fDCAsecWD->Add(fDCAsecWD2);
+    //fDCAsecWD->Add(fDCAsecWD2);
     //fDCAsecWD->Add(fDCAsecWD3);
 
     for (int iCent = 0; iCent < kNCentClasses; ++iCent)
@@ -123,7 +123,7 @@ void Secondary(const char *cutSettings = "", const double DCAxyCut=0.12, const c
       TH1D fSecondaryFrac(Form("f%sSecFrac_%.0f_%.0f", kAntimatterMatter[iMatt], kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1]), Form("%.0f-%.0f%%", kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1]), kNPtBins, kPtBins);
       TH1D fChi2(Form("f%sChi2_%.0f_%.0f", kAntimatterMatter[iMatt], kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1]), Form("%.0f-%.0f%%", kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1]), kNPtBins, kPtBins);
 
-      int nUsedPtBins = 28;
+      int nUsedPtBins = 32;
 
       for (int iPtBin = 5; iPtBin < nUsedPtBins + 1; ++iPtBin)
       { // loop on pT bins
@@ -301,8 +301,12 @@ void Secondary(const char *cutSettings = "", const double DCAxyCut=0.12, const c
         { 
           fit->Constrain(2, 0., 0.05);
         }
-        if (iMatt == 1 /* && iCent == 2 */)
-          fit->Constrain(1, 0., 0.9);
+        if (iMatt == 0 && iCent == 0)
+          fit->Constrain(1, 0., 1.);
+        else if (iMatt == 0 && iCent == 1)
+          fit->Constrain(1, 0., .99);
+        else if (iMatt == 1 && iCent == 1)
+          fit->Constrain(1, 0., .99);
         else if (iMatt == 0 && iCent == 2 && use_injected_protons)
           fit->Constrain(0, 0., 0.9);
 

@@ -132,7 +132,7 @@ void SignalBinned(const char *cutSettings = "", const double roi_nsigma = 8., co
       TH1D fMean("fMean", "fMean", kNPtBins, kPtBins);
       TH1D fAlphaL("fAlphaL", "fAlphaL", kNPtBins, kPtBins);
       TH1D fAlphaR("fAlphaR", "fAlphaR", kNPtBins, kPtBins);
-      int nUsedPtBins = 44; // up to 2.00 GeV/c
+      int nUsedPtBins = 32; // up to 2.00 GeV/c
 
       for (int iPtBin = 5; iPtBin < nUsedPtBins + 1; ++iPtBin)
       { // loop on pT bins
@@ -166,7 +166,7 @@ void SignalBinned(const char *cutSettings = "", const double roi_nsigma = 8., co
             nSigmaLeft = -17.;
             nSigmaRight = -12.;
           };
-          if (ptMin > 2.05)
+          if (ptMin > 1.99)
           {
             nSigmaLeft = -15.;
             nSigmaRight = -10.;
@@ -282,6 +282,7 @@ void SignalBinned(const char *cutSettings = "", const double roi_nsigma = 8., co
           // fit TOF signal distribution
 
           if (ptMin>2.09){
+          background1->fitTo(data, RooFit::Range("rightSideband"));
           background1->fitTo(data, RooFit::Range("rightSideband"));
           slope1->setConstant();
           }

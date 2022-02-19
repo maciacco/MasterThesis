@@ -8,8 +8,8 @@ sigmoidFlag=1
 spectraHistNameId=""
 extractRatios=1
 
-fileData="AnalysisResults_LHC21l5_full_largeDCA"
-fileMC="AnalysisResults_LHC21l5_full_largeDCA"
+fileData="AnalysisResults_LHC21l5_full_largeDCA_cutChi2"
+fileMC="AnalysisResults_LHC21l5_full_largeDCA_cutChi2"
 # fileData="AnalysisResults-6"
 # fileMC="AnalysisResults-6"
 signalName="SignalProtonMC_21l5_false__"
