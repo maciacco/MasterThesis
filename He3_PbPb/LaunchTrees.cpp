@@ -24,21 +24,24 @@ void LaunchTrees(const bool analyse = false)
     {
       for (int iDCAxy = 0; iDCAxy < kNCutDCAxy; ++iDCAxy)
       {
-        char hname[100];
-        char par[100];
+        for (int iChi2TPC = 0; iChi2TPC < kNChi2TPC; ++iChi2TPC)
+        {
+          char hname[100];
+          char par[100];
 
-        if (kCutTPCClusters[iCls] < 100)
-          snprintf(hname, 12, "%1.1f_0%d_%1.2f", kCutDCAz[iDCA], kCutTPCClusters[iCls], kCutDCAxy[iDCAxy]);
-        else
-          snprintf(hname, 12, "%1.1f_%d_%1.2f", kCutDCAz[iDCA], kCutTPCClusters[iCls], kCutDCAxy[iDCAxy]);
-        sprintf(par, "bash ./scripts/ReadTreeSys.sh %1.1f %d %1.2f %s", kCutDCAz[iDCA], kCutTPCClusters[iCls], kCutDCAxy[iDCAxy], hname);
+          if (kCutTPCClusters[iCls] < 100)
+            snprintf(hname, 17, "%1.1f_0%d_%1.2f_%1.2f", kCutDCAz[iDCA], kCutTPCClusters[iCls], kCutDCAxy[iDCAxy], kCutChi2TPC[iChi2TPC]);
+          else
+            snprintf(hname, 17, "%1.1f_%d_%1.2f_%1.2f", kCutDCAz[iDCA], kCutTPCClusters[iCls], kCutDCAxy[iDCAxy], kCutChi2TPC[iChi2TPC]);
+          sprintf(par, "bash ./scripts/ReadTreeSys.sh %1.1f %d %1.2f %1.2f %s", kCutDCAz[iDCA], kCutTPCClusters[iCls], kCutDCAxy[iDCAxy], kCutChi2TPC[iChi2TPC], hname);
 
-        std::cout << "|DCAz| < " << kCutDCAz[iDCA] << ", nClsTPC > " << kCutTPCClusters[iCls] << ", |DCAxy| < " << kCutDCAxy[iDCAxy] << "; processing treeHe3_" << hname << "..." << std::endl;
-        outFile << "|DCAz| < " << kCutDCAz[iDCA] << ", nClsTPC > " << kCutTPCClusters[iCls] << ", |DCAxy| < " << kCutDCAxy[iDCAxy] << "; processing treeHe3_" << hname << "..."
-                << "\n";
+          std::cout << "|DCAz| < " << kCutDCAz[iDCA] << ", nClsTPC > " << kCutTPCClusters[iCls] << ", |DCAxy| < " << kCutDCAxy[iDCAxy] << ", chi2TPC < " << kCutChi2TPC[iChi2TPC] << "; processing treeHe3_" << hname << "..." << std::endl;
+          outFile << "|DCAz| < " << kCutDCAz[iDCA] << ", nClsTPC > " << kCutTPCClusters[iCls] << ", |DCAxy| < " << kCutDCAxy[iDCAxy] << ", chi2TPC < " << kCutChi2TPC[iChi2TPC] << "; processing treeHe3_" << hname << "..."
+                  << "\n";
 
-        if (analyse)
-          system(par);
+          if (analyse)
+            system(par);
+        }
       }
     }
   }

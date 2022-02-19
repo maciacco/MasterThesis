@@ -16,7 +16,7 @@ using utils::Eff;
 using utils::EffErr;
 using namespace he3;
 
-void Efficiency(const float cutDCAz = 1.f, const int cutTPCcls = 89, const float cutDCAxy = 0.1f, const char *inFileNameMC = "TreeOutMC", const char *outFileNameEff = "EfficiencyHe3")
+void Efficiency(const float cutDCAz = 1.f, const int cutTPCcls = 89, const float cutDCAxy = 0.1f, const float cutChi2TPC = 2.5f, const char *inFileNameMC = "TreeOutMC", const char *outFileNameEff = "EfficiencyHe3")
 {
   // make signal extraction plots directory
   system(Form("mkdir %s/efficiency", kPlotDir));
@@ -32,11 +32,11 @@ void Efficiency(const float cutDCAz = 1.f, const int cutTPCcls = 89, const float
   for (int iMatt = 0; iMatt < 2; ++iMatt)
   {
     // make plot subdirectory
-    system(Form("mkdir %s/efficiency/%s_%1.1f_%d_%1.2f", kPlotDir, kAntimatterMatter[iMatt], cutDCAz, cutTPCcls, cutDCAxy));
+    system(Form("mkdir %s/efficiency/%s_%1.1f_%d_%1.2f_%1.2f", kPlotDir, kAntimatterMatter[iMatt], cutDCAz, cutTPCcls, cutDCAxy, cutChi2TPC));
 
     // get histograms from file
-    TH2F *fTotal = (TH2F *)inFile.Get(TString::Format("%.1f_%d_%.2f/f%sTotal", cutDCAz, cutTPCcls, cutDCAxy, kAntimatterMatter[iMatt]));
-    TH2F *fITS_TPC = (TH2F *)inFile.Get(TString::Format("%.1f_%d_%.2f/f%sITS_TPC", cutDCAz, cutTPCcls, cutDCAxy, kAntimatterMatter[iMatt]));
+    TH2F *fTotal = (TH2F *)inFile.Get(TString::Format("%.1f_%d_%.2f_%1.2f/f%sTotal", cutDCAz, cutTPCcls, cutDCAxy, cutChi2TPC, kAntimatterMatter[iMatt]));
+    TH2F *fITS_TPC = (TH2F *)inFile.Get(TString::Format("%.1f_%d_%.2f_%1.2f/f%sITS_TPC", cutDCAz, cutTPCcls, cutDCAxy, cutChi2TPC, kAntimatterMatter[iMatt]));
 
     for (int iCent = 0; iCent < kNCentClasses; ++iCent)
     { // loop over centrality

@@ -28,7 +28,7 @@ using namespace he3;
 
 const double fit_range = 1.3;
 
-void Secondary(const float cutDCAz = 1.f, const int cutTPCcls = 89, const double cutDCAxy = 0.10f, const char *inFileDatName = "TreeOutData", const char *inFileMCName = "TreeOutMC", const char *inFileWDName = "EfficiencyHe3SecWd", const char *outFileName = "PrimaryHe3", const bool useWdInFit = false, const bool rebinLowStatisticsBin = true)
+void Secondary(const float cutDCAz = 1.f, const int cutTPCcls = 89, const double cutDCAxy = 0.10f, const double cutChi2TPC = 2.5f, const char *inFileDatName = "TreeOutData", const char *inFileMCName = "TreeOutMC", const char *inFileWDName = "EfficiencyHe3SecWd", const char *outFileName = "PrimaryHe3", const bool useWdInFit = false, const bool rebinLowStatisticsBin = true)
 {
   gStyle->SetPadTickX(1);
   gStyle->SetPadTickY(1);
@@ -45,13 +45,13 @@ void Secondary(const float cutDCAz = 1.f, const int cutTPCcls = 89, const double
   for (int iMatt = 0; iMatt < 2; ++iMatt)
   {
     // make plot subdirectory
-    system(Form("mkdir %s/primary_fraction/%s_%1.1f_%d_%1.2f", kPlotDir, kAntimatterMatter[iMatt], cutDCAz, cutTPCcls, cutDCAxy));
+    system(Form("mkdir %s/primary_fraction/%s_%1.1f_%d_%1.2f_%1.2f", kPlotDir, kAntimatterMatter[iMatt], cutDCAz, cutTPCcls, cutDCAxy, cutChi2TPC));
 
     // get histograms from files
-    TH3F *fDCAdat = (TH3F *)inFileDat->Get(Form("%1.1f_%d_%1.2f/f%sDCAxyTPC", cutDCAz, cutTPCcls, cutDCAxy, kAntimatterMatter[iMatt]));
-    TH3F *fDCAprim = (TH3F *)inFileMC->Get(Form("%1.1f_%d_%1.2f/f%sDCAPrimary", cutDCAz, cutTPCcls, cutDCAxy, kAntimatterMatter[iMatt]));
-    TH3F *fDCAsec = (TH3F *)inFileMC->Get(Form("%1.1f_%d_%1.2f/fMDCASecondary", cutDCAz, cutTPCcls, cutDCAxy));
-    TH3F *fDCAsecWeak = (TH3F *)inFileMC->Get(Form("%1.1f_%d_%1.2f/f%sDCASecondaryWeak", cutDCAz, cutTPCcls, cutDCAxy, kAntimatterMatter[iMatt]));
+    TH3F *fDCAdat = (TH3F *)inFileDat->Get(Form("%1.1f_%d_%1.2f_%1.2f/f%sDCAxyTPC", cutDCAz, cutTPCcls, cutDCAxy, cutChi2TPC, kAntimatterMatter[iMatt]));
+    TH3F *fDCAprim = (TH3F *)inFileMC->Get(Form("%1.1f_%d_%1.2f_%1.2f/f%sDCAPrimary", cutDCAz, cutTPCcls, cutDCAxy, cutChi2TPC, kAntimatterMatter[iMatt]));
+    TH3F *fDCAsec = (TH3F *)inFileMC->Get(Form("%1.1f_%d_%1.2f_%1.2f/fMDCASecondary", cutDCAz, cutTPCcls, cutDCAxy, cutChi2TPC));
+    TH3F *fDCAsecWeak = (TH3F *)inFileMC->Get(Form("%1.1f_%d_%1.2f_%1.2f/f%sDCASecondaryWeak", cutDCAz, cutTPCcls, cutDCAxy, cutChi2TPC, kAntimatterMatter[iMatt]));
 
     TH1D *fPrim_0_5;
 
@@ -77,14 +77,22 @@ void Secondary(const float cutDCAz = 1.f, const int cutTPCcls = 89, const double
       TH1D fPrimaryRMS(Form("f%sPrimRMS_%.0f_%.0f", kAntimatterMatter[iMatt], kCentBinsLimitsHe3[iCent][0], kCentBinsLimitsHe3[iCent][1]), Form("%.0f-%.0f%%", kCentBinsLimitsHe3[iCent][0], kCentBinsLimitsHe3[iCent][1]), nPtBinsSec, pTbins);
       TH1D fSecondaryFrac(Form("f%sSecFrac_%.0f_%.0f", kAntimatterMatter[iMatt], kCentBinsLimitsHe3[iCent][0], kCentBinsLimitsHe3[iCent][1]), Form("%.0f-%.0f%%", kCentBinsLimitsHe3[iCent][0], kCentBinsLimitsHe3[iCent][1]), nPtBinsSec, pTbins);
 
-      int nUsedPtBins = 11;
+      int nUsedPtBins = 13;
       if (iCent == kNCentClasses - 1) // rebin
       {
         int nPtBins = 13;
         double pTbinsNew[] = {1.f, 1.5f, 2.f, 2.5f, 3.f, 3.5f, 4.f, 4.5f, 5.f, 5.5f, 6.f, 7.f, 8.f, 10.f};
         fPrimaryFrac.SetBins(nPtBins, pTbinsNew);
         fSecondaryFrac.SetBins(nPtBins, pTbinsNew);
-        nUsedPtBins = 10;
+        //nUsedPtBins = 10;
+      }
+      else if (iCent < kNCentClasses - 1) // rebin
+      {
+        int nPtBins = 14;
+        double pTbinsNew[] = {1.f, 1.5f, 2.f, 2.5f, 3.f, 3.5f, 4.f, 4.5f, 5.f, 5.5f, 6.f, 6.5f, 7.f, 8.f, 10.f};
+        fPrimaryFrac.SetBins(nPtBins, pTbinsNew);
+        fSecondaryFrac.SetBins(nPtBins, pTbinsNew);
+        //nUsedPtBins = 10;
       }
 
       for (int iPtBin = 3; iPtBin < nUsedPtBins + 1; ++iPtBin)
@@ -105,7 +113,7 @@ void Secondary(const float cutDCAz = 1.f, const int cutTPCcls = 89, const double
         }
         else fPrimaryRMS.SetBinContent(iPtBin,fDCAdatProj->GetRMS());
 
-        if (/* (iMatt == 1) && ( (minPt < 3.45f && iCent < 2) ||  */(minPt < 2.95f /* && iCent > 1 ) */ ))
+        if ( (iMatt == 1) && /*( (minPt < 3.45f && iCent < 2) ||  */(minPt < 2.95f /* && iCent > 1 ) */ ))
         {
           // project TH3 histogram
           TH1D *fDCAMcProjPrim;
@@ -266,7 +274,7 @@ void Secondary(const float cutDCAz = 1.f, const int cutTPCcls = 89, const double
             double intResDCAcutError = 0.;
             double intResDCAcut = result->IntegralAndError(result->FindBin(-cutDCAxy), result->FindBin(cutDCAxy-0.01), intResDCAcutError);
             double primaryRatio = intPrimDCAcut / intResDCAcut;
-            double primaryRatioError = /* primaryRatio*TMath::Sqrt(intPrimDCAcutError*intPrimDCAcutError/intPrimDCAcut/intPrimDCAcut+intResDCAcutError*intResDCAcutError/intResDCAcut/intResDCAcut); */TMath::Sqrt(primaryRatio * (1.f - primaryRatio) / intResDCAcut);
+            double primaryRatioError = errFracMc1/fracMc1*primaryRatio;/* primaryRatio*TMath::Sqrt(intPrimDCAcutError*intPrimDCAcutError/intPrimDCAcut/intPrimDCAcut+intResDCAcutError*intResDCAcutError/intResDCAcut/intResDCAcut); */TMath::Sqrt(primaryRatio * (1.f - primaryRatio) / intResDCAcut);
             double secondaryRatio = intSecDCAcut / intResDCAcut;
             double secondaryRatioError = TMath::Sqrt(secondaryRatio * (1.f - secondaryRatio) / intResDCAcut);
             if (useWdInFit)
@@ -329,7 +337,7 @@ void Secondary(const float cutDCAz = 1.f, const int cutTPCcls = 89, const double
               fDCAMcProjSecWeak->Write();
 
             // save canvas plot
-            canv.Print(Form("%s/primary_fraction/%s_%1.1f_%d_%1.2f/cent_%.0f_%.0f_pt_%.2f_%.2f.pdf", kPlotDir, kAntimatterMatter[iMatt], cutDCAz, cutTPCcls, cutDCAxy, kCentBinsLimitsHe3[iCent][0], kCentBinsLimitsHe3[iCent][1], minPt, maxPt));
+            canv.Print(Form("%s/primary_fraction/%s_%1.1f_%d_%1.2f_%1.2f/cent_%.0f_%.0f_pt_%.2f_%.2f.pdf", kPlotDir, kAntimatterMatter[iMatt], cutDCAz, cutTPCcls, cutDCAxy, cutChi2TPC, kCentBinsLimitsHe3[iCent][0], kCentBinsLimitsHe3[iCent][1], minPt, maxPt));
           }
         }
         else
@@ -343,10 +351,12 @@ void Secondary(const float cutDCAz = 1.f, const int cutTPCcls = 89, const double
       gStyle->SetOptFit(111);
       gStyle->SetStatX(0.85);
       gStyle->SetStatY(0.5);
-      TF1 fSigmoid(Form("f%sSigmoidFit_%.0f_%.0f", kAntimatterMatter[iMatt], kCentBinsLimitsHe3[iCent][0], kCentBinsLimitsHe3[iCent][1]), "[0]/(1+exp([1]*x+[2]))", 2.f, 8.f);
+      TF1 fSigmoid(Form("f%sSigmoidFit_%.0f_%.0f", kAntimatterMatter[iMatt], kCentBinsLimitsHe3[iCent][0], kCentBinsLimitsHe3[iCent][1]), "([0])/(1+exp([1]*x+[2]))+(1-exp([3]+[4]*x))", 2.f, 8.f);
       fSigmoid.SetParName(0, "a");
       fSigmoid.SetParName(1, "b");
       fSigmoid.SetParName(2, "c");
+      /* fSigmoid.SetParName(3, "d");
+      fSigmoid.FixParameter(3,0); */
       fSigmoid.SetParameter(0, 0.9);
       if (iMatt == 1)
       {
@@ -362,6 +372,8 @@ void Secondary(const float cutDCAz = 1.f, const int cutTPCcls = 89, const double
       }
       fPrimaryFrac.Fit(&fSigmoid, "RMQ", "", 2.0, 3.0);
       fPrimaryFrac.Fit(&fSigmoid, "RMQ");
+      /* fSigmoid.ReleaseParameter(3);
+      fPrimaryFrac.Fit(&fSigmoid, "RMQ"); */
       fSigmoid.Write();
 
       fPrimaryFrac.SetMarkerStyle(20);

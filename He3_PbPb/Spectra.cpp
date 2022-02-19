@@ -21,7 +21,7 @@ double he3CorrectionPt(int iMatt, double pt){
   return 1.034*TMath::Power(pt, -0.007623);
 };
 
-void Spectra(const float cutDCAz = 1.f, const int cutTPCcls = 89, const float cutDCAxy = 0.10f, const bool binCounting = true, const int bkg_shape = 1, const bool sigmoidCorrection = true, const char *histoNameDir = ".", const char *outFileName = "SpectraHe3", const char *outFileOption = "recreate", const char *dataFile = "AnalysisResults", const char *signalFile = "SignalHe3", const char *effFile = "EfficiencyHe3", const char *primFile = "PrimaryHe3")
+void Spectra(const float cutDCAz = 1.f, const int cutTPCcls = 89, const float cutDCAxy = 0.10f, const float cutChi2TPC = 2.5f, const bool binCounting = true, const int bkg_shape = 1, const bool sigmoidCorrection = true, const char *histoNameDir = ".", const char *outFileName = "SpectraHe3", const char *outFileOption = "recreate", const char *dataFile = "AnalysisResults", const char *signalFile = "SignalHe3", const char *effFile = "EfficiencyHe3", const char *primFile = "PrimaryHe3")
 {
   gStyle->SetOptStat(0);
   gStyle->SetOptFit(0);
@@ -50,7 +50,7 @@ void Spectra(const float cutDCAz = 1.f, const int cutTPCcls = 89, const float cu
   TH1D *fRatio[kNCentClasses];
   for (int iCent = 0; iCent < kNCentClasses; ++iCent)
   {
-    fRatio[iCent] = new TH1D(*(TH1D *)inFileRaw->Get(Form("%1.1f_%d_%1.2f_%d_%d/fATPCrawYield_%.0f_%.0f", cutDCAz, cutTPCcls, cutDCAxy, binCounting, bkg_shape, kCentBinsLimitsHe3[iCent][0], kCentBinsLimitsHe3[iCent][1])));
+    fRatio[iCent] = new TH1D(*(TH1D *)inFileRaw->Get(Form("%1.1f_%d_%1.2f_%1.2f_%d_%d/fATPCrawYield_%.0f_%.0f", cutDCAz, cutTPCcls, cutDCAxy, cutChi2TPC, binCounting, bkg_shape, kCentBinsLimitsHe3[iCent][0], kCentBinsLimitsHe3[iCent][1])));
     fRatio[iCent]->Reset();
     fRatio[iCent]->SetName(Form("fRatio_%.0f_%.0f", kCentBinsLimitsHe3[iCent][0], kCentBinsLimitsHe3[iCent][1]));
     fRatio[iCent]->SetTitle("");
@@ -70,7 +70,7 @@ void Spectra(const float cutDCAz = 1.f, const int cutTPCcls = 89, const float cu
       TH1D *eff = (TH1D *)inFileEff->Get(Form("f%sEff_TPC_%.0f_%.0f", kAntimatterMatter[iMatt], kCentBinsLimitsHe3[iCent][0], kCentBinsLimitsHe3[iCent][1]));
       TF1 *sec_f = (TF1 *)inFileSec->Get(Form("f%sSigmoidFit_%.0f_%.0f", kAntimatterMatter[iMatt], kCentBinsLimitsHe3[iCent][0], kCentBinsLimitsHe3[iCent][1]));
       TH1D *sec = (TH1D *)inFileSec->Get(Form("f%sPrimFrac_%.0f_%.0f", kAntimatterMatter[iMatt], kCentBinsLimitsHe3[iCent][0], kCentBinsLimitsHe3[iCent][1]));
-      TH1D *raw = (TH1D *)inFileRaw->Get(Form("%1.1f_%d_%1.2f_%d_%d/f%sTPCrawYield_%.0f_%.0f", cutDCAz, cutTPCcls, cutDCAxy, binCounting, bkg_shape, kAntimatterMatter[iMatt], kCentBinsLimitsHe3[iCent][0], kCentBinsLimitsHe3[iCent][1]));
+      TH1D *raw = (TH1D *)inFileRaw->Get(Form("%1.1f_%d_%1.2f_%1.2f_%d_%d/f%sTPCrawYield_%.0f_%.0f", cutDCAz, cutTPCcls, cutDCAxy, cutChi2TPC, binCounting, bkg_shape, kAntimatterMatter[iMatt], kCentBinsLimitsHe3[iCent][0], kCentBinsLimitsHe3[iCent][1]));
 
       //sec->Fit(&fitFuncSec,"R");
       fSpectra[iMatt] = new TH1D(*eff);
@@ -89,7 +89,7 @@ void Spectra(const float cutDCAz = 1.f, const int cutTPCcls = 89, const float cu
         double primary = 0.;
         (!sigmoidCorrection && raw->GetBinCenter(iPtBin) < 6.5) ? primary = sec->GetBinContent(iPtBin) : primary = sec_f->Eval(raw->GetXaxis()->GetBinCenter(iPtBin));
         fSpectra[iMatt]->SetBinContent(iPtBin, rawYield * primary / efficiency / correction);
-        fSpectra[iMatt]->SetBinError(iPtBin, rawYield * primary / efficiency / correction * TMath::Sqrt(effError * effError / efficiency / efficiency + rawYieldError * rawYieldError / rawYield / rawYield));
+        fSpectra[iMatt]->SetBinError(iPtBin, rawYield * primary / efficiency / correction * TMath::Sqrt(rawYieldError * rawYieldError / rawYield / rawYield));
       }
       fSpectra[iMatt]->SetName(Form("f%sSpectra_%.0f_%.0f", kAntimatterMatter[iMatt], kCentBinsLimitsHe3[iCent][0], kCentBinsLimitsHe3[iCent][1]));
       fSpectra[iMatt]->SetTitle(Form("%s, %.0f-%.0f%%", kAntimatterMatterLabel[iMatt], kCentBinsLimitsHe3[iCent][0], kCentBinsLimitsHe3[iCent][1]));

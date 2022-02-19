@@ -18,7 +18,7 @@ using utils::Eff;
 using utils::EffErr;
 using namespace he3;
 
-void EfficiencySec(const float cutDCAz = 1.f, const int cutTPCcls = 89, const float cutDCAxy = 0.1f, const char *inFileNameMC = "TreeOutMC", const char *outFileNameEff = "EfficiencyHe3SecWd", const double hyperTritonToHe3Ratio = 0.3365047128558935)
+void EfficiencySec(const float cutDCAz = 1.f, const int cutTPCcls = 89, const float cutDCAxy = 0.1f, const float cutChi2TPC = 2.5f, const char *inFileNameMC = "TreeOutMC", const char *outFileNameEff = "EfficiencyHe3SecWd", const double hyperTritonToHe3Ratio = 0.3365047128558935)
 {
   gStyle->SetPadTickX(1);
   gStyle->SetPadTickY(1);
@@ -35,8 +35,8 @@ void EfficiencySec(const float cutDCAz = 1.f, const int cutTPCcls = 89, const fl
   for (int iMatt = 0; iMatt < 2; ++iMatt)
   {
     // get histograms from file
-    TH2F *fTotal = (TH2F *)inFile.Get(TString::Format("%1.1f_%d_%1.2f/f%sTotalWd", cutDCAz, cutTPCcls, cutDCAxy, kAntimatterMatter[iMatt]));
-    TH2F *fITS_TPC = (TH2F *)inFile.Get(TString::Format("%1.1f_%d_%1.2f/f%sITS_TPCwd", cutDCAz, cutTPCcls, cutDCAxy, kAntimatterMatter[iMatt]));
+    TH2F *fTotal = (TH2F *)inFile.Get(TString::Format("%1.1f_%d_%1.2f_%1.2f/f%sTotalWd", cutDCAz, cutTPCcls, cutDCAxy, cutChi2TPC, kAntimatterMatter[iMatt]));
+    TH2F *fITS_TPC = (TH2F *)inFile.Get(TString::Format("%1.1f_%d_%1.2f_%1.2f/f%sITS_TPCwd", cutDCAz, cutTPCcls, cutDCAxy, cutChi2TPC, kAntimatterMatter[iMatt]));
 
     for (int iCent = 0; iCent < kNCentClasses; ++iCent)
     { // loop over centrality
@@ -58,18 +58,19 @@ void EfficiencySec(const float cutDCAz = 1.f, const int cutTPCcls = 89, const fl
       }
 
       int nUsedPtBins = 0;
-      (iCent <2) ? nUsedPtBins = 11 : nUsedPtBins = 10;
+      (iCent <2) ? nUsedPtBins = 13 : nUsedPtBins = 13;
       for (int iPtBin = 1; iPtBin < nUsedPtBins + 1; ++iPtBin)
       {
         fEffPt.SetBinContent(iPtBin, kHyperTritonHe3BR * hyperTritonToHe3Ratio * Eff(fITS_TPC_Pt, fTotal_Pt, fEffPt.GetXaxis()->GetBinCenter(iPtBin)));
         fEffPt.SetBinError(iPtBin, kHyperTritonHe3BR * EffErr(&fEffPt, fTotal_Pt, fEffPt.GetXaxis()->GetBinCenter(iPtBin)));
         fEffPt.SetBinContent(iPtBin, fEffPt.GetBinContent(iPtBin)/fEff->GetBinContent(iPtBin));
+        fEffPt.SetBinError(iPtBin, TMath::Sqrt(fEffPt.GetBinError(iPtBin)*fEffPt.GetBinError(iPtBin)/fEffPt.GetBinContent(iPtBin)/fEffPt.GetBinContent(iPtBin)+fEff->GetBinError(iPtBin)*fEff->GetBinError(iPtBin)/fEff->GetBinContent(iPtBin)/fEff->GetBinContent(iPtBin)));
       }
       fEffPt.SetMarkerStyle(20);
       fEffPt.SetMarkerSize(0.8);
       fEffPt.GetXaxis()->SetTitle(kAxisTitlePt);
       fEffPt.GetXaxis()->SetRangeUser(2., 8.);
-      fEffPt.GetYaxis()->SetRangeUser(0., 0.03);
+      fEffPt.GetYaxis()->SetRangeUser(0., 0.05);
       fEffPt.GetYaxis()->SetTitle("#it{f}_{#it{wd}}");
       fEffPt.SetTitle(Form("%.0f-%.0f%%", kCentBinsLimitsHe3[iCent][0], kCentBinsLimitsHe3[iCent][1]));
       fEffPt.SetOption("PE");

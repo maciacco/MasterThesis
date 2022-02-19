@@ -31,7 +31,7 @@ file_out = ROOT.TFile.Open('FinalPlot3D.root', 'recreate')
 for i_cent, cent in enumerate(centrality_classes):
 
     # get histograms
-    ratio_he3 = file_he3.Get(f'1.0_89_0.1_1_1_1/fRatio_{cent[0]}_{cent[1]}')
+    ratio_he3 = file_he3.Get(f'1.0_89_0.1_2.5_1_1_1/fRatio_{cent[0]}_{cent[1]}')
     ratio_hyp = file_hyp.Get(f'fRatio_{cent[0]}_{cent[1]}')
     ratio_proton = file_proton.Get(f'fRatio_{cent[0]}_{cent[1]}')
     ratio_pion = file_pion.Get(f'fRatio_{cent[0]}_{cent[1]}')

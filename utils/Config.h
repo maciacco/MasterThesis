@@ -87,6 +87,8 @@ namespace he3
   //const char *kTrackSelectionsDCAxy = "std::abs(dcaxy)<0.1f";
 
   // cuts with variations (systematics computation)
+  const int kNCutChi2TPC = 3;
+  const double kCutChi2TPC[] = {2., 2.25, 2.5};
   const int kNCutDCAxy = 5;
   const double kCutDCAxy[] = {0.08, 0.09, 0.1, 0.11, 0.12};
   const int kNCutDCAz = 11;

@@ -4,10 +4,11 @@
 cutDCAz="$1"
 cutTPCcls="$2"
 cutDCAxy="$3"
-binCountingFlag="$4"
-expFlag="$5"
-sigmoidFlag="$6"
-spectraHistNameId="$7"
+cutChi2TPC="$4"
+binCountingFlag="$5"
+expFlag="$6"
+sigmoidFlag="$7"
+spectraHistNameId="$8"
 
 # create output directories
 DIR_OUT=out
@@ -27,7 +28,7 @@ fi
 
 # launch analysis
 
-argumentCuts="$cutDCAz,$cutTPCcls,$cutDCAxy"
+argumentCuts="$cutDCAz,$cutTPCcls,$cutDCAxy,$cutChi2TPC"
 argumentSignal="$binCountingFlag,$expFlag"
 
 root -b -l <<EOF

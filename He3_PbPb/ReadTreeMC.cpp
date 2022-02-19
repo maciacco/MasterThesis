@@ -18,27 +18,28 @@
 using namespace utils;
 using namespace he3;
 
-void ReadTreeMC(const float cutDCAz = 1.f, const int cutTPCcls = 89, const float cutDCAxy = 0.10f, const char *outFileName = "TreeOutMC", const char *outFileOption = "recreate", const char *flagSelections = "( ( (std::abs(pt)<2.5f) && (trackingPID==7) ) || !(std::abs(pt)<2.5f) )")
+void ReadTreeMC(const float cutDCAz = 1.f, const int cutTPCcls = 89, const float cutDCAxy = 0.10f, const float cutChi2TPC = 2.5f, const char *outFileName = "TreeOutMC", const char *outFileOption = "recreate", const char *flagSelections = "( ( (std::abs(pt)<2.5f) && (trackingPID==7) ) || !(std::abs(pt)<2.5f) )")
 {
   TFile *outFile = TFile::Open(Form("%s/%s.root", kResDir, outFileName), outFileOption);
-  TDirectory *dirOutFile = outFile->mkdir(Form("%1.1f_%d_%1.2f", cutDCAz, cutTPCcls, cutDCAxy));
+  TDirectory *dirOutFile = outFile->mkdir(Form("%1.1f_%d_%1.2f_%1.2f", cutDCAz, cutTPCcls, cutDCAxy, cutChi2TPC));
   dirOutFile->cd();
 
   // define dcaxy track selections
-  auto trackSelectionsDCAxy = Form("std::abs(dcaxy)<%f",cutDCAxy);
+  auto trackSelectionsDCAxy = Form("(std::abs(dcaxy)<%f)",cutDCAxy); // no chi2TPC in deuterons tree
+  auto trackSelectionsChi2TPC = Form("(chi2tpc<%f)",cutChi2TPC);
 
   // define pt bins
   double pTbins[kNPtBins + 1] = {1.f, 1.5f, 2.f, 2.5f, 3.f, 3.5f, 4.f, 4.5f, 5.f, 5.5f, 6.f, 6.5f, 7.f, 8.f, 10.f};
 
   // read tree
-  ROOT::EnableImplicitMT();                                                  // use all cores
+  ROOT::EnableImplicitMT(3);                                                  // use all cores
   ROOT::RDataFrame dataFrameR("RTree", Form("%s/mc.root", kDataDir));        // get reconstructed tree from file
   ROOT::RDataFrame dataFrameRSec("RTree", Form("%s/mc_sec.root", kDataDir)); // get reconstructed (deuteron) tree from file
   ROOT::RDataFrame dataFrameS("STree", Form("%s/mc.root", kDataDir));        // get simulated tree from file
 
   dirOutFile->cd();
   // track selection
-  auto trackSelectR = dataFrameR.Filter(Form("(%s) && (std::abs(dcaz)<%f) && (tpcPIDcls>%d)", kTrackSelectionsEta, cutDCAz, cutTPCcls)).Define("pT", "std::abs(2.f*pt)");                          // apply track selections
+  auto trackSelectR = dataFrameR.Filter(Form("(%s) && (std::abs(dcaz)<%f) && (tpcPIDcls>%d) && %s", kTrackSelectionsEta, cutDCAz, cutTPCcls, trackSelectionsChi2TPC)).Define("pT", "std::abs(2.f*pt)");                          // apply track selections
   auto trackSelectRflag = trackSelectR.Filter(Form("(%s) && (std::abs(tpcNsigma)<3.f)", flagSelections));                                                                                          // apply flag selections and tpcNsigma selection
   auto trackSelectRSec = dataFrameRSec.Filter(Form("(%s) && (std::abs(dcaz)<%f) && (tpcPIDcls>%d) && (std::abs(tpcNsigma)<3.f)", kTrackSelectionsEta, cutDCAz, cutTPCcls)).Define("pT", "2.f*pt"); // apply track selections (deuteron -> scale momentum by 2)
   auto trackSelectRPrimary = trackSelectRflag.Filter("(flag & BIT(1))==2");                                                                                                                        // select primary particles

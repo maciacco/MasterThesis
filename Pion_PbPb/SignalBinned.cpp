@@ -44,7 +44,7 @@ using namespace pion;
 
 const double kNSigma = 3; // define interval for bin counting
 
-void SignalBinned(const char *cutSettings = "", const double roi_min_limit_input = 1.5, const double roi_max_limit_input = 11., const bool binCounting = false, const int bkg_shape = 1, const char *inFileDat = "AnalysisResults", const char *outFileName = "SignalPion", const char *outFileOption = "recreate", const bool extractSignal = true, const bool useDSCB = false, const bool binCountingNoFit = false)
+void SignalBinned(const char *cutSettings = "", const double roi_min_limit_input = 1.5, const double roi_max_limit_input = 11., const double mismatch_min_limit_input = 8.5, const double mismatch_max_limit_input = 13.5, const bool binCounting = false, const int bkg_shape = 1, const char *inFileDat = "AnalysisResults", const char *outFileName = "SignalPion", const char *outFileOption = "recreate", const bool extractSignal = true, const bool useDSCB = false, const bool binCountingNoFit = false)
 {
 
   // make signal extraction plots directory
@@ -182,8 +182,8 @@ void SignalBinned(const char *cutSettings = "", const double roi_min_limit_input
         tofSignalProjectionAll->Fit("signalRegionFitK", "QRL+", "", maximum_signal_K - 1., maximum_signal_K + 1.);
         double mean_tmp_K = signalRegionFitK.GetParameter(1);
         double rms_tmp_K = signalRegionFitK.GetParameter(2);
-        double mismatch_left_limit = mean_tmp_K+9.*rms_tmp_K;
-        double mismatch_right_limit = mean_tmp_K+14.*rms_tmp_K;
+        double mismatch_left_limit = mean_tmp_K+mismatch_min_limit_input*rms_tmp_K;
+        double mismatch_right_limit = mean_tmp_K+mismatch_max_limit_input*rms_tmp_K;
 
         // roofit data
         double maxNsigma=20.;

@@ -20,14 +20,17 @@
 using namespace utils;
 using namespace he3;
 
-void ReadTreeData(const float cutDCAz = 1.f, const int cutTPCcls = 89, const float cutDCAxy = 0.10f, const char *outFileName = "TreeOutData", const char *outFileOption = "recreate", const char *flagSelections = "( ( (std::abs(pt)<2.5f) && (trackingPID==7) ) || !(std::abs(pt)<2.5f) )", const bool data = true)
+const bool split_qr = true;
+
+void ReadTreeData(const float cutDCAz = 1.f, const int cutTPCcls = 89, const float cutDCAxy = 0.10f, const float cutChi2TPC = 2.5f, const char *outFileName = "TreeOutData", const char *outFileOption = "recreate", const char *flagSelections = "( ( (std::abs(pt)<2.5f) && (trackingPID==7) ) || !(std::abs(pt)<2.5f) )", const bool data = true)
 {
   TFile *outFile = TFile::Open(Form("%s/%s.root", kResDir, outFileName), outFileOption);
-  TDirectory *dirOutFile = outFile->mkdir(Form("%1.1f_%d_%1.2f", cutDCAz, cutTPCcls, cutDCAxy));
+  TDirectory *dirOutFile = outFile->mkdir(Form("%1.1f_%d_%1.2f_%1.2f", cutDCAz, cutTPCcls, cutDCAxy, cutChi2TPC));
   dirOutFile->cd();
 
   // define dcaxy track selections
   auto trackSelectionsDCAxy = Form("std::abs(dcaxy)<%f",cutDCAxy);
+  auto trackSelectionsChi2TPC = Form("(chi2tpc<%f)",cutChi2TPC);
 
   // define pt bins
   double pTbins[kNPtBins + 1] = {1.f, 1.5f, 2.f, 2.5f, 3.f, 3.5f, 4.f, 4.5f, 5.f, 5.5f, 6.f, 6.5f, 7.f, 8.f, 10.f};
@@ -40,13 +43,15 @@ void ReadTreeData(const float cutDCAz = 1.f, const int cutTPCcls = 89, const flo
   }
 
   // read tree
-  ROOT::EnableImplicitMT(); // use all cores
+  ROOT::EnableImplicitMT(3); // use all cores
   RDataFrame *dataFrame;
-  if (data)
-    dataFrame = new RDataFrame("RTree", {Form("%s/AnalysisResults_LHC18q.root", kDataDir), Form("%s/AnalysisResults_LHC18r.root", kDataDir)}); // get tree from file
+  if (data && split_qr)
+    dataFrame = new RDataFrame("RTree", {Form("%s/AnalysisResults_LHC18qr_q.root", kDataDir), Form("%s/AnalysisResults_LHC18qr_r.root", kDataDir)}); // get tree from file
+  else if (data && !split_qr)
+    dataFrame = new RDataFrame("RTree", Form("%s/AnalysisResults_LHC18qr.root", kDataDir)); // get tree from file
   else
     dataFrame = new RDataFrame("RTree", Form("%s/mc.root", kDataDir));                                                                                                                 // get tree from mc                                                                                                            // get tree from file
-  auto trackSelect = dataFrame->Filter(Form("(%s) && (std::abs(dcaz)<%f) && (tpcPIDcls>%d)", kTrackSelectionsEta, cutDCAz, cutTPCcls)).Define("pT", "std::abs(pt*2.f)"); // apply track selections
+  auto trackSelect = dataFrame->Filter(Form("(%s) && (std::abs(dcaz)<%f) && (tpcPIDcls>%d) && %s", kTrackSelectionsEta, cutDCAz, cutTPCcls, trackSelectionsChi2TPC)).Define("pT", "std::abs(pt*2.f)"); // apply track selections
 
   dirOutFile->cd();
   // TPC counts
@@ -99,7 +104,7 @@ void ReadTreeData(const float cutDCAz = 1.f, const int cutTPCcls = 89, const flo
 
   // merge files
   TFile *outFile2 = TFile::Open(Form("%s/%s.root", kResDir, outFileName), "update");
-  TDirectory *dirOut = outFile2->mkdir(Form("%1.1f_%d_%1.2f", cutDCAz, cutTPCcls, cutDCAxy), "", true);
+  TDirectory *dirOut = outFile2->mkdir(Form("%1.1f_%d_%1.2f_%1.2f", cutDCAz, cutTPCcls, cutDCAxy, cutChi2TPC), "", true);
   TFile *outFileAnti = TFile::Open(Form("%s/%s_anti.root", kResDir, outFileName));
   TFile *outFileMatt = TFile::Open(Form("%s/%s_matt.root", kResDir, outFileName));
   TTree *fTreeAnti = (TTree *)outFileAnti->Get("fATreeTrackCuts");
