@@ -111,7 +111,7 @@ void Secondary(const char *cutSettings = "", const double DCAxyCut=0.12, const c
       TH1D fPrimaryRMS(Form("f%sPrimRMS_%.0f_%.0f", kAntimatterMatter[iMatt], kCentBinsLimitsPion[iCent][0], kCentBinsLimitsPion[iCent][1]), Form("%.0f-%.0f%%", kCentBinsLimitsPion[iCent][0], kCentBinsLimitsPion[iCent][1]), kNPtBins, kPtBins);
       TH1D fSecondaryFrac(Form("f%sSecFrac_%.0f_%.0f", kAntimatterMatter[iMatt], kCentBinsLimitsPion[iCent][0], kCentBinsLimitsPion[iCent][1]), Form("%.0f-%.0f%%", kCentBinsLimitsPion[iCent][0], kCentBinsLimitsPion[iCent][1]), kNPtBins, kPtBins);
 
-      int nUsedPtBins = 21;
+      int nUsedPtBins = 27;
 
       for (int iPtBin = 7; iPtBin < nUsedPtBins + 1; ++iPtBin)
       { // loop on pT bins
@@ -121,6 +121,8 @@ void Secondary(const char *cutSettings = "", const double DCAxyCut=0.12, const c
         double ptMax = fPrimaryFrac.GetXaxis()->GetBinUpEdge(iPtBin);
         int pTbinsIndexMin = fDCAdat->GetYaxis()->FindBin(ptMin);
         int pTbinsIndexMax = fDCAdat->GetYaxis()->FindBin(ptMax - 0.005);
+        fPrimaryFrac.SetBinContent(fPrimaryFrac.FindBin(ptMin + 0.005f), 0);
+        fPrimaryFrac.SetBinError(fPrimaryFrac.FindBin(ptMin + 0.005f), 0);
         outFile->cd();
 
         // project TH3 histogram

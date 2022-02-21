@@ -53,7 +53,7 @@ if [ $extractRatios -eq 1 ]; then
 .L Efficiency.cpp+
 .L Secondary.cpp+
 .L Spectra.cpp+
-SignalBinned("$cutSettings",$roiNsigmaMin,$roiNsigmaMax,$argumentSignal,"$fileData","$signalName","update")
+SignalBinned("$cutSettings",$roiNsigmaMin,$roiNsigmaMax,8.5,13.5,$argumentSignal,"$fileData","$signalName","update")
 Secondary("$cutSettings",$dcaxycut,"$fileData","$fileMC","$PrimaryHe3")//,true) // uncomment to use roofit
 .q
 EOF
@@ -67,7 +67,7 @@ if [ $extractRatios -eq 1 ]; then
 .L SignalBinnedMC.cpp+
 .L EfficiencyNew.cpp+
 .L SecondaryMC.cpp+
-SignalBinnedMC("$cutSettings",$roiNsigmaMin,$roiNsigmaMax,$argumentSignal,"$fileDataEff","$signalNameEff","recreate")
+SignalBinnedMC("$cutSettings",$roiNsigmaMin,$roiNsigmaMax,8.5,13.5,$argumentSignal,"$fileDataEff","$signalNameEff","recreate")
 SecondaryMC("$cutSettings",$dcaxycut,"$fileDataEff","$fileDataEff","$PrimaryHe3Eff")
 EfficiencyNew("$cutSettings","$fileDataEff","$EfficiencyHe3","$signalNameEff","$PrimaryHe3Eff")//,"update")
 .q

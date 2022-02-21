@@ -124,6 +124,11 @@ void Secondary(const char *cutSettings = "", const double DCAxyCut=0.12, const c
       TH1D fChi2(Form("f%sChi2_%.0f_%.0f", kAntimatterMatter[iMatt], kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1]), Form("%.0f-%.0f%%", kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1]), kNPtBins, kPtBins);
 
       int nUsedPtBins = 32;
+      for (int iPtBin = 0; iPtBin < nUsedPtBins + 1; ++iPtBin){
+        double ptMin = fPrimaryFrac.GetXaxis()->GetBinLowEdge(iPtBin);
+        fPrimaryFrac.SetBinContent(fPrimaryFrac.FindBin(ptMin + 0.005f), 0);
+        fPrimaryFrac.SetBinError(fPrimaryFrac.FindBin(ptMin + 0.005f), 0);
+      }
 
       for (int iPtBin = 5; iPtBin < nUsedPtBins + 1; ++iPtBin)
       { // loop on pT bins
@@ -301,7 +306,9 @@ void Secondary(const char *cutSettings = "", const double DCAxyCut=0.12, const c
         { 
           fit->Constrain(2, 0., 0.05);
         }
-        if (iMatt == 0 && iCent == 0)
+        if (iMatt == 0 && iCent == 0 && ptMin > 2.0)
+          fit->Constrain(1, 0., 0.99);
+        if (iMatt == 0 && iCent == 0 && ptMin < 2.0)
           fit->Constrain(1, 0., 1.);
         else if (iMatt == 0 && iCent == 1)
           fit->Constrain(1, 0., .99);
@@ -509,6 +516,7 @@ void Secondary(const char *cutSettings = "", const double DCAxyCut=0.12, const c
           canv.Print(Form("%s/primary_fraction/%s_%s/cent_%.0f_%.0f_pt_%.2f_%.2f.png", kPlotDir, kAntimatterMatter[iMatt], cutSettings, kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1], ptMin, ptMax));
         }
       } // end of loop on centrality bin
+
 
       // primary fraction fit with fFitFunc function
       gStyle->SetStatX(0.85);

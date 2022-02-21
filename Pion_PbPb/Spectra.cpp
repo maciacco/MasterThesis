@@ -97,7 +97,7 @@ void Spectra(const char *cutSettings = "", const double roi_nsigma_down = 1.5, c
 
       //sec->Fit(&fitFuncSec,"R");
       fSpectra[iMatt] = new TH1D(*raw);
-      int pTbinMax = 21;
+      int pTbinMax = 27;
       std::cout<<"entering pt loop..."<<std::endl;
       for (int iPtBin = 7; iPtBin < pTbinMax + 1; ++iPtBin)
       {
@@ -107,7 +107,7 @@ void Spectra(const char *cutSettings = "", const double roi_nsigma_down = 1.5, c
         double efficiency = eff->GetBinContent(eff->FindBin(raw->GetBinCenter(iPtBin)));
         double effError = eff->GetBinError(eff->FindBin(raw->GetBinCenter(iPtBin)));
 
-        double primary = 1.;
+        double primary = 0.;
         double primaryError = 0.;
         if (sigmoidCorrection) {
           primary = sec->GetBinContent(iPtBin);
@@ -131,9 +131,14 @@ void Spectra(const char *cutSettings = "", const double roi_nsigma_down = 1.5, c
           std::cout<<"error (fit) = "<<primaryError<<"; error (hist) = "<<sec->GetBinError(iPtBin)<<std::endl;
         }
         //primaryError = sec->GetBinError(iPtBin);
-        fSpectra[iMatt]->SetBinContent(iPtBin, /* rawYield * primary / */ primary*rawYield/efficiency );
-        fSpectra[iMatt]->SetBinError(iPtBin, primary*rawYieldError/efficiency);//rawYield * primary / efficiency * TMath::Sqrt(rawYieldError*rawYieldError/rawYield/rawYield + primaryError*primaryError/primary/primary));//(rawYield * primary / efficiency / pionCorrection) * TMath::Sqrt(primaryError * primaryError / primary / primary + effError * effError / efficiency / efficiency + rawYieldError * rawYieldError / rawYield / rawYield));
-
+        if (rawYield<1.e-7 || efficiency<1.e-2 || efficiency >1. || primary>0.999 || primary < 0.7) {
+          fSpectra[iMatt]->SetBinContent(iPtBin, 0.);
+          fSpectra[iMatt]->SetBinError(iPtBin, 0);
+        }
+        else {
+          fSpectra[iMatt]->SetBinContent(iPtBin, /* rawYield * primary / */ primary*rawYield/efficiency );
+          fSpectra[iMatt]->SetBinError(iPtBin, primary*rawYieldError/efficiency);//rawYield * primary / efficiency * TMath::Sqrt(rawYieldError*rawYieldError/rawYield/rawYield + primaryError*primaryError/primary/primary));//(rawYield * primary / efficiency / protonCorrection) * TMath::Sqrt(primaryError * primaryError / primary / primary + effError * effError / efficiency / efficiency + rawYieldError * rawYieldError / rawYield / rawYield));
+        }
         std::cout<<"eff="<<efficiency<<"; raw="<<rawYield<<"; rawError="<<rawYieldError<<"; primary="<<primary<<std::endl;
       }
       fSpectra[iMatt]->SetName(Form("f%sSpectra_%.0f_%.0f", kAntimatterMatter[iMatt], kCentBinsLimitsPion[iCent][0], kCentBinsLimitsPion[iCent][1]));
@@ -151,7 +156,7 @@ void Spectra(const char *cutSettings = "", const double roi_nsigma_down = 1.5, c
 
     // compute ratios
     TH1D SysError(Form("fSysError_%.0f_%.0f",kCentBinsLimitsPion[iCent][0], kCentBinsLimitsPion[iCent][1]),Form("%.0f-%.0f%%",kCentBinsLimitsPion[iCent][0], kCentBinsLimitsPion[iCent][1]),kNPtBins,kPtBins);
-    int pTbinMax = 21;
+    int pTbinMax = 27;
     for (int iPtBin = 7; iPtBin < pTbinMax + 1; ++iPtBin)
     {
       double antiSpec = fSpectra[0]->GetBinContent(iPtBin);
@@ -176,7 +181,7 @@ void Spectra(const char *cutSettings = "", const double roi_nsigma_down = 1.5, c
     fRatio[iCent]->GetXaxis()->SetTitle(kAxisTitlePt);
     fRatio[iCent]->GetYaxis()->SetTitle(Form("Ratio %s/%s", kAntimatterMatterLabel[0], kAntimatterMatterLabel[1]));
     fRatio[iCent]->SetTitle(Form("%.0f-%.0f%%", kCentBinsLimitsPion[iCent][0], kCentBinsLimitsPion[iCent][1]));
-    fRatio[iCent]->Fit("pol0");
+    //fRatio[iCent]->Fit("pol0");
     fRatio[iCent]->GetXaxis()->SetRangeUser(0.5,1.25);
     fRatio[iCent]->Write();
 
@@ -189,7 +194,7 @@ void Spectra(const char *cutSettings = "", const double roi_nsigma_down = 1.5, c
     cSysError.Print(Form("%s.pdf",SysError.GetName()));
     SysError.Write();
     
-    TCanvas cRatio(Form("cRatio_%.0f_%.0f", kCentBinsLimitsPion[iCent][0], kCentBinsLimitsPion[iCent][1]), "cRatio");
+    /* TCanvas cRatio(Form("cRatio_%.0f_%.0f", kCentBinsLimitsPion[iCent][0], kCentBinsLimitsPion[iCent][1]), "cRatio");
     cRatio.SetTicks(1, 1);
     cRatio.cd();
     fRatio[iCent]->GetXaxis()->SetRangeUser(0.5,1.25);
@@ -201,7 +206,7 @@ void Spectra(const char *cutSettings = "", const double roi_nsigma_down = 1.5, c
     p0.SetTextSize(28);
     chi2.Draw("same");
     p0.Draw("same");
-    cRatio.Print(Form("%s/%s.pdf", kPlotDir, fRatio[iCent]->GetName()));
+    cRatio.Print(Form("%s/%s.pdf", kPlotDir, fRatio[iCent]->GetName())); */
   }
   outFile.Close();
 }

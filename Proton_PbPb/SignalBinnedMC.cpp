@@ -255,6 +255,7 @@ void SignalBinnedMC(const char *cutSettings = "", const double roi_nsigma = 8., 
         RooRealVar *nBackground1;
         RooRealVar *nBackground2;
         RooAddPdf *modelPeak;
+        RooFitResult *r;
 
         RooAddPdf *model;
         RooRealVar nSignal("N_{sig}", "nSignal", 1., 1.e2);
@@ -291,8 +292,6 @@ void SignalBinnedMC(const char *cutSettings = "", const double roi_nsigma = 8., 
 
         if (extractSignal)
         {
-          // fit model
-          RooFitResult *r;
 
           if (ptMin > 1.51) roi_nsigma_down=roi_nsigma-2; // default = 6sigma
           if (ptMin > 2.0) {roi_nsigma_down=roi_nsigma-3; // default = 5sigma
@@ -383,6 +382,7 @@ void SignalBinnedMC(const char *cutSettings = "", const double roi_nsigma = 8., 
             {
               rawYield = data.sumEntries(Form("tofSignal>%f && tofSignal<%f", -0.7815 * kNSigma, 0.7815 * kNSigma)); // only for He4 in signal loss studies
             }
+            if (r->status()!=0) rawYield=0;
           }
           else
           {

@@ -51,7 +51,7 @@ const int nTrials=10000;
 void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = true, const bool binCountingVar = true, const bool expVar = true, const bool sigmoidVar = true, const char *outFileName = "SystematicsAllEPtNotCombined")
 {
 
-  const int nUsedPtBins = 29;
+  const int nUsedPtBins = 33;
   gStyle->SetTextFont(44);
   gStyle->SetOptFit(0);
   gStyle->SetStatX(0.87);
@@ -334,8 +334,14 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
       fSystematicUncertaintyPID.SetBinError(iPtBins,0);
 
       proj=fRatiosVsPtTPCCls.ProjectionY("py",iPtBins,iPtBins);
-      //remove_outliers(proj,1.55);
-      fSystematicUncertaintyTPCCls.SetBinContent(iPtBins,proj->GetRMS()/proj->GetMean());
+      if (proj->GetEntries()==0 || proj->GetMean()==0){
+        //remove_outliers(proj,1.55);
+        fSystematicUncertaintyTPCCls.SetBinContent(iPtBins,0);
+      }
+      else{
+        //remove_outliers(proj,1.55);
+        fSystematicUncertaintyTPCCls.SetBinContent(iPtBins,proj->GetRMS()/proj->GetMean());
+      }
       fSystematicUncertaintyTPCCls.SetBinError(iPtBins,0);
 
       /* proj=fRatiosVsPtDCAxy.ProjectionY("py",iPtBins,iPtBins);
@@ -344,8 +350,13 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
 
       // roi
       proj=fRatiosVsPtROI.ProjectionY("py",iPtBins,iPtBins);
+      if (proj->GetEntries()==0 || proj->GetMean()==0){
+        //remove_outliers(proj,1.55);
+        fSystematicUncertaintyROI.SetBinContent(iPtBins,0);
+      }
       //remove_outliers(proj,1.4);
-      fSystematicUncertaintyROI.SetBinContent(iPtBins,proj->GetRMS()/proj->GetMean());
+      else
+        fSystematicUncertaintyROI.SetBinContent(iPtBins,proj->GetRMS()/proj->GetMean());
       fSystematicUncertaintyROI.SetBinError(iPtBins,0);
 
       // prim
@@ -625,7 +636,7 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
     hRatio.SetMarkerSize(0.8);
     hRatio.GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
     hRatio.GetYaxis()->SetTitle("Ratio #bar{p}/p");
-    hRatio.GetXaxis()->SetRangeUser(1.0,2.2);
+    hRatio.GetXaxis()->SetRangeUser(1.0,3.);
     hRatio.GetYaxis()->SetRangeUser(0.88, 1.12);
     hRatio.SetStats(0);
     hRatio.Draw("pe2");
@@ -637,7 +648,7 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
     }
     TGraphErrors gRatioCorr(&hRatio);
     //gRatio.Draw("P5 same");
-    gRatio.GetXaxis()->SetRangeUser(1.0,2.2);
+    gRatio.GetXaxis()->SetRangeUser(1.0,3.);
     gRatio.GetYaxis()->SetRangeUser(0.88, 1.12);
     gRatioCorr.SetFillStyle(3145);
     gRatioCorr.SetFillColor(centrality_colors[iC]);
@@ -668,11 +679,11 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
 
     // save ratio plots
     TLegend lSys(0.2,0.6,0.4,0.8);
-    fSystematicUncertaintyTotal.GetXaxis()->SetRangeUser(1.,2.2);
+    fSystematicUncertaintyTotal.GetXaxis()->SetRangeUser(1.,3.);
     fSystematicUncertaintyTotal.GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
     fSystematicUncertaintyTotal.GetYaxis()->SetTitle("Systematic Uncertainty");
     fSystematicUncertaintyTotal.SetMinimum(0.);
-    fSystematicUncertaintyTotal.GetYaxis()->SetRangeUser(0.,0.03);
+    fSystematicUncertaintyTotal.GetYaxis()->SetRangeUser(0.,0.08);
     TCanvas cSysError(fSystematicUncertaintyTotal.GetName(),fSystematicUncertaintyTotal.GetTitle());
     fSystematicUncertaintyTotal.SetLineWidth(2);
     fSystematicUncertaintyTotal.Draw("histo");

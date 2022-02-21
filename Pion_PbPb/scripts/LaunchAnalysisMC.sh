@@ -8,8 +8,8 @@ sigmoidFlag=1
 spectraHistNameId=""
 extractRatios=1
 
-fileData="AnalysisResults_LHC21l5_full_largeDCA"
-fileMC="AnalysisResults_LHC21l5_full_largeDCA"
+fileData="AnalysisResults_LHC21l5_full_largeDCA_cutChi2"
+fileMC="AnalysisResults_LHC21l5_full_largeDCA_cutChi2"
 # fileData="LHC20e3a"
 # fileMC="LHC20e3a"
 signalName="SignalPionMC_21l5_false"
@@ -47,7 +47,7 @@ if [ $extractRatios -eq 1 ]; then
 .L SecondaryMC.cpp+
 .L EfficiencyNew.cpp+
 //.L Spectra.cpp+
-SignalBinnedMC("$cutSettings",1.5,11.,$argumentSignal,"$fileData","$signalName","recreate")
+SignalBinnedMC("$cutSettings",1.5,11.,8.5,13.5,$argumentSignal,"$fileData","$signalName","recreate")
 SecondaryMC("$cutSettings",0.12,"$fileData","$fileMC","$PrimaryHe3")
 EfficiencyNew("$cutSettings","$fileMC","$EfficiencyHe3","$signalName","$PrimaryHe3")
 .q

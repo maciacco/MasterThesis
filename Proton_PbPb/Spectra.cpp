@@ -104,12 +104,12 @@ void Spectra(const char *cutSettings = "", const double roi_nsigma = 8., const b
         /* double efficiency = eff->GetFunction("fitEff")->Eval(raw->GetBinCenter(iPtBin));
         double effError = 0.; */
 
-        double primary = 1.;
+        double primary = 0.;
         double primaryError = 0.;
         if (!sigmoidCorrection) {
           primary = sec->GetBinContent(iPtBin);
           primaryError = sec->GetBinError(iPtBin);
-          if (primary < 0.5) continue;
+          //if (primary < 0.5) continue;
         }
         else {
           primary = sec_f->Eval(raw->GetXaxis()->GetBinCenter(iPtBin));
@@ -128,9 +128,14 @@ void Spectra(const char *cutSettings = "", const double roi_nsigma = 8., const b
           std::cout<<"error (fit) = "<<primaryError<<"; error (hist) = "<<sec->GetBinError(iPtBin)<<std::endl;
         }
         //primaryError = sec->GetBinError(iPtBin);
-        fSpectra[iMatt]->SetBinContent(iPtBin, /* rawYield * primary / */ primary*rawYield/efficiency );
-        fSpectra[iMatt]->SetBinError(iPtBin, primary*rawYieldError/efficiency);//rawYield * primary / efficiency * TMath::Sqrt(rawYieldError*rawYieldError/rawYield/rawYield + primaryError*primaryError/primary/primary));//(rawYield * primary / efficiency / protonCorrection) * TMath::Sqrt(primaryError * primaryError / primary / primary + effError * effError / efficiency / efficiency + rawYieldError * rawYieldError / rawYield / rawYield));
-
+        if (rawYield<1.e-7 || efficiency<1.e-2 || efficiency >1. || primary>0.999 || primary<0.5) {
+          fSpectra[iMatt]->SetBinContent(iPtBin, 0.);
+          fSpectra[iMatt]->SetBinError(iPtBin, 0);
+        }
+        else {
+          fSpectra[iMatt]->SetBinContent(iPtBin, /* rawYield * primary / */ primary*rawYield/efficiency );
+          fSpectra[iMatt]->SetBinError(iPtBin, primary*rawYieldError/efficiency);//rawYield * primary / efficiency * TMath::Sqrt(rawYieldError*rawYieldError/rawYield/rawYield + primaryError*primaryError/primary/primary));//(rawYield * primary / efficiency / protonCorrection) * TMath::Sqrt(primaryError * primaryError / primary / primary + effError * effError / efficiency / efficiency + rawYieldError * rawYieldError / rawYield / rawYield));
+        }
         std::cout<<"eff="<<efficiency<<"; raw="<<rawYield<<"; rawError="<<rawYieldError<<"; primary="<<primary<<std::endl;
       }
       fSpectra[iMatt]->SetName(Form("f%sSpectra_%.0f_%.0f", kAntimatterMatter[iMatt], kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1]));
@@ -174,7 +179,7 @@ void Spectra(const char *cutSettings = "", const double roi_nsigma = 8., const b
     fRatio[iCent]->GetXaxis()->SetTitle(kAxisTitlePt);
     fRatio[iCent]->GetYaxis()->SetTitle(Form("Ratio %s/%s", kAntimatterMatterLabel[0], kAntimatterMatterLabel[1]));
     fRatio[iCent]->SetTitle(Form("%.0f-%.0f%%", kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1]));
-    fRatio[iCent]->Fit("pol0");
+    //fRatio[iCent]->Fit("pol0");
     fRatio[iCent]->GetXaxis()->SetRangeUser(1.0,2.0);
     fRatio[iCent]->Write();
 
@@ -187,7 +192,7 @@ void Spectra(const char *cutSettings = "", const double roi_nsigma = 8., const b
     cSysError.Print(Form("%s.pdf",SysError.GetName()));
     SysError.Write();
     
-    TCanvas cRatio(Form("cRatio_%.0f_%.0f", kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1]), "cRatio");
+    /* TCanvas cRatio(Form("cRatio_%.0f_%.0f", kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1]), "cRatio");
     cRatio.SetTicks(1, 1);
     cRatio.cd();
     fRatio[iCent]->GetXaxis()->SetRangeUser(1.0,2.0);
@@ -199,7 +204,7 @@ void Spectra(const char *cutSettings = "", const double roi_nsigma = 8., const b
     p0.SetTextSize(28);
     chi2.Draw("same");
     p0.Draw("same");
-    cRatio.Print(Form("%s/%s.pdf", kPlotDir, fRatio[iCent]->GetName()));
+    cRatio.Print(Form("%s/%s.pdf", kPlotDir, fRatio[iCent]->GetName())); */
   }
   outFile.Close();
 }
