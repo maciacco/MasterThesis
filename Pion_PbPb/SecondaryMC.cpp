@@ -168,7 +168,7 @@ void SecondaryMC(const char *cutSettings = "", const double DCAxyCut = 0.12, con
         double intSecDCAcut = fDCAMcProjSec->Integral(fDCAMcProjSec->FindBin(-DCAxyCut), fDCAMcProjSec->FindBin(DCAxyCut-0.001));
         double intSecWDDCAcut = fDCAMcProjSecWD->Integral(fDCAMcProjSecWD->FindBin(-DCAxyCut), fDCAMcProjSecWD->FindBin(DCAxyCut-0.001));
         double dataIntegralDCAcut = intPrimDCAcut+intSecDCAcut+intSecWDDCAcut;
-        std::cout << "primary integral = " << intPrimDCAcut << std::endl;
+        if (kVerbose) std::cout << "primary integral = " << intPrimDCAcut << std::endl;
         //double intSecDCAcut = mc3->Integral(result->FindBin(-0.12), result->FindBin(0.115));
         double primaryRatio = (intPrimDCAcut)/(dataIntegralDCAcut);
         double primaryRatioError = TMath::Sqrt(primaryRatio * (1.f - primaryRatio) / dataIntegralDCAcut);

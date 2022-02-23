@@ -89,7 +89,7 @@ void SecondaryMC(const char *cutSettings = "", const double DCAxyCut = 0.12, con
 
       int nUsedPtBins = 32;
 
-      for (int iPtBin = 5; iPtBin < nUsedPtBins + 1; ++iPtBin)
+      for (int iPtBin = 1; iPtBin < nUsedPtBins + 1; ++iPtBin)
       { // loop on pT bins
         fPrimaryFrac.SetBinContent(iPtBin, 1.);
 
@@ -169,7 +169,7 @@ void SecondaryMC(const char *cutSettings = "", const double DCAxyCut = 0.12, con
         double intSecDCAcut = fDCAMcProjSec->Integral(fDCAMcProjSec->FindBin(-DCAxyCut), fDCAMcProjSec->FindBin(DCAxyCut-0.001));
         double intSecWDDCAcut = fDCAMcProjSecWD->Integral(fDCAMcProjSecWD->FindBin(-DCAxyCut), fDCAMcProjSecWD->FindBin(DCAxyCut-0.001));
         double dataIntegralDCAcut = intPrimDCAcut+intSecDCAcut+intSecWDDCAcut;
-        std::cout << "primary integral = " << intPrimDCAcut << std::endl;
+        if (kVerbose) std::cout << "primary integral = " << intPrimDCAcut << std::endl;
         double primaryRatio = (intPrimDCAcut)/(dataIntegralDCAcut);
         double primaryRatioError = TMath::Sqrt(primaryRatio * (1.f - primaryRatio) / dataIntegralDCAcut);
         

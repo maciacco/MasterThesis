@@ -25,13 +25,13 @@ double protonCorrectionPt(int iMatt,double pt){
 
 void Spectra(const char *cutSettings = "", const double roi_nsigma = 8., const bool G3G4Prim = false, const bool binCounting = false, const int bkg_shape = 1, const bool sigmoidCorrection = true, const char *histoNameDir = ".", const char *outFileName = "SpectraProton1", const char *outFileOption = "recreate", const char *dataFile = "AnalysisResults", const char *signalFile = "SignalProton", const char *effFile = "EfficiencyProton", const char *primFile = "PrimaryProton", const bool sys=false,const bool useEfficiencyMB = false)
 {
-  std::cout << "cutSettings = " << cutSettings << std::endl;
+  if (kVerbose) std::cout << "cutSettings = " << cutSettings << std::endl;
   gStyle->SetOptFit(0);
   gStyle->SetOptStat(0);
   gStyle->SetTextFont(44);
 
   TH2F *fNevents;
-  TFile *inFileDat = TFile::Open(Form("%s/%s_largeNsigma_largeBinningDCA.root", kDataDir, dataFile));
+  TFile *inFileDat = TFile::Open(Form("%s/%s_largeNsigma_cutDCAxyChi2TPC.root", kDataDir, dataFile));
   TTList *fMultList = (TTList *)inFileDat->Get("nuclei_proton_");
   fNevents = (TH2F *)fMultList->Get("fNormalisationHist");
   TFile *inFileRaw = TFile::Open(Form("%s/%s.root", kOutDir, signalFile));
@@ -41,7 +41,7 @@ void Spectra(const char *cutSettings = "", const double roi_nsigma = 8., const b
   if(sys)inFileSys = TFile::Open(Form("%s/SystematicsAllEPt.root", kOutDir));
   if (!inFileRaw || !inFileEff || !inFileSec)
   {
-    std::cout << "Input files do not exist!" << std::endl;
+    if (kVerbose) std::cout << "Input files do not exist!" << std::endl;
     return;
   }
 
@@ -50,14 +50,18 @@ void Spectra(const char *cutSettings = "", const double roi_nsigma = 8., const b
   else if (roi_nsigma > 8.1) iNsigma = 2;
 
   TFile outFile(Form("%s/%s.root", kOutDir, outFileName), outFileOption);
-
+  TString sFileOption(outFileOption);
+  if (outFile.GetDirectory(histoNameDir) && !sFileOption.CompareTo("update")){
+    std::cout << "Directory already present in file!" << std::endl;
+    return;
+  }
   outFile.mkdir(histoNameDir);
 
   TH1D *fRatio[kNCentClasses];
   TH1D *fRatioUncertainty[kNCentClasses];
   for (int iCent = 0; iCent < kNCentClasses; ++iCent)
   {
-    // std::cout << "read: " << Form("%s_%d_%d/fATOFrawYield_%.0f_%.0f", cutSettings, binCounting, bkg_shape, kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1]) << std::endl;
+    // if (kVerbose) std::cout << "read: " << Form("%s_%d_%d/fATOFrawYield_%.0f_%.0f", cutSettings, binCounting, bkg_shape, kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1]) << std::endl;
     fRatio[iCent] = new TH1D(*(TH1D *)inFileRaw->Get(Form("%s_%d_%d_%d/fATOFrawYield_%.0f_%.0f", cutSettings, binCounting, bkg_shape, iNsigma, kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1])));
     fRatio[iCent]->Reset();
     fRatio[iCent]->SetName(Form("fRatio_%.0f_%.0f", kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1]));
@@ -93,8 +97,8 @@ void Spectra(const char *cutSettings = "", const double roi_nsigma = 8., const b
       //sec->Fit(&fitFuncSec,"R");
       fSpectra[iMatt] = new TH1D(*raw);
       int pTbinMax = 32;
-      std::cout<<"entering pt loop..."<<std::endl;
-      for (int iPtBin = 5; iPtBin < pTbinMax + 1; ++iPtBin)
+      if (kVerbose) std::cout<<"entering pt loop..."<<std::endl;
+      for (int iPtBin = 1; iPtBin < pTbinMax + 1; ++iPtBin)
       {
         double protonCorrection = protonCorrectionPt(iMatt,fSpectra[0]->GetBinCenter(iPtBin));
         double rawYield = raw->GetBinContent(iPtBin);
@@ -125,7 +129,7 @@ void Spectra(const char *cutSettings = "", const double roi_nsigma = 8., const b
           double first_derivative_par_1 = -par_0*exponential*pt_center/denominator/denominator;
 
           primaryError = TMath::Sqrt(first_derivative_par_0*first_derivative_par_0*var_par_0+first_derivative_par_1*first_derivative_par_1*var_par_1+2*first_derivative_par_0*first_derivative_par_1*cov);
-          std::cout<<"error (fit) = "<<primaryError<<"; error (hist) = "<<sec->GetBinError(iPtBin)<<std::endl;
+          if (kVerbose) std::cout<<"error (fit) = "<<primaryError<<"; error (hist) = "<<sec->GetBinError(iPtBin)<<std::endl;
         }
         //primaryError = sec->GetBinError(iPtBin);
         if (rawYield<1.e-7 || efficiency<1.e-2 || efficiency >1. || primary>0.999 || primary<0.5) {
@@ -136,7 +140,7 @@ void Spectra(const char *cutSettings = "", const double roi_nsigma = 8., const b
           fSpectra[iMatt]->SetBinContent(iPtBin, /* rawYield * primary / */ primary*rawYield/efficiency );
           fSpectra[iMatt]->SetBinError(iPtBin, primary*rawYieldError/efficiency);//rawYield * primary / efficiency * TMath::Sqrt(rawYieldError*rawYieldError/rawYield/rawYield + primaryError*primaryError/primary/primary));//(rawYield * primary / efficiency / protonCorrection) * TMath::Sqrt(primaryError * primaryError / primary / primary + effError * effError / efficiency / efficiency + rawYieldError * rawYieldError / rawYield / rawYield));
         }
-        std::cout<<"eff="<<efficiency<<"; raw="<<rawYield<<"; rawError="<<rawYieldError<<"; primary="<<primary<<std::endl;
+        if (kVerbose) std::cout<<"eff="<<efficiency<<"; raw="<<rawYield<<"; rawError="<<rawYieldError<<"; primary="<<primary<<std::endl;
       }
       fSpectra[iMatt]->SetName(Form("f%sSpectra_%.0f_%.0f", kAntimatterMatter[iMatt], kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1]));
       fSpectra[iMatt]->SetTitle(Form("%s, %.0f-%.0f%%", kAntimatterMatterLabel[iMatt], kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1]));
@@ -154,7 +158,7 @@ void Spectra(const char *cutSettings = "", const double roi_nsigma = 8., const b
     // compute ratios
     TH1D SysError(Form("fSysError_%.0f_%.0f",kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1]),Form("%.0f-%.0f%%",kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1]),kNPtBins,kPtBins);
     int pTbinMax = 32;
-    for (int iPtBin = 5; iPtBin < pTbinMax + 1; ++iPtBin)
+    for (int iPtBin = 1; iPtBin < pTbinMax + 1; ++iPtBin)
     {
       double antiSpec = fSpectra[0]->GetBinContent(iPtBin);
       double spec = fSpectra[1]->GetBinContent(iPtBin);
@@ -164,7 +168,7 @@ void Spectra(const char *cutSettings = "", const double roi_nsigma = 8., const b
       {
         fRatio[iCent]->SetBinContent(iPtBin, antiSpec / spec);
         fRatio[iCent]->SetBinError(iPtBin, antiSpec / spec * TMath::Sqrt(antiSpecErr * antiSpecErr / antiSpec / antiSpec + specErr * specErr / spec / spec));
-        //std::cout<<h_sys->GetBinContent(iPtBin)<<std::endl;
+        //if (kVerbose) std::cout<<h_sys->GetBinContent(iPtBin)<<std::endl;
         if(sys){
           fRatio[iCent]->SetBinError(iPtBin, TMath::Sqrt(antiSpecErr * antiSpecErr / antiSpec / antiSpec + specErr * specErr / spec / spec));
           fRatio[iCent]->SetBinContent(iPtBin,h_ratio_from_var->GetBinContent(iPtBin));

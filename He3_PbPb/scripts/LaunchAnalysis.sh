@@ -8,7 +8,7 @@ binCountingFlag=1
 expFlag=1 # 0->pol1, 1->expo, 2->pol2
 sigmoidFlag=1
 spectraHistNameId="1.0_89_0.1_2.5_1_1_1"
-readTree=0
+readTree=1
 extractRatios=1
 
 treeData="TreeOutData"

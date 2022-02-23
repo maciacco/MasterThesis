@@ -63,8 +63,8 @@ void SignalBinnedMC(const char *cutSettings = "", const double roi_min_limit_inp
   gStyle->SetOptFit(1111);
 
   TFile *outFile = TFile::Open(TString::Format("%s/%s.root", kOutDir, outFileName), outFileOption); // output file
-  if (outFile->GetDirectory(Form("%s_%d_%d", cutSettings, binCounting, bkg_shape)))
-    return;
+  /* if (outFile->GetDirectory(Form("%s_%d_%d", cutSettings, binCounting, bkg_shape)))
+    return; */
   TDirectory *dirOutFile = outFile->mkdir(Form("%s_%d_%d", cutSettings, binCounting, bkg_shape));
   //TFile *mcFile_21l5 = TFile::Open(TString::Format("%s/%s_largeNsigma.root", kDataDir, inFileDat)); // open data TFile
   TFile *mcFile_21l5 = TFile::Open(TString::Format("%s/%s.root", kDataDir, inFileDat)); // open data TFile
@@ -73,7 +73,7 @@ void SignalBinnedMC(const char *cutSettings = "", const double roi_min_limit_inp
   //TFile *dataFile2 = TFile::Open(TString::Format("%s/%s.root", kDataDir, inFileDat)); // open data TFile
   if (!mcFile_21l5)
   {
-    std::cout << "File not found!" << std::endl; // check data TFile opening
+    if (kVerbose) std::cout << "File not found!" << std::endl; // check data TFile opening
     return;
   }
 
@@ -113,7 +113,7 @@ void SignalBinnedMC(const char *cutSettings = "", const double roi_min_limit_inp
     // fTOFSignal1->SetName("B");
     if (!fTOFSignal1)
     {
-      std::cout << "Hstogram not found!" << std::endl; // check data TFile opening
+      if (kVerbose) std::cout << "Hstogram not found!" << std::endl; // check data TFile opening
       return;
     }
 
@@ -151,7 +151,7 @@ void SignalBinnedMC(const char *cutSettings = "", const double roi_min_limit_inp
         int centBinMax = fTOFSignal->GetXaxis()->FindBin(kCentBinsLimitsPion[iCent][1] - 1.); //kCentBinsPion[iCent][1];
 
         // project histogram
-        std::cout << "Pt bins: min=" << ptMin << "; max=" << ptMax << "; indexMin=" << pTbinsIndexMin << "; indexMax=" << pTbinsIndexMax << "; centralityBinMin=" << centBinMin << "; centralityBinMax=" << centBinMax << std::endl;
+        if (kVerbose) std::cout << "Pt bins: min=" << ptMin << "; max=" << ptMax << "; indexMin=" << pTbinsIndexMin << "; indexMax=" << pTbinsIndexMax << "; centralityBinMin=" << centBinMin << "; centralityBinMax=" << centBinMax << std::endl;
         TH1D *tofSignalProjection = fTOFSignal->ProjectionZ(Form("f%sTOFSignal_%.0f_%.0f_%.2f_%.2f", kAntimatterMatter[iMatt], centMin, centMax, fTOFSignal->GetYaxis()->GetBinLowEdge(pTbinsIndexMin), fTOFSignal->GetYaxis()->GetBinUpEdge(pTbinsIndexMax)), centBinMin, centBinMax, pTbinsIndexMin, pTbinsIndexMax);
         // tofSignalProjection->Rebin(4);
 
@@ -179,9 +179,7 @@ void SignalBinnedMC(const char *cutSettings = "", const double roi_min_limit_inp
         double rms_tmp = signalRegionFit.GetParameter(2);
         double roi_max_limit = mean_tmp+(roi_max_limit_input-2.)*rms_tmp; // smaller signal window in MC than in data
         if (ptMin>1.09)
-          roi_max_limit = mean_tmp+(roi_max_limit_input-3.)*rms_tmp;
-        if (ptMin>1.49)
-          roi_max_limit = mean_tmp+(roi_max_limit_input-5.)*rms_tmp;
+          roi_max_limit = mean_tmp+(roi_max_limit_input-7.)*rms_tmp;
 
         // DEFINE K SIGNAL REGION -> MISMATCH FIT REGION
         tofSignalProjectionAll->GetXaxis()->SetRangeUser(-50., 50.);
@@ -219,19 +217,23 @@ void SignalBinnedMC(const char *cutSettings = "", const double roi_min_limit_inp
         RooRealVar tofSignal("tofSignal", "n#sigma_{p}", nSigmaLeft, maxNsigma, "a.u.");
         RooRealVar *tofSignal_full=new RooRealVar("tofSignal_full", "n#sigma_{p}full_", nSigmaLeft, 20., "a.u.");
         if (ptMin>1.09)tofSignal_full=new RooRealVar("tofSignal_full", "n#sigma_{p}full_", nSigmaLeft, mismatch_right_limit, "a.u.");
+        RooRealVar *tofSignal_full_all=new RooRealVar("tofSignal_full_all", "n#sigma_{p}full_all_", nSigmaLeft, 20., "a.u.");
+        if (ptMin>1.09)tofSignal_full_all=new RooRealVar("tofSignal_full_all", "n#sigma_{p}full_all_", nSigmaLeft, mismatch_right_limit, "a.u.");
         
         // roofit histogram
         RooDataHist data("data", "data", RooArgList(tofSignal), tofSignalProjection);
         RooDataHist data_full("data_full", "data_full", RooArgList(*tofSignal_full), tofSignalProjection);
+        RooDataHist data_full_all("data_full_all", "data_full_all", RooArgList(*tofSignal_full), tofSignalProjectionAll);
 
         // roofit histogram
         RooDataHist dataAll("dataAll", "dataAll", RooArgList(tofSignal), tofSignalProjectionAll);
-        std::cout << "Number of entries (roofit) = " << dataAll.sumEntries() << std::endl;
-        std::cout << "Number of entries (root) = " << tofSignalProjectionAll->GetEntries() << std::endl;
+        if (kVerbose) std::cout << "Number of entries (roofit) = " << dataAll.sumEntries() << std::endl;
+        if (kVerbose) std::cout << "Number of entries (root) = " << tofSignalProjectionAll->GetEntries() << std::endl;
 
         RooAbsPdf *background0;
         RooAbsPdf *background1;
         RooAbsPdf *background2;
+        RooAbsPdf *background3;
         RooRealVar *slope1;
         RooRealVar *slope2;
         RooRealVar *nBackground1;
@@ -264,12 +266,13 @@ void SignalBinnedMC(const char *cutSettings = "", const double roi_min_limit_inp
           background0 = (RooAbsPdf *)new RooExponential("background1", "background1", *tofSignal_full, *slope1);
           background1 = (RooAbsPdf *)new RooExponential("background1", "background1", tofSignal, *slope1);
           background2 = (RooAbsPdf *)new RooExponential("background2", "background2", tofSignal, *slope2);
-          nBackground3 = new RooRealVar("#it{N}_{Bkg,3}", "nBackground3", 0.,1.e8);
-          nBackground1 = new RooRealVar("#it{N}_{Bkg,1}", "nBackground1", 0., 1.e10);
+          background3 = (RooAbsPdf *)new RooExponential("background2", "background2", *tofSignal_full, *slope2);
+          nBackground3 = new RooRealVar("#it{N}_{Bkg,3}", "nBackground3", 0.,1.e7);
+          nBackground1 = new RooRealVar("#it{N}_{Bkg,1}", "nBackground1", 0., 1.e7);
           modelMismatch = (RooAddPdf*)new RooAddPdf("model", "model", RooArgList(*background0), RooArgList(*nBackground1));
         }
         else
-          std::cout << "!!!!!" << std::endl; // TODO: UPDATE FOLLOWING BLOCK
+          if (kVerbose) std::cout << "!!!!!" << std::endl; // TODO: UPDATE FOLLOWING BLOCK
 
         int covQ = -999;
         double intersectionBinCenter=-20.;
@@ -311,7 +314,8 @@ void SignalBinnedMC(const char *cutSettings = "", const double roi_min_limit_inp
           }
           else{
             // pion sideband
-            tofSignal.setRange("rightSideband", mean_tmp_K-3.*rms_tmp_K, maxNsigma);
+            tofSignal.setRange("rightSideband", mean_tmp_K-2.*rms_tmp_K, maxNsigma);
+            tofSignal_full->setRange("rightSideband", mean_tmp_K-2.*rms_tmp_K, maxNsigma);
 
             // K sideband
             tofSignal_full->setRange("rightSidebandK", mismatch_left_limit, mismatch_right_limit);
@@ -322,15 +326,18 @@ void SignalBinnedMC(const char *cutSettings = "", const double roi_min_limit_inp
             // narrower range
             tofSignal_full->setRange("small", nSigmaLeft,maxNsigma);
 
+            for (int I=0;I<2;++I)modelMismatch->fitTo(data_full_all, RooFit::Save(), RooFit::Range("rightSidebandK"));
+            slope1->setConstant();
             for (int I=0;I<2;++I)modelMismatch->fitTo(data_full, RooFit::Save(), RooFit::Range("rightSidebandK"));
             double mismatch_integral_=((RooAbsPdf *)modelMismatch->createIntegral(RooArgSet(*tofSignal_full), RooFit::NormSet(RooArgSet(*tofSignal_full)), RooFit::Range("full")))->getVal();
             double mismatch_integral_small=((RooAbsPdf *)modelMismatch->createIntegral(RooArgSet(*tofSignal_full), RooFit::NormSet(RooArgSet(*tofSignal_full)), RooFit::Range("small")))->getVal();
-            std::cout << "mism_integral_full = " << mismatch_integral_ << "; mism_integral_small = " << mismatch_integral_small << std::endl;
-            slope1->setConstant();
+            if (kVerbose) std::cout << "mism_integral_full = " << mismatch_integral_ << "; mism_integral_small = " << mismatch_integral_small << std::endl;
             nBackground2 = new RooRealVar("#it{N}_{Bkg}", "nBackground", 0., 1.e10);
             nBackground2->setVal(nBackground1->getVal()*mismatch_integral_small);
             nBackground2->setConstant();
             model = new RooAddPdf("model", "model", RooArgList(*background1,*background2), RooArgList(*nBackground2,*nBackground3));
+            for (int I=0;I<2;++I)r = background3->fitTo(data_full_all, RooFit::Save(), RooFit::Range("rightSideband"));
+            //slope2->setConstant();
             for (int I=0;I<2;++I)r = model->fitTo(data, RooFit::Save(), RooFit::Range("rightSideband"));
             /* slope1->setConstant(false);
             nBackground2->setConstant(false); */
@@ -365,16 +372,16 @@ void SignalBinnedMC(const char *cutSettings = "", const double roi_min_limit_inp
             if(binContent>pdfValue)
             {
               intersection=true;
-              std::cout << "bin = " << iB << "; weight = " << binContent << "; pdf = " << pdfValue << std::endl;
+              if (kVerbose) std::cout << "bin = " << iB << "; weight = " << binContent << "; pdf = " << pdfValue << std::endl;
             }
             else iB++;
           } */
           //intersectionBinCenter=tofSignalProjection->GetBinCenter(iB+binShiftIndex);
-          std::cout << "intersection bin center = " << intersectionBinCenter << std::endl;
+          if (kVerbose) std::cout << "intersection bin center = " << intersectionBinCenter << std::endl;
           tofSignal.setRange("signalRange", intersectionBinCenter, signalRightLimit);
 
-          std::cout << "fit status: " << r->status() << ";" << std::endl;
-          std::cout << "covariance quality: " << r->covQual() << std::endl;
+          if (kVerbose) std::cout << "fit status: " << r->status() << ";" << std::endl;
+          if (kVerbose) std::cout << "covariance quality: " << r->covQual() << std::endl;
           if (r->status()!=0) continue;
           covQ = r->covQual();
         }
@@ -427,7 +434,7 @@ void SignalBinnedMC(const char *cutSettings = "", const double roi_min_limit_inp
             // total counts
             counts = data.sumEntries(Form("tofSignal>%f && tofSignal<%f", intersectionBinCenter, signalRightLimit));
             rawYield = counts - bkgIntegral_val; // signal=counts-error
-            std::cout << "Counts: " << counts << ", Background: "<< bkgIntegral_val << std::endl;
+            if (kVerbose) std::cout << "Counts: " << counts << ", Background: "<< bkgIntegral_val << std::endl;
             rawYieldError = TMath::Sqrt(counts); // counts=signal+bkg => correct error from poisson statistics
             if (binCountingNoFit)
             {
@@ -436,7 +443,7 @@ void SignalBinnedMC(const char *cutSettings = "", const double roi_min_limit_inp
           }
           else
           {
-            std::cout << "No fit to signal peak!" << std::endl;
+            if (kVerbose) std::cout << "No fit to signal peak!" << std::endl;
           }
 
           // fill raw yield histogram
@@ -487,11 +494,12 @@ void SignalBinnedMC(const char *cutSettings = "", const double roi_min_limit_inp
         xframe->GetYaxis()->SetTitleOffset(0.72);
         tofSignalProjection->GetXaxis()->SetRangeUser(-0.5, 0.5);
         double peakMaximum = tofSignalProjection->GetBinContent(tofSignalProjection->GetMaximumBin());
-        std::cout << "peakMaximum=" << peakMaximum << std::endl;
+        if (kVerbose) std::cout << "peakMaximum=" << peakMaximum << std::endl;
         TLine lsx(intersectionBinCenter, 0, intersectionBinCenter, peakMaximum);
         lsx.SetLineStyle(kDashed);
         lsx.Draw("same");
         TLine ldx(signalRightLimit, 0, signalRightLimit, peakMaximum*0.75);
+        //TLine ldx(mean_tmp_K-2.*rms_tmp_K, 0, mean_tmp_K-2.*rms_tmp_K, peakMaximum*0.75);
         if(ptMin>1.19)ldx.SetY2(peakMaximum*0.6);
         ldx.SetLineStyle(kDashed);
         ldx.Draw("same");
@@ -515,7 +523,7 @@ void SignalBinnedMC(const char *cutSettings = "", const double roi_min_limit_inp
           frame2->GetYaxis()->SetMaxDigits(2);
         }
 
-        tofSignalProjection->Write();
+        tofSignalProjectionAll->Write();
         xframe_full->Write();
         xframe->Write();
 

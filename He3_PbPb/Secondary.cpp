@@ -351,12 +351,10 @@ void Secondary(const float cutDCAz = 1.f, const int cutTPCcls = 89, const double
       gStyle->SetOptFit(111);
       gStyle->SetStatX(0.85);
       gStyle->SetStatY(0.5);
-      TF1 fSigmoid(Form("f%sSigmoidFit_%.0f_%.0f", kAntimatterMatter[iMatt], kCentBinsLimitsHe3[iCent][0], kCentBinsLimitsHe3[iCent][1]), "([0])/(1+exp([1]*x+[2]))+(1-exp([3]+[4]*x))", 2.f, 8.f);
+      TF1 fSigmoid(Form("f%sSigmoidFit_%.0f_%.0f", kAntimatterMatter[iMatt], kCentBinsLimitsHe3[iCent][0], kCentBinsLimitsHe3[iCent][1]), "([0])/(1+exp([1]*x+[2]))", 2.f, 8.f);
       fSigmoid.SetParName(0, "a");
       fSigmoid.SetParName(1, "b");
       fSigmoid.SetParName(2, "c");
-      /* fSigmoid.SetParName(3, "d");
-      fSigmoid.FixParameter(3,0); */
       fSigmoid.SetParameter(0, 0.9);
       if (iMatt == 1)
       {

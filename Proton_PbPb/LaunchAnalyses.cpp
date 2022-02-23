@@ -26,8 +26,9 @@ void LaunchAnalyses(const bool analyse = false)
   auto tmpNTPCPidSigmas = kNTPCPidSigmas-1;
   auto tmpNCutTPCClusters = kNCutTPCClusters-1;
   auto tmpNCutDCAxy = kNCutDCAxy-1;
+  auto tmpNCutChi2TPC = kNCutChi2TPC;
 
-  for (int iCutSettings = -1; iCutSettings < tmpNCutDCAz + tmpNTPCPidSigmas + tmpNCutTPCClusters/*  + tmpNCutDCAxy */; ++iCutSettings)
+  for (int iCutSettings = -1; iCutSettings < tmpNCutDCAz + tmpNTPCPidSigmas + tmpNCutTPCClusters + tmpNCutDCAxy + tmpNCutChi2TPC; ++iCutSettings)
   {
     char hname[100];
 
@@ -46,10 +47,15 @@ void LaunchAnalyses(const bool analyse = false)
         cutVariable = 2;
         cutIndex -= (tmpNCutDCAz + tmpNTPCPidSigmas);
       }
-      else if (iCutSettings >= (tmpNCutDCAz + tmpNTPCPidSigmas + tmpNCutTPCClusters))
+      else if (iCutSettings >= (tmpNCutDCAz + tmpNTPCPidSigmas + tmpNCutTPCClusters) && iCutSettings < (tmpNCutDCAz + tmpNTPCPidSigmas + tmpNCutTPCClusters + tmpNCutDCAxy))
       {
         cutVariable = 3;
         cutIndex -= (tmpNCutDCAz + tmpNTPCPidSigmas + tmpNCutTPCClusters);
+      }
+      else if (iCutSettings >= (tmpNCutDCAz + tmpNTPCPidSigmas + tmpNCutTPCClusters + tmpNCutDCAxy))
+      {
+        cutVariable = 4;
+        cutIndex -= (tmpNCutDCAz + tmpNTPCPidSigmas + tmpNCutTPCClusters + tmpNCutDCAxy);
       }
       fullCutSettings = Form("%s%d", cutSettings[cutVariable], cutIndex);
     }
@@ -61,14 +67,14 @@ void LaunchAnalyses(const bool analyse = false)
     for (int iBkg = 1; iBkg < 2; ++iBkg)
     {
       for(int iNsigma = 0; iNsigma < 3; ++iNsigma) {
-        for (int iG3G4Prim = 0; iG3G4Prim < 2; ++iG3G4Prim){
+        for (int iG3G4Prim = 0; iG3G4Prim < 1; ++iG3G4Prim){
           std::cout << "bkg selection = " << iBkg << "; roiNsigma = " << roi_n_sigma[iNsigma] << "; dcaxycut = " << DCAxyCut << "; G3G4Prim = " << iG3G4Prim << std::endl;
           if (analyse)
           {
             gSystem->Exec(Form("bash ~/Code/MasterThesis/Proton_PbPb/scripts/LaunchAnalysisSignEffPrim.sh %s 1 1 %f %f %d", fullCutSettings, roi_n_sigma[iNsigma], DCAxyCut, iG3G4Prim));
           }
 
-          for (int iSgm = 0; iSgm < 2; ++iSgm)
+          for (int iSgm = 1; iSgm < 2; ++iSgm)
           {
             // bool binCountingFlag = 1 - iBin;
             bool sigmoidFlag = 1 - iSgm;

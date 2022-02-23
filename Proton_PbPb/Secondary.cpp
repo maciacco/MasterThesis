@@ -54,8 +54,8 @@ void Secondary(const char *cutSettings = "", const double DCAxyCut=0.12, const c
 
   // open files
   //TFile *inFileDat = TFile::Open(Form("%s/%s.root", kDataDir, inFileDatName));
-  TFile *inFileDat = TFile::Open(Form("%s/%s_largeNsigma_largeBinningDCA.root", kDataDir, inFileDatName));
-  TFile *inFileMC21l5 = TFile::Open(Form("%s/%s.root", kDataDir, "AnalysisResults_LHC21l5_full_largeDCA"/* inFileMCName */));
+  TFile *inFileDat = TFile::Open(Form("%s/%s_largeNsigma_cutDCAxyChi2TPC.root", kDataDir, inFileDatName));
+  TFile *inFileMC21l5 = TFile::Open(Form("%s/%s.root", kDataDir, "AnalysisResults_LHC21l5_full_largeDCA_cutChi2"/* inFileMCName */));
   TFile *inFileMC20e3a_1 = TFile::Open(Form("%s/AnalysisResults_LHC20e3_DCAChi2TPC.root", kDataDir));
   //TFile *inFileMC20e3a_2 = TFile::Open(Form("%s/%s_20e3a_runlist2_20210929.root", kDataDir, "mc"));
   //TFile *inFileMC1 = TFile::Open(Form("%s/%s.root", kDataDir, inFileMCName));
@@ -130,7 +130,7 @@ void Secondary(const char *cutSettings = "", const double DCAxyCut=0.12, const c
         fPrimaryFrac.SetBinError(fPrimaryFrac.FindBin(ptMin + 0.005f), 0);
       }
 
-      for (int iPtBin = 5; iPtBin < nUsedPtBins + 1; ++iPtBin)
+      for (int iPtBin = 1; iPtBin < nUsedPtBins + 1; ++iPtBin)
       { // loop on pT bins
         //fPrimaryFrac.SetBinContent(iPtBin, 1.);
 
@@ -217,7 +217,7 @@ void Secondary(const char *cutSettings = "", const double DCAxyCut=0.12, const c
         // ROOFIT UNIMPLEMENTED
         if (use_roofit)
         {
-          // std::cout << "No RooFit implementation yet!" << std::endl;
+          // if (kVerbose) std::cout << "No RooFit implementation yet!" << std::endl;
           // return;
           RooRealVar *dca = new RooRealVar("DCA_{xy}", "DCAxy", -1.3, 1.3, "cm");
           RooDataHist *data = new RooDataHist("data", "data", *dca, fDCAdatProj);
@@ -242,12 +242,12 @@ void Secondary(const char *cutSettings = "", const double DCAxyCut=0.12, const c
           // integrate primaries (-0.12,0.12)
           dca->setRange("intRange",-DCAxyCut,DCAxyCut);
           Double_t prim_integral = (prim->createIntegral(*dca,RooFit::NormSet(*dca),RooFit::Range("intRange")))->getVal();
-          //std::cout << setprecision(8) << prim_integral << std::endl;
+          //if (kVerbose) std::cout << setprecision(8) << prim_integral << std::endl;
           // integrate model
           Double_t tot_integral = (model->createIntegral(*dca,RooFit::NormSet(*dca),RooFit::Range("intRange")))->getVal();
           Double_t ratio = primfrac->getVal()*prim_integral/tot_integral;
           Double_t ratio_err = primfrac->getError()*prim_integral/tot_integral;//TMath::Sqrt(ratio * (1. - ratio) / (tot_integral*fDCAdatProj->Integral()));
-          std::cout << "Prim frac error = " << primfrac->getError()*prim_integral/tot_integral << std::endl;
+          if (kVerbose) std::cout << "Prim frac error = " << primfrac->getError()*prim_integral/tot_integral << std::endl;
 
           if (ratio < 0.72){continue;
             primfrac->setVal(0.85);
@@ -257,7 +257,7 @@ void Secondary(const char *cutSettings = "", const double DCAxyCut=0.12, const c
 
             dca->setRange("intRange",-DCAxyCut,DCAxyCut);
             prim_integral = (prim->createIntegral(*dca,RooFit::NormSet(*dca),RooFit::Range("intRange")))->getVal();
-            //std::cout << setprecision(8) << prim_integral << std::endl;
+            //if (kVerbose) std::cout << setprecision(8) << prim_integral << std::endl;
             // integrate model
             tot_integral = (model->createIntegral(*dca,RooFit::NormSet(*dca),RooFit::Range("intRange")))->getVal();
             ratio = primfrac->getVal()*prim_integral/tot_integral;
@@ -271,7 +271,7 @@ void Secondary(const char *cutSettings = "", const double DCAxyCut=0.12, const c
           if (iMatt == 1 && ptMin < noSecMaterialThreshold)
             model->plotOn(xframe, RooFit::Components("sec"), RooFit::LineColor(kRed));
           model->plotOn(xframe, RooFit::Name("model"), RooFit::LineColor(kGreen));
-          std::cout << "Chi2 = " << xframe->chiSquare("model", "data") << std::endl;
+          if (kVerbose) std::cout << "Chi2 = " << xframe->chiSquare("model", "data") << std::endl;
           xframe->Write();
 
           TCanvas c(xframe->GetName(),xframe->GetTitle());
@@ -289,8 +289,8 @@ void Secondary(const char *cutSettings = "", const double DCAxyCut=0.12, const c
           prim_frac_roofit_err = ratio_err;
 
           // print fit results
-          std::cout << "f_prim_fit = " << primfrac->getVal() << std::endl;
-          std::cout << "fraction = " << primfrac->getVal()*prim_integral/tot_integral << std::endl;
+          if (kVerbose) std::cout << "f_prim_fit = " << primfrac->getVal() << std::endl;
+          if (kVerbose) std::cout << "fraction = " << primfrac->getVal()*prim_integral/tot_integral << std::endl;
         }
 
         TFractionFitter *fit = new TFractionFitter(fDCAdatProj, mc, "Q"); // initialise
@@ -305,21 +305,30 @@ void Secondary(const char *cutSettings = "", const double DCAxyCut=0.12, const c
         if (ptMin < noSecMaterialThreshold)
         { 
           fit->Constrain(2, 0., 0.05);
+          if (ptMin < 1.09)
+            fit->Constrain(2, 0., 0.1);
         }
-        if (iMatt == 0 && iCent == 0 && ptMin > 2.0)
+        if (iMatt == 0 && iCent == 1 && ptMin > 1.4)
           fit->Constrain(1, 0., 0.99);
-        if (iMatt == 0 && iCent == 0 && ptMin < 2.0)
+        else if (iMatt == 0 && iCent == 1 && ptMin < 1.4)
           fit->Constrain(1, 0., 1.);
-        else if (iMatt == 0 && iCent == 1)
-          fit->Constrain(1, 0., .99);
-        else if (iMatt == 1 && iCent == 1)
-          fit->Constrain(1, 0., .99);
-        else if (iMatt == 0 && iCent == 2 && use_injected_protons)
+        else if (iMatt == 0 && iCent == 0 && ptMin < 1.6)
           fit->Constrain(0, 0., 0.9);
+        else if (iMatt == 0 && iCent == 0 && ptMin > 2.6)
+          fit->Constrain(1, 0., 0.9);
+        else if (iMatt == 1 && iCent == 0 && ptMin > 1.09)
+          fit->Constrain(1, 0., .99);
+        else if (iMatt == 1 && ptMin > 1.0 && ptMin < 1.09)
+          fit->Constrain(1, 0., .99);
+        else if (iMatt == 1 && ptMin < 1.0)
+          fit->Constrain(0, 0., 0.9);
+        /* else if (iMatt == 0 && iCent == 2 && use_injected_protons)
+          fit->Constrain(0, 0., 0.9); */
 
         TVirtualFitter::SetMaxIterations(MAX_ITER);    
         /* TVirtualFitter::SetPrecision(1e-2);  */
-        /* TFitResultPtr  */ Int_t status = fit->Fit(); // perform the fit
+        Int_t status=-999;
+        /* TFitResultPtr  */ for(int I = 0; I<2; ++I)status = fit->Fit(); // perform the fit
         if (status != 0)
         {
           fit = new TFractionFitter(fDCAdatProj, mc, "Q"); // initialise
@@ -346,7 +355,7 @@ void Secondary(const char *cutSettings = "", const double DCAxyCut=0.12, const c
             fitter->Config().ParSettings(2).SetStepSize(1e-5);
           }
           ROOT::Math::MinimizerOptions::SetDefaultStrategy(0);
-          status = fit->Fit();
+          for(int I = 0; I<2; ++I)status = fit->Fit();
         }
         //TFitResultPtr result = fit->Fit(); // perform the fit
         if (status == 0 /* || status == 4 */ /* || (result->CovMatrixStatus() == 1 || result->CovMatrixStatus() == 3) */ /* 0==0 */)
@@ -416,7 +425,7 @@ void Secondary(const char *cutSettings = "", const double DCAxyCut=0.12, const c
           covStatus.Draw("same");
 
           // print fit results
-          std::cout << "f_prim_TFFfit = " << fracMc1 << " +/- " << errFracMc1 << std::endl;
+          if (kVerbose) std::cout << "f_prim_TFFfit = " << fracMc1 << " +/- " << errFracMc1 << std::endl;
 
           // compute fraction of primaries and material secondaries
           double intPrimDCAcutError = 0.;
@@ -435,8 +444,8 @@ void Secondary(const char *cutSettings = "", const double DCAxyCut=0.12, const c
           fPrimaryFrac.SetBinError(fPrimaryFrac.FindBin(ptMin + 0.005f), primaryRatioError);
           fChi2.SetBinContent(iPtBin,fit->GetChisquare()/fit->GetNDF());
 
-          std::cout << "fraction = " << intPrimDCAcut / intResDCAcut << std::endl;
-          std::cout << " * * * * * * * * * * * * * * * * * " << std::endl;
+          if (kVerbose) std::cout << "fraction = " << intPrimDCAcut / intResDCAcut << std::endl;
+          if (kVerbose) std::cout << " * * * * * * * * * * * * * * * * * " << std::endl;
           // roofit check
           if (use_roofit)
           {
@@ -529,12 +538,12 @@ void Secondary(const char *cutSettings = "", const double DCAxyCut=0.12, const c
       auto r = fPrimaryFrac.Fit(&fFitFunc, "MRQS");
       auto cov_mat = r->GetCovarianceMatrix();
       //corr_mat.Print();
-      //std::cout<<"0,0 = "<<corr_mat(0,0)<<std::endl;
+      //if (kVerbose) std::cout<<"0,0 = "<<corr_mat(0,0)<<std::endl;
       //corr_mat.Print();
       TH2D hCovMat(Form("f%sCovMat_%.0f_%.0f", kAntimatterMatter[iMatt], kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1]),"CorrelationMatrix",2,0,2,2,0,2);
       for (int i=0;i<2;++i){
         for(int j=0;j<2;++j){
-          //std::cout << cov_mat(0,1) << std::endl;
+          //if (kVerbose) std::cout << cov_mat(0,1) << std::endl;
           hCovMat.SetBinContent(i+1,j+1,cov_mat(i,j));
         }
       }

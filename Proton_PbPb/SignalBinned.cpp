@@ -67,12 +67,12 @@ void SignalBinned(const char *cutSettings = "", const double roi_nsigma = 8., co
     return;
   TDirectory *dirOutFile = outFile->mkdir(Form("%s_%d_%d_%d", cutSettings, binCounting, bkg_shape, iNsigma));
   //TFile *dataFile = TFile::Open(TString::Format("%s/%s_largeNsigma.root", kDataDir, inFileDat)); // open data TFile
-  TFile *dataFile = TFile::Open(TString::Format("%s/%s_largeNsigma_largeBinningDCA.root", kDataDir, inFileDat)); // open data TFile
+  TFile *dataFile = TFile::Open(TString::Format("%s/%s_largeNsigma_cutDCAxyChi2TPC.root", kDataDir, inFileDat)); // open data TFile
 
   //TFile *dataFile2 = TFile::Open(TString::Format("%s/%s.root", kDataDir, inFileDat)); // open data TFile
   if (!dataFile)
   {
-    std::cout << "File not found!" << std::endl; // check data TFile opening
+    if (kVerbose) std::cout << "File not found!" << std::endl; // check data TFile opening
     return;
   }
 
@@ -110,7 +110,7 @@ void SignalBinned(const char *cutSettings = "", const double roi_nsigma = 8., co
     //TH3F *fTOFSignal2 = (TH3F *)list2->Get(histName.data());
     if (!fTOFSignal1)
     {
-      std::cout << "Hstogram not found!" << std::endl; // check data TFile opening
+      if (kVerbose) std::cout << "Hstogram not found!" << std::endl; // check data TFile opening
       return;
     }
 
@@ -134,7 +134,7 @@ void SignalBinned(const char *cutSettings = "", const double roi_nsigma = 8., co
       TH1D fAlphaR("fAlphaR", "fAlphaR", kNPtBins, kPtBins);
       int nUsedPtBins = 32; // up to 2.00 GeV/c
 
-      for (int iPtBin = 5; iPtBin < nUsedPtBins + 1; ++iPtBin)
+      for (int iPtBin = 1; iPtBin < nUsedPtBins + 1; ++iPtBin)
       { // loop on pT bins
         double ptMin = fTOFrawYield.GetXaxis()->GetBinLowEdge(iPtBin);
         double ptMax = fTOFrawYield.GetXaxis()->GetBinUpEdge(iPtBin);
@@ -147,7 +147,7 @@ void SignalBinned(const char *cutSettings = "", const double roi_nsigma = 8., co
         int centBinMax = fTOFSignal->GetXaxis()->FindBin(kCentBinsLimitsProton[iCent][1] - 1.); //kCentBinsProton[iCent][1];
 
         // project histogram
-        std::cout << "Pt bins: min=" << ptMin << "; max=" << ptMax << "; indexMin=" << pTbinsIndexMin << "; indexMax=" << pTbinsIndexMax << "; centralityBinMin=" << centBinMin << "; centralityBinMax=" << centBinMax << std::endl;
+        if (kVerbose) std::cout << "Pt bins: min=" << ptMin << "; max=" << ptMax << "; indexMin=" << pTbinsIndexMin << "; indexMax=" << pTbinsIndexMax << "; centralityBinMin=" << centBinMin << "; centralityBinMax=" << centBinMax << std::endl;
         TH1D *tofSignalProjection = fTOFSignal->ProjectionZ(Form("f%sTOFSignal_%.0f_%.0f_%.2f_%.2f", kAntimatterMatter[iMatt], centMin, centMax, fTOFSignal->GetYaxis()->GetBinLowEdge(pTbinsIndexMin), fTOFSignal->GetYaxis()->GetBinUpEdge(pTbinsIndexMax)), centBinMin, centBinMax, pTbinsIndexMin, pTbinsIndexMax);
         // tofSignalProjection->Rebin(4);
 
@@ -188,7 +188,7 @@ void SignalBinned(const char *cutSettings = "", const double roi_nsigma = 8., co
           if (ptMin > 2.1) nSigmaLeft = maximum + 2.;
           if (ptMin > 2.49) nSigmaLeft = maximum + 1.;
           nSigmaRight = nSigmaLeft + 3.;
-          std::cout << "nSigmaLeft = " << nSigmaLeft << std::endl;
+          if (kVerbose) std::cout << "nSigmaLeft = " << nSigmaLeft << std::endl;
         }
         tofSignalProjectionAll->GetXaxis()->SetRangeUser(nSigmaLeft, kTOFnSigmaMax);
         tofSignalProjection->GetXaxis()->SetRangeUser(nSigmaLeft, kTOFnSigmaMax);
@@ -214,8 +214,8 @@ void SignalBinned(const char *cutSettings = "", const double roi_nsigma = 8., co
 
         // roofit histogram
         RooDataHist dataAll("dataAll", "dataAll", RooArgList(tofSignal), tofSignalProjectionAll);
-        std::cout << "Number of entries (roofit) = " << dataAll.sumEntries() << std::endl;
-        std::cout << "Number of entries (root) = " << tofSignalProjectionAll->GetEntries() << std::endl;
+        if (kVerbose) std::cout << "Number of entries (roofit) = " << dataAll.sumEntries() << std::endl;
+        if (kVerbose) std::cout << "Number of entries (root) = " << tofSignalProjectionAll->GetEntries() << std::endl;
 
         // build composite model
         RooRealVar mean("#mu", "mean", -1., 1., "a.u.");
@@ -260,7 +260,7 @@ void SignalBinned(const char *cutSettings = "", const double roi_nsigma = 8., co
           }
         }
         else
-          std::cout << "!!!!!" << std::endl; // TODO: UPDATE FOLLOWING BLOCK5);
+          if (kVerbose) std::cout << "!!!!!" << std::endl; // TODO: UPDATE FOLLOWING BLOCK5);
 
         int covQ = -999;
 
@@ -290,8 +290,8 @@ void SignalBinned(const char *cutSettings = "", const double roi_nsigma = 8., co
           model->fitTo(data, RooFit::Save(), RooFit::Range("leftSideband,rightSideband"));
           r = model->fitTo(data, RooFit::Save(), RooFit::Range("leftSideband,rightSideband"));
 
-          std::cout << "fit status: " << r->status() << ";" << std::endl;
-          std::cout << "covariance quality: " << r->covQual() << std::endl;
+          if (kVerbose) std::cout << "fit status: " << r->status() << ";" << std::endl;
+          if (kVerbose) std::cout << "covariance quality: " << r->covQual() << std::endl;
           covQ = r->covQual();
           
           // signal range
@@ -367,7 +367,7 @@ void SignalBinned(const char *cutSettings = "", const double roi_nsigma = 8., co
             // total counts
             counts = data.sumEntries(Form("tofSignal>%f && tofSignal<%f", mean_tmp - (roi_nsigma_down+extend_roi) * rms_tmp, mean_tmp + (roi_nsigma_up+extend_roi) * rms_tmp));
             rawYield = counts - bkgIntegral_val; // signal=counts-error
-            std::cout << "Counts: " << counts << ", Background: "<< bkgIntegral_val << std::endl;
+            if (kVerbose) std::cout << "Counts: " << counts << ", Background: "<< bkgIntegral_val << std::endl;
             rawYieldError = TMath::Sqrt(counts); // counts=signal+bkg => correct error from poisson statistics
             if (binCountingNoFit)
             {
@@ -438,7 +438,7 @@ void SignalBinned(const char *cutSettings = "", const double roi_nsigma = 8., co
         xframe->GetYaxis()->SetTitleOffset(0.72);
         tofSignalProjection->GetXaxis()->SetRangeUser(-0.5, 0.5);
         double peakMaximum = tofSignalProjection->GetBinContent(tofSignalProjection->GetMaximumBin());
-        std::cout << "peakMaximum=" << peakMaximum << std::endl;
+        if (kVerbose) std::cout << "peakMaximum=" << peakMaximum << std::endl;
         TLine lsx(mean_tmp - (roi_nsigma_down+extend_roi) * rms_tmp, 0, mean_tmp - (roi_nsigma_down+extend_roi) * rms_tmp, peakMaximum);
         lsx.SetLineStyle(kDashed);
         lsx.Draw("same");

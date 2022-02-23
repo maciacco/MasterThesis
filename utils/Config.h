@@ -10,6 +10,8 @@
 // Common
 //////////////////////////////////////////////////////////////
 
+const bool kVerbose = false;
+
 Color_t centrality_colors[] = {kOrange+7, kAzure+4, kTeal+4};
 
 // directories
@@ -207,21 +209,23 @@ namespace proton
   const double kDCABinsMedium[kNDCABinsMedium + 1] = {-1.30f, -1.00f, -0.80f, -0.50f, -0.20f, -0.12f, -0.06f, -0.03f, 0.00f, 0.03f, 0.06f, 0.12f, 0.20f, 0.50f, 0.80f, 1.00f, 1.30f};
    */
   // systematics variations
+  const int kNCutChi2TPC = 2;
+  const double kCutChi2TPCVariations[] = {2.00, 2.25};
   const double kROIVariation[] = {7.5,8.,8.5};
   const int kNCutDCAxy = 5;
-  const double kCutDCAxy[] = {0.05, 0.06, 0.07, 0.08, 0.09};
+  const double kCutDCAxy[] = {0.10,0.11,0.12,0.13,0.14};
   const int kNCutDCAxyVariations = 4;
-  const double kCutDCAxyVariations[] = {0.05, 0.06, 0.08, 0.09};
+  const double kCutDCAxyVariations[] = {0.10,0.11,0.13,0.14};
   const int kNCutDCAz = 5;
   const double kCutDCAz[] = {0.5, 0.75, 1.0, 1.5, 2.0};
   const int kNCutTPCClusters = 5;
   const double kCutTPCClusters[] = {59., 64., 69., 74., 79.};
   const int kNTPCPidSigmas = 3;
   const double kTPCPidSigmas[] = {3.0, 3.25, 3.50};
-  const char *cutSettings[] = {"dcaz", "pid", "tpc"};//, "dcaxy"};
-  const int kNTrackCuts = 11;//15;
-  const int trackCutIndexes[kNTrackCuts] = {0,0,1,2,3,0,1,0,1,2,3};//,0,1,2,3};
-  const char* trackCutSettings[kNTrackCuts] = {"","dcaz","dcaz","dcaz","dcaz","pid","pid","tpc","tpc","tpc","tpc"};//,"dcaxy","dcaxy","dcaxy","dcaxy"};
+  const char *cutSettings[] = {"dcaz", "pid", "tpc", "dcaxy", "chisquare"};
+  const int kNTrackCuts = 17;
+  const int trackCutIndexes[kNTrackCuts] = {0,0,1,2,3,0,1,0,1,2,3,0,1,2,3,0,1};
+  const char* trackCutSettings[kNTrackCuts] = {"","dcaz","dcaz","dcaz","dcaz","pid","pid","tpc","tpc","tpc","tpc","dcaxy","dcaxy","dcaxy","dcaxy","chisquare","chisquare"};
 }
 
 //////////////////////////////////////////////////////////////
@@ -284,20 +288,22 @@ namespace pion
   const double kDCABinsMedium[kNDCABinsMedium + 1] = {-1.30f, -1.00f, -0.80f, -0.50f, -0.20f, -0.12f, -0.06f, -0.03f, 0.00f, 0.03f, 0.06f, 0.12f, 0.20f, 0.50f, 0.80f, 1.00f, 1.30f};
    */
   // systematics variations
+  const int kNCutChi2TPC = 2;
+  const double kCutChi2TPCVariations[] = {2.00, 2.25};
   const int kNCutDCAxy = 5;
-  const double kCutDCAxy[] = {0.05, 0.06, 0.07, 0.08, 0.09};
+  const double kCutDCAxy[] = {0.10,0.11,0.12,0.13,0.1};
   const int kNCutDCAxyVariations = 4;
-  const double kCutDCAxyVariations[] = {0.05, 0.06, 0.08, 0.09};
+  const double kCutDCAxyVariations[] = {0.10,0.11,0.13,0.14};
   const int kNCutDCAz = 5;
   const double kCutDCAz[] = {0.5, 0.75, 1.0, 1.5, 2.0};
   const int kNCutTPCClusters = 5;
   const double kCutTPCClusters[] = {59., 64., 69., 74., 79.};
   const int kNTPCPidSigmas = 3;
   const double kTPCPidSigmas[] = {3.0, 3.25, 3.50};
-  const char *cutSettings[] = {"dcaz", "pid", "tpc"/* , "dcaxy" */};
-  const int kNTrackCuts = 11;//15;
-  const int trackCutIndexes[kNTrackCuts] = {0,0,1,2,3,0,1,0,1,2,3/* ,0,1,2,3 */};
-  const char* trackCutSettings[kNTrackCuts] = {"","dcaz","dcaz","dcaz","dcaz","pid","pid","tpc","tpc","tpc","tpc"/* ,"dcaxy","dcaxy","dcaxy","dcaxy" */};
+  const char *cutSettings[] = {"dcaz", "pid", "tpc", "dcaxy", "chisquare"};
+  const int kNTrackCuts = 17;
+  const int trackCutIndexes[kNTrackCuts] = {0,0,1,2,3,0,1,0,1,2,3,0,1,2,3,0,1};
+  const char* trackCutSettings[kNTrackCuts] = {"","dcaz","dcaz","dcaz","dcaz","pid","pid","tpc","tpc","tpc","tpc","dcaxy","dcaxy","dcaxy","dcaxy","chisquare","chisquare"};
 }
 
 #endif // CONFIGFILE_H

@@ -4,7 +4,7 @@
 cutSettings=""
 binCountingFlag=1
 expFlag=1 # 1->sum of 2 exp, 0 -> sum of exp and pol
-sigmoidFlag=1
+sigmoidFlag=0
 spectraHistNameId=""
 extractRatios=1
 

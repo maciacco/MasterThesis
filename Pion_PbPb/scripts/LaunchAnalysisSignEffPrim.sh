@@ -6,11 +6,13 @@ binCountingFlag="$2"
 expFlag="$3" # 1->sum of 2 exp
 roiNsigmaMin="$4"
 roiNsigmaMax="$5"
-dcaxycut="$6"
+mismatchNsigmaMin="$6"
+mismatchNsigmaMax="$7"
+dcaxycut="$8"
 extractRatios=1
 
 fileData="AnalysisResults"
-fileDataEff="AnalysisResults_LHC21l5_full_largeDCA"
+fileDataEff="AnalysisResults_LHC21l5_full_largeDCA_cutChi2"
 fileMC="mc"
 signalNameEff="SignalPionSysEff"
 spectraNameEff="SpectraPionSysEff"
@@ -53,7 +55,7 @@ if [ $extractRatios -eq 1 ]; then
 .L Efficiency.cpp+
 .L Secondary.cpp+
 .L Spectra.cpp+
-SignalBinned("$cutSettings",$roiNsigmaMin,$roiNsigmaMax,8.5,13.5,$argumentSignal,"$fileData","$signalName","update")
+SignalBinned("$cutSettings",$roiNsigmaMin,$roiNsigmaMax,$mismatchNsigmaMin,$mismatchNsigmaMax,$argumentSignal,"$fileData","$signalName","update")
 Secondary("$cutSettings",$dcaxycut,"$fileData","$fileMC","$PrimaryHe3")//,true) // uncomment to use roofit
 .q
 EOF
@@ -67,7 +69,7 @@ if [ $extractRatios -eq 1 ]; then
 .L SignalBinnedMC.cpp+
 .L EfficiencyNew.cpp+
 .L SecondaryMC.cpp+
-SignalBinnedMC("$cutSettings",$roiNsigmaMin,$roiNsigmaMax,8.5,13.5,$argumentSignal,"$fileDataEff","$signalNameEff","recreate")
+SignalBinnedMC("$cutSettings",$roiNsigmaMin,$roiNsigmaMax,$mismatchNsigmaMin,$mismatchNsigmaMax,$argumentSignal,"$fileDataEff","$signalNameEff","recreate")
 SecondaryMC("$cutSettings",$dcaxycut,"$fileDataEff","$fileDataEff","$PrimaryHe3Eff")
 EfficiencyNew("$cutSettings","$fileDataEff","$EfficiencyHe3","$signalNameEff","$PrimaryHe3Eff")//,"update")
 .q

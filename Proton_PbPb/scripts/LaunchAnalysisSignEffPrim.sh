@@ -10,7 +10,7 @@ G3G4Prim="$6"
 extractRatios=1
 
 fileData="AnalysisResults"
-fileDataEff="AnalysisResults_LHC21l5_full_largeDCA"
+fileDataEff="AnalysisResults_LHC21l5_full_largeDCA_cutChi2"
 fileMC="mc"
 signalNameEff="SignalProtonSysEff"
 spectraNameEff="SpectraProtonSysEff"
