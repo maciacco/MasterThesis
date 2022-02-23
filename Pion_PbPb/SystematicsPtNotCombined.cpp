@@ -526,6 +526,8 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
     TH2D fSystematicsCorrelationsPID(Form("fSystematicsCorrelationsPID_%.0f_%.0f", kCentBinsLimitsPion[iC][0], kCentBinsLimitsPion[iC][1]),Form("%.0f-%.0f%%", kCentBinsLimitsPion[iC][0], kCentBinsLimitsPion[iC][1]),25,3.245,3.505,1000,-.1,.1);
     TH2D fSystematicsCorrelationsROIUp(Form("fSystematicsCorrelationsROIUp_%.0f_%.0f", kCentBinsLimitsPion[iC][0], kCentBinsLimitsPion[iC][1]),Form("%.0f-%.0f%%", kCentBinsLimitsPion[iC][0], kCentBinsLimitsPion[iC][1]),22,9.9,12.1,1000,-.1,.1);
     TH2D fSystematicsCorrelationsROIDown(Form("fSystematicsCorrelationsROIDown_%.0f_%.0f", kCentBinsLimitsPion[iC][0], kCentBinsLimitsPion[iC][1]),Form("%.0f-%.0f%%", kCentBinsLimitsPion[iC][0], kCentBinsLimitsPion[iC][1]),11,0.95,2.05,1000,-.1,.1);
+    TH2D fSystematicsCorrelationsMismatchDown(Form("fSystematicsCorrelationsMismatchDown_%.0f_%.0f", kCentBinsLimitsPion[iC][0], kCentBinsLimitsPion[iC][1]),Form("%.0f-%.0f%%", kCentBinsLimitsPion[iC][0], kCentBinsLimitsPion[iC][1]),51,7.99,9.01,1000,-.01,.01);
+    TH2D fSystematicsCorrelationsMismatchUp(Form("fSystematicsCorrelationsMismatchUp_%.0f_%.0f", kCentBinsLimitsPion[iC][0], kCentBinsLimitsPion[iC][1]),Form("%.0f-%.0f%%", kCentBinsLimitsPion[iC][0], kCentBinsLimitsPion[iC][1]),21,12.45,14.55,1000,-.01,.01);
 
     // track cuts
     cutVariable=0;
@@ -584,6 +586,9 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
     bkgFlag = 1;
     sigmoidFlag = 0;
     iNsigmaUp = 1;
+    iNsigmaDown = 1;
+    iNsigmaMismatchUp = 1;
+    iNsigmaMismatchDown = 1;
     hDefault = (TH1D *)specFile->Get(Form("_1_0_1_1_1_1/fRatio_%.0f_%.0f", kCentBinsLimitsPion[iC][0], kCentBinsLimitsPion[iC][1]));
     for (int iROI=0; iROI<2; ++iROI){
       TString tmpCutSettings = Form("");
@@ -605,6 +610,9 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
     bkgFlag = 1;
     sigmoidFlag = 0;
     iNsigmaUp = 1;
+    iNsigmaDown = 1;
+    iNsigmaMismatchUp = 1;
+    iNsigmaMismatchDown = 1;
     hDefault = (TH1D *)specFile->Get(Form("_1_0_1_1_1_1/fRatio_%.0f_%.0f", kCentBinsLimitsPion[iC][0], kCentBinsLimitsPion[iC][1]));
     for (int iROI=0; iROI<2; ++iROI){
       TString tmpCutSettings = Form("");
@@ -618,6 +626,54 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
         double cutVal = 10.;
         if (iROI==1) cutVal=12.;
         fSystematicsCorrelationsROIUp.Fill(cutVal,h->GetBinContent(iPtBins+1)-hDefault->GetBinContent(iPtBins+1));
+      }
+    }
+    // mismatch left limit
+    cutVariable=0;
+    bkgFlag = 1;
+    sigmoidFlag = 0;
+    iNsigmaUp = 1;
+    iNsigmaDown = 1;
+    iNsigmaMismatchUp = 1;
+    iNsigmaMismatchDown = 1;
+    hDefault = (TH1D *)specFile->Get(Form("_1_0_1_1_1_1/fRatio_%.0f_%.0f", kCentBinsLimitsPion[iC][0], kCentBinsLimitsPion[iC][1]));
+    for (int iMismatch=0; iMismatch<2; ++iMismatch){
+      TString tmpCutSettings = Form("");
+      auto cutIndex = 0;
+      auto tmpCutIndex = Form("");
+      iMismatch == 0 ? iNsigmaMismatchDown=iMismatch : iNsigmaMismatchDown=iMismatch+1;
+      auto fullCutSettingsSigm = Form("%s%s_%d_%d_%d_%d_%d_%d", tmpCutSettings.Data(), tmpCutIndex, bkgFlag, sigmoidFlag, iNsigmaDown, iNsigmaUp, iNsigmaMismatchDown, iNsigmaMismatchUp);
+      //std::cout << fullCutSettingsSigm <<std::endl;
+      TH1D *h = (TH1D *)specFile->Get(Form("%s/fRatio_%.0f_%.0f", fullCutSettingsSigm, kCentBinsLimitsPion[iC][0], kCentBinsLimitsPion[iC][1]));
+      for(int iPtBins=6;iPtBins<used_pt_bins-1;++iPtBins){
+        double cutVal = 8.;
+        if (iMismatch==1) cutVal=9.;
+        fSystematicsCorrelationsMismatchDown.Fill(cutVal,h->GetBinContent(iPtBins+1)-hDefault->GetBinContent(iPtBins+1));
+      }
+    }
+
+    // mismatch right limit
+    cutVariable=0;
+    bkgFlag = 1;
+    sigmoidFlag = 0;
+    iNsigmaUp = 1;
+    iNsigmaDown=1;
+    iNsigmaMismatchDown = 1;
+    hDefault = (TH1D *)specFile->Get(Form("_1_0_1_1_1_1/fRatio_%.0f_%.0f", kCentBinsLimitsPion[iC][0], kCentBinsLimitsPion[iC][1]));
+    for (int iMismatch=0; iMismatch<2; ++iMismatch){
+      TString tmpCutSettings = Form("");
+      auto cutIndex = 0;
+      auto tmpCutIndex = Form("");
+      iMismatch == 0 ? iNsigmaMismatchUp=iMismatch : iNsigmaMismatchUp=iMismatch+1;
+      auto fullCutSettingsSigm = Form("%s%s_%d_%d_%d_%d_%d_%d", tmpCutSettings.Data(), tmpCutIndex, bkgFlag, sigmoidFlag, iNsigmaDown, iNsigmaUp, iNsigmaMismatchDown, iNsigmaMismatchUp);
+      //printf(Form("%s%s_%d_%d_%d_%d_%d_%d", tmpCutSettings.Data(), tmpCutIndex, bkgFlag, sigmoidFlag, iNsigmaDown, iNsigmaUp, iNsigmaMismatchDown, iNsigmaMismatchUp));
+      //std::cout << fullCutSettingsSigm <<std::endl;
+      TH1D *h = (TH1D *)specFile->Get(Form("%s/fRatio_%.0f_%.0f", fullCutSettingsSigm, kCentBinsLimitsPion[iC][0], kCentBinsLimitsPion[iC][1]));
+      for(int iPtBins=6;iPtBins<used_pt_bins-1;++iPtBins){
+        double cutVal = 12.5;
+        if (iMismatch==1) cutVal=14.5;
+        std::cout<<h->GetBinContent(iPtBins+1)-hDefault->GetBinContent(iPtBins+1)<<std::endl;
+        fSystematicsCorrelationsMismatchUp.Fill(cutVal,h->GetBinContent(iPtBins+1)-hDefault->GetBinContent(iPtBins+1));
       }
     }
 
@@ -643,6 +699,12 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
     double correlationROIDown = fSystematicsCorrelationsROIDown.GetCorrelationFactor();
     std::cout << "CorrelationROIDown = " << correlationROIDown <<std::endl;
     std::cout << "* * * * * * * * * *"<<std::endl;
+    double correlationMismatchUp = fSystematicsCorrelationsMismatchUp.GetCorrelationFactor();
+    std::cout << "CorrelationMismatchUp = " << correlationMismatchUp <<std::endl;
+    std::cout << "* * * * * * * * * *"<<std::endl;
+    double correlationMismatchDown = fSystematicsCorrelationsMismatchDown.GetCorrelationFactor();
+    std::cout << "CorrelationMismatchDown = " << correlationMismatchDown <<std::endl;
+    std::cout << "* * * * * * * * * *"<<std::endl;
 
     fSystematicsCorrelationsDCAz.Write();
     fSystematicsCorrelationsDCAxy.Write();
@@ -651,6 +713,8 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
     fSystematicsCorrelationsChi2TPC.Write();
     fSystematicsCorrelationsROIDown.Write();
     fSystematicsCorrelationsROIUp.Write();
+    fSystematicsCorrelationsMismatchDown.Write();
+    fSystematicsCorrelationsMismatchUp.Write();
     
     for(int iPtBins=7;iPtBins<used_pt_bins;++iPtBins){
       // sigmas
@@ -682,6 +746,8 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
       double fraction_uncorr_TPCCls=1.-std::abs(correlationTPCCls);
       double fraction_uncorr_ROI_up=1.-std::abs(correlationROIUp);
       double fraction_uncorr_ROI_down=1.-std::abs(correlationROIDown);
+      double fraction_uncorr_Mismatch_up=1.-std::abs(correlationMismatchUp);
+      double fraction_uncorr_Mismatch_down=1.-std::abs(correlationMismatchDown);
       double fraction_uncorr_DCAxy=1.-std::abs(correlationDCAxy);
       double fraction_uncorr_Chi2TPC=1.-std::abs(correlationChi2TPC);
 
@@ -696,8 +762,8 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
       +2*(covariance_PrimTPCCls+covariance_ROITPCCls) */
       +sigma_ROI_down*sigma_ROI_down*fraction_uncorr_ROI_down*fraction_uncorr_ROI_down
       +sigma_ROI_up*sigma_ROI_up*fraction_uncorr_ROI_up*fraction_uncorr_ROI_up
-      +sigma_Mismatch_down*sigma_Mismatch_down
-      +sigma_Mismatch_up*sigma_Mismatch_up
+      +sigma_Mismatch_down*sigma_Mismatch_down*fraction_uncorr_Mismatch_down*fraction_uncorr_Mismatch_down
+      +sigma_Mismatch_up*sigma_Mismatch_up*fraction_uncorr_Mismatch_up*fraction_uncorr_Mismatch_up
       +sigma_Prim*sigma_Prim
       +sigma_Eff*sigma_Eff
       +sigma_TFF*sigma_TFF);
@@ -709,6 +775,8 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
       +sigma_TPCCls*sigma_TPCCls*correlationTPCCls*correlationTPCCls
       +sigma_ROI_down*sigma_ROI_down*correlationROIDown*correlationROIDown
       +sigma_ROI_up*sigma_ROI_up*correlationROIUp*correlationROIUp
+      +sigma_Mismatch_down*sigma_Mismatch_down*correlationMismatchDown*correlationMismatchDown
+      +sigma_Mismatch_up*sigma_Mismatch_up*correlationMismatchUp*correlationMismatchUp
       +sigma_DCAxy*sigma_DCAxy*correlationDCAxy*correlationDCAxy
       +sigma_Chi2TPC*sigma_Chi2TPC*correlationChi2TPC*correlationChi2TPC
       );
