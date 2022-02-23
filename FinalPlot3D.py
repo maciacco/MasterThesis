@@ -7,7 +7,7 @@ path_he3 = './He3_PbPb/out'
 path_hyp = './Hypertriton_PbPb'
 path_proton = './Proton_PbPb/out'
 path_pion = './Pion_PbPb/out'
-centrality_classes = [[0, 5], [5, 10], [30, 50]]
+centrality_classes = [[0, 5], [5, 10]] #, [30, 50]]
 centrality_colors = [ROOT.kOrange+7, ROOT.kAzure+4, ROOT.kTeal+4]
 particle_ratios = ["#pi^{-} / #pi^{+}","#bar{p} / p","{}_{#bar{#Lambda}}^{3}#bar{H} / ^{3}_{#Lambda}H","^{3}#bar{He} / ^{3}He"]
 
@@ -24,6 +24,7 @@ file_hyp = ROOT.TFile.Open(path_hyp + '/Ratio.root')
 file_proton = ROOT.TFile.Open(path_proton + '/SystematicsAllEPtNotCombined.root')
 file_pion = ROOT.TFile.Open(path_pion + '/SystematicsAllEPtNotCombined.root')
 file_he3_syst = ROOT.TFile.Open(path_he3 + '/SystematicsAll.root')
+file_he3_syst_eff_prim = ROOT.TFile.Open(path_he3 + '/SystematicsEfficiencyPrimary.root')
 file_hyp_syst = ROOT.TFile.Open(path_hyp + '/Systematics.root')
 
 file_out = ROOT.TFile.Open('FinalPlot3D.root', 'recreate')
@@ -36,6 +37,7 @@ for i_cent, cent in enumerate(centrality_classes):
     ratio_proton = file_proton.Get(f'fRatio_{cent[0]}_{cent[1]}')
     ratio_pion = file_pion.Get(f'fRatio_{cent[0]}_{cent[1]}')
     ratio_he3_distribution = file_he3_syst.Get(f'hist/fFitPar_{cent[0]}_{cent[1]}')
+    ratio_he3_distribution_eff_prim = file_he3_syst_eff_prim.Get(f'fRatioDistribution_{cent[0]}_{cent[1]}')
     ratio_hyp_distribution = file_hyp_syst.Get(f'fParameterDistribution_{cent[0]}_{cent[1]}')
     ratio_proton_pt_correlated = file_proton.Get(f'fRatioDistributionTrials_{cent[0]}_{cent[1]}')
     ratio_pion_pt_correlated = file_pion.Get(f'fRatioDistributionTrials_{cent[0]}_{cent[1]}')
@@ -61,8 +63,9 @@ for i_cent, cent in enumerate(centrality_classes):
 
     # systematic error
     syst_he3 = ratio_he3_distribution.GetRMS()
+    syst_he3_eff_prim = ratio_he3_distribution_eff_prim.GetRMS()
     syst_he3_abs = np.sqrt(0.00861352*0.00861352+0.00473124*0.00473124)*ratio_he3 # from absorption cross section variation
-    syst_he3 = np.sqrt(syst_he3*syst_he3+syst_he3_abs*syst_he3_abs)
+    syst_he3 = np.sqrt(syst_he3*syst_he3+syst_he3_abs*syst_he3_abs+syst_he3_eff_prim*syst_he3_eff_prim)
     syst_hyp = ratio_hyp_distribution.GetRMS()
     syst_hyp_abs = np.sqrt(0.00861352*0.00861352+0.00473124*0.00473124)*ratio_hyp # from absorption cross section variation
     syst_hyp = np.sqrt(syst_hyp*syst_hyp+syst_hyp_abs*syst_hyp_abs)
