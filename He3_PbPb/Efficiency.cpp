@@ -46,7 +46,7 @@ void Efficiency(const float cutDCAz = 1.f, const int cutTPCcls = 89, const float
       fITS_TPC_Pt = (TH1D *)fITS_TPC_Pt->Rebin(kNPtBins, TString::Format("f%sITS_TPC_Pt", kAntimatterMatter[iMatt]), pTbins);
       TH1D fEffPt(TString::Format("f%sEff_TPC_%.0f_%.0f", kAntimatterMatter[iMatt], kCentBinsLimitsHe3[iCent][0], kCentBinsLimitsHe3[iCent][1]), TString::Format("%s Efficiency #times Acceptance, %.0f-%.0f%%", kAntimatterMatterLabel[iMatt], kCentBinsLimitsHe3[iCent][0], kCentBinsLimitsHe3[iCent][1]), kNPtBins, pTbins);
 
-      if (iCent == kNCentClasses - 1)
+      if (iCent == 2)
       {
         int nPtBins = 13;
         double pTbinsNew[] = {1.f, 1.5f, 2.f, 2.5f, 3.f, 3.5f, 4.f, 4.5f, 5.f, 5.5f, 6.f, 7.f, 8.f, 10.f};

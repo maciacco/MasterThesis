@@ -43,7 +43,7 @@ void ReadTreeData(const float cutDCAz = 1.f, const int cutTPCcls = 89, const flo
   }
 
   // read tree
-  ROOT::EnableImplicitMT(3); // use all cores
+  ROOT::EnableImplicitMT(4); // use all cores
   RDataFrame *dataFrame;
   if (data && split_qr)
     dataFrame = new RDataFrame("RTree", {Form("%s/AnalysisResults_LHC18qr_q.root", kDataDir), Form("%s/AnalysisResults_LHC18qr_r.root", kDataDir)}); // get tree from file

@@ -63,16 +63,16 @@ void Systematics(const int points = kNPoints, const bool cutVar = true, const bo
         char hname[100];
         double cutDCAzRnd = 1.;
         if (cutVar)
-          cutDCAzRnd = gRandom->Rndm() * (kNCutDCAz-1) * 0.1 + kCutDCAz[0];
+          cutDCAzRnd = (int)(gRandom->Rndm() * (kNCutDCAz)) * 0.2 + kCutDCAz[0];
         double cutTPCclsRnd = 89;
         if (cutVar)
-          cutTPCclsRnd = gRandom->Rndm() * (kNCutTPCClusters-1) + kCutTPCClusters[0];
-        double cutDCAxyRnd = 0.1;
+          cutTPCclsRnd = (int)(gRandom->Rndm() * (kNCutTPCClusters)) * 2 + kCutTPCClusters[0];
+        double cutDCAxyRnd = 0.10;
         if (cutVar)
-          cutDCAxyRnd = gRandom->Rndm() * (kNCutDCAxy-1) * 0.01 + kCutDCAxy[0];
-        double cutChi2TPCRnd = 2.5;
+          cutDCAxyRnd = (int)(gRandom->Rndm() * (kNCutDCAxy)) * 0.01 + kCutDCAxy[0];
+        double cutChi2TPCRnd = 2.50;
         if (cutVar)
-          cutChi2TPCRnd = gRandom->Rndm() * (kNCutChi2TPC-1) * 0.25 + kCutChi2TPC[0];
+          cutChi2TPCRnd = (int)(gRandom->Rndm() * (kNCutChi2TPC)) * 0.50 + kCutChi2TPC[0];
 
         int binCountingFlagRnd = 1;
         if (binCountingVar)
@@ -94,9 +94,9 @@ void Systematics(const int points = kNPoints, const bool cutVar = true, const bo
         }
 
         if (cutTPCclsRnd < 99.5)
-          snprintf(hname, 23, "%1.1f_0%.0f_%1.2f_%1.2f_%d_%d_%d", cutDCAzRnd, cutTPCclsRnd, cutDCAxyRnd, cutChi2TPCRnd, binCountingFlagRnd, expFlag, sigmoidFlagRnd);
+          snprintf(hname, 24, "%1.1f_0%.0f_%1.2f_%1.2f_%d_%d_%d", cutDCAzRnd, cutTPCclsRnd, cutDCAxyRnd, cutChi2TPCRnd, binCountingFlagRnd, expFlag, sigmoidFlagRnd);
         else
-          snprintf(hname, 23, "%1.1f_%.0f_%1.2f_%1.2f_%d_%d_%d", cutDCAzRnd, cutTPCclsRnd, cutDCAxyRnd, cutChi2TPCRnd, binCountingFlagRnd, expFlag, sigmoidFlagRnd);
+          snprintf(hname, 24, "%1.1f_%.0f_%1.2f_%1.2f_%d_%d_%d", cutDCAzRnd, cutTPCclsRnd, cutDCAxyRnd, cutChi2TPCRnd, binCountingFlagRnd, expFlag, sigmoidFlagRnd);
 
         // std::cout<<"hname="<<hname<<std::endl;
         TH1D *h = (TH1D *)specFile->Get(Form("%s/fRatio_%.0f_%.0f", hname, kCentBinsLimitsHe3[iC][0], kCentBinsLimitsHe3[iC][1]));
@@ -108,7 +108,7 @@ void Systematics(const int points = kNPoints, const bool cutVar = true, const bo
       auto fit = fRatio.Fit(&fitFunc, "QS");
 
       int ndf = 10;
-      if (iC == 2)
+      if (iC == 1)
         ndf = 8;
       if (fit->Status() == 0 && fit->Prob() > 0.025 && fit->Prob() < 0.975 && fit->Ndf() == ndf)
       { // check chi2

@@ -75,7 +75,7 @@ void Spectra(const float cutDCAz = 1.f, const int cutTPCcls = 89, const float cu
       //sec->Fit(&fitFuncSec,"R");
       fSpectra[iMatt] = new TH1D(*eff);
       int pTbinMax = 11;
-      if (iCent < kNCentClasses - 1)
+      if (iCent < 2)
         pTbinMax = 13;
       fSpectra[iMatt]->Reset();
       for (int iPtBin = 3; iPtBin < pTbinMax + 1; ++iPtBin)
@@ -108,7 +108,7 @@ void Spectra(const float cutDCAz = 1.f, const int cutTPCcls = 89, const float cu
 
     // compute ratios
     int pTbinMax = 11;
-    if (iCent < kNCentClasses - 1)
+    if (iCent < 2)
       pTbinMax = 13;
     for (int iPtBin = 3; iPtBin < pTbinMax + 1; ++iPtBin)
     {
