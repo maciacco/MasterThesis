@@ -89,14 +89,19 @@ namespace he3
   //const char *kTrackSelectionsDCAxy = "std::abs(dcaxy)<0.1f";
 
   // cuts with variations (systematics computation)
-  const int kNCutChi2TPC = 3;
-  const double kCutChi2TPC[] = {2., 2.25, 2.5};
+  const int kNCutChi2TPC = 2;
+  const double kCutChi2TPC[] = {2.00, 2.5};
   const int kNCutDCAxy = 5;
   const double kCutDCAxy[] = {0.08, 0.09, 0.1, 0.11, 0.12};
-  const int kNCutDCAz = 11;
-  const double kCutDCAz[] = {0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5};
-  const int kNCutTPCClusters = 31;
+  /* const int kNCutDCAz = 11;
+  const double kCutDCAz[] = {0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5}; */
+  /* const int kNCutTPCClusters = 31;
   const int kCutTPCClusters[] = {74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104};
+ */
+  const int kNCutDCAz = 7;
+  const double kCutDCAz[] = {0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6};
+  const int kNCutTPCClusters = 16;
+  const int kCutTPCClusters[] = {75, 77, 79, 81, 83, 85, 87, 89, 91, 93, 95, 97, 99, 101, 103, 105};
 
   const int kNAnalyses = 2976;
 }
