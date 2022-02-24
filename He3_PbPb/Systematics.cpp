@@ -108,7 +108,7 @@ void Systematics(const int points = kNPoints, const bool cutVar = true, const bo
       auto fit = fRatio.Fit(&fitFunc, "QS");
 
       int ndf = 10;
-      if (iC == 1)
+      if (iC == 2)
         ndf = 8;
       if (fit->Status() == 0 && fit->Prob() > 0.025 && fit->Prob() < 0.975 && fit->Ndf() == ndf)
       { // check chi2
