@@ -222,10 +222,10 @@ void SignalBinnedMC(const char *cutSettings = "", const double roi_nsigma = 8., 
         signalRegionFit.SetParLimits(1, -0.4, 0.4);
         signalRegionFit.SetParLimits(2, 0.8, 1.6);
         signalRegionFit.SetLineColor(kBlue);
-        tofSignalProjection->GetXaxis()->SetRangeUser(-.5, .5);
-        double maximum_signal = tofSignalProjection->GetBinCenter(tofSignalProjection->GetMaximumBin());
-        tofSignalProjection->GetXaxis()->SetRangeUser(-20., 20.);
-        tofSignalProjection->Fit("signalRegionFit", "QRL+", "", maximum_signal - 1., maximum_signal + 1.);
+        tofSignalProjectionAll->GetXaxis()->SetRangeUser(-.5, .5);
+        double maximum_signal = tofSignalProjectionAll->GetBinCenter(tofSignalProjectionAll->GetMaximumBin());
+        tofSignalProjectionAll->GetXaxis()->SetRangeUser(-20., 20.);
+        tofSignalProjectionAll->Fit("signalRegionFit", "QRL+", "", maximum_signal - 1., maximum_signal + 1.);
         double mean_tmp = signalRegionFit.GetParameter(1);
         double rms_tmp = signalRegionFit.GetParameter(2);
 
@@ -268,7 +268,7 @@ void SignalBinnedMC(const char *cutSettings = "", const double roi_nsigma = 8., 
         if (bkg_shape == 1)
         { // expo
 
-          if (ptMin < 1.35)
+          if (ptMin < 1.29)
           {
             background1 = (RooAbsPdf *)new RooExponential("background1", "background1", tofSignal, *slope1);
             background2 = (RooAbsPdf *)new RooExponential("background2", "background2", tofSignal, *slope2);
@@ -279,6 +279,7 @@ void SignalBinnedMC(const char *cutSettings = "", const double roi_nsigma = 8., 
           else
           {
             background1 = (RooAbsPdf *)new RooExponential("background1", "background1", tofSignal, *slope1);
+            background0 = new RooAddPdf("background0","background0",RooArgList(*background1),RooArgList(*nBackground1));
             background2 = (RooAbsPdf *)new RooExponential("background2", "background2", tofSignal, *slope2);
             nBackground2 = new RooRealVar("#it{N}_{Bkg,2}", "nBackground2",0.,  0., 1.e6);
             //nBackground2->setConstant();
@@ -306,7 +307,14 @@ void SignalBinnedMC(const char *cutSettings = "", const double roi_nsigma = 8., 
           tofSignal.setRange("rightSideband", mean_tmp + roi_nsigma_up * rms_tmp, maxNsigma);
           
           // fit TOF signal distribution
-          model->fitTo(data, RooFit::Range("leftSideband,rightSideband"));
+          if (ptMin>2.09){
+            for(int I=0;I<2;++I)background1->fitTo(dataAll, RooFit::Range("rightSideband"));
+            slope1->setConstant();
+            for (int I=0;I<2;++I)background0->fitTo(data, RooFit::Range("rightSideband"));
+            nBackground1->setConstant();
+          }
+          else
+            model->fitTo(data, RooFit::Range("leftSideband,rightSideband"));
           r = model->fitTo(data, RooFit::Save(), RooFit::Range("leftSideband,rightSideband"));
 
           if (kVerbose) std::cout << "fit status: " << r->status() << ";" << std::endl;
