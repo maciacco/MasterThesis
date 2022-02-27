@@ -89,8 +89,8 @@ void SignalBinned(const char *cutSettings = "", const double roi_nsigma = 8., co
   TH3F *fTPCSignalA = (TH3F *)list->Get(histNameTPCA.data());
   TH3F *fTOFSignalA = (TH3F *)list->Get(histNameA.data());
   // TH3F *fTOFSignalA2 = (TH3F *)list2->Get(histNameA.data());
-  TH3F *fTPCSignalAll = (TH3F *)fTOFSignalA->Clone(fTPCSignalA->GetName());
-  TH3F *fTOFSignalAll = (TH3F *)fTOFSignalA->Clone(fTPCSignalA->GetName());
+  TH3F *fTPCSignalAll = (TH3F *)fTPCSignalA->Clone(fTPCSignalA->GetName());
+  TH3F *fTOFSignalAll = (TH3F *)fTOFSignalA->Clone(fTOFSignalA->GetName());
   TH3F *fTPCSignalM = (TH3F *)list->Get(histNameTPCM.data());
   TH3F *fTOFSignalM = (TH3F *)list->Get(histNameM.data());
   //TH3F *fTOFSignalM2 = (TH3F *)list2->Get(histNameM.data());
@@ -143,7 +143,7 @@ void SignalBinned(const char *cutSettings = "", const double roi_nsigma = 8., co
       TH1D fAlphaR("fAlphaR", "fAlphaR", kNPtBins, kPtBins);
       int nUsedPtBins = 42; // up to 2.00 GeV/c
 
-      for (int iPtBin = 1; iPtBin < nUsedPtBins + 1; ++iPtBin)
+      for (int iPtBin = 5; iPtBin < nUsedPtBins + 1; ++iPtBin)
       { // loop on pT bins
         double ptMin = fTOFrawYield.GetXaxis()->GetBinLowEdge(iPtBin);
         double ptMax = fTOFrawYield.GetXaxis()->GetBinUpEdge(iPtBin);

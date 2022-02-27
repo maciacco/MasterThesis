@@ -47,8 +47,8 @@ if [ $extractRatios -eq 1 ]; then
 .L Spectra.cpp+
 .L AbsorptionError.cpp+
 SignalBinned("$cutSettings",8,$argumentSignal,"$fileData","$signalName","recreate")
-//Secondary("$cutSettings",0.12,"$fileData","$fileMC","$PrimaryHe3",false)
-//Spectra("$cutSettings",8,0,$argumentSignal,$sigmoidFlag,"$spectraHistNameId","$spectraName","recreate","AnalysisResults","$signalName","$EfficiencyHe3","$PrimaryHe3")
+Secondary("$cutSettings",0.12,"$fileData","$fileMC","$PrimaryHe3",false)
+Spectra("$cutSettings",8,0,$argumentSignal,$sigmoidFlag,"$spectraHistNameId","$spectraName","recreate","AnalysisResults","$signalName","$EfficiencyHe3","$PrimaryHe3")
 //AbsorptionError("AbsErrorMCorrection","recreate","$spectraName")
 .q
 EOF

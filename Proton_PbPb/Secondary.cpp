@@ -54,7 +54,7 @@ void Secondary(const char *cutSettings = "", const double DCAxyCut=0.12, const c
 
   // open files
   //TFile *inFileDat = TFile::Open(Form("%s/%s.root", kDataDir, inFileDatName));
-  TFile *inFileDat = TFile::Open(Form("%s/%s_largeNsigma_cutDCAxyChi2TPC.root", kDataDir, inFileDatName));
+  TFile *inFileDat = TFile::Open(Form("%s/%s_largeNsigma_cutDCAxyChi2TPC_lowPt.root", kDataDir, inFileDatName));
   TFile *inFileMC21l5 = TFile::Open(Form("%s/%s.root", kDataDir, "AnalysisResults_LHC21l5_full_largeDCA_cutChi2"/* inFileMCName */));
   TFile *inFileMC20e3a_1 = TFile::Open(Form("%s/AnalysisResults_LHC20e3_DCAChi2TPC.root", kDataDir));
   //TFile *inFileMC20e3a_2 = TFile::Open(Form("%s/%s_20e3a_runlist2_20210929.root", kDataDir, "mc"));
@@ -118,19 +118,22 @@ void Secondary(const char *cutSettings = "", const double DCAxyCut=0.12, const c
 
     for (int iCent = 0; iCent < kNCentClasses; ++iCent)
     {
+      if (iCent == 2)noSecMaterialThreshold = 1.39f;
       TH1D fPrimaryFrac(Form("f%sPrimFrac_%.0f_%.0f", kAntimatterMatter[iMatt], kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1]), Form("%.0f-%.0f%%", kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1]), kNPtBins, kPtBins);
       TH1D fPrimaryRMS(Form("f%sPrimRMS_%.0f_%.0f", kAntimatterMatter[iMatt], kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1]), Form("%.0f-%.0f%%", kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1]), kNPtBins, kPtBins);
       TH1D fSecondaryFrac(Form("f%sSecFrac_%.0f_%.0f", kAntimatterMatter[iMatt], kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1]), Form("%.0f-%.0f%%", kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1]), kNPtBins, kPtBins);
       TH1D fChi2(Form("f%sChi2_%.0f_%.0f", kAntimatterMatter[iMatt], kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1]), Form("%.0f-%.0f%%", kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1]), kNPtBins, kPtBins);
 
-      int nUsedPtBins = 32;
+      int nUsedPtBins = 42;
+      TString settings(cutSettings);
+      if (!settings.CompareTo("chisquare1"))nUsedPtBins=41;
       for (int iPtBin = 0; iPtBin < nUsedPtBins + 1; ++iPtBin){
         double ptMin = fPrimaryFrac.GetXaxis()->GetBinLowEdge(iPtBin);
         fPrimaryFrac.SetBinContent(fPrimaryFrac.FindBin(ptMin + 0.005f), 0);
         fPrimaryFrac.SetBinError(fPrimaryFrac.FindBin(ptMin + 0.005f), 0);
       }
 
-      for (int iPtBin = 1; iPtBin < nUsedPtBins + 1; ++iPtBin)
+      for (int iPtBin = 5; iPtBin < nUsedPtBins + 1; ++iPtBin)
       { // loop on pT bins
         //fPrimaryFrac.SetBinContent(iPtBin, 1.);
 
@@ -314,18 +317,41 @@ void Secondary(const char *cutSettings = "", const double DCAxyCut=0.12, const c
           fit->Constrain(1, 0., 1.);
         else if (iMatt == 0 && iCent == 0 && ptMin < 1.6)
           fit->Constrain(0, 0., 0.9);
-        else if (iMatt == 0 && iCent == 0 && ptMin > 2.6)
+        else if (iMatt == 0 && iCent == 0 && ptMin > 2.)
           fit->Constrain(1, 0., 0.9);
         else if (iMatt == 1 && iCent == 0 && ptMin > 1.09)
           fit->Constrain(1, 0., .99);
-        else if (iMatt == 1 && ptMin > 1.0 && ptMin < 1.09)
+        else if (iMatt == 1 && iCent == 0 && ptMin > 1.0 && ptMin < 1.09)
           fit->Constrain(1, 0., .99);
-        else if (iMatt == 1 && ptMin < 1.0)
-          fit->Constrain(0, 0., 0.9);
+        else if (iMatt == 1 && iCent == 0 && ptMin < 1.0){
+          fit->Constrain(1, 0., 0.9);
+          if (ptMin<0.75)fit->Constrain(2, 0., 0.8);
+          if (ptMin > 0.85 && ptMin < 0.9)
+            fit->Constrain(1, 0., 0.99);
+        }
+        else if (iMatt == 1 && iCent == 1 && ((ptMin > 0.99 && ptMin < 1.24) || (ptMin > 1.34)) ){
+          fit->Constrain(1, 0., 0.99);
+        }
+        else if (iMatt == 1 && iCent == 2 && (ptMin<1.34 || ptMin>1.59)){
+          fit->Constrain(0,0.,0.99);
+          fit->Constrain(1,0.,0.9);
+        }
+        else if (iMatt == 1 && iCent == 2 && ptMin>1.44 && ptMin<1.59){
+          fit->Constrain(0,0.,0.9);
+          fit->Constrain(1,0.,0.9);
+        }
+        else if (iMatt == 0 && iCent == 2)
+          fit->Constrain(1,0.,0.9);
+       /*  else if (iMatt == 1 && iCent==1 < 1.5)
+          fit->Constrain(0, 0., 0.99);
+        else if (iMatt == 1 && iCent == 1 && ptMin > 1.4)
+          fit->Constrain(1, 0., 0.99);
+        else if (iMatt == 1 && iCent == 1 && ptMin < 1.4)
+          fit->Constrain(1, 0., 0.9); */
         /* else if (iMatt == 0 && iCent == 2 && use_injected_protons)
           fit->Constrain(0, 0., 0.9); */
 
-        TVirtualFitter::SetMaxIterations(MAX_ITER);    
+        TVirtualFitter::SetMaxIterations(MAX_ITER);  
         /* TVirtualFitter::SetPrecision(1e-2);  */
         Int_t status=-999;
         /* TFitResultPtr  */ for(int I = 0; I<2; ++I)status = fit->Fit(); // perform the fit

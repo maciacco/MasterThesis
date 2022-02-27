@@ -31,7 +31,7 @@ void Spectra(const char *cutSettings = "", const double roi_nsigma = 8., const b
   gStyle->SetTextFont(44);
 
   TH2F *fNevents;
-  TFile *inFileDat = TFile::Open(Form("%s/%s_largeNsigma_cutDCAxyChi2TPC.root", kDataDir, dataFile));
+  TFile *inFileDat = TFile::Open(Form("%s/%s_largeNsigma_cutDCAxyChi2TPC_lowPt.root", kDataDir, dataFile));
   TTList *fMultList = (TTList *)inFileDat->Get("nuclei_proton_");
   fNevents = (TH2F *)fMultList->Get("fNormalisationHist");
   TFile *inFileRaw = TFile::Open(Form("%s/%s.root", kOutDir, signalFile));
@@ -96,9 +96,9 @@ void Spectra(const char *cutSettings = "", const double roi_nsigma = 8., const b
 
       //sec->Fit(&fitFuncSec,"R");
       fSpectra[iMatt] = new TH1D(*raw);
-      int pTbinMax = 32;
+      int pTbinMax = 42;
       if (kVerbose) std::cout<<"entering pt loop..."<<std::endl;
-      for (int iPtBin = 1; iPtBin < pTbinMax + 1; ++iPtBin)
+      for (int iPtBin = 5; iPtBin < pTbinMax + 1; ++iPtBin)
       {
         double protonCorrection = protonCorrectionPt(iMatt,fSpectra[0]->GetBinCenter(iPtBin));
         double rawYield = raw->GetBinContent(iPtBin);
@@ -157,8 +157,8 @@ void Spectra(const char *cutSettings = "", const double roi_nsigma = 8., const b
 
     // compute ratios
     TH1D SysError(Form("fSysError_%.0f_%.0f",kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1]),Form("%.0f-%.0f%%",kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1]),kNPtBins,kPtBins);
-    int pTbinMax = 32;
-    for (int iPtBin = 1; iPtBin < pTbinMax + 1; ++iPtBin)
+    int pTbinMax = 42;
+    for (int iPtBin = 5; iPtBin < pTbinMax + 1; ++iPtBin)
     {
       double antiSpec = fSpectra[0]->GetBinContent(iPtBin);
       double spec = fSpectra[1]->GetBinContent(iPtBin);

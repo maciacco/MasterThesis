@@ -51,7 +51,7 @@ const int nTrials=10000;
 void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = true, const bool binCountingVar = true, const bool expVar = true, const bool sigmoidVar = true, const char *outFileName = "SystematicsAllEPtNotCombined")
 {
 
-  const int nUsedPtBins = 33;
+  const int nUsedPtBins = 43;
   gStyle->SetTextFont(44);
   gStyle->SetOptFit(0);
   gStyle->SetStatX(0.87);
@@ -118,7 +118,7 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
             auto fullCutSettingsSigm = Form("%s%s_%d_%d_%d_%d", tmpCutSettings, tmpCutIndex, bkgFlag, iSigmoid, iROI, iG3G4Prim);
             std::cout << fullCutSettingsSigm <<std::endl;
             TH1D *h = (TH1D *)specFile->Get(Form("%s/fRatio_%.0f_%.0f", fullCutSettingsSigm, kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]));
-            for(int iPtBins=1;iPtBins<nUsedPtBins;++iPtBins){
+            for(int iPtBins=5;iPtBins<nUsedPtBins;++iPtBins){
               fRatiosVsPtTot.Fill(kPtBins[iPtBins-1],h->GetBinContent(iPtBins));
             }
           }
@@ -145,7 +145,7 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
       auto fullCutSettingsSigm = Form("%s%s_%d_%d_%d_0", tmpCutSettings, tmpCutIndex, bkgFlag, sigmoidFlag, iNsigma);
       std::cout << fullCutSettingsSigm <<std::endl;
       TH1D *h = (TH1D *)specFile->Get(Form("%s/fRatio_%.0f_%.0f", fullCutSettingsSigm, kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]));
-      for(int iPtBins=1;iPtBins<nUsedPtBins;++iPtBins){
+      for(int iPtBins=5;iPtBins<nUsedPtBins;++iPtBins){
         double h_content = h->GetBinContent(iPtBins);
         double h_error = h->GetBinError(iPtBins);
         double h_0_content = hDefault->GetBinContent(iPtBins);
@@ -173,7 +173,7 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
       auto fullCutSettingsSigm = Form("%s%s_%d_%d_%d_0", tmpCutSettings, tmpCutIndex, bkgFlag, sigmoidFlag, iNsigma);
       std::cout << fullCutSettingsSigm <<std::endl;
       TH1D *h = (TH1D *)specFile->Get(Form("%s/fRatio_%.0f_%.0f", fullCutSettingsSigm, kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]));
-      for(int iPtBins=1;iPtBins<nUsedPtBins;++iPtBins){
+      for(int iPtBins=5;iPtBins<nUsedPtBins;++iPtBins){
         double h_content = h->GetBinContent(iPtBins);
         double h_error = h->GetBinError(iPtBins);
         double h_0_content = hDefault->GetBinContent(iPtBins);
@@ -201,7 +201,7 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
       auto fullCutSettingsSigm = Form("%s%s_%d_%d_%d_0", tmpCutSettings, tmpCutIndex, bkgFlag, sigmoidFlag, iNsigma);
       std::cout << fullCutSettingsSigm <<std::endl;
       TH1D *h = (TH1D *)specFile->Get(Form("%s/fRatio_%.0f_%.0f", fullCutSettingsSigm, kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]));
-      for(int iPtBins=1;iPtBins<nUsedPtBins;++iPtBins){
+      for(int iPtBins=5;iPtBins<nUsedPtBins;++iPtBins){
         double h_content = h->GetBinContent(iPtBins);
         double h_error = h->GetBinError(iPtBins);
         double h_0_content = hDefault->GetBinContent(iPtBins);
@@ -228,7 +228,7 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
       auto fullCutSettingsSigm = Form("%s%s_%d_%d_%d_0", tmpCutSettings, tmpCutIndex, bkgFlag, sigmoidFlag, iNsigma);
       std::cout << fullCutSettingsSigm <<std::endl;
       TH1D *h = (TH1D *)specFile->Get(Form("%s/fRatio_%.0f_%.0f", fullCutSettingsSigm, kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]));
-      for(int iPtBins=1;iPtBins<nUsedPtBins;++iPtBins){
+      for(int iPtBins=5;iPtBins<nUsedPtBins;++iPtBins){
         double h_content = h->GetBinContent(iPtBins);
         double h_error = h->GetBinError(iPtBins);
         double h_0_content = hDefault->GetBinContent(iPtBins);
@@ -255,7 +255,7 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
       auto fullCutSettingsSigm = Form("%s%s_%d_%d_%d_0", tmpCutSettings, tmpCutIndex, bkgFlag, sigmoidFlag, iNsigma);
       std::cout << fullCutSettingsSigm <<std::endl;
       TH1D *h = (TH1D *)specFile->Get(Form("%s/fRatio_%.0f_%.0f", fullCutSettingsSigm, kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]));
-      for(int iPtBins=1;iPtBins<nUsedPtBins;++iPtBins){
+      for(int iPtBins=5;iPtBins<nUsedPtBins;++iPtBins){
         double h_content = h->GetBinContent(iPtBins);
         double h_error = h->GetBinError(iPtBins);
         double h_0_content = hDefault->GetBinContent(iPtBins);
@@ -268,7 +268,7 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
     // efficiency error
     TH1D *h_a_eff = (TH1D *)effFile->Get(Form("_/fAEff_TOF_%.0f_%.0f", kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]));
     TH1D *h_m_eff = (TH1D *)effFile->Get(Form("_/fMEff_TOF_%.0f_%.0f", kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]));
-    for(int iPtBin=1;iPtBin<nUsedPtBins;++iPtBin){
+    for(int iPtBin=5;iPtBin<nUsedPtBins;++iPtBin){
       double err_eff_a=h_a_eff->GetBinError(iPtBin);
       double eff_a=h_a_eff->GetBinContent(iPtBin);
       double err_eff_m=h_m_eff->GetBinError(iPtBin);
@@ -278,7 +278,7 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
     }
 
     // primary fraction (TFF) error
-    for(int iPtBin=1;iPtBin<nUsedPtBins;++iPtBin){
+    for(int iPtBin=5;iPtBin<nUsedPtBins;++iPtBin){
       double primaryRelativeError[2];
       for (int iMatt = 0; iMatt < 2; ++iMatt){ // take uncertainties directly from TFF output
         TH1D *h_sec = (TH1D*)inFileSec->Get(Form("f%sPrimFrac_%.0f_%.0f", kAntimatterMatter[iMatt], kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]));
@@ -300,7 +300,7 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
       auto fullCutSettingsSigm = Form("%s%s_%d_%d_%d_0", tmpCutSettings, tmpCutIndex, bkgFlag, sigmoidFlag, iNsigma);
       std::cout << fullCutSettingsSigm <<std::endl;
       TH1D *h = (TH1D *)specFile->Get(Form("%s/fRatio_%.0f_%.0f", fullCutSettingsSigm, kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]));
-      for(int iPtBins=1;iPtBins<nUsedPtBins;++iPtBins){
+      for(int iPtBins=5;iPtBins<nUsedPtBins;++iPtBins){
         double h_content = h->GetBinContent(iPtBins);
         double h_error = h->GetBinError(iPtBins);
         double h_0_content = hDefault->GetBinContent(iPtBins);
@@ -320,7 +320,7 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
       auto fullCutSettingsSigm = Form("%s%s_%d_%d_%d_0", tmpCutSettings, tmpCutIndex, bkgFlag, sigmoidFlag, iNsigma);
       std::cout << fullCutSettingsSigm <<std::endl;
       TH1D *h = (TH1D *)specFile->Get(Form("%s/fRatio_%.0f_%.0f", fullCutSettingsSigm, kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]));
-      for(int iPtBins=1;iPtBins<nUsedPtBins;++iPtBins){
+      for(int iPtBins=5;iPtBins<nUsedPtBins;++iPtBins){
         fRatiosVsPtPrim.Fill(kPtBins[iPtBins-1],h->GetBinContent(iPtBins));
       }
     }
@@ -335,12 +335,12 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
       auto fullCutSettingsSigm = Form("%s%s_%d_%d_%d_%d", tmpCutSettings, tmpCutIndex, bkgFlag, sigmoidFlag, iNsigma, iPrim);
       std::cout << fullCutSettingsSigm <<std::endl;
       TH1D *h = (TH1D *)specFile->Get(Form("%s/fRatio_%.0f_%.0f", fullCutSettingsSigm, kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]));
-      for(int iPtBins=1;iPtBins<nUsedPtBins;++iPtBins){
+      for(int iPtBins=5;iPtBins<nUsedPtBins;++iPtBins){
         fRatiosVsPtPrimG3G4.Fill(kPtBins[iPtBins-1],h->GetBinContent(iPtBins));
       }
     }
 
-    for(int iPtBins=1;iPtBins<nUsedPtBins;++iPtBins){
+    for(int iPtBins=5;iPtBins<nUsedPtBins;++iPtBins){
       // track cuts
       TH1D *proj=fRatiosVsPtDCAz.ProjectionY("py",iPtBins,iPtBins);
       if (proj->GetEntries()==0 || proj->GetMean()==0){
@@ -460,7 +460,7 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
       auto fullCutSettingsSigm = Form("%s%s_%d_%d_%d_0", tmpCutSettings.Data(), tmpCutIndex, bkgFlag, sigmoidFlag, iROI);
       //std::cout << fullCutSettingsSigm <<std::endl;
       TH1D *h = (TH1D *)specFile->Get(Form("%s/fRatio_%.0f_%.0f", fullCutSettingsSigm, kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]));
-      for(int iPtBins=1;iPtBins<nUsedPtBins;++iPtBins){
+      for(int iPtBins=5;iPtBins<nUsedPtBins;++iPtBins){
         double h_content = h->GetBinContent(iPtBins);
         double h_error = h->GetBinError(iPtBins);
         double h_0_content = hDefault->GetBinContent(iPtBins);
@@ -483,7 +483,7 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
       auto fullCutSettingsSigm = Form("%s%s_%d_%d_%d_0", tmpCutSettings.Data(), tmpCutIndex, bkgFlag, sigmoidFlag, iNsigma);
       //std::cout << fullCutSettingsSigm <<std::endl;
       TH1D *h = (TH1D *)specFile->Get(Form("%s/fRatio_%.0f_%.0f", fullCutSettingsSigm, kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]));
-      for(int iPtBins=1;iPtBins<nUsedPtBins;++iPtBins){
+      for(int iPtBins=5;iPtBins<nUsedPtBins;++iPtBins){
         double h_content = h->GetBinContent(iPtBins);
         double h_error = h->GetBinError(iPtBins);
         double h_0_content = hDefault->GetBinContent(iPtBins);
@@ -578,7 +578,7 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
     fSystematicsCorrelationsDCAxy.Write();
     fSystematicsCorrelationsChi2TPC.Write();
     
-    for(int iPtBins=1;iPtBins<nUsedPtBins;++iPtBins){
+    for(int iPtBins=5;iPtBins<nUsedPtBins;++iPtBins){
       // sigmas
       double sigma_DCAz=fSystematicUncertaintyDCAz.GetBinContent(iPtBins);
       double sigma_PID=fSystematicUncertaintyPID.GetBinContent(iPtBins);
@@ -655,28 +655,28 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
 
     // Compute pt correlated systematic uncertainty
     TH1D hRatio(Form("fRatio_%.0f_%.0f", kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]),Form("%.0f-%.0f%%", kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]),kNPtBins,kPtBins);
-    for (int iPtBin=1;iPtBin<nUsedPtBins;++iPtBin){
+    for (int iPtBin=5;iPtBin<nUsedPtBins;++iPtBin){
       //double scalingFactor = scaling_factor_antip(hRatio.GetBinCenter(iPtBin));
       hRatio.SetBinContent(iPtBin,fRatioFromVariationsTot.GetBinContent(iPtBin));
       hRatio.SetBinError(iPtBin,hRatio.GetBinContent(iPtBin)*fSystematicUncertaintyTotal.GetBinContent(iPtBin));
     }
-    hRatio.Fit("pol0");
+    hRatio.Fit("pol0","R","",1.,3.);
     hRatio.Write();
 
     TH1D h_trial("h_trial","h_trial",kNPtBins,kPtBins);
     TH1D fRatioDistributionTrials(Form("fRatioDistributionTrials_%.0f_%.0f", kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]),Form("%.0f-%.0f%%", kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]),500,0.95,1.05);
     for (int iTrial=0;iTrial<nTrials;++iTrial){
       double nsigma=gRandom->Gaus(0,1);
-      for (int iPtBin=1;iPtBin<nUsedPtBins;++iPtBin){
+      for (int iPtBin=5;iPtBin<nUsedPtBins;++iPtBin){
         h_trial.SetBinContent(iPtBin,fRatioFromVariationsTot.GetBinContent(iPtBin)+nsigma*fSystematicUncertaintyTotalPtCorrelated.GetBinContent(iPtBin)*fRatioFromVariationsTot.GetBinContent(iPtBin));
         h_trial.SetBinError(iPtBin,hRatio.GetBinContent(iPtBin)*fSystematicUncertaintyTotal.GetBinContent(iPtBin));
       }
-      h_trial.Fit("pol0","Q");
+      h_trial.Fit("pol0","QR","",1.,3.);
       //if( /* h_trial.GetFunction("pol0")->GetProb()>0.025 &&  */h_trial.GetFunction("pol0")->GetProb()<0.95/* (h_trial.GetFunction("pol0")->GetChisquare()/h_trial.GetFunction("pol0")->GetNDF())<2. */)
       fRatioDistributionTrials.Fill(h_trial.GetFunction("pol0")->GetParameter(0));
     }
     
-    for (int iPtBin=1;iPtBin<nUsedPtBins;++iPtBin){  
+    for (int iPtBin=5;iPtBin<nUsedPtBins;++iPtBin){  
       fSystematicUncertaintyTotalPtCorrelated.SetBinContent(iPtBin,fSystematicUncertaintyTotalPtCorrelated.GetBinContent(iPtBin)*fRatioFromVariationsTot.GetBinContent(iPtBin));
     }
     TCanvas cRatio(Form("cRatio_%.0f_%.0f", kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]), "cRatio");
@@ -685,19 +685,19 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
     hRatio.SetMarkerSize(0.8);
     hRatio.GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
     hRatio.GetYaxis()->SetTitle("Ratio #bar{p}/p");
-    hRatio.GetXaxis()->SetRangeUser(0.8,3.);
+    hRatio.GetXaxis()->SetRangeUser(1.,3.);
     hRatio.GetYaxis()->SetRangeUser(0.8, 1.2);
     hRatio.SetStats(0);
     hRatio.Draw("pe2");
     hRatio.SetLineColor(centrality_colors[iC]);
     hRatio.SetMarkerColor(centrality_colors[iC]);
     TGraphErrors gRatio(&hRatio);
-    for (int iPtBin=1;iPtBin<nUsedPtBins;++iPtBin){  
+    for (int iPtBin=5;iPtBin<nUsedPtBins;++iPtBin){  
       hRatio.SetBinError(iPtBin,fSystematicUncertaintyTotalPtCorrelated.GetBinContent(iPtBin)*fRatioFromVariationsTot.GetBinContent(iPtBin));
     }
     TGraphErrors gRatioCorr(&hRatio);
     //gRatio.Draw("P5 same");
-    gRatio.GetXaxis()->SetRangeUser(0.8,3.);
+    gRatio.GetXaxis()->SetRangeUser(1.,3.);
     gRatio.GetYaxis()->SetRangeUser(0.8, 1.2);
     gRatioCorr.SetFillStyle(3145);
     gRatioCorr.SetFillColor(centrality_colors[iC]);
@@ -728,7 +728,7 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
 
     // save ratio plots
     TLegend lSys(0.2,0.6,0.4,0.8);
-    fSystematicUncertaintyTotal.GetXaxis()->SetRangeUser(0.8,3.);
+    fSystematicUncertaintyTotal.GetXaxis()->SetRangeUser(1.,3.);
     fSystematicUncertaintyTotal.GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
     fSystematicUncertaintyTotal.GetYaxis()->SetTitle("Systematic Uncertainty");
     fSystematicUncertaintyTotal.SetMinimum(0.);

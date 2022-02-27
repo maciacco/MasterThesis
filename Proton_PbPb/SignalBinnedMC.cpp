@@ -144,9 +144,9 @@ void SignalBinnedMC(const char *cutSettings = "", const double roi_nsigma = 8., 
       TH1D fMean("fMean", "fMean", kNPtBins, kPtBins);
       TH1D fAlphaL("fAlphaL", "fAlphaL", kNPtBins, kPtBins);
       TH1D fAlphaR("fAlphaR", "fAlphaR", kNPtBins, kPtBins);
-      int nUsedPtBins = 32; // up to 2.00 GeV/c with train binning
+      int nUsedPtBins = 42; // up to 2.00 GeV/c with train binning
 
-      for (int iPtBin = 1; iPtBin < nUsedPtBins + 1; ++iPtBin) // full train data binning
+      for (int iPtBin = 5; iPtBin < nUsedPtBins + 1; ++iPtBin) // full train data binning
       { // loop on pT bins
         double roi_nsigma_up = roi_nsigma;
         double roi_nsigma_down = roi_nsigma;
@@ -249,6 +249,7 @@ void SignalBinnedMC(const char *cutSettings = "", const double roi_nsigma = 8., 
         RooAbsPdf *signal = new RooGausDExp("signal", "signal", tofSignal, mean, *sigma, *alphaL, *alphaR);
 
         RooAbsPdf *background1;
+        RooAbsPdf *background0;
         RooAbsPdf *background2;
         RooRealVar *slope1;
         RooRealVar *slope2;
@@ -261,7 +262,7 @@ void SignalBinnedMC(const char *cutSettings = "", const double roi_nsigma = 8., 
         RooRealVar nSignal("N_{sig}", "nSignal", 1., 1.e2);
 
         slope1 = new RooRealVar("#tau_{1}", "slope1", -10., 10.);
-        slope2 = new RooRealVar("#tau_{2}", "slope2", 0.955,  -1.100, -0.850);
+        slope2 = new RooRealVar("#tau_{2}", "slope2",-0.9, -10.,2.);
         //slope2->setConstant();
         nBackground1 = new RooRealVar("#it{N}_{Bkg,1}", "nBackground1", 10., 0., 1.e6);
 
@@ -293,21 +294,31 @@ void SignalBinnedMC(const char *cutSettings = "", const double roi_nsigma = 8., 
 
         if (extractSignal)
         {
-
-          if (ptMin > 1.51) roi_nsigma_down=roi_nsigma-2; // default = 6sigma
-          if (ptMin > 2.0) {roi_nsigma_down=roi_nsigma-3; // default = 5sigma
-            roi_nsigma_up=roi_nsigma+1.;
+          if (ptMin < 1.29) {
+            roi_nsigma_down = roi_nsigma+2;
+            roi_nsigma_up = roi_nsigma+2;
           }
-          if (ptMin > 2.49) roi_nsigma_down=roi_nsigma-4; // default = 4sigma
-          if (ptMin > 2.69) {
-            roi_nsigma_down=roi_nsigma-4.5; // default = 3sigma
+          else {
+            roi_nsigma_down = roi_nsigma;
+            roi_nsigma_up = roi_nsigma;
+          }
+          if (ptMin > 1.51) roi_nsigma_down=roi_nsigma-2; // default = 6sigma
+          if (ptMin > 1.99) {roi_nsigma_down=roi_nsigma-3.; // default = 5sigma
             roi_nsigma_up=roi_nsigma+2.;
+          }
+          if (ptMin > 2.49) {
+            roi_nsigma_down=roi_nsigma-3.5; // default = 4sigma
+            roi_nsigma_up=roi_nsigma+3.;
+          }
+          if (ptMin > 2.69) {
+            roi_nsigma_down=roi_nsigma-3.5; // default = 3sigma
+            roi_nsigma_up=roi_nsigma+3.5;
           }
           tofSignal.setRange("leftSideband", nSigmaLeft, mean_tmp - roi_nsigma_down * rms_tmp);
           tofSignal.setRange("rightSideband", mean_tmp + roi_nsigma_up * rms_tmp, maxNsigma);
           
           // fit TOF signal distribution
-          if (ptMin>2.09){
+          if (ptMin>1.99){
             for(int I=0;I<2;++I)background1->fitTo(dataAll, RooFit::Range("rightSideband"));
             slope1->setConstant();
             for (int I=0;I<2;++I)background0->fitTo(data, RooFit::Range("rightSideband"));

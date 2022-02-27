@@ -23,7 +23,7 @@ const char *kPlotDir = "./plots";
 const char *kAntimatterMatter[2] = {"A", "M"};
 
 // centrality binning
-const int kNCentClasses = 2; // 3
+const int kNCentClasses = 3; // 2
 
 const char *kAxisTitleDCA = "DCA_{xy} (cm)";
 const char *kAxisTitlePt = "#it{p}_{T} (GeV/#it{c})";
@@ -296,7 +296,7 @@ namespace pion
   const int kNCutChi2TPC = 2;
   const double kCutChi2TPCVariations[] = {2.00, 2.25};
   const int kNCutDCAxy = 5;
-  const double kCutDCAxy[] = {0.10,0.11,0.12,0.13,0.1};
+  const double kCutDCAxy[] = {0.10,0.11,0.12,0.13,0.14};
   const int kNCutDCAxyVariations = 4;
   const double kCutDCAxyVariations[] = {0.10,0.11,0.13,0.14};
   const int kNCutDCAz = 5;

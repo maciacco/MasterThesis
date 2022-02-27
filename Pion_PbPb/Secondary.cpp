@@ -56,7 +56,7 @@ void Secondary(const char *cutSettings = "", const double DCAxyCut=0.12, const c
   //TFile *inFileDat = TFile::Open(Form("%s/%s.root", kDataDir, inFileDatName));
   TFile *inFileDat = TFile::Open(Form("%s/%s_largeNsigma_cutDCAxyChi2TPC.root", kDataDir, inFileDatName));
   TFile *inFileMC21l5 = TFile::Open(Form("%s/%s.root", kDataDir, "AnalysisResults_LHC21l5_full_largeDCA_cutChi2"/* inFileMCName */));
-  TFile *inFileMC20e3a_1 = TFile::Open(Form("%s/AnalysisResults_LHC20e3_DCAChi2TPC.root", kDataDir));
+  TFile *inFileMC20e3a_1 = TFile::Open(Form("%s/AnalysisResults_LHC20e3_DCAChi2TPC_old.root", kDataDir));
   //TFile *inFileMC20e3a_2 = TFile::Open(Form("%s/%s_20e3a_runlist2_20210929.root", kDataDir, "mc"));
   //TFile *inFileMC1 = TFile::Open(Form("%s/%s.root", kDataDir, inFileMCName));
   TFile *outFile = TFile::Open(Form("%s/%s.root", kOutDir, outFileName), "recreate");
@@ -292,9 +292,12 @@ void Secondary(const char *cutSettings = "", const double DCAxyCut=0.12, const c
         { 
           fit->Constrain(2, 0., 0.06);
         }
-        if (iCent < 2)
+        if (iCent < 2 || (iCent==2 && iMatt==1))
           fit->Constrain(1, 0., 0.9);
-        if (iMatt == 1 && iCent == 1 && ptMin < 1.1)
+        if (iMatt == 0 && iCent == 2 && (ptMin < 0.7 || ptMin > 0.89)) fit->Constrain(1, 0., 0.8);
+        if (iMatt == 1 && iCent==2 && ptMin>0.9 &&ptMin<0.99)
+          fit->Constrain(0, 0., 0.99);
+        if (iMatt == 1 && iCent >= 1 && ptMin < 1.1)
           fit->Constrain(1, 0., 0.99);
         else if (iCent==2 && ptMin < 0.9)
           fit->Constrain(0, 0., 1.);
