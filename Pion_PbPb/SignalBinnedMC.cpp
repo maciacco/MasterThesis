@@ -179,7 +179,7 @@ void SignalBinnedMC(const char *cutSettings = "", const double roi_min_limit_inp
         double rms_tmp = signalRegionFit.GetParameter(2);
         double roi_max_limit = mean_tmp+(roi_max_limit_input-2.)*rms_tmp; // smaller signal window in MC than in data
         if (ptMin>1.09)
-          roi_max_limit = mean_tmp+(roi_max_limit_input-7.)*rms_tmp;
+          roi_max_limit = mean_tmp+(roi_max_limit_input-5.)*rms_tmp;
 
         // DEFINE K SIGNAL REGION -> MISMATCH FIT REGION
         tofSignalProjectionAll->GetXaxis()->SetRangeUser(-50., 50.);
@@ -193,9 +193,11 @@ void SignalBinnedMC(const char *cutSettings = "", const double roi_min_limit_inp
         double maximum_signal_K = tofSignalProjectionAll->GetBinCenter(tofSignalProjectionAll->GetMaximumBin());
         tofSignalProjectionAll->GetXaxis()->SetRangeUser(-20., 20.);
         tofSignalProjectionAll->Fit("signalRegionFitK", "QRL+", "", maximum_signal_K - 1., maximum_signal_K + 1.);
+        if (iCent==2&&ptMin>0.99&&ptMin<1.04)tofSignalProjectionAll->Fit("signalRegionFitK", "QRL+", "", maximum_signal_K - 2., maximum_signal_K + 2.);
         double mean_tmp_K = signalRegionFitK.GetParameter(1);
         double rms_tmp_K = signalRegionFitK.GetParameter(2);
         double mismatch_left_limit = mean_tmp_K+mismatch_min_limit_input*rms_tmp_K;
+        if (iCent==2&&ptMin>1.39&&ptMin<1.44) mismatch_left_limit = mean_tmp_K+(mismatch_min_limit_input+2.)*rms_tmp_K;
         double mismatch_right_limit = mean_tmp_K+mismatch_max_limit_input*rms_tmp_K;
 
         // roofit data
@@ -216,9 +218,9 @@ void SignalBinnedMC(const char *cutSettings = "", const double roi_min_limit_inp
         }
         RooRealVar tofSignal("tofSignal", "n#sigma_{p}", nSigmaLeft, maxNsigma, "a.u.");
         RooRealVar *tofSignal_full=new RooRealVar("tofSignal_full", "n#sigma_{p}full_", nSigmaLeft, 20., "a.u.");
-        if (ptMin>1.09)tofSignal_full=new RooRealVar("tofSignal_full", "n#sigma_{p}full_", nSigmaLeft, mismatch_right_limit, "a.u.");
+        if ((ptMin>1.09 && iCent<2)||(ptMin>0.99&&iCent==2))tofSignal_full=new RooRealVar("tofSignal_full", "n#sigma_{p}full_", nSigmaLeft, mismatch_right_limit, "a.u.");
         RooRealVar *tofSignal_full_all=new RooRealVar("tofSignal_full_all", "n#sigma_{p}full_all_", nSigmaLeft, 20., "a.u.");
-        if (ptMin>1.09)tofSignal_full_all=new RooRealVar("tofSignal_full_all", "n#sigma_{p}full_all_", nSigmaLeft, mismatch_right_limit, "a.u.");
+        if ((ptMin>1.09 && iCent<2)||(ptMin>0.99&&iCent==2))tofSignal_full_all=new RooRealVar("tofSignal_full_all", "n#sigma_{p}full_all_", nSigmaLeft, mismatch_right_limit, "a.u.");
         
         // roofit histogram
         RooDataHist data("data", "data", RooArgList(tofSignal), tofSignalProjection);
@@ -252,14 +254,14 @@ void SignalBinnedMC(const char *cutSettings = "", const double roi_min_limit_inp
           background1 = (RooAbsPdf *)new RooExponential("background1", "background1", tofSignal, *slope1);
           modelAll = (RooAbsPdf*)new RooExponential("modelAll", "modelAll", tofSignal, *slope1);
         }
-        else if (bkg_shape == 1 && ptMin > 0.99 && ptMin < 1.09)
+        else if (bkg_shape == 1 && ptMin > 0.99 && ptMin < 1.09 && iCent < 2)
         { // double expo
           slope2 = new RooRealVar("#tau_{2}", "slope2", 0., 2.);
           background1 = (RooAbsPdf *)new RooExponential("background1", "background1", tofSignal, *slope1);
           background2 = (RooAbsPdf *)new RooExponential("background2", "background2", tofSignal, *slope2);
           modelAll = (RooAbsPdf*)new RooAddPdf("modelAll", "modelAll", RooArgList(*background1,*background2), RooArgList(*nBackground1));
         }
-        else if (bkg_shape == 1 && ptMin > 1.09)
+        else if ((bkg_shape == 1 && ptMin > 1.09 && iCent < 2)||(ptMin>0.99&&iCent==2))
         { // double expo with fixed mismatch
           slope1 = new RooRealVar("#tau_{1}", "slope1", -0.1, -.7, 0.7);
           slope2 = new RooRealVar("#tau_{2}", "slope2", 0., 2.);
@@ -288,7 +290,7 @@ void SignalBinnedMC(const char *cutSettings = "", const double roi_min_limit_inp
         if (extractSignal)
         {
 
-          if (ptMin < 1.09){
+          if ((ptMin < 1.09 && iCent<2)||(ptMin<0.99&&iCent==2)){
             tofSignal.setRange("rightSideband", signalRightLimit, maxNsigma);
             
             modelAll->fitTo(dataAll, RooFit::Range("rightSideband"));
@@ -397,7 +399,7 @@ void SignalBinnedMC(const char *cutSettings = "", const double roi_min_limit_inp
         tofSignal.setRange("model", nSigmaLeft, maxNsigma);
         if (extractSignal)
         {
-          if (ptMin<1.09)
+          if ((ptMin < 1.09)||(ptMin<0.99&&iCent==2))
             model->plotOn(xframe, RooFit::Name("model"), RooFit::LineColor(kBlue), RooFit::NormRange("rightSideband"), RooFit::Range("rightSideband"));
           else
             model->plotOn(xframe, RooFit::Name("model"), RooFit::LineColor(kBlue), RooFit::NormRange("rightSideband"), RooFit::Range("rightSideband"));
@@ -406,7 +408,7 @@ void SignalBinnedMC(const char *cutSettings = "", const double roi_min_limit_inp
           xframe->getAttText()->SetTextFont(44);
           xframe->getAttText()->SetTextSize(16);
           xframe->remove("model",false);
-          if (ptMin<1.09)
+          if ((ptMin < 1.09)||(ptMin<0.99&&iCent==2))
             model->plotOn(xframe, RooFit::Name("model"), RooFit::LineColor(kBlue), RooFit::NormRange("rightSideband"), RooFit::Range("model"));
           else{
             modelMismatch->plotOn(xframe_full, RooFit::Name("model"), RooFit::LineColor(kBlue), RooFit::NormRange("rightSidebandK"), RooFit::Range("full"));
@@ -419,7 +421,7 @@ void SignalBinnedMC(const char *cutSettings = "", const double roi_min_limit_inp
           // background integral
           double bkgIntegral = 0;
           double bkgIntegral_val = 0;
-          if (ptMin < 1.09){
+          if ((ptMin < 1.09)||(ptMin>0.99&&iCent==2)){
             bkgIntegral = ((RooAbsPdf *)model->createIntegral(RooArgSet(tofSignal), RooFit::NormSet(RooArgSet(tofSignal)), RooFit::Range("signalRange")))->getVal();
             bkgIntegral_val = (nBackground2->getVal()) * bkgIntegral;
           }

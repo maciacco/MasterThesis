@@ -7,7 +7,7 @@ path_he3 = './He3_PbPb/out'
 path_hyp = './Hypertriton_PbPb'
 path_proton = './Proton_PbPb/out'
 path_pion = './Pion_PbPb/out'
-centrality_classes = [[0, 5], [5, 10]] #, [30, 50]]
+centrality_classes = [[0, 5], [5, 10], [30, 50]]
 centrality_colors = [ROOT.kOrange+7, ROOT.kAzure+4, ROOT.kTeal+4]
 particle_ratios = ["#pi^{-} / #pi^{+}","#bar{p} / p","{}_{#bar{#Lambda}}^{3}#bar{H} / ^{3}_{#Lambda}H","^{3}#bar{He} / ^{3}He"]
 
@@ -191,6 +191,7 @@ for i_cent, cent in enumerate(centrality_classes):
     cRatiosParticle = ROOT.TCanvas(f"cRatiosParticle_{cent[0]}_{cent[1]}",f"cRatiosParticle_{cent[0]}_{cent[1]}")
     hRatiosParticle = ROOT.TH1D(f"hRatiosParticle_{cent[0]}_{cent[1]}",f"{cent[0]}-{cent[1]}%",4,0,4)
     hRatiosParticleFit = ROOT.TH1D(f"hRatiosParticleFit_{cent[0]}_{cent[1]}",f"{cent[0]}-{cent[1]}%",4,0,4)
+    hRatiosParticle.GetYaxis().SetTitle("Antimatter / matter")
     for i_part in range(0,4):
         hRatiosParticle.GetXaxis().SetBinLabel(i_part+1,particle_ratios[i_part])
         hRatiosParticle.GetXaxis().SetLabelSize(0.06)

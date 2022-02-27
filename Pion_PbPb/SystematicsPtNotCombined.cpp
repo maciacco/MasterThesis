@@ -519,7 +519,7 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
     // * * * * * * * * * * * * * * * * * * * * * * * * * //
     //   C O M P U T E   P T   C O R R E L A T I O N S   //
     // * * * * * * * * * * * * * * * * * * * * * * * * * //
-    TH2D fSystematicsCorrelationsDCAxy(Form("fSystematicsCorrelationsDCAxy_%.0f_%.0f", kCentBinsLimitsPion[iC][0], kCentBinsLimitsPion[iC][1]),Form("%.0f-%.0f%%", kCentBinsLimitsPion[iC][0], kCentBinsLimitsPion[iC][1]),5,0.95,1.45,1000,-.5,.5);
+    TH2D fSystematicsCorrelationsDCAxy(Form("fSystematicsCorrelationsDCAxy_%.0f_%.0f", kCentBinsLimitsPion[iC][0], kCentBinsLimitsPion[iC][1]),Form("%.0f-%.0f%%", kCentBinsLimitsPion[iC][0], kCentBinsLimitsPion[iC][1]),5,0.095,0.145,1000,-.01,.01);
     TH2D fSystematicsCorrelationsDCAz(Form("fSystematicsCorrelationsDCAz_%.0f_%.0f", kCentBinsLimitsPion[iC][0], kCentBinsLimitsPion[iC][1]),Form("%.0f-%.0f%%", kCentBinsLimitsPion[iC][0], kCentBinsLimitsPion[iC][1]),31,0.475,2.025,1000,-.1,.1);
     TH2D fSystematicsCorrelationsChi2TPC(Form("fSystematicsCorrelationsChi2TPC_%.0f_%.0f", kCentBinsLimitsPion[iC][0], kCentBinsLimitsPion[iC][1]),Form("%.0f-%.0f%%", kCentBinsLimitsPion[iC][0], kCentBinsLimitsPion[iC][1]),26,1.995,2.255,1000,-.1,.1);
     TH2D fSystematicsCorrelationsTPCCls(Form("fSystematicsCorrelationsTPCCls_%.0f_%.0f", kCentBinsLimitsPion[iC][0], kCentBinsLimitsPion[iC][1]),Form("%.0f-%.0f%%", kCentBinsLimitsPion[iC][0], kCentBinsLimitsPion[iC][1]),24,58.5,82.5,1000,-.1,.1);
@@ -560,6 +560,7 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
             int cutVal = cutIndex;
             if (cutIndex > 1) cutVal = cutIndex+1;
             fSystematicsCorrelationsDCAxy.Fill(kCutDCAxy[cutVal],h->GetBinContent(iPtBins+1)-hDefault->GetBinContent(iPtBins+1));
+            std::cout << "cutDCAxy = " << kCutDCAxy[cutVal] << " = " << h->GetBinContent(iPtBins+1)-hDefault->GetBinContent(iPtBins+1) << std::endl;
           }
           if (tmpCutSettings.EqualTo("tpc"))
           {
@@ -717,6 +718,7 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
     fSystematicsCorrelationsMismatchUp.Write();
     
     for(int iPtBins=7;iPtBins<used_pt_bins;++iPtBins){
+      double pt=fSystematicUncertaintyDCAz.GetBinCenter(iPtBins);
       // sigmas
       double sigma_DCAz=fSystematicUncertaintyDCAz.GetBinContent(iPtBins);
       double sigma_PID=fSystematicUncertaintyPID.GetBinContent(iPtBins);
@@ -727,6 +729,7 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
       double sigma_ROI_up=fSystematicUncertaintyROIUp.GetBinContent(iPtBins);
       double sigma_Mismatch_down=fSystematicUncertaintyMismatchDown.GetBinContent(iPtBins);
       double sigma_Mismatch_up=fSystematicUncertaintyMismatchUp.GetBinContent(iPtBins);
+      if (iC==2 && pt>1.4 && pt<1.5) sigma_Mismatch_down=0.;
       double sigma_Prim=fSystematicUncertaintyPrim.GetBinContent(iPtBins);
       double sigma_Eff=fSystematicUncertaintyEff.GetBinContent(iPtBins);
       double sigma_TFF=fSystematicUncertaintyTFF.GetBinContent(iPtBins);
