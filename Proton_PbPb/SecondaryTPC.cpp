@@ -1,4 +1,4 @@
-// Secondary.cpp
+// SecondaryTPC.cpp
 // This macro computes the fraction of primaries
 
 #include <stdlib.h>
@@ -35,7 +35,7 @@ bool use_uniform = false;
 
 const double fitRange = 1.25;
 
-void Secondary(const char *cutSettings = "", const double DCAxyCut=0.12, const char *inFileDatName = "AnalysisResults", const char *inFileMCName = "mc", const char *outFileName = "PrimaryProton", const bool use_injected_protons = false, const bool use_roofit = false, const bool useAntiProtonsAsPrimaries = false)
+void SecondaryTPC(const char *cutSettings = "", const double DCAxyCut=0.12, const char *inFileDatName = "AnalysisResults", const char *inFileMCName = "mc", const char *outFileName = "PrimaryProton", const bool use_injected_protons = false, const bool use_roofit = false, const bool useAntiProtonsAsPrimaries = false)
 {
   // killing RooFit output
   RooMsgService::instance().setGlobalKillBelow(RooFit::ERROR);
@@ -79,39 +79,39 @@ void Secondary(const char *cutSettings = "", const double DCAxyCut=0.12, const c
     //TTList *listMc20e3a_2 = (TTList *)inFileMC20e3a_2->Get(listName.data());
 
     // get histograms from files
-    TH3F *fDCAdat = (TH3F *)listData->Get(Form("f%sDCAxyTOF", kAntimatterMatter[iMatt]));
+    TH3F *fDCAdat = (TH3F *)listData->Get(Form("f%sDCAxyTPC", kAntimatterMatter[iMatt]));
     TH3F *fDCAprim, *fDCAprim1, *fDCAprim2, *fDCAprim3;
     if (useAntiProtonsAsPrimaries)
     {
-      fDCAprim = (TH3F *)listData->Get(Form("f%sDCAxyTOF", kAntimatterMatter[0]));
+      fDCAprim = (TH3F *)listData->Get(Form("f%sDCAxyTPC", kAntimatterMatter[0]));
     }
     else if (!use_injected_protons)
     {
-      fDCAprim1 = (TH3F *)listMc20e3a_1->Get(Form("f%sDCAPrimaryTOF", kAntimatterMatter[iMatt]));
-      //fDCAprim2 = (TH3F *)listMc20e3a_2->Get(Form("f%sDCAPrimaryTOF", kAntimatterMatter[0]));
-      //fDCAprim3 = (TH3F *)listMc3->Get(Form("f%sDCAPrimaryTOF", kAntimatterMatter[0]));
+      fDCAprim1 = (TH3F *)listMc20e3a_1->Get(Form("f%sDCAPrimaryTPC", kAntimatterMatter[iMatt]));
+      //fDCAprim2 = (TH3F *)listMc20e3a_2->Get(Form("f%sDCAPrimaryTPC", kAntimatterMatter[0]));
+      //fDCAprim3 = (TH3F *)listMc3->Get(Form("f%sDCAPrimaryTPC", kAntimatterMatter[0]));
       fDCAprim = (TH3F *)fDCAprim1->Clone(fDCAprim1->GetName());
       //fDCAprim->Add(fDCAprim2);
       //fDCAprim->Add(fDCAprim3);
     }
     else if (use_injected_protons)
     {
-      fDCAprim1 = (TH3F *)listMc21l5->Get(Form("f%sDCAPrimaryTOF", kAntimatterMatter[iMatt]));
-      //fDCAprim2 = (TH3F *)listMc20e3a_2->Get(Form("f%sDCAPrimaryTOF", kAntimatterMatter[iMatt]));
-      //fDCAprim3 = (TH3F *)listMc3->Get(Form("f%sDCAPrimaryTOF", kAntimatterMatter[0]));
+      fDCAprim1 = (TH3F *)listMc21l5->Get(Form("f%sDCAPrimaryTPC", kAntimatterMatter[iMatt]));
+      //fDCAprim2 = (TH3F *)listMc20e3a_2->Get(Form("f%sDCAPrimaryTPC", kAntimatterMatter[iMatt]));
+      //fDCAprim3 = (TH3F *)listMc3->Get(Form("f%sDCAPrimaryTPC", kAntimatterMatter[0]));
       fDCAprim = (TH3F *)fDCAprim1->Clone(fDCAprim1->GetName());
       //fDCAprim->Add(fDCAprim2);
       //fDCAprim->Add(fDCAprim3);
     }
-    TH3F *fDCAsec1 = (TH3F *)listMc20e3a_1->Get(Form("f%sDCASecondaryTOF", kAntimatterMatter[iMatt]));
-    //TH3F *fDCAsec2 = (TH3F *)listMc20e3a_2->Get(Form("f%sDCASecondaryTOF", kAntimatterMatter[iMatt]));
-    //TH3F *fDCAsec3 = (TH3F *)listMc3->Get(Form("f%sDCASecondaryTOF", kAntimatterMatter[iMatt]));
+    TH3F *fDCAsec1 = (TH3F *)listMc20e3a_1->Get(Form("f%sDCASecondaryTPC", kAntimatterMatter[iMatt]));
+    //TH3F *fDCAsec2 = (TH3F *)listMc20e3a_2->Get(Form("f%sDCASecondaryTPC", kAntimatterMatter[iMatt]));
+    //TH3F *fDCAsec3 = (TH3F *)listMc3->Get(Form("f%sDCASecondaryTPC", kAntimatterMatter[iMatt]));
     TH3F *fDCAsec = (TH3F *)fDCAsec1->Clone(fDCAsec1->GetName());
     //fDCAsec->Add(fDCAsec2);
     //fDCAsec->Add(fDCAsec3);
-    TH3F *fDCAsecWD1 = (TH3F *)listMc20e3a_1->Get(Form("f%sDCASecondaryWeakTOF", kAntimatterMatter[iMatt]));
-    //TH3F *fDCAsecWD2 = (TH3F *)listMc20e3a_2->Get(Form("f%sDCASecondaryWeakTOF", kAntimatterMatter[iMatt]));
-    //TH3F *fDCAsecWD3 = (TH3F *)listMc3->Get(Form("f%sDCASecondaryWeakTOF", kAntimatterMatter[iMatt]));
+    TH3F *fDCAsecWD1 = (TH3F *)listMc20e3a_1->Get(Form("f%sDCASecondaryWeakTPC", kAntimatterMatter[iMatt]));
+    //TH3F *fDCAsecWD2 = (TH3F *)listMc20e3a_2->Get(Form("f%sDCASecondaryWeakTPC", kAntimatterMatter[iMatt]));
+    //TH3F *fDCAsecWD3 = (TH3F *)listMc3->Get(Form("f%sDCASecondaryWeakTPC", kAntimatterMatter[iMatt]));
     TH3F *fDCAsecWD = (TH3F *)fDCAsecWD1->Clone(fDCAsecWD1->GetName());
     //fDCAsecWD->Add(fDCAsecWD2);
     //fDCAsecWD->Add(fDCAsecWD3);
@@ -133,7 +133,7 @@ void Secondary(const char *cutSettings = "", const double DCAxyCut=0.12, const c
         fPrimaryFrac.SetBinError(fPrimaryFrac.FindBin(ptMin + 0.005f), 0);
       }
 
-      for (int iPtBin = 5; iPtBin < nUsedPtBins + 1; ++iPtBin)
+      for (int iPtBin = 3; iPtBin < nUsedPtBins + 1; ++iPtBin)
       { // loop on pT bins
         //fPrimaryFrac.SetBinContent(iPtBin, 1.);
 
@@ -141,6 +141,7 @@ void Secondary(const char *cutSettings = "", const double DCAxyCut=0.12, const c
         double ptMax = fPrimaryFrac.GetXaxis()->GetBinUpEdge(iPtBin);
         int pTbinsIndexMin = fDCAdat->GetYaxis()->FindBin(ptMin);
         int pTbinsIndexMax = fDCAdat->GetYaxis()->FindBin(ptMax - 0.005);
+        if (ptMin>0.79)continue;
         outFile->cd();
 
         // project TH3 histogram
@@ -148,23 +149,23 @@ void Secondary(const char *cutSettings = "", const double DCAxyCut=0.12, const c
         TH1D *fDCAMcProjPrim;
         TH1D *fDCAMcProjSec;
         TH1D *fDCAMcProjSecWD;
-        TString canvTitleTOF;
-        TString canvNameTOF;
+        TString canvTitleTPC;
+        TString canvNameTPC;
         TH1D fRatioDCAPrim("", "", kNDCABinsMediumOld, kDCABinsMediumOld);
         TH1D fRatioDCASec("", "", kNDCABinsMediumOld, kDCABinsMediumOld);
 
         TString projTitle = TString::Format("%.2f#leq #it{p}_{T}<%.2f GeV/#it{c}, %.0f-%.0f%%", fDCAdat->GetYaxis()->GetBinLowEdge(pTbinsIndexMin), fDCAdat->GetYaxis()->GetBinUpEdge(pTbinsIndexMax), fDCAdat->GetXaxis()->GetBinLowEdge(kCentBinsProton[iCent][0]), fDCAdat->GetXaxis()->GetBinUpEdge(kCentBinsProton[iCent][1]));
-        fDCAdatProj = fDCAdat->ProjectionZ(TString::Format("f%sDCAxyTOF_%.0f_%.0f_%.2f_%.2f", kAntimatterMatter[iMatt], fDCAdat->GetXaxis()->GetBinLowEdge(kCentBinsProton[iCent][0]), fDCAdat->GetXaxis()->GetBinUpEdge(kCentBinsProton[iCent][1]), fDCAdat->GetYaxis()->GetBinLowEdge(pTbinsIndexMin), fDCAdat->GetYaxis()->GetBinUpEdge(pTbinsIndexMax)), kCentBinsProton[iCent][0], kCentBinsProton[iCent][1], pTbinsIndexMin, pTbinsIndexMax);
+        fDCAdatProj = fDCAdat->ProjectionZ(TString::Format("f%sDCAxyTPC_%.0f_%.0f_%.2f_%.2f", kAntimatterMatter[iMatt], fDCAdat->GetXaxis()->GetBinLowEdge(kCentBinsProton[iCent][0]), fDCAdat->GetXaxis()->GetBinUpEdge(kCentBinsProton[iCent][1]), fDCAdat->GetYaxis()->GetBinLowEdge(pTbinsIndexMin), fDCAdat->GetYaxis()->GetBinUpEdge(pTbinsIndexMax)), kCentBinsProton[iCent][0], kCentBinsProton[iCent][1], pTbinsIndexMin, pTbinsIndexMax);
         fDCAdatProj->SetTitle(projTitle);
         if (fit_gaus){
           fDCAdatProj->Fit("gaus","R","",-0.1,0.1);
           fPrimaryRMS.SetBinContent(iPtBin,fDCAdatProj->GetFunction("gaus")->GetParameter(2));
         }
-        fDCAMcProjPrim = fDCAprim->ProjectionZ(TString::Format("f%sDCAPrimaryTOF_%.0f_%.0f_%.2f_%.2f", kAntimatterMatter[iMatt], fDCAdat->GetXaxis()->GetBinLowEdge(kCentBinsProton[iCent][0]), fDCAdat->GetXaxis()->GetBinUpEdge(kCentBinsProton[iCent][1]), fDCAdat->GetYaxis()->GetBinLowEdge(pTbinsIndexMin), fDCAdat->GetYaxis()->GetBinUpEdge(pTbinsIndexMax)), kCentBinsProton[iCent][0], kCentBinsProton[iCent][1], pTbinsIndexMin, pTbinsIndexMax);
+        fDCAMcProjPrim = fDCAprim->ProjectionZ(TString::Format("f%sDCAPrimaryTPC_%.0f_%.0f_%.2f_%.2f", kAntimatterMatter[iMatt], fDCAdat->GetXaxis()->GetBinLowEdge(kCentBinsProton[iCent][0]), fDCAdat->GetXaxis()->GetBinUpEdge(kCentBinsProton[iCent][1]), fDCAdat->GetYaxis()->GetBinLowEdge(pTbinsIndexMin), fDCAdat->GetYaxis()->GetBinUpEdge(pTbinsIndexMax)), kCentBinsProton[iCent][0], kCentBinsProton[iCent][1], pTbinsIndexMin, pTbinsIndexMax);
         fDCAMcProjPrim->SetTitle(projTitle);
-        fDCAMcProjSec = fDCAsec->ProjectionZ(TString::Format("f%sDCASecondaryTOF_%.0f_%.0f_%.2f_%.2f", kAntimatterMatter[iMatt], fDCAdat->GetXaxis()->GetBinLowEdge(kCentBinsProton[iCent][0]), fDCAdat->GetXaxis()->GetBinUpEdge(kCentBinsProton[iCent][1]), fDCAdat->GetYaxis()->GetBinLowEdge(pTbinsIndexMin), fDCAdat->GetYaxis()->GetBinUpEdge(pTbinsIndexMax)), kCentBinsProton[iCent][0], kCentBinsProton[iCent][1], pTbinsIndexMin, pTbinsIndexMax);
+        fDCAMcProjSec = fDCAsec->ProjectionZ(TString::Format("f%sDCASecondaryTPC_%.0f_%.0f_%.2f_%.2f", kAntimatterMatter[iMatt], fDCAdat->GetXaxis()->GetBinLowEdge(kCentBinsProton[iCent][0]), fDCAdat->GetXaxis()->GetBinUpEdge(kCentBinsProton[iCent][1]), fDCAdat->GetYaxis()->GetBinLowEdge(pTbinsIndexMin), fDCAdat->GetYaxis()->GetBinUpEdge(pTbinsIndexMax)), kCentBinsProton[iCent][0], kCentBinsProton[iCent][1], pTbinsIndexMin, pTbinsIndexMax);
         fDCAMcProjSec->SetTitle(projTitle);
-        fDCAMcProjSecWD = fDCAsecWD->ProjectionZ(TString::Format("f%sDCASecondaryWeakTOF_%.0f_%.0f_%.2f_%.2f", kAntimatterMatter[iMatt], fDCAdat->GetXaxis()->GetBinLowEdge(kCentBinsProton[iCent][0]), fDCAdat->GetXaxis()->GetBinUpEdge(kCentBinsProton[iCent][1]), fDCAdat->GetYaxis()->GetBinLowEdge(pTbinsIndexMin), fDCAdat->GetYaxis()->GetBinUpEdge(pTbinsIndexMax)), kCentBinsProton[3][0], kCentBinsProton[3][1], pTbinsIndexMin, pTbinsIndexMax);
+        fDCAMcProjSecWD = fDCAsecWD->ProjectionZ(TString::Format("f%sDCASecondaryWeakTPC_%.0f_%.0f_%.2f_%.2f", kAntimatterMatter[iMatt], fDCAdat->GetXaxis()->GetBinLowEdge(kCentBinsProton[iCent][0]), fDCAdat->GetXaxis()->GetBinUpEdge(kCentBinsProton[iCent][1]), fDCAdat->GetYaxis()->GetBinLowEdge(pTbinsIndexMin), fDCAdat->GetYaxis()->GetBinUpEdge(pTbinsIndexMax)), kCentBinsProton[3][0], kCentBinsProton[3][1], pTbinsIndexMin, pTbinsIndexMax);
         fDCAMcProjSecWD->SetTitle(projTitle);
 
         // rebin
@@ -178,9 +179,9 @@ void Secondary(const char *cutSettings = "", const double DCAxyCut=0.12, const c
         fDCAMcProjSec = (TH1D*)fDCAMcProjSec->Rebin(kNDCABinsLarge, fRatioDCASec.GetName(), kDCABinsLarge);
         fDCAMcProjSecWD = (TH1D*)fDCAMcProjSecWD->Rebin(kNDCABinsLarge, fRatioDCASec.GetName(), kDCABinsLarge);
  */
-        canvTitleTOF = TString::Format("%.2f#leq #it{p}_{T}<%.2f GeV/#it{c}, %.0f-%.0f%%", fDCAdat->GetYaxis()->GetBinLowEdge(pTbinsIndexMin), fDCAdat->GetYaxis()->GetBinUpEdge(pTbinsIndexMax), fDCAdat->GetXaxis()->GetBinLowEdge(kCentBinsProton[iCent][0]), fDCAdat->GetXaxis()->GetBinUpEdge(kCentBinsProton[iCent][1]));
-        canvNameTOF = TString::Format("f%sDCAxyTOF_%.0f_%.0f_%.2f_%.2f", kAntimatterMatter[iMatt], fDCAdat->GetXaxis()->GetBinLowEdge(kCentBinsProton[iCent][0]), fDCAdat->GetXaxis()->GetBinUpEdge(kCentBinsProton[iCent][1]), fDCAdat->GetYaxis()->GetBinLowEdge(pTbinsIndexMin), fDCAdat->GetYaxis()->GetBinUpEdge(pTbinsIndexMax));
-        TCanvas canv(canvNameTOF, canvTitleTOF);
+        canvTitleTPC = TString::Format("%.2f#leq #it{p}_{T}<%.2f GeV/#it{c}, %.0f-%.0f%%", fDCAdat->GetYaxis()->GetBinLowEdge(pTbinsIndexMin), fDCAdat->GetYaxis()->GetBinUpEdge(pTbinsIndexMax), fDCAdat->GetXaxis()->GetBinLowEdge(kCentBinsProton[iCent][0]), fDCAdat->GetXaxis()->GetBinUpEdge(kCentBinsProton[iCent][1]));
+        canvNameTPC = TString::Format("f%sDCAxyTPC_%.0f_%.0f_%.2f_%.2f", kAntimatterMatter[iMatt], fDCAdat->GetXaxis()->GetBinLowEdge(kCentBinsProton[iCent][0]), fDCAdat->GetXaxis()->GetBinUpEdge(kCentBinsProton[iCent][1]), fDCAdat->GetYaxis()->GetBinLowEdge(pTbinsIndexMin), fDCAdat->GetYaxis()->GetBinUpEdge(pTbinsIndexMax));
+        TCanvas canv(canvNameTPC, canvTitleTPC);
 
         fDCAdatProj->GetYaxis()->SetTitle("Entries");
         fDCAdatProj->Write();
@@ -307,11 +308,13 @@ void Secondary(const char *cutSettings = "", const double DCAxyCut=0.12, const c
         ROOT::Math::MinimizerOptions::SetDefaultStrategy(0);
         if (ptMin < noSecMaterialThreshold)
         { 
-          fit->Constrain(2, 0., 0.5);
-          if (iCent ==1 && ptMin>0.7 && ptMin<0.99) fit->Constrain(2,0.,0.7);
-          if (iCent ==0 && ptMin>0.7 && ptMin<0.99) fit->Constrain(2,0.,0.9);
+          fit->Constrain(2, 0., 1.0);
         }
-        if (iMatt == 0 && iCent == 1 && ptMin > 1.4)
+        if (iCent ==2 || (iCent==1&&iMatt==1&&ptMin<0.72)){
+          fit->Constrain(0,0.,1.0);
+          fit->Constrain(1,0.,1.0);
+        }
+        /* if (iMatt == 0 && iCent == 1 && ptMin > 1.4)
           fit->Constrain(1, 0., 0.99);
         else if (iMatt == 0 && iCent == 1 && ptMin < 1.4)
           fit->Constrain(1, 0., 1.);
@@ -319,11 +322,7 @@ void Secondary(const char *cutSettings = "", const double DCAxyCut=0.12, const c
           fit->Constrain(0, 0., 0.9);
         else if (iMatt == 0 && iCent == 0 && ptMin > 2.)
           fit->Constrain(1, 0., 0.9);
-        else if (iMatt==1){
-          fit->Constrain(0, 0., 1.0);
-          fit->Constrain(1, 0., 1.0);
-        }
-        /* else if (iMatt == 1 && iCent == 0 && ptMin > 1.09)
+        else if (iMatt == 1 && iCent == 0 && ptMin > 1.09)
           fit->Constrain(1, 0., .99);
         else if (iMatt == 1 && iCent == 0 && ptMin > 1.0 && ptMin < 1.09)
           fit->Constrain(1, 0., .99);
@@ -343,9 +342,9 @@ void Secondary(const char *cutSettings = "", const double DCAxyCut=0.12, const c
         else if (iMatt == 1 && iCent == 2 && ptMin>1.44 && ptMin<1.59){
           fit->Constrain(0,0.,0.9);
           fit->Constrain(1,0.,0.9);
-        } */
+        }
         else if (iMatt == 0 && iCent == 2)
-          fit->Constrain(1,0.,0.9);
+          fit->Constrain(1,0.,0.9); */
        /*  else if (iMatt == 1 && iCent==1 < 1.5)
           fit->Constrain(0, 0., 0.99);
         else if (iMatt == 1 && iCent == 1 && ptMin > 1.4)

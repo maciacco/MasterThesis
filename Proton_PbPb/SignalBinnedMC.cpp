@@ -85,14 +85,19 @@ void SignalBinnedMC(const char *cutSettings = "", const double roi_nsigma = 8., 
   //TTList *list2 = (TTList *)dataFile2->Get(listName.data());
 
   // merge antimatter + matter histograms
+  std::string histNameTPCA = Form("f%sTPCcounts", kAntimatterMatter[0]);
+  std::string histNameTPCM = Form("f%sTPCcounts", kAntimatterMatter[1]);
   std::string histNameA = Form("f%sTOFnSigma", kAntimatterMatter[0]);
   std::string histNameM = Form("f%sTOFnSigma", kAntimatterMatter[1]);
+  TH3F *fTPCSignalA = (TH3F *)list_21l5->Get(histNameTPCA.data());
   TH3F *fTOFSignalA = (TH3F *)list_21l5->Get(histNameA.data());
   //TH3F *fTOFSignalA_20g7 = (TH3F *)list_20g7->Get(histNameA.data());
   /* if (ADD20g7)
     fTOFSignalA->Add(fTOFSignalA_20g7); */
   // TH3F *fTOFSignalA2 = (TH3F *)list2->Get(histNameA.data());
+  TH3F *fTPCSignalAll = (TH3F *)fTPCSignalA->Clone(fTPCSignalA->GetName());
   TH3F *fTOFSignalAll = (TH3F *)fTOFSignalA->Clone(fTOFSignalA->GetName());
+  TH3F *fTPCSignalM = (TH3F *)list_21l5->Get(histNameTPCM.data());
   TH3F *fTOFSignalM = (TH3F *)list_21l5->Get(histNameM.data());
   //TH3F *fTOFSignalM_20g7 = (TH3F *)list_20g7->Get(histNameM.data());
   /* if (ADD20g7)
@@ -115,6 +120,7 @@ void SignalBinnedMC(const char *cutSettings = "", const double roi_nsigma = 8., 
   for (int iMatt = 1; iMatt > -1; --iMatt)
   { // loop on antimatter/matter
     // Get histograms from file
+    std::string histNameTPC = Form("f%sTPCcounts", kAntimatterMatter[iMatt]);
     std::string histName = Form("f%sTOFnSigma", kAntimatterMatter[iMatt]);
     TH3F *fTOFSignal1 = (TH3F *)list_21l5->Get(histName.data());
     fTOFSignal1->SetName("A");
@@ -126,6 +132,7 @@ void SignalBinnedMC(const char *cutSettings = "", const double roi_nsigma = 8., 
       return;
     }
 
+    TH3F *fTPCSignal = (TH3F *)list_21l5->Get(histNameTPC.data());
     TH3F *fTOFSignal = (TH3F *)fTOFSignal1->Clone(histName.data());
     // if (ADD20g7)
     //   fTOFSignal->Add(fTOFSignal2);
@@ -139,6 +146,7 @@ void SignalBinnedMC(const char *cutSettings = "", const double roi_nsigma = 8., 
     for (int iCent = 0; iCent < kNCentClasses; ++iCent)
     {                                                                          // loop over centrality classes
       TH1D fTOFrawYield("fRawYield", "fRawYield", kNPtBins, kPtBins);          // declare raw yields histogram
+      TH1D fTPCrawYield("fTPCRawYield", "fTPCRawYield", kNPtBins, kPtBins);          // declare raw yields histogram
       TH1D fSignificance("fSignificance", "fSignificance", kNPtBins, kPtBins); // declare significance
       TH1D fSigma("fSigma", "fSigma", kNPtBins, kPtBins);
       TH1D fMean("fMean", "fMean", kNPtBins, kPtBins);
@@ -146,7 +154,7 @@ void SignalBinnedMC(const char *cutSettings = "", const double roi_nsigma = 8., 
       TH1D fAlphaR("fAlphaR", "fAlphaR", kNPtBins, kPtBins);
       int nUsedPtBins = 42; // up to 2.00 GeV/c with train binning
 
-      for (int iPtBin = 5; iPtBin < nUsedPtBins + 1; ++iPtBin) // full train data binning
+      for (int iPtBin = 1; iPtBin < nUsedPtBins + 1; ++iPtBin) // full train data binning
       { // loop on pT bins
         double roi_nsigma_up = roi_nsigma;
         double roi_nsigma_down = roi_nsigma;
@@ -163,6 +171,7 @@ void SignalBinnedMC(const char *cutSettings = "", const double roi_nsigma = 8., 
 
         // project histogram
         if (kVerbose) std::cout << "Pt bins: min=" << ptMin << "; max=" << ptMax << "; indexMin=" << pTbinsIndexMin << "; indexMax=" << pTbinsIndexMax << "; centralityBinMin=" << centBinMin << "; centralityBinMax=" << centBinMax << std::endl;
+        TH1D *tpcSignalProjection = fTPCSignal->ProjectionZ(Form("f%sTPCSignal_%.0f_%.0f_%.2f_%.2f", kAntimatterMatter[iMatt], centMin, centMax, fTPCSignal->GetYaxis()->GetBinLowEdge(pTbinsIndexMin), fTPCSignal->GetYaxis()->GetBinUpEdge(pTbinsIndexMax)), centBinMin, centBinMax, pTbinsIndexMin, pTbinsIndexMax);
         TH1D *tofSignalProjection = fTOFSignal->ProjectionZ(Form("f%sTOFSignal_%.0f_%.0f_%.2f_%.2f", kAntimatterMatter[iMatt], centMin, centMax, fTOFSignal->GetYaxis()->GetBinLowEdge(pTbinsIndexMin), fTOFSignal->GetYaxis()->GetBinUpEdge(pTbinsIndexMax)), centBinMin, centBinMax, pTbinsIndexMin, pTbinsIndexMax);
         tofSignalProjection->Rebin(2);
 
@@ -409,6 +418,96 @@ void SignalBinnedMC(const char *cutSettings = "", const double roi_nsigma = 8., 
             rawYieldError = nSignal.getError();
           }
 
+          tpcSignalProjection->SetMarkerStyle(20);
+          tpcSignalProjection->SetMarkerSize(1.);
+          tpcSignalProjection->SetDrawOption("pe");
+          tpcSignalProjection->SetMarkerColor(kBlack);
+          tpcSignalProjection->GetXaxis()->SetLabelSize(0.04);
+          tpcSignalProjection->GetXaxis()->SetTitleSize(0.04);
+          tpcSignalProjection->GetXaxis()->SetTitle("n#sigma_{p}");
+          tpcSignalProjection->GetYaxis()->SetTitle(Form("Entries / %.2f",tpcSignalProjection->GetBinWidth(1)));
+
+          double tpc_range_limit = 3.;
+          double tpc_tmp_mean=0., tpc_tmp_rms=0.;
+          double background=0.;
+          TCanvas c(Form("%s",tpcSignalProjection->GetName()),Form("%s",tpcSignalProjection->GetName()));
+          if (ptMin < 0.59) {
+            tpcSignalProjection->Fit("gaus","QR0","",-1.,1.);
+            tpc_tmp_mean=tpcSignalProjection->GetFunction("gaus")->GetParameter(1);
+            tpc_tmp_rms=tpcSignalProjection->GetFunction("gaus")->GetParameter(2);
+          }
+          if (ptMin > 0.39 && ptMin < 0.44)tpcSignalProjection->Fit("expo","QR","",-7.,-5.5);
+          else if (ptMin > 0.44 && ptMin < 0.49)tpcSignalProjection->Fit("expo","QR","",-6.5,-5.);
+          else if (ptMin > 0.49 && ptMin < 0.51) tpcSignalProjection->Fit("expo","QR","",-6.,-4.5);
+          if (ptMin>0.54 && ptMin < 0.59) {
+            TF1 f("fit","gaus+expo(3)",-10.,10.);
+            f.SetParLimits(0,0,1e6);
+            f.SetParLimits(1,-6.,-3.);
+            f.SetParLimits(2,0.5,2.5);
+            f.SetParLimits(3,0.,10.);
+            f.SetParLimits(4,-7.,0.);
+            f.SetLineWidth(2);
+            f.SetLineColor(kBlue);
+            for(int I=0;I<2;++I)tpcSignalProjection->Fit("fit","QMR","",-6.5,-3.);
+            background = f.Integral(tpc_tmp_mean-tpc_range_limit*tpc_tmp_rms,tpc_tmp_mean+tpc_range_limit*tpc_tmp_rms);
+            tpcSignalProjection->Draw("pe");
+            f.Draw("same");
+            tpcSignalProjection->GetXaxis()->SetRangeUser(-6.,6.);
+            c.Write();
+          }
+          else if (ptMin>0.59 && ptMin < 0.79) {
+            TF1 f("fit","expo+gaus(2)");
+            f.SetParLimits(2,0,1e8);
+            f.SetParLimits(3,-1.,1.);
+            f.SetParLimits(4,0.5,2.5);
+            f.SetParLimits(0,0.,10.);
+            f.SetParLimits(1,-7.,-.5);
+            f.SetLineColor(kBlue);
+            f.SetRange(-20,20);
+            if (ptMin<0.69) {
+              for(int I=0;I<2;++I)tpcSignalProjection->Fit("fit","QMR0","",-6.2,1.4);
+            }
+            else tpcSignalProjection->Fit("fit","QMR0","",-5.7,1.5);
+            tpc_tmp_mean=f.GetParameter(3);
+            tpc_tmp_mean=f.GetParameter(4);
+            TF1 fBackground(Form("fit%s",tpcSignalProjection->GetName()),"expo",-10,10);
+            fBackground.FixParameter(0,f.GetParameter(0));
+            fBackground.FixParameter(1,f.GetParameter(1));
+            fBackground.SetLineColor(kBlue);
+            fBackground.SetLineWidth(2);
+            fBackground.Write();
+            background = fBackground.Integral(tpc_tmp_mean-tpc_range_limit*tpc_tmp_rms,tpc_tmp_mean+tpc_range_limit*tpc_tmp_rms);
+            tpcSignalProjection->Draw("pe");
+            fBackground.Draw("same");
+            tpcSignalProjection->GetXaxis()->SetRangeUser(-6.,6.);
+            c.Write();
+          }
+          else if (ptMin > 0.39 && ptMin < 0.54) {
+            background = tpcSignalProjection->GetFunction("expo")->Integral(tpc_tmp_mean-tpc_range_limit*tpc_tmp_rms,tpc_tmp_mean+tpc_range_limit*tpc_tmp_rms);
+            tpcSignalProjection->GetFunction("expo")->SetLineColor(kBlue);
+            tpcSignalProjection->GetFunction("expo")->SetRange(-10,10);
+            tpcSignalProjection->Draw("pe");
+            tpcSignalProjection->GetFunction("expo")->Draw("same");
+            tpcSignalProjection->GetXaxis()->SetRangeUser(-6.,6.);
+            c.Write();
+          }
+          else if (ptMin < 0.39) {
+            tpcSignalProjection->Draw("pe");
+            tpcSignalProjection->GetXaxis()->SetRangeUser(-6.,6.);
+            c.Write();
+          }
+          double rawYieldTPC = tpcSignalProjection->Integral(tpcSignalProjection->FindBin(-tpc_range_limit),tpcSignalProjection->FindBin(tpc_range_limit-0.001));
+          if(ptMin>0.39)rawYieldTPC-=background;
+          double rawYieldErrorTPC = TMath::Sqrt(rawYieldTPC);
+
+          // fill raw yield histogram
+          fTPCrawYield.SetBinContent(fTPCrawYield.FindBin((ptMax + ptMin) / 2.), rawYieldTPC);
+          fTPCrawYield.SetBinError(fTPCrawYield.FindBin((ptMax + ptMin) / 2.), rawYieldErrorTPC);
+          if (ptMin>0.79){
+            fTPCrawYield.SetBinContent(fTPCrawYield.FindBin((ptMax + ptMin) / 2.), 0.);
+            fTPCrawYield.SetBinError(fTPCrawYield.FindBin((ptMax + ptMin) / 2.), 0.);
+          }
+
           // fill raw yield histogram
           fTOFrawYield.SetBinContent(fTOFrawYield.FindBin((ptMax + ptMin) / 2.), rawYield);
           fTOFrawYield.SetBinError(fTOFrawYield.FindBin((ptMax + ptMin) / 2.), rawYieldError);
@@ -495,6 +594,7 @@ void SignalBinnedMC(const char *cutSettings = "", const double roi_nsigma = 8., 
         }
 
         tofSignalProjection->Write();
+        tpcSignalProjection->Write();
         xframe->Write();
 
         pad2->cd();
@@ -531,6 +631,16 @@ void SignalBinnedMC(const char *cutSettings = "", const double roi_nsigma = 8., 
         tofSignalProjection->Draw("pe");
         canv1.Print(Form("%s/signal_extraction_preliminary/%s_%s_%d_%d/cent_%.0f_%.0f_pt_%.2f_%.2f.pdf", kPlotDir, kAntimatterMatter[iMatt], cutSettings, binCounting, bkg_shape, kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1], ptMin, ptMax));
       } // end of loop on pt bins
+
+      // set raw yield histogram style and write to file
+      fTPCrawYield.SetTitle(TString::Format("%s raw yield, %.0f-%.0f%%", kAntimatterMatterLabel[iMatt], kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1]));
+      fTPCrawYield.SetName(TString::Format("f%sTPCrawYield_%.0f_%.0f", kAntimatterMatter[iMatt], kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1]));
+      fTPCrawYield.GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
+      fTPCrawYield.GetYaxis()->SetTitle("#it{N_{raw}}");
+      fTPCrawYield.SetMarkerStyle(20);
+      fTPCrawYield.SetMarkerSize(0.8);
+      fTPCrawYield.SetOption("PE");
+      fTPCrawYield.Write();
 
       // set raw yield histogram style and write to file
       fTOFrawYield.SetTitle(TString::Format("%s raw yield, %.0f-%.0f%%", kAntimatterMatterLabel[iMatt], kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1]));

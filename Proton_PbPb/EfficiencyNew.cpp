@@ -75,8 +75,10 @@ void EfficiencyNew(const char *cutSettings = "", const char *inFileNameMC = "mc_
     //fITS_TPC_TOF->Add(fITS_TPC_TOF3);
     TH1D *fTotal_Pt;       // = fTotal->ProjectionY(TString::Format("f%sTotal_Pt", kAntimatterMatter[iMatt]), cent_bin_min, cent_bin_max);
     TH1D *fITS_TPC_TOF_Pt; // = fITS_TPC_TOF->ProjectionY(TString::Format("f%sITS_TPC_TOF_Pt", kAntimatterMatter[iMatt]), cent_bin_min, cent_bin_max);
+    TH1D *fITS_TPC_Pt; // = fITS_TPC_TOF->ProjectionY(TString::Format("f%sITS_TPC_TOF_Pt", kAntimatterMatter[iMatt]), cent_bin_min, cent_bin_max);
     //TF1 *sec_f;
     TH1D *fSec;
+    TH1D *fSec_TPC;
     
     for (int iCent = 0; iCent < kNCentClasses; ++iCent)
     /* for (int iCent = 0; iCent < kNCentClasses; ++iCent) */ // SET FIRST CENTRALITY BIN TO 1 EXCEPT FOR LHC16h7c_g4_2
@@ -90,13 +92,18 @@ void EfficiencyNew(const char *cutSettings = "", const char *inFileNameMC = "mc_
       //fITS_TPC_TOF_Pt = fITS_TPC_TOF3->ProjectionY(TString::Format("f%sITS_TPC_TOF_Pt", kAntimatterMatter[iMatt]), cent_bin_min, cent_bin_max);
       //sec_f = (TF1 *)inFilePrimary.Get(Form("f%sFunctionFit_%.0f_%.0f", kAntimatterMatter[iMatt], kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1]));
       fSec = (TH1D*)inFilePrimary.Get(Form("f%sPrimFrac_%.0f_%.0f", kAntimatterMatter[iMatt], kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1]));
+      fSec_TPC = (TH1D*)inFilePrimary.Get(Form("f%sPrimFracTPC_%.0f_%.0f", kAntimatterMatter[iMatt], kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1]));
       fITS_TPC_TOF_Pt = (TH1D*)inFileSignal.Get(Form("%s_%d_%d/f%sTOFrawYield_%.0f_%.0f", cutSettings, 1, 1, kAntimatterMatter[iMatt], kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1]));
+      fITS_TPC_Pt = (TH1D*)inFileSignal.Get(Form("%s_%d_%d/f%sTPCrawYield_%.0f_%.0f", cutSettings, 1, 1, kAntimatterMatter[iMatt], kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1]));
       if (!fSec || !fITS_TPC_TOF_Pt || !fTotal_Pt) return;
       //fITS_TPC_TOF_Pt->Multiply(sec_f);
       fITS_TPC_TOF_Pt->Multiply(fSec);
+      fITS_TPC_Pt->Multiply(fSec_TPC);
       fTotal_Pt = (TH1D *)fTotal_Pt->Rebin(kNPtBins, TString::Format("f%sTotal_Pt", kAntimatterMatter[iMatt]), kPtBins);
       fITS_TPC_TOF_Pt = (TH1D *)fITS_TPC_TOF_Pt->Rebin(kNPtBins, TString::Format("f%sITS_TPC_TOF_Pt", kAntimatterMatter[iMatt]), kPtBins);
+      fITS_TPC_Pt = (TH1D *)fITS_TPC_Pt->Rebin(kNPtBins, TString::Format("f%sITS_TPC_Pt", kAntimatterMatter[iMatt]), kPtBins);
       TH1D fEffPt(TString::Format("f%sEff_TOF_%.0f_%.0f", kAntimatterMatter[iMatt], cent_bin_lim_min, cent_bin_lim_max), TString::Format("%s Efficiency #times Acceptance, %.0f-%.0f%%", kAntimatterMatterLabel[iMatt], kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1]), kNPtBins, kPtBins);
+      TH1D fEffPt_TPC(TString::Format("f%sEff_TPC_%.0f_%.0f", kAntimatterMatter[iMatt], cent_bin_lim_min, cent_bin_lim_max), TString::Format("%s Efficiency #times Acceptance, %.0f-%.0f%%", kAntimatterMatterLabel[iMatt], kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1]), kNPtBins, kPtBins);
 
       /* for (int iPtBin = 1; iPtBin < fEffPt.GetNbinsX() + 1; ++iPtBin)
       {
@@ -104,6 +111,7 @@ void EfficiencyNew(const char *cutSettings = "", const char *inFileNameMC = "mc_
         fEffPt.SetBinError(iPtBin, EffErr(&fEffPt, fTotal_Pt, fEffPt.GetXaxis()->GetBinCenter(iPtBin)));
       } */
       fEffPt.Divide(fITS_TPC_TOF_Pt, fTotal_Pt, 1, 1, "B");
+      fEffPt_TPC.Divide(fITS_TPC_Pt, fTotal_Pt, 1, 1, "B");
       /* TF1 fitEff("fitEff","[0]+[1]*TMath::Exp([2]*x)+[3]/x+[4]/x/x",1.,2.);
       fitEff.SetParLimits(0,0,100);
       fitEff.SetParLimits(1,-20,0);
@@ -118,10 +126,19 @@ void EfficiencyNew(const char *cutSettings = "", const char *inFileNameMC = "mc_
       fEffPt.GetXaxis()->SetTitle("#it{p}_{T}");
       fEffPt.GetYaxis()->SetTitle("#epsilon #times A");
       fEffPt.SetOption("PE");
+      fEffPt_TPC.SetMarkerStyle(20);
+      fEffPt_TPC.SetMarkerSize(0.8);
+      fEffPt_TPC.GetYaxis()->SetRangeUser(0., 1.);
+      fEffPt_TPC.GetXaxis()->SetRangeUser(1., 2.);
+      fEffPt_TPC.GetXaxis()->SetTitle("#it{p}_{T}");
+      fEffPt_TPC.GetYaxis()->SetTitle("#epsilon #times A");
+      fEffPt_TPC.SetOption("PE");
       dirOutFile->cd();
       fEffPt.Write();
+      fEffPt_TPC.Write();
       fTotal_Pt->Write();
       fITS_TPC_TOF_Pt->Write();
+      fITS_TPC_Pt->Write();
       // save plot image
       TCanvas canv;
       fEffPt.Draw("");

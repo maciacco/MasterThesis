@@ -660,7 +660,7 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
       hRatio.SetBinContent(iPtBin,fRatioFromVariationsTot.GetBinContent(iPtBin));
       hRatio.SetBinError(iPtBin,hRatio.GetBinContent(iPtBin)*fSystematicUncertaintyTotal.GetBinContent(iPtBin));
     }
-    hRatio.Fit("pol0","R","",1.,3.);
+    hRatio.Fit("pol0","R","",.5,3.);
     hRatio.Write();
 
     TH1D h_trial("h_trial","h_trial",kNPtBins,kPtBins);
@@ -671,7 +671,7 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
         h_trial.SetBinContent(iPtBin,fRatioFromVariationsTot.GetBinContent(iPtBin)+nsigma*fSystematicUncertaintyTotalPtCorrelated.GetBinContent(iPtBin)*fRatioFromVariationsTot.GetBinContent(iPtBin));
         h_trial.SetBinError(iPtBin,hRatio.GetBinContent(iPtBin)*fSystematicUncertaintyTotal.GetBinContent(iPtBin));
       }
-      h_trial.Fit("pol0","QR","",1.,3.);
+      h_trial.Fit("pol0","QR","",.5,3.);
       //if( /* h_trial.GetFunction("pol0")->GetProb()>0.025 &&  */h_trial.GetFunction("pol0")->GetProb()<0.95/* (h_trial.GetFunction("pol0")->GetChisquare()/h_trial.GetFunction("pol0")->GetNDF())<2. */)
       fRatioDistributionTrials.Fill(h_trial.GetFunction("pol0")->GetParameter(0));
     }
@@ -685,7 +685,7 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
     hRatio.SetMarkerSize(0.8);
     hRatio.GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
     hRatio.GetYaxis()->SetTitle("Ratio #bar{p}/p");
-    hRatio.GetXaxis()->SetRangeUser(1.,3.);
+    hRatio.GetXaxis()->SetRangeUser(.5,3.);
     hRatio.GetYaxis()->SetRangeUser(0.8, 1.2);
     hRatio.SetStats(0);
     hRatio.Draw("pe2");
@@ -697,7 +697,7 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
     }
     TGraphErrors gRatioCorr(&hRatio);
     //gRatio.Draw("P5 same");
-    gRatio.GetXaxis()->SetRangeUser(1.,3.);
+    gRatio.GetXaxis()->SetRangeUser(.5,3.);
     gRatio.GetYaxis()->SetRangeUser(0.8, 1.2);
     gRatioCorr.SetFillStyle(3145);
     gRatioCorr.SetFillColor(centrality_colors[iC]);
@@ -728,7 +728,7 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
 
     // save ratio plots
     TLegend lSys(0.2,0.6,0.4,0.8);
-    fSystematicUncertaintyTotal.GetXaxis()->SetRangeUser(1.,3.);
+    fSystematicUncertaintyTotal.GetXaxis()->SetRangeUser(.5,3.);
     fSystematicUncertaintyTotal.GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
     fSystematicUncertaintyTotal.GetYaxis()->SetTitle("Systematic Uncertainty");
     fSystematicUncertaintyTotal.SetMinimum(0.);

@@ -68,12 +68,17 @@ void SecondaryMC(const char *cutSettings = "", const double DCAxyCut = 0.12, con
 
     // get histograms from files
     TH3F *fDCAdat = (TH3F *)listMc21l5_likeData->Get(Form("f%sDCAxyTOF", kAntimatterMatter[iMatt]));
+    TH3F *fDCAdat_TPC = (TH3F *)listMc21l5_likeData->Get(Form("f%sDCAxyTPC", kAntimatterMatter[iMatt]));
     // TH3F *fDCAdat_20g7 = (TH3F *)listMc20g7_likeData->Get(Form("f%sDCAxyTOF", kAntimatterMatter[iMatt]));
     TH3F *fDCAprim, *fDCAsec, *fDCAsecWD, *fDCAprim_20g7, *fDCAsec_20g7, *fDCAsecWD_20g7;
+    TH3F *fDCAprim_TPC, *fDCAsec_TPC, *fDCAsecWD_TPC, *fDCAprim_20g7_TPC, *fDCAsec_20g7_TPC, *fDCAsecWD_20g7_TPC;
     
     fDCAprim = (TH3F *)listMc21l5->Get(Form("f%sDCAPrimaryTOF", kAntimatterMatter[iMatt]));
     fDCAsec = (TH3F *)listMc21l5->Get(Form("f%sDCASecondaryTOF", kAntimatterMatter[iMatt]));
     fDCAsecWD = (TH3F *)listMc21l5->Get(Form("f%sDCASecondaryWeakTOF", kAntimatterMatter[iMatt]));
+    fDCAprim_TPC = (TH3F *)listMc21l5->Get(Form("f%sDCAPrimaryTPC", kAntimatterMatter[iMatt]));
+    fDCAsec_TPC = (TH3F *)listMc21l5->Get(Form("f%sDCASecondaryTPC", kAntimatterMatter[iMatt]));
+    fDCAsecWD_TPC = (TH3F *)listMc21l5->Get(Form("f%sDCASecondaryWeakTPC", kAntimatterMatter[iMatt]));
     // fDCAprim_20g7 = (TH3F *)listMc20g7->Get(Form("f%sDCAPrimaryTOF", kAntimatterMatter[iMatt]));
     // fDCAsec_20g7 = (TH3F *)listMc20g7->Get(Form("f%sDCASecondaryTOF", kAntimatterMatter[iMatt]));
     // fDCAsecWD_20g7 = (TH3F *)listMc20g7->Get(Form("f%sDCASecondaryWeakTOF", kAntimatterMatter[iMatt]));
@@ -86,12 +91,15 @@ void SecondaryMC(const char *cutSettings = "", const double DCAxyCut = 0.12, con
     for (int iCent = 0; iCent < kNCentClasses; ++iCent)
     {
       TH1D fPrimaryFrac(Form("f%sPrimFrac_%.0f_%.0f", kAntimatterMatter[iMatt], kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1]), Form("%.0f-%.0f%%", kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1]), kNPtBins, kPtBins);
+      TH1D fPrimaryFrac_TPC(Form("f%sPrimFracTPC_%.0f_%.0f", kAntimatterMatter[iMatt], kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1]), Form("%.0f-%.0f%%", kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1]), kNPtBins, kPtBins);
+
 
       int nUsedPtBins = 42;
 
-      for (int iPtBin = 5; iPtBin < nUsedPtBins + 1; ++iPtBin)
+      for (int iPtBin = 1; iPtBin < nUsedPtBins + 1; ++iPtBin)
       { // loop on pT bins
         fPrimaryFrac.SetBinContent(iPtBin, 1.);
+        fPrimaryFrac_TPC.SetBinContent(iPtBin, 1.);
 
         double ptMin = fPrimaryFrac.GetXaxis()->GetBinLowEdge(iPtBin);
         double ptMax = fPrimaryFrac.GetXaxis()->GetBinUpEdge(iPtBin);
@@ -108,6 +116,14 @@ void SecondaryMC(const char *cutSettings = "", const double DCAxyCut = 0.12, con
         TH1D *fDCAMcProjPrim_20g7;
         TH1D *fDCAMcProjSec_20g7;
         TH1D *fDCAMcProjSecWD_20g7;
+        TH1D *fDCAdatProj_TPC;
+        TH1D *fDCAMcProjPrim_TPC;
+        TH1D *fDCAMcProjSec_TPC;
+        TH1D *fDCAMcProjSecWD_TPC;
+        TH1D *fDCAdatProj_20g7_TPC;
+        TH1D *fDCAMcProjPrim_20g7_TPC;
+        TH1D *fDCAMcProjSec_20g7_TPC;
+        TH1D *fDCAMcProjSecWD_20g7_TPC;
         TString canvTitleTOF;
         TString canvNameTOF;
         TH1D fRatioDCAPrim("", "", kNDCABinsMedium, kDCABinsMedium);
@@ -123,6 +139,15 @@ void SecondaryMC(const char *cutSettings = "", const double DCAxyCut = 0.12, con
         fDCAMcProjSec->SetTitle(projTitle);
         fDCAMcProjSecWD = fDCAsecWD->ProjectionZ(TString::Format("f%sDCASecWDTOF_%.0f_%.0f_%.2f_%.2f", kAntimatterMatter[iMatt], fDCAdat->GetXaxis()->GetBinLowEdge(kCentBinsProton[iCent][0]), fDCAdat->GetXaxis()->GetBinUpEdge(kCentBinsProton[iCent][1]), fDCAdat->GetYaxis()->GetBinLowEdge(pTbinsIndexMin), fDCAdat->GetYaxis()->GetBinUpEdge(pTbinsIndexMax)), kCentBinsProton[iCent][0], kCentBinsProton[iCent][1], pTbinsIndexMin, pTbinsIndexMax);
         fDCAMcProjSecWD->SetTitle(projTitle);
+
+        fDCAdatProj_TPC = fDCAdat_TPC->ProjectionZ(TString::Format("f%sDCAxyTPC_%.0f_%.0f_%.2f_%.2f", kAntimatterMatter[iMatt], fDCAdat_TPC->GetXaxis()->GetBinLowEdge(kCentBinsProton[iCent][0]), fDCAdat_TPC->GetXaxis()->GetBinUpEdge(kCentBinsProton[iCent][1]), fDCAdat_TPC->GetYaxis()->GetBinLowEdge(pTbinsIndexMin), fDCAdat_TPC->GetYaxis()->GetBinUpEdge(pTbinsIndexMax)), kCentBinsProton[iCent][0], kCentBinsProton[iCent][1], pTbinsIndexMin, pTbinsIndexMax);
+        fDCAdatProj_TPC->SetTitle(projTitle);
+        fDCAMcProjPrim_TPC = fDCAprim_TPC->ProjectionZ(TString::Format("f%sDCAPrimTPC_%.0f_%.0f_%.2f_%.2f", kAntimatterMatter[iMatt], fDCAdat_TPC->GetXaxis()->GetBinLowEdge(kCentBinsProton[iCent][0]), fDCAdat_TPC->GetXaxis()->GetBinUpEdge(kCentBinsProton[iCent][1]), fDCAdat_TPC->GetYaxis()->GetBinLowEdge(pTbinsIndexMin), fDCAdat_TPC->GetYaxis()->GetBinUpEdge(pTbinsIndexMax)), kCentBinsProton[iCent][0], kCentBinsProton[iCent][1], pTbinsIndexMin, pTbinsIndexMax);
+        fDCAMcProjPrim_TPC->SetTitle(projTitle);
+        fDCAMcProjSec_TPC = fDCAsec_TPC->ProjectionZ(TString::Format("f%sDCASecTPC_%.0f_%.0f_%.2f_%.2f", kAntimatterMatter[iMatt], fDCAdat_TPC->GetXaxis()->GetBinLowEdge(kCentBinsProton[iCent][0]), fDCAdat_TPC->GetXaxis()->GetBinUpEdge(kCentBinsProton[iCent][1]), fDCAdat_TPC->GetYaxis()->GetBinLowEdge(pTbinsIndexMin), fDCAdat_TPC->GetYaxis()->GetBinUpEdge(pTbinsIndexMax)), kCentBinsProton[iCent][0], kCentBinsProton[iCent][1], pTbinsIndexMin, pTbinsIndexMax);
+        fDCAMcProjSec_TPC->SetTitle(projTitle);
+        fDCAMcProjSecWD_TPC = fDCAsecWD_TPC->ProjectionZ(TString::Format("f%sDCASecWDTPC_%.0f_%.0f_%.2f_%.2f", kAntimatterMatter[iMatt], fDCAdat_TPC->GetXaxis()->GetBinLowEdge(kCentBinsProton[iCent][0]), fDCAdat_TPC->GetXaxis()->GetBinUpEdge(kCentBinsProton[iCent][1]), fDCAdat_TPC->GetYaxis()->GetBinLowEdge(pTbinsIndexMin), fDCAdat_TPC->GetYaxis()->GetBinUpEdge(pTbinsIndexMax)), kCentBinsProton[iCent][0], kCentBinsProton[iCent][1], pTbinsIndexMin, pTbinsIndexMax);
+        fDCAMcProjSecWD_TPC->SetTitle(projTitle);
 
         // lhc21l5 - new mc
         // fDCAdatProj_20g7 = fDCAdat_20g7->ProjectionZ(TString::Format("f%sDCAxyTOF_20g7_%.0f_%.0f_%.2f_%.2f", kAntimatterMatter[iMatt], fDCAdat->GetXaxis()->GetBinLowEdge(kCentBinsProton[iCent][0]), fDCAdat->GetXaxis()->GetBinUpEdge(kCentBinsProton[iCent][1]), fDCAdat->GetYaxis()->GetBinLowEdge(pTbinsIndexMin), fDCAdat->GetYaxis()->GetBinUpEdge(pTbinsIndexMax)), kCentBinsProton[iCent][0], kCentBinsProton[iCent][1], pTbinsIndexMin, pTbinsIndexMax);
@@ -161,6 +186,8 @@ void SecondaryMC(const char *cutSettings = "", const double DCAxyCut = 0.12, con
 
         fDCAdatProj->Write();
         fDCAMcProjPrim->Write();
+        fDCAdatProj_TPC->Write();
+        fDCAMcProjPrim_TPC->Write();
 
         // compute wd template fraction
         // compute fraction of primaries and material secondaries
@@ -172,9 +199,22 @@ void SecondaryMC(const char *cutSettings = "", const double DCAxyCut = 0.12, con
         if (kVerbose) std::cout << "primary integral = " << intPrimDCAcut << std::endl;
         double primaryRatio = (intPrimDCAcut)/(dataIntegralDCAcut);
         double primaryRatioError = TMath::Sqrt(primaryRatio * (1.f - primaryRatio) / dataIntegralDCAcut);
-        
+
         fPrimaryFrac.SetBinContent(fPrimaryFrac.FindBin(ptMin + 0.005f), primaryRatio);
         fPrimaryFrac.SetBinError(fPrimaryFrac.FindBin(ptMin + 0.005f), primaryRatioError);
+        
+        // compute fraction of primaries and material secondaries - TPC
+        intPrimDCAcutError = 0.;
+        intPrimDCAcut = fDCAMcProjPrim_TPC->Integral(fDCAMcProjPrim_TPC->FindBin(-DCAxyCut), fDCAMcProjPrim_TPC->FindBin(DCAxyCut-0.001));
+        intSecDCAcut = fDCAMcProjSec_TPC->Integral(fDCAMcProjSec_TPC->FindBin(-DCAxyCut), fDCAMcProjSec_TPC->FindBin(DCAxyCut-0.001));
+        intSecWDDCAcut = fDCAMcProjSecWD_TPC->Integral(fDCAMcProjSecWD_TPC->FindBin(-DCAxyCut), fDCAMcProjSecWD_TPC->FindBin(DCAxyCut-0.001));
+        dataIntegralDCAcut = intPrimDCAcut+intSecDCAcut+intSecWDDCAcut;
+        if (kVerbose) std::cout << "primary integral (TPC) = " << intPrimDCAcut << std::endl;
+        primaryRatio = (intPrimDCAcut)/(dataIntegralDCAcut);
+        primaryRatioError = TMath::Sqrt(primaryRatio * (1.f - primaryRatio) / dataIntegralDCAcut);
+
+        fPrimaryFrac_TPC.SetBinContent(fPrimaryFrac_TPC.FindBin(ptMin + 0.005f), primaryRatio);
+        fPrimaryFrac_TPC.SetBinError(fPrimaryFrac_TPC.FindBin(ptMin + 0.005f), primaryRatioError);
       }
 
       // primary fraction fit with fFitFunc function
@@ -193,6 +233,14 @@ void SecondaryMC(const char *cutSettings = "", const double DCAxyCut = 0.12, con
       fPrimaryFrac.GetXaxis()->SetTitle(kAxisTitlePt);
       fPrimaryFrac.GetXaxis()->SetRangeUser(0.5, 5.0);
       fPrimaryFrac.Write();
+
+      fPrimaryFrac_TPC.SetMarkerStyle(20);
+      fPrimaryFrac_TPC.SetMarkerSize(0.8);
+      fPrimaryFrac_TPC.SetOption("pe");
+      fPrimaryFrac_TPC.GetYaxis()->SetTitle("#it{f}_{#it{prim}}");
+      fPrimaryFrac_TPC.GetXaxis()->SetTitle(kAxisTitlePt);
+      fPrimaryFrac_TPC.GetXaxis()->SetRangeUser(0.5, 5.0);
+      fPrimaryFrac_TPC.Write();
 
       system(Form("mkdir %s/primary_plots", kPlotDir));
       TCanvas cPrim("cPrim", "cPrim");

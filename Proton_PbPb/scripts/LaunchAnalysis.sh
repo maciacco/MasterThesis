@@ -14,6 +14,7 @@ signalName="SignalProtonGausDExpSignal1_LongMCTracks_1"
 spectraName="SpectraProton_MC21l5_raw_primary"
 EfficiencyHe3="EfficiencyProtonMC_21l5_false__"
 PrimaryHe3="PrimaryProton_large"
+PrimaryHe3TPC="PrimaryProtonTPC_large"
 
 # create output directories
 DIR_OUT=out
@@ -35,6 +36,11 @@ fi
 
 echo $cutSettings
 argumentSignal="$binCountingFlag,$expFlag"
+
+root -b -l <<EOF
+.L SecondaryTPC.cpp+
+SecondaryTPC("$cutSettings",0.12,"$fileData","$fileMC","$PrimaryHe3TPC",false)
+EOF
 
 if [ $extractRatios -eq 1 ]; then
     root -b -l <<EOF

@@ -143,7 +143,7 @@ void SignalBinned(const char *cutSettings = "", const double roi_nsigma = 8., co
       TH1D fAlphaR("fAlphaR", "fAlphaR", kNPtBins, kPtBins);
       int nUsedPtBins = 42; // up to 2.00 GeV/c
 
-      for (int iPtBin = 5; iPtBin < nUsedPtBins + 1; ++iPtBin)
+      for (int iPtBin = 1; iPtBin < nUsedPtBins + 1; ++iPtBin)
       { // loop on pT bins
         double ptMin = fTOFrawYield.GetXaxis()->GetBinLowEdge(iPtBin);
         double ptMax = fTOFrawYield.GetXaxis()->GetBinUpEdge(iPtBin);
@@ -400,7 +400,7 @@ void SignalBinned(const char *cutSettings = "", const double roi_nsigma = 8., co
             {
               rawYield = data.sumEntries(Form("tofSignal>%f && tofSignal<%f", -0.7815 * kNSigma, 0.7815 * kNSigma)); // only for He4 in signal loss studies
             }
-            if (r->status()!=0) rawYield=0;
+            if (r->status()!=0 || ptMin<0.49) rawYield=0;
           }
           else
           {
@@ -409,7 +409,7 @@ void SignalBinned(const char *cutSettings = "", const double roi_nsigma = 8., co
           }
 
           tpcSignalProjection->SetMarkerStyle(20);
-          tpcSignalProjection->SetMarkerSize(0.8);
+          tpcSignalProjection->SetMarkerSize(1.);
           tpcSignalProjection->SetDrawOption("pe");
           tpcSignalProjection->SetMarkerColor(kBlack);
           tpcSignalProjection->GetXaxis()->SetLabelSize(0.04);
@@ -418,8 +418,14 @@ void SignalBinned(const char *cutSettings = "", const double roi_nsigma = 8., co
           tpcSignalProjection->GetYaxis()->SetTitle(Form("Entries / %.2f",tpcSignalProjection->GetBinWidth(1)));
 
           double tpc_range_limit = 3.;
+          double tpc_tmp_mean=0., tpc_tmp_rms=0.;
           double background=0.;
           TCanvas c(Form("%s",tpcSignalProjection->GetName()),Form("%s",tpcSignalProjection->GetName()));
+          if (ptMin < 0.59) {
+            tpcSignalProjection->Fit("gaus","QR0","",-1.,1.);
+            tpc_tmp_mean=tpcSignalProjection->GetFunction("gaus")->GetParameter(1);
+            tpc_tmp_rms=tpcSignalProjection->GetFunction("gaus")->GetParameter(2);
+          }
           if (ptMin > 0.39 && ptMin < 0.44)tpcSignalProjection->Fit("expo","QR","",-7.,-5.5);
           else if (ptMin > 0.44 && ptMin < 0.49)tpcSignalProjection->Fit("expo","QR","",-6.5,-5.);
           else if (ptMin > 0.49 && ptMin < 0.51) tpcSignalProjection->Fit("expo","QR","",-6.,-4.5);
@@ -430,9 +436,10 @@ void SignalBinned(const char *cutSettings = "", const double roi_nsigma = 8., co
             f.SetParLimits(2,0.5,2.5);
             f.SetParLimits(3,0.,10.);
             f.SetParLimits(4,-7.,0.);
+            f.SetLineWidth(2);
             f.SetLineColor(kBlue);
             for(int I=0;I<2;++I)tpcSignalProjection->Fit("fit","QMR","",-6.5,-3.);
-            background = f.Integral(-tpc_range_limit,tpc_range_limit);
+            background = f.Integral(tpc_tmp_mean-tpc_range_limit*tpc_tmp_rms,tpc_tmp_mean+tpc_range_limit*tpc_tmp_rms);
             tpcSignalProjection->Draw("pe");
             f.Draw("same");
             tpcSignalProjection->GetXaxis()->SetRangeUser(-6.,6.);
@@ -451,9 +458,11 @@ void SignalBinned(const char *cutSettings = "", const double roi_nsigma = 8., co
             f.SetLineColor(kBlue);
             f.SetRange(-20,20);
             if (ptMin<0.69) {
-              for(int I=0;I<2;++I)tpcSignalProjection->Fit("fit","QMRN","",-6.2,1.4);
+              for(int I=0;I<2;++I)tpcSignalProjection->Fit("fit","QMR0","",-6.2,1.4);
             }
-            else tpcSignalProjection->Fit("fit","QMRN","",-5.7,1.5);
+            else tpcSignalProjection->Fit("fit","QMR0","",-5.7,1.5);
+            tpc_tmp_mean=f.GetParameter(6);
+            tpc_tmp_mean=f.GetParameter(7);
             TF1 fBackground(Form("fit%s",tpcSignalProjection->GetName()),"gaus+expo(3)",-10,10);
             fBackground.FixParameter(0,f.GetParameter(0));
             fBackground.FixParameter(1,f.GetParameter(1));
@@ -461,8 +470,9 @@ void SignalBinned(const char *cutSettings = "", const double roi_nsigma = 8., co
             fBackground.FixParameter(3,f.GetParameter(3));
             fBackground.FixParameter(4,f.GetParameter(4));
             fBackground.SetLineColor(kBlue);
+            fBackground.SetLineWidth(2);
             fBackground.Write();
-            background = fBackground.Integral(-tpc_range_limit,tpc_range_limit);
+            background = fBackground.Integral(tpc_tmp_mean-tpc_range_limit*tpc_tmp_rms,tpc_tmp_mean+tpc_range_limit*tpc_tmp_rms);
             tpcSignalProjection->Draw("pe");
             fBackground.Draw("same");
             tpcSignalProjection->GetXaxis()->SetRangeUser(-6.,6.);
@@ -478,22 +488,25 @@ void SignalBinned(const char *cutSettings = "", const double roi_nsigma = 8., co
             f.SetLineColor(kBlue);
             f.SetRange(-20,20);
             if (ptMin<0.69) {
-              for(int I=0;I<2;++I)tpcSignalProjection->Fit("fit","QMRN","",-6.2,1.4);
+              for(int I=0;I<2;++I)tpcSignalProjection->Fit("fit","QMR0","",-6.2,1.4);
             }
-            else tpcSignalProjection->Fit("fit","QMRN","",-5.7,1.5);
+            else tpcSignalProjection->Fit("fit","QMR0","",-5.7,1.5);
+            tpc_tmp_mean=f.GetParameter(3);
+            tpc_tmp_mean=f.GetParameter(4);
             TF1 fBackground(Form("fit%s",tpcSignalProjection->GetName()),"expo",-10,10);
             fBackground.FixParameter(0,f.GetParameter(0));
             fBackground.FixParameter(1,f.GetParameter(1));
             fBackground.SetLineColor(kBlue);
+            fBackground.SetLineWidth(2);
             fBackground.Write();
-            background = fBackground.Integral(-tpc_range_limit,tpc_range_limit);
+            background = fBackground.Integral(tpc_tmp_mean-tpc_range_limit*tpc_tmp_rms,tpc_tmp_mean+tpc_range_limit*tpc_tmp_rms);
             tpcSignalProjection->Draw("pe");
             fBackground.Draw("same");
             tpcSignalProjection->GetXaxis()->SetRangeUser(-6.,6.);
             c.Write();
           }
           else if (ptMin > 0.39 && ptMin < 0.54) {
-            background = tpcSignalProjection->GetFunction("expo")->Integral(-tpc_range_limit,tpc_range_limit);
+            background = tpcSignalProjection->GetFunction("expo")->Integral(tpc_tmp_mean-tpc_range_limit*tpc_tmp_rms,tpc_tmp_mean+tpc_range_limit*tpc_tmp_rms);
             tpcSignalProjection->GetFunction("expo")->SetLineColor(kBlue);
             tpcSignalProjection->GetFunction("expo")->SetRange(-10,10);
             tpcSignalProjection->Draw("pe");
