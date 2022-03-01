@@ -18,6 +18,7 @@ signalName="SignalProtonSys"
 spectraName="SpectraProtonSys"
 EfficiencyHe3="EfficiencyProtonSys"
 PrimaryHe3="PrimaryProtonSys"
+PrimaryHe3TPC="PrimaryProtonSysTPC"
 
 # create output directories
 DIR_OUT=out
@@ -58,6 +59,11 @@ Secondary("$cutSettings",$dcaxycut,"$fileData","$fileMC","$PrimaryHe3",$G3G4Prim
 .q
 EOF
 fi
+
+root -b -l <<EOF
+.L SecondaryTPC.cpp+
+SecondaryTPC("$cutSettings",$dcaxycut,"$fileData","$fileMC","$PrimaryHe3TPC",$G3G4Prim)
+EOF
 
 if [ $extractRatios -eq 1 ]; then
     root -b -l <<EOF

@@ -126,7 +126,7 @@ void Secondary(const char *cutSettings = "", const double DCAxyCut=0.12, const c
 
       int nUsedPtBins = 42;
       TString settings(cutSettings);
-      if (!settings.CompareTo("chisquare1"))nUsedPtBins=41;
+      if (!settings.CompareTo("chisquare1")||!settings.CompareTo("chisquare0"))nUsedPtBins=41;
       for (int iPtBin = 0; iPtBin < nUsedPtBins + 1; ++iPtBin){
         double ptMin = fPrimaryFrac.GetXaxis()->GetBinLowEdge(iPtBin);
         fPrimaryFrac.SetBinContent(fPrimaryFrac.FindBin(ptMin + 0.005f), 0);

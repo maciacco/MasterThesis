@@ -12,6 +12,7 @@ fileData="AnalysisResults"
 fileMC="AnalysisResults_LHC21l5_full_largeDCA_cutChi2"
 signalName="SignalProtonGausDExpSignal1_LongMCTracks_1"
 spectraName="SpectraProton_MC21l5_raw_primary"
+spectraNameTPC="SpectraProtonTPC_MC21l5_raw_primary"
 EfficiencyHe3="EfficiencyProtonMC_21l5_false__"
 PrimaryHe3="PrimaryProton_large"
 PrimaryHe3TPC="PrimaryProtonTPC_large"
@@ -59,3 +60,8 @@ Spectra("$cutSettings",8,0,$argumentSignal,$sigmoidFlag,"$spectraHistNameId","$s
 .q
 EOF
 fi
+
+root -b -l <<EOF
+.L SpectraTPC.cpp+
+SpectraTPC("$cutSettings",8,0,$argumentSignal,$sigmoidFlag,"$spectraHistNameId","$spectraNameTPC","recreate","AnalysisResults","$signalName","$EfficiencyHe3","$PrimaryHe3TPC")
+EOF

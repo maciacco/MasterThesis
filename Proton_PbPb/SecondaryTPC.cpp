@@ -132,7 +132,7 @@ void SecondaryTPC(const char *cutSettings = "", const double DCAxyCut=0.12, cons
         fPrimaryFrac.SetBinContent(fPrimaryFrac.FindBin(ptMin + 0.005f), 0);
         fPrimaryFrac.SetBinError(fPrimaryFrac.FindBin(ptMin + 0.005f), 0);
       }
-
+//
       for (int iPtBin = 3; iPtBin < nUsedPtBins + 1; ++iPtBin)
       { // loop on pT bins
         //fPrimaryFrac.SetBinContent(iPtBin, 1.);
@@ -141,7 +141,7 @@ void SecondaryTPC(const char *cutSettings = "", const double DCAxyCut=0.12, cons
         double ptMax = fPrimaryFrac.GetXaxis()->GetBinUpEdge(iPtBin);
         int pTbinsIndexMin = fDCAdat->GetYaxis()->FindBin(ptMin);
         int pTbinsIndexMax = fDCAdat->GetYaxis()->FindBin(ptMax - 0.005);
-        if (ptMin>0.79)continue;
+        if (ptMin>0.89)continue;
         outFile->cd();
 
         // project TH3 histogram
@@ -314,6 +314,9 @@ void SecondaryTPC(const char *cutSettings = "", const double DCAxyCut=0.12, cons
           fit->Constrain(0,0.,1.0);
           fit->Constrain(1,0.,1.0);
         }
+        else fit->Constrain(0,0.,1.0);
+        if (iCent==2&&iMatt==1&&ptMin>0.84)fit->Constrain(2, 0., .1);
+        if (iCent==0&&iMatt==1&&ptMin>0.60 && ptMin<0.7)fit->Constrain(1.,0.,1.0);
         /* if (iMatt == 0 && iCent == 1 && ptMin > 1.4)
           fit->Constrain(1, 0., 0.99);
         else if (iMatt == 0 && iCent == 1 && ptMin < 1.4)
@@ -458,8 +461,10 @@ void SecondaryTPC(const char *cutSettings = "", const double DCAxyCut=0.12, cons
 
           // compute fraction of primaries and material secondaries
           double intPrimDCAcutError = 0.;
+          double intSecDCAcutError = 0.;
           double intPrimDCAcut = mc1->IntegralAndError(result->FindBin(-DCAxyCut), result->FindBin(DCAxyCut-0.001), intPrimDCAcutError);
-          //double intSecDCAcut = mc3->Integral(result->FindBin(-0.12), result->FindBin(0.115));
+          double intSecDCAcut = 0.;
+          if (ptMin<noSecMaterialThreshold) intSecDCAcut = mc3->IntegralAndError(result->FindBin(-DCAxyCut), result->FindBin(DCAxyCut-0.001), intSecDCAcutError);
           double intResDCAcutError = 0.;
           double intResDCAcut = result->IntegralAndError(result->FindBin(-DCAxyCut), result->FindBin(DCAxyCut-0.001), intResDCAcutError);
           double primaryRatio = intPrimDCAcut / intResDCAcut;
@@ -467,8 +472,11 @@ void SecondaryTPC(const char *cutSettings = "", const double DCAxyCut=0.12, cons
           //double primaryRatioError = TMath::Sqrt(primaryRatio * (1.f - primaryRatio) / intResDCAcut);
           if (primaryRatio < 1.e-7)
             primaryRatioError = 1. / intResDCAcut;
-          //double secondaryRatio = intSecDCAcut / intResDCAcut;
-          //double secondaryRatioError = TMath::Sqrt(secondaryRatio * (1.f - secondaryRatio) / intResDCAcut);
+          double secondaryRatioError, secondaryRatio;
+          if (ptMin<noSecMaterialThreshold){
+            secondaryRatio = intSecDCAcut / intResDCAcut;
+            secondaryRatioError = errFracMc3/fracMc1*primaryRatio;
+          }
           fPrimaryFrac.SetBinContent(fPrimaryFrac.FindBin(ptMin + 0.005f), primaryRatio);
           fPrimaryFrac.SetBinError(fPrimaryFrac.FindBin(ptMin + 0.005f), primaryRatioError);
           fChi2.SetBinContent(iPtBin,fit->GetChisquare()/fit->GetNDF());
@@ -482,10 +490,10 @@ void SecondaryTPC(const char *cutSettings = "", const double DCAxyCut=0.12, cons
             fPrimaryFrac.SetBinError(fPrimaryFrac.FindBin(ptMin + 0.005f), prim_frac_roofit_err);
           }
 
-          /* if (ptMin < noSecMaterialThreshold) {
+          if (ptMin < noSecMaterialThreshold) {
             fSecondaryFrac.SetBinContent(fSecondaryFrac.FindBin(ptMin + 0.005f), secondaryRatio);
             fSecondaryFrac.SetBinError(fSecondaryFrac.FindBin(ptMin + 0.005f), secondaryRatioError);
-          } */
+          }
 
           canv.SetLogy();
           canv.Write();
@@ -587,6 +595,8 @@ void SecondaryTPC(const char *cutSettings = "", const double DCAxyCut=0.12, cons
       fPrimaryFrac.GetXaxis()->SetTitle(kAxisTitlePt);
       fPrimaryFrac.GetXaxis()->SetRangeUser(0.5, 5.0);
       fPrimaryFrac.Write();
+
+      fSecondaryFrac.Write();
 
       TCanvas cRMS(Form("c%sPrimaryRMS_%.0f_%.0f",kAntimatterMatter[iMatt],kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1]),"cPrimaryRMS");
       TLegend ll(0.5,0.5,0.7,0.7);

@@ -417,7 +417,7 @@ void SignalBinned(const char *cutSettings = "", const double roi_nsigma = 8., co
           tpcSignalProjection->GetXaxis()->SetTitle("n#sigma_{p}");
           tpcSignalProjection->GetYaxis()->SetTitle(Form("Entries / %.2f",tpcSignalProjection->GetBinWidth(1)));
 
-          double tpc_range_limit = 3.;
+          double tpc_range_limit = (roi_nsigma-8.)*0.5+3.;
           double tpc_tmp_mean=0., tpc_tmp_rms=0.;
           double background=0.;
           TCanvas c(Form("%s",tpcSignalProjection->GetName()),Form("%s",tpcSignalProjection->GetName()));
@@ -478,7 +478,7 @@ void SignalBinned(const char *cutSettings = "", const double roi_nsigma = 8., co
             tpcSignalProjection->GetXaxis()->SetRangeUser(-6.,6.);
             c.Write();
           }
-          else if (ptMin>0.69 && ptMin < 0.79) {
+          else if (ptMin>0.69 && ptMin < 0.89) {
             TF1 f("fit","expo+gaus(2)");
             f.SetParLimits(2,0,1e8);
             f.SetParLimits(3,-1.,1.);
@@ -490,7 +490,8 @@ void SignalBinned(const char *cutSettings = "", const double roi_nsigma = 8., co
             if (ptMin<0.69) {
               for(int I=0;I<2;++I)tpcSignalProjection->Fit("fit","QMR0","",-6.2,1.4);
             }
-            else tpcSignalProjection->Fit("fit","QMR0","",-5.7,1.5);
+            else if (ptMin < 0.79)tpcSignalProjection->Fit("fit","QMR0","",-5.7,1.5);
+            else tpcSignalProjection->Fit("fit","QMR0","",-4.,1.5);
             tpc_tmp_mean=f.GetParameter(3);
             tpc_tmp_mean=f.GetParameter(4);
             TF1 fBackground(Form("fit%s",tpcSignalProjection->GetName()),"expo",-10,10);
@@ -503,6 +504,7 @@ void SignalBinned(const char *cutSettings = "", const double roi_nsigma = 8., co
             tpcSignalProjection->Draw("pe");
             fBackground.Draw("same");
             tpcSignalProjection->GetXaxis()->SetRangeUser(-6.,6.);
+            if (ptMin>0.79)tpcSignalProjection->GetXaxis()->SetRangeUser(-4.,4.);
             c.Write();
           }
           else if (ptMin > 0.39 && ptMin < 0.54) {
@@ -526,7 +528,11 @@ void SignalBinned(const char *cutSettings = "", const double roi_nsigma = 8., co
           // fill raw yield histogram
           fTPCrawYield.SetBinContent(fTPCrawYield.FindBin((ptMax + ptMin) / 2.), rawYieldTPC);
           fTPCrawYield.SetBinError(fTPCrawYield.FindBin((ptMax + ptMin) / 2.), rawYieldErrorTPC);
-
+          if (ptMin>0.89){
+            fTPCrawYield.SetBinContent(fTPCrawYield.FindBin((ptMax + ptMin) / 2.), 0.);
+            fTPCrawYield.SetBinError(fTPCrawYield.FindBin((ptMax + ptMin) / 2.), 0.);
+          }
+          
           // fill raw yield histogram
           fTOFrawYield.SetBinContent(fTOFrawYield.FindBin((ptMax + ptMin) / 2.), rawYield);
           fTOFrawYield.SetBinError(fTOFrawYield.FindBin((ptMax + ptMin) / 2.), rawYieldError);
