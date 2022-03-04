@@ -8,6 +8,8 @@ sigmoidFlag=0
 spectraHistNameId=""
 extractRatios=1
 
+#fileData="../AnalysisResults_LHC22b9_3"
+#fileMC="../AnalysisResults_LHC22b9_3"
 fileData="AnalysisResults_LHC21l5_full_largeDCA_cutChi2"
 fileMC="AnalysisResults_LHC21l5_full_largeDCA_cutChi2"
 # fileData="AnalysisResults-6"

@@ -8,13 +8,15 @@ sigmoidFlag=0
 spectraHistNameId=""
 extractRatios=1
 
-fileData="AnalysisResults_LHC21l5_full_largeDCA_cutChi2"
-fileMC="AnalysisResults_LHC21l5_full_largeDCA_cutChi2"
+fileData="../AnalysisResults_LHC22b9_3"
+fileMC="../AnalysisResults_LHC22b9_3"
+#fileData="AnalysisResults_LHC21l5_full_largeDCA_cutChi2"
+#fileMC="AnalysisResults_LHC21l5_full_largeDCA_cutChi2"
 # fileData="LHC20e3a"
 # fileMC="LHC20e3a"
 signalName="SignalPionMC_21l5_false"
 spectraName="SpectraPionMCMC_21l5_false"
-EfficiencyHe3="EfficiencyPionMC_21l5_false_"
+EfficiencyHe3="EfficiencyPionMC_21l5_false_LHC22b9_3"
 PrimaryHe3="PrimaryPionMC_21l5_false"
 
 # create output directories

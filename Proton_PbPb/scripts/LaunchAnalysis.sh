@@ -40,7 +40,7 @@ argumentSignal="$binCountingFlag,$expFlag"
 
 root -b -l <<EOF
 .L SecondaryTPC.cpp+
-SecondaryTPC("$cutSettings",0.12,"$fileData","$fileMC","$PrimaryHe3TPC",false)
+//SecondaryTPC("$cutSettings",0.12,"$fileData","$fileMC","$PrimaryHe3TPC",false)
 EOF
 
 if [ $extractRatios -eq 1 ]; then
@@ -53,8 +53,8 @@ if [ $extractRatios -eq 1 ]; then
 .L Secondary.cpp+
 .L Spectra.cpp+
 .L AbsorptionError.cpp+
-SignalBinned("$cutSettings",8,$argumentSignal,"$fileData","$signalName","recreate")
-Secondary("$cutSettings",0.12,"$fileData","$fileMC","$PrimaryHe3",false)
+//SignalBinned("$cutSettings",8,$argumentSignal,"$fileData","$signalName","recreate")
+//Secondary("$cutSettings",0.12,"$fileData","$fileMC","$PrimaryHe3",false)
 Spectra("$cutSettings",8,0,$argumentSignal,$sigmoidFlag,"$spectraHistNameId","$spectraName","recreate","AnalysisResults","$signalName","$EfficiencyHe3","$PrimaryHe3")
 //AbsorptionError("AbsErrorMCorrection","recreate","$spectraName")
 .q
@@ -63,5 +63,5 @@ fi
 
 root -b -l <<EOF
 .L SpectraTPC.cpp+
-SpectraTPC("$cutSettings",8,0,$argumentSignal,$sigmoidFlag,"$spectraHistNameId","$spectraNameTPC","recreate","AnalysisResults","$signalName","$EfficiencyHe3","$PrimaryHe3TPC")
+//SpectraTPC("$cutSettings",8,0,$argumentSignal,$sigmoidFlag,"$spectraHistNameId","$spectraNameTPC","recreate","AnalysisResults","$signalName","$EfficiencyHe3","$PrimaryHe3TPC")
 EOF
