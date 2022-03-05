@@ -129,7 +129,10 @@ namespace utils
         continue;
       double eff = tof->GetBinContent(iBin) / den;
       efftof->SetBinContent(iBin, eff);
-      efftof->SetBinError(iBin, std::sqrt(eff * (1. - eff) / den));
+      if (eff>1.e-9)
+        efftof->SetBinError(iBin, std::sqrt(eff * (1. - eff) / den));
+      else
+        efftof->SetBinError(iBin, 0.);
     }
     return efftof;
   }

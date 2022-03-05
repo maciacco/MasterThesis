@@ -36,14 +36,18 @@ void MaterialBudget(){
           effRatio[iSp][iM][iVar]=new TH1D(*eff[0]);
           effRatio[iSp][iM][iVar]->SetName(Form("f%s%sEffRatio%s_%.0f_%.0f",antiMatter[iM],species[iSp],var[iVar],cent[iC][0],cent[iC][1]));
           iVar == 0 ? effRatio[iSp][iM][iVar]->Divide(eff[0],eff[1]) : effRatio[iSp][iM][iVar]->Divide(eff[2],eff[1]);
-          effRatio[iSp][iM][iVar]->Fit("pol0");
+          for (int iP=1;iP<effRatio[iSp][iM][iVar]->GetNbinsX();++iP){
+            if (effRatio[iSp][iM][iVar]->GetBinContent(iP)<1.e-9) effRatio[iSp][iM][iVar]->SetBinError(iP,0.);
+          }
+          TF1 fitFunction("fitFunction","pol0",1.0,3.);
+          effRatio[iSp][iM][iVar]->Fit("fitFunction","QR","",1.0,3.);
           outFile.cd();
           effRatio[iSp][iM][iVar]->Write();
         }
       }
     }
   }
-  for (int iC=0;iC<3;++iC){
+/*   for (int iC=0;iC<3;++iC){
     for (int iVar=0;iVar<2;++iVar){
       TH2D *fRatios=(TH2D*)fitSHM3D.Get(Form("fRatio_vs_b_%.0f_%.0f",cent[iC][0],cent[iC][1]));
       fRatios->SetBinContent(10, 6, fRatios->GetBinContent(10,6)*effRatio[2][1][iVar]->GetFunction("pol0")->GetParameter(0)/effRatio[2][0][iVar]->GetFunction("pol0")->GetParameter(0));
@@ -67,6 +71,6 @@ void MaterialBudget(){
       double temperature = 155.;
       std::cout<<"mu_B (T = 155 MeV) = "<<fit_parameter_0*155<<" +/- "<<fit_parameterError_0*155<<" +/- "<<fit_parameter_0*2<<" MeV; mu_I3 (T = 155 MeV) = "<<fit_parameter_1*155<<" +/- "<<fit_parameterError_1*155<<" +/- "<<fit_parameter_1*2<<" MeV"<<std::endl;
     }
-  }
+  } */
   outFile.Close();
 }

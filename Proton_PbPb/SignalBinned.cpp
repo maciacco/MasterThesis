@@ -253,7 +253,7 @@ void SignalBinned(const char *cutSettings = "", const double roi_nsigma = 8., co
         RooRealVar nSignal("N_{sig}", "nSignal", 1., 1.e8);
 
         slope1 = new RooRealVar("#tau_{1}", "slope1", -10., 10.);
-        slope2 = new RooRealVar("#tau_{2}", "slope2",-0.9, -10.,2.);
+        slope2 = new RooRealVar("#tau_{2}", "slope2",-0.9, -10.,0.);
         nBackground1 = new RooRealVar("#it{N}_{Bkg,1}", "nBackground1", 1., 1.e7);
         
         if (bkg_shape == 1)
@@ -282,38 +282,29 @@ void SignalBinned(const char *cutSettings = "", const double roi_nsigma = 8., co
 
         if (extractSignal)
         {
-          if (ptMin < 1.29) {
-            roi_nsigma_down = roi_nsigma+2;
-            roi_nsigma_up = roi_nsigma+2;
-          }
-          else {
-            roi_nsigma_down = roi_nsigma;
-            roi_nsigma_up = roi_nsigma;
-          }
+          roi_nsigma_down = roi_nsigma;
+          roi_nsigma_up = roi_nsigma;
           if (ptMin > 1.51) roi_nsigma_down=roi_nsigma-2; // default = 6sigma
-          if (ptMin > 2.0) {roi_nsigma_down=roi_nsigma-3; // default = 5sigma
+          if (ptMin > 1.99) {roi_nsigma_down=roi_nsigma-3; // default = 5sigma
             roi_nsigma_up=roi_nsigma+1.;
           }
           if (ptMin > 2.49) {
             roi_nsigma_down=roi_nsigma-4.5; // default = 4sigma
             roi_nsigma_up=roi_nsigma+2.;
           }
-          if (ptMin > 2.69) {
-            roi_nsigma_down=roi_nsigma-4.5; // default = 3sigma
-            roi_nsigma_up=roi_nsigma+2.5;
-          }
           tofSignal.setRange("leftSideband", nSigmaLeft, mean_tmp - roi_nsigma_down * rms_tmp);
           tofSignal.setRange("rightSideband", mean_tmp + roi_nsigma_up * rms_tmp, maxNsigma);
           // fit TOF signal distribution
 
-          if (ptMin>2.09){
-            for(int I=0;I<2;++I)background1->fitTo(dataAll, RooFit::Range("rightSideband"));
-            slope1->setConstant();
+          if (ptMin>1.99){
+            /* for(int I=0;I<2;++I)background1->fitTo(dataAll, RooFit::Range("rightSideband"));
+            slope1->setConstant(); */
             for (int I=0;I<2;++I)background0->fitTo(data, RooFit::Range("rightSideband"));
-            nBackground1->setConstant();
+            /* nBackground1->setConstant(); */
           }
-          else 
-            model->fitTo(dataAll, RooFit::Range("leftSideband,rightSideband"));
+          else {
+            for (int I=0;I<2;++I)model->fitTo(dataAll, RooFit::Range("leftSideband,rightSideband"));
+          }
           model->fitTo(data, RooFit::Save(), RooFit::Range("leftSideband,rightSideband"));
           r = model->fitTo(data, RooFit::Save(), RooFit::Range("leftSideband,rightSideband"));
 

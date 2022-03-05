@@ -150,7 +150,6 @@ void Spectra(const char *cutSettings = "", const double roi_nsigma = 8., const b
       // scale by number of events
       double events = norm->GetBinContent(4);
       fSpectra[iMatt]->Scale(1. / events, "width");
-      fSpectra[iMatt]->Fit("fitFunction","QR","",1.,3.);
 
       // write to file
       fSpectra[iMatt]->Write();
