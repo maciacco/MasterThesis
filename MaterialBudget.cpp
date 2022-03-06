@@ -2,6 +2,7 @@ const char *species[]={"Pion","Proton","He3"};
 const char *antiMatter[]={"A","M"};
 const char *var[]={"Minus","Plus"};
 const double cent[3][2]={{0,5},{5,10},{30,50}};
+const double fitRange[3][2]={{0.7,1.6},{1.,3.},{2.,10}};
 
 const bool VERBOSE=false;
 
@@ -10,6 +11,7 @@ void MaterialBudget(){
   TFile fitSHM3D("FinalPlot3D.root");
   TFile *f[3][3];
   TH1D *effRatio[3][2][2];
+  TH1D *effError[3][2];
   for (int iSp=0; iSp<3; ++iSp){
     for (int iC=0;iC<3;++iC){
       for (int iM=0; iM<2; ++iM){
@@ -39,11 +41,15 @@ void MaterialBudget(){
           for (int iP=1;iP<effRatio[iSp][iM][iVar]->GetNbinsX();++iP){
             if (effRatio[iSp][iM][iVar]->GetBinContent(iP)<1.e-9) effRatio[iSp][iM][iVar]->SetBinError(iP,0.);
           }
-          TF1 fitFunction("fitFunction","pol0",1.0,3.);
-          effRatio[iSp][iM][iVar]->Fit("fitFunction","QR","",1.0,3.);
           outFile.cd();
           effRatio[iSp][iM][iVar]->Write();
         }
+        effError[iSp][iM]=new TH1D(*eff[0]);
+        effError[iSp][iM]->SetName(Form("f%s%sEffError_%.0f_%.0f",antiMatter[iM],species[iSp],cent[iC][0],cent[iC][1]));
+        effError[iSp][iM]->Add(effRatio[iSp][iM][1],effRatio[iSp][iM][0],-1./sqrt(12),1./sqrt(12));
+        TF1 fitFunction("fitFunction","pol0",fitRange[iSp][0],fitRange[iSp][1]);
+        effError[iSp][iM]->Fit("fitFunction","QR","",fitRange[iSp][0],fitRange[iSp][1]);
+        effError[iSp][iM]->Write();
       }
     }
   }

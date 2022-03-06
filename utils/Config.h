@@ -10,7 +10,7 @@
 // Common
 //////////////////////////////////////////////////////////////
 
-const bool kVerbose = false;
+const bool kVerbose = true;
 
 Color_t centrality_colors[] = {kOrange+7, kAzure+4, kTeal+4};
 

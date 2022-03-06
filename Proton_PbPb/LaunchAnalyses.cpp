@@ -28,7 +28,7 @@ void LaunchAnalyses(const bool analyse = false)
   auto tmpNCutDCAxy = kNCutDCAxy-1;
   auto tmpNCutChi2TPC = kNCutChi2TPC;
 
-  for (int iCutSettings = -q; iCutSettings < tmpNCutDCAz + tmpNTPCPidSigmas + tmpNCutTPCClusters + tmpNCutDCAxy + tmpNCutChi2TPC; ++iCutSettings)
+  for (int iCutSettings = -1; iCutSettings < tmpNCutDCAz + tmpNTPCPidSigmas + tmpNCutTPCClusters + tmpNCutDCAxy + tmpNCutChi2TPC; ++iCutSettings)
   {
     char hname[100];
 
