@@ -318,11 +318,11 @@ void SignalBinnedMC(const char *cutSettings = "", const double roi_nsigma = 8., 
           
           // fit TOF signal distribution
           if (ptMin>1.99){
-            /* for(int I=0;I<2;++I)background1->fitTo(dataAll, RooFit::Range("rightSideband"));
-            slope1->setConstant(); */
+            for(int I=0;I<2;++I)background1->fitTo(dataAll, RooFit::Range("rightSideband"));
+            slope1->setConstant();
             for (int I=0;I<2;++I)background0->fitTo(data, RooFit::Range("rightSideband"));
-            /* slope1->setConstant();
-            nBackground1->setConstant(); */
+            /* slope1->setConstant();*/
+            nBackground1->setConstant();
           }
           else {
             for (int I=0;I<2;++I)model->fitTo(dataAll, RooFit::Range("leftSideband,rightSideband"));

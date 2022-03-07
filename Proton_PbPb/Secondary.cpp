@@ -162,7 +162,7 @@ void Secondary(const char *cutSettings = "", const double DCAxyCut=0.12, const c
         }
         fDCAMcProjPrim = fDCAprim->ProjectionZ(TString::Format("f%sDCAPrimaryTOF_%.0f_%.0f_%.2f_%.2f", kAntimatterMatter[iMatt], fDCAdat->GetXaxis()->GetBinLowEdge(kCentBinsProton[iCent][0]), fDCAdat->GetXaxis()->GetBinUpEdge(kCentBinsProton[iCent][1]), fDCAdat->GetYaxis()->GetBinLowEdge(pTbinsIndexMin), fDCAdat->GetYaxis()->GetBinUpEdge(pTbinsIndexMax)), kCentBinsProton[iCent][0], kCentBinsProton[iCent][1], pTbinsIndexMin, pTbinsIndexMax);
         fDCAMcProjPrim->SetTitle(projTitle);
-        fDCAMcProjSec = fDCAsec->ProjectionZ(TString::Format("f%sDCASecondaryTOF_%.0f_%.0f_%.2f_%.2f", kAntimatterMatter[iMatt], fDCAdat->GetXaxis()->GetBinLowEdge(kCentBinsProton[iCent][0]), fDCAdat->GetXaxis()->GetBinUpEdge(kCentBinsProton[iCent][1]), fDCAdat->GetYaxis()->GetBinLowEdge(pTbinsIndexMin), fDCAdat->GetYaxis()->GetBinUpEdge(pTbinsIndexMax)), kCentBinsProton[iCent][0], kCentBinsProton[iCent][1], pTbinsIndexMin, pTbinsIndexMax);
+        fDCAMcProjSec = fDCAsec->ProjectionZ(TString::Format("f%sDCASecondaryTOF_%.0f_%.0f_%.2f_%.2f", kAntimatterMatter[iMatt], fDCAdat->GetXaxis()->GetBinLowEdge(kCentBinsProton[iCent][0]), fDCAdat->GetXaxis()->GetBinUpEdge(kCentBinsProton[iCent][1]), fDCAdat->GetYaxis()->GetBinLowEdge(pTbinsIndexMin), fDCAdat->GetYaxis()->GetBinUpEdge(pTbinsIndexMax)), kCentBinsProton[3][0], kCentBinsProton[3][1], pTbinsIndexMin, pTbinsIndexMax);
         fDCAMcProjSec->SetTitle(projTitle);
         fDCAMcProjSecWD = fDCAsecWD->ProjectionZ(TString::Format("f%sDCASecondaryWeakTOF_%.0f_%.0f_%.2f_%.2f", kAntimatterMatter[iMatt], fDCAdat->GetXaxis()->GetBinLowEdge(kCentBinsProton[iCent][0]), fDCAdat->GetXaxis()->GetBinUpEdge(kCentBinsProton[iCent][1]), fDCAdat->GetYaxis()->GetBinLowEdge(pTbinsIndexMin), fDCAdat->GetYaxis()->GetBinUpEdge(pTbinsIndexMax)), kCentBinsProton[3][0], kCentBinsProton[3][1], pTbinsIndexMin, pTbinsIndexMax);
         fDCAMcProjSecWD->SetTitle(projTitle);
@@ -305,24 +305,37 @@ void Secondary(const char *cutSettings = "", const double DCAxyCut=0.12, const c
 
         fit->SetRangeX(fDCAdatProj->FindBin(-fitRange), fDCAdatProj->FindBin(fitRange-0.001));
         ROOT::Math::MinimizerOptions::SetDefaultStrategy(0);
+        
         if (ptMin < noSecMaterialThreshold)
         { 
-          fit->Constrain(2, 0., 0.5);
-          if (iCent ==1 && ptMin>0.7 && ptMin<0.99) fit->Constrain(2,0.,0.7);
-          if (iCent ==0 && ptMin>0.7 && ptMin<0.99) fit->Constrain(2,0.,0.9);
+          fit->Constrain(2, 0., 1.0);
+          if (iCent ==1 && ptMin>0.7 && ptMin<1.39) fit->Constrain(2,0.,0.9);
+          if (iCent ==0 && ptMin>1.04 && ptMin<1.19) fit->Constrain(2,0.,0.1);
+          if (iCent ==0 && ptMin>0.99 && ptMin<1.01) fit->Constrain(2,0.,0.9);
         }
         if (iMatt == 0 && iCent == 1 && ptMin > 1.4)
           fit->Constrain(1, 0., 0.99);
         else if (iMatt == 0 && iCent == 1 && ptMin < 1.4)
           fit->Constrain(1, 0., 1.);
         else if (iMatt == 0 && iCent == 0 && ptMin < 1.6)
-          fit->Constrain(0, 0., 0.9);
+          fit->Constrain(0, 0., .9);
         else if (iMatt == 0 && iCent == 0 && ptMin > 2.)
           fit->Constrain(1, 0., 0.9);
-        else if (iMatt==1){
+        else if (iMatt==1 && iCent>0){
           fit->Constrain(0, 0., 1.0);
           fit->Constrain(1, 0., 1.0);
         }
+        else if (iMatt==1 && iCent == 0){
+          if (ptMin<0.99||ptMin>1.19){
+            fit->Constrain(0, 0., 0.9);
+            fit->Constrain(1, 0., 1.);
+          }
+          else{
+            fit->Constrain(1, 0., .99);
+          }
+        }
+        else if (iMatt == 0 && iCent == 2)
+          fit->Constrain(1,0.,0.9);
         /* else if (iMatt == 1 && iCent == 0 && ptMin > 1.09)
           fit->Constrain(1, 0., .99);
         else if (iMatt == 1 && iCent == 0 && ptMin > 1.0 && ptMin < 1.09)
@@ -344,8 +357,7 @@ void Secondary(const char *cutSettings = "", const double DCAxyCut=0.12, const c
           fit->Constrain(0,0.,0.9);
           fit->Constrain(1,0.,0.9);
         } */
-        else if (iMatt == 0 && iCent == 2)
-          fit->Constrain(1,0.,0.9);
+        
        /*  else if (iMatt == 1 && iCent==1 < 1.5)
           fit->Constrain(0, 0., 0.99);
         else if (iMatt == 1 && iCent == 1 && ptMin > 1.4)

@@ -292,15 +292,19 @@ void SignalBinned(const char *cutSettings = "", const double roi_nsigma = 8., co
             roi_nsigma_down=roi_nsigma-4.5; // default = 4sigma
             roi_nsigma_up=roi_nsigma+2.;
           }
+          if (ptMin > 2.69) {
+            roi_nsigma_down=roi_nsigma-4.5; // default = 3sigma
+            roi_nsigma_up=roi_nsigma+3.;
+          }
           tofSignal.setRange("leftSideband", nSigmaLeft, mean_tmp - roi_nsigma_down * rms_tmp);
           tofSignal.setRange("rightSideband", mean_tmp + roi_nsigma_up * rms_tmp, maxNsigma);
           // fit TOF signal distribution
 
           if (ptMin>1.99){
-            /* for(int I=0;I<2;++I)background1->fitTo(dataAll, RooFit::Range("rightSideband"));
-            slope1->setConstant(); */
+            for(int I=0;I<2;++I)background1->fitTo(dataAll, RooFit::Range("rightSideband"));
+            slope1->setConstant();
             for (int I=0;I<2;++I)background0->fitTo(data, RooFit::Range("rightSideband"));
-            /* nBackground1->setConstant(); */
+            nBackground1->setConstant();
           }
           else {
             for (int I=0;I<2;++I)model->fitTo(dataAll, RooFit::Range("leftSideband,rightSideband"));
