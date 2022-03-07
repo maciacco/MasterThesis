@@ -270,19 +270,19 @@ for i_cent, cent in enumerate(centrality_classes):
             if i_part == 0:
                 ratio = ratio_pion
                 ratio_err = np.sqrt(syst_pion*syst_pion+stat_pion*stat_pion)
-                fit = fit_expo.Eval(1,0)
+                fit = fit_expo.Eval(0,1)
             if i_part == 1:
                 ratio = ratio_proton
                 ratio_err = np.sqrt(syst_proton*syst_proton+stat_proton*stat_proton)
-                fit = fit_expo.Eval(0.5,3)
+                fit = fit_expo.Eval(3,0.5)
             if i_part == 2:
                 ratio = ratio_hyp
                 ratio_err = np.sqrt(syst_hyp*syst_hyp+stat_hyp*stat_hyp)
-                fit = fit_expo.Eval(0,8)
+                fit = fit_expo.Eval(8,0)
             if i_part == 3:
                 ratio = ratio_he3
                 ratio_err = np.sqrt(syst_he3*syst_he3+stat_he3*stat_he3)
-                fit = fit_expo.Eval(0.5,9)
+                fit = fit_expo.Eval(9,0.5)
             hRatiosParticle.SetBinContent(i_part+1,ratio)
             hRatiosParticle.SetBinError(i_part+1,ratio_err)
             hRatiosParticleFit.SetBinContent(i_part+1,fit)
@@ -307,19 +307,19 @@ for i_cent, cent in enumerate(centrality_classes):
             if i_part == 0:
                 ratio = ratio_pion
                 ratio_err = np.sqrt(syst_pion*syst_pion+stat_pion*stat_pion)
-                fit = fit_expo.Eval(1,0)
+                fit = fit_expo.Eval(0,1)
             if i_part == 1:
                 ratio = ratio_proton
                 ratio_err = np.sqrt(syst_proton*syst_proton+stat_proton*stat_proton)
-                fit = fit_expo.Eval(0.5,3)
+                fit = fit_expo.Eval(3,0.5)
             if i_part == 2:
                 ratio = ratio_hyp
                 ratio_err = np.sqrt(syst_hyp*syst_hyp+stat_hyp*stat_hyp)
-                fit = fit_expo.Eval(0,8)
+                fit = fit_expo.Eval(8,0)
             if i_part == 3:
                 ratio = ratio_he3
                 ratio_err = np.sqrt(syst_he3*syst_he3+stat_he3*stat_he3)
-                fit = fit_expo.Eval(0.5,9)
+                fit = fit_expo.Eval(9,0.5)
             hRatioToFitParticle.SetBinContent(i_part+1,ratio/fit)
             hRatioToFitParticle.SetBinError(i_part+1,ratio_err/fit)
         hRatioToFitParticle.SetLineColor(centrality_colors[i_cent])
