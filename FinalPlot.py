@@ -15,33 +15,26 @@ ROOT.gStyle.SetPadTickX(1)
 ROOT.gStyle.SetOptStat(0)
 ROOT.gStyle.SetTextFont(44)
 
+file_material_budget = ROOT.TFile.Open("MaterialBudgetUncertainty.root")
 file_he3 = ROOT.TFile.Open(path_he3 + '/SpectraHe3.root')
 file_hyp = ROOT.TFile.Open(path_hyp + '/Ratio.root')
 file_proton = ROOT.TFile.Open(path_proton + '/SystematicsAllEPtNotCombined.root')
-#file_proton = ROOT.TFile.Open(path_proton + '/SpectraProtonOld.root')
 file_he3_syst = ROOT.TFile.Open(path_he3 + '/SystematicsAll.root')
-file_he3_syst_abs = ROOT.TFile.Open(path_he3 + '/AbsError.root')
+file_he3_syst_eff_prim = ROOT.TFile.Open(path_he3 + '/SystematicsEfficiencyPrimary.root')
 file_hyp_syst = ROOT.TFile.Open(path_hyp + '/Systematics.root')
-file_hyp_syst_abs = ROOT.TFile.Open(path_hyp + '/AbsError.root')
-file_proton_syst = ROOT.TFile.Open(path_proton + '/SystematicsAll.root')
-file_proton_syst_abs = ROOT.TFile.Open(path_proton + '/AbsErrorMCorrection.root')
 
 file_out = ROOT.TFile.Open('FinalPlot.root', 'recreate')
 
 for i_cent, cent in enumerate(centrality_classes):
 
     # get histograms
-    ratio_he3 = file_he3.Get(f'1.0_89_0.1_1_1_1/fRatio_{cent[0]}_{cent[1]}')
-    #ratio_he3_abs = file_he3.Get(f'1.0_89_1_1_1/fRatio_{cent[0]}_{cent[1]}')
+    ratio_he3 = file_he3.Get(f'1.0_89_0.1_2.5_1_1_1/fRatio_{cent[0]}_{cent[1]}')
     ratio_hyp = file_hyp.Get(f'fRatio_{cent[0]}_{cent[1]}')
     ratio_proton = file_proton.Get(f'fRatio_{cent[0]}_{cent[1]}')
     ratio_he3_distribution = file_he3_syst.Get(f'hist/fFitPar_{cent[0]}_{cent[1]}')
-    ratio_he3_distribution_abs = file_he3_syst_abs.Get(f'fFitPar_{cent[0]}_{cent[1]}')
+    ratio_he3_distribution_eff_prim = file_he3_syst_eff_prim.Get(f'fRatioDistribution_{cent[0]}_{cent[1]}')
     ratio_hyp_distribution = file_hyp_syst.Get(f'fParameterDistribution_{cent[0]}_{cent[1]}')
-    ratio_hyp_distribution_abs = file_hyp_syst_abs.Get(f'fParameterDistribution_{cent[0]}_{cent[1]}')
-    ratio_proton_distribution = file_proton_syst.Get(f'hist/fFitPar_{cent[0]}_{cent[1]}')
     ratio_proton_pt_correlated = file_proton.Get(f'fRatioDistributionTrials_{cent[0]}_{cent[1]}')
-    ratio_proton_distribution_abs = file_proton_syst_abs.Get(f'fFitPar_{cent[0]}_{cent[1]}')
 
     # get fit functions
     fit_he3 = ratio_he3.GetFunction("pol0")
