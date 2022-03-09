@@ -42,7 +42,7 @@ void SystematicsEfficiencyPrimary(const char *outFileName = "SystematicsEfficien
 
   for (int iCent = 0; iCent < kNCentClasses; ++iCent)
   {
-    fRatioDistribution[iCent] = new TH1D(Form("fRatioDistribution_%.0f_%.0f",kCentBinsLimitsHe3[iCent][0], kCentBinsLimitsHe3[iCent][1]),",R(^{3}#bar{He}/^{3}He),Entries",400,0.8,1.2);
+    fRatioDistribution[iCent] = new TH1D(Form("fRatioDistribution_%.0f_%.0f",kCentBinsLimitsHe3[iCent][0], kCentBinsLimitsHe3[iCent][1]),";R(^{3}#bar{He}/^{3}He);Entries",400,0.8,1.2);
     // std::cout << "read: " << Form("%s_%d_%d/fATOFrawYield_%.0f_%.0f", cutSettings, binCounting, bkg_shape, kCentBinsLimitsHe3[iCent][0], kCentBinsLimitsHe3[iCent][1]) << std::endl;
     fRatio[iCent] = new TH1D(*(TH1D *)inFileRatio->Get(Form("1.0_89_0.1_2.5_1_1_1/fASpectra_%.0f_%.0f",kCentBinsLimitsHe3[iCent][0], kCentBinsLimitsHe3[iCent][1])));
 
