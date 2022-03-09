@@ -535,7 +535,7 @@ void Secondary(const char *cutSettings = "", const double DCAxyCut=0.12, const c
 
       TCanvas cRMS(Form("c%sPrimaryRMS_%.0f_%.0f",kAntimatterMatter[iMatt],kCentBinsLimitsPion[iCent][0], kCentBinsLimitsPion[iCent][1]),"cPrimaryRMS");
       TLegend ll(0.5,0.5,0.7,0.7);
-      fPrimaryRMS.GetXaxis()->SetRangeUser(0.7,1.1);
+      fPrimaryRMS.GetXaxis()->SetRangeUser(0.7,1.6);
       fPrimaryRMS.SetMinimum(0.);
       fPrimaryRMS.GetYaxis()->SetRangeUser(0.,0.15);
       fPrimaryRMS.GetYaxis()->SetTitle("DCA_{xy} (cm)");
@@ -556,7 +556,7 @@ void Secondary(const char *cutSettings = "", const double DCAxyCut=0.12, const c
       system(Form("mkdir %s/primary_plots", kPlotDir));
       TCanvas cPrim("cPrim", "cPrim");
       cPrim.cd();
-      fPrimaryFrac.GetXaxis()->SetRangeUser(0.7, 1.1);
+      fPrimaryFrac.GetXaxis()->SetRangeUser(0.7, 1.6);
       fPrimaryFrac.GetYaxis()->SetRangeUser(0.0, 1.1);
       fPrimaryFrac.Draw("");
       cPrim.Print(Form("%s/primary_plots/%s.pdf", kPlotDir, fPrimaryFrac.GetName()));

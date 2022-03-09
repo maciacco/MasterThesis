@@ -541,7 +541,7 @@ void SignalBinnedMC(const char *cutSettings = "", const double roi_nsigma = 8., 
         pad1->SetFillColor(0);
         pad1->SetFrameBorderMode(0);
         pad1->SetBottomMargin(0.06);
-        //pad1->SetLogy();
+        pad1->SetLogy();
         pad1->Draw();
         TPad *pad2 = new TPad("pad2", "pad2", 0.0, 0.0, 1.0, 0.4, 0);
         pad2->SetFillColor(0);

@@ -173,8 +173,8 @@ void SignalBinned(const char *cutSettings = "", const double roi_min_limit_input
         double mean_tmp = signalRegionFit.GetParameter(1);
         double rms_tmp = signalRegionFit.GetParameter(2);
         double roi_max_limit = mean_tmp+roi_max_limit_input*rms_tmp;
-        if (ptMin>1.09)
-          roi_max_limit = mean_tmp+(roi_max_limit_input-5.)*rms_tmp;
+        if (ptMin>1.19)
+          roi_max_limit = mean_tmp+(roi_max_limit_input-2.)*rms_tmp;
 
         // DEFINE K SIGNAL REGION -> MISMATCH FIT REGION
         tofSignalProjectionAll->GetXaxis()->SetRangeUser(-50., 50.);
@@ -467,7 +467,7 @@ void SignalBinned(const char *cutSettings = "", const double roi_min_limit_input
         pad2->SetBottomMargin(0.25);
         pad2->Draw();
         pad1->cd();
-        //pad1->SetLogy();
+        pad1->SetLogy();
         xframe->GetXaxis()->SetLabelOffset(0.005);
         xframe->GetXaxis()->SetTitle("");
         xframe->GetXaxis()->SetTitleOffset(-0.005);

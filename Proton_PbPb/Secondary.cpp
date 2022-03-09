@@ -573,7 +573,7 @@ void Secondary(const char *cutSettings = "", const double DCAxyCut=0.12, const c
       gStyle->SetStatX(0.85);
       gStyle->SetStatY(0.5);
       gStyle->SetStatFontSize(0.035);
-      TF1 fFitFunc(Form("f%sFunctionFit_%.0f_%.0f", kAntimatterMatter[iMatt], kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1]), "1/(1+[0]*exp([1]*x))", 0.5f, 3.0f);
+      TF1 fFitFunc(Form("f%sFunctionFit_%.0f_%.0f", kAntimatterMatter[iMatt], kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1]), "1/(1+[0]*exp([1]*x))", 1.f, 3.0f);
       fFitFunc.SetParLimits(0, 0., 10000.);
       fFitFunc.SetParLimits(1, -100., 0.);
       fPrimaryFrac.Fit(&fFitFunc, "MRQ");
@@ -603,7 +603,7 @@ void Secondary(const char *cutSettings = "", const double DCAxyCut=0.12, const c
 
       TCanvas cRMS(Form("c%sPrimaryRMS_%.0f_%.0f",kAntimatterMatter[iMatt],kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1]),"cPrimaryRMS");
       TLegend ll(0.5,0.5,0.7,0.7);
-      fPrimaryRMS.GetXaxis()->SetRangeUser(1.0,2.0);
+      fPrimaryRMS.GetXaxis()->SetRangeUser(1.0,3.0);
       fPrimaryRMS.SetMinimum(0.);
       fPrimaryRMS.GetYaxis()->SetRangeUser(0.,0.15);
       fPrimaryRMS.GetYaxis()->SetTitle("DCA_{xy} (cm)");
@@ -624,7 +624,7 @@ void Secondary(const char *cutSettings = "", const double DCAxyCut=0.12, const c
       system(Form("mkdir %s/primary_plots", kPlotDir));
       TCanvas cPrim("cPrim", "cPrim");
       cPrim.cd();
-      fPrimaryFrac.GetXaxis()->SetRangeUser(1., 2.0);
+      fPrimaryFrac.GetXaxis()->SetRangeUser(1., 3.0);
       fPrimaryFrac.GetYaxis()->SetRangeUser(0.0, 1.1);
       fPrimaryFrac.Draw("");
       cPrim.Print(Form("%s/primary_plots/%s.png", kPlotDir, fPrimaryFrac.GetName()));

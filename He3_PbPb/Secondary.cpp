@@ -378,6 +378,7 @@ void Secondary(const float cutDCAz = 1.f, const int cutTPCcls = 89, const double
       fPrimaryFrac.SetMarkerSize(0.8);
       fPrimaryFrac.SetOption("pe");
       fPrimaryFrac.GetYaxis()->SetTitle("#it{f}_{#it{prim}}");
+      fPrimaryFrac.GetYaxis()->SetRangeUser(0,1);
       fPrimaryFrac.GetXaxis()->SetTitle(kAxisTitlePt);
       fPrimaryFrac.GetXaxis()->SetRangeUser(2.0, 8.);
       fPrimaryFrac.Write();

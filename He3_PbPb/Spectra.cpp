@@ -122,6 +122,8 @@ void Spectra(const float cutDCAz = 1.f, const int cutTPCcls = 89, const float cu
         fRatio[iCent]->SetBinError(iPtBin, antiSpec / spec * TMath::Sqrt(antiSpecErr * antiSpecErr / antiSpec / antiSpec + specErr * specErr / spec / spec));
       }
     }
+    fRatio[iCent]->SetLineColor(centrality_colors[iCent]);
+    fRatio[iCent]->SetMarkerColor(centrality_colors[iCent]);
     fRatio[iCent]->GetXaxis()->SetTitle(kAxisTitlePt);
     fRatio[iCent]->GetYaxis()->SetTitle(Form("Ratio %s / %s", kAntimatterMatterLabel[0], kAntimatterMatterLabel[1]));
     fRatio[iCent]->SetTitle(Form("%.0f-%.0f%%", kCentBinsLimitsHe3[iCent][0], kCentBinsLimitsHe3[iCent][1]));

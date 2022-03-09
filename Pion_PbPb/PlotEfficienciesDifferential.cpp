@@ -60,7 +60,7 @@ void PlotEfficienciesDifferential(const char *cutSettings="", const char *outFil
       fEff[iCent] = (TH1D *)inFileEff->Get(Form("_/f%sEff_TOF_%.0f_%.0f", kAntimatterMatter[iMatt], kCentBinsLimitsPion[iCent][0], kCentBinsLimitsPion[iCent][1]));
       fEff[iCent]->SetTitle("");
       fEff[iCent]->GetYaxis()->SetRangeUser(0., 1.1);
-      fEff[iCent]->GetXaxis()->SetRangeUser(0.7, 1.1);
+      fEff[iCent]->GetXaxis()->SetRangeUser(0.7, 1.6);
       fEff[iCent]->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
       fEff[iCent]->GetYaxis()->SetTitle("#epsilon #times A");
       fEff[iCent]->SetMarkerStyle(24);
