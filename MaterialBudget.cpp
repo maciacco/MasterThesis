@@ -46,9 +46,16 @@ void MaterialBudget(){
         effError[iSp][iM]=new TH1D(*eff[0]);
         effError[iSp][iM]->SetName(Form("f%s%sEffError_%.0f_%.0f",antiMatter[iM],species[iSp],cent[iC][0],cent[iC][1]));
         effError[iSp][iM]->Add(effRatio[iSp][iM][1],effRatio[iSp][iM][0],-1./sqrt(12),1./sqrt(12));
+        for (int iB=0;iB<effError[iSp][iM]->GetNbinsX();++iB){
+          effError[iSp][iM]->SetBinContent(iB,std::abs(effError[iSp][iM]->GetBinContent(iB)));
+        }
         if (iC==0 && iM==1) {
           effError[iSp][iM]->SetBinContent(effError[iSp][iM]->FindBin(1.98),0.);
           effError[iSp][iM]->SetBinError(effError[iSp][iM]->FindBin(1.98),0.);
+          if (iSp==0){
+            effError[iSp][iM]->SetBinContent(effError[iSp][iM]->FindBin(1.12),0.);
+            effError[iSp][iM]->SetBinError(effError[iSp][iM]->FindBin(1.12),0.);
+          }
         }
         TF1 fitFunction("fitFunction","[0]*TMath::Power(x,[1])",fitRange[iSp][0],fitRange[iSp][1]);
         effError[iSp][iM]->Fit("fitFunction","QR","",fitRange[iSp][0],fitRange[iSp][1]);

@@ -254,7 +254,7 @@ for i_cent, cent in enumerate(centrality_classes):
         pad2.Draw()
         pad1.cd()
         hRatiosParticle = ROOT.TH1D(f"hRatiosParticle_{cent[0]}_{cent[1]}",f" ",4,0,4)
-        hRatioToFitParticle = ROOT.TH1D(f"hRatioToFitParticle_{cent[0]}_{cent[1]}",f"{cent[0]}-{cent[1]}%",4,0,4)
+        hNSigmaRatioFitParticle = ROOT.TH1D(f"hNSigmaRatioFitParticle_{cent[0]}_{cent[1]}",f"{cent[0]}-{cent[1]}%",4,0,4)
         hRatiosParticleFit = ROOT.TH1D(f"hRatiosParticleFit_{cent[0]}_{cent[1]}",f"{cent[0]}-{cent[1]}%",4,0,4)
         hRatiosParticle.GetYaxis().SetTitle("Antimatter / Matter")
         hRatiosParticle.GetXaxis().SetTickSize(0.07*0.4)
@@ -297,10 +297,10 @@ for i_cent, cent in enumerate(centrality_classes):
 
         # data to fit ratio
         for i_ticks in range(5):
-            hRatioToFitParticle.GetYaxis().SetNdivisions(5)
+            hNSigmaRatioFitParticle.GetYaxis().SetNdivisions(5)
         for i_part in range(0,4):
-            hRatioToFitParticle.GetXaxis().SetBinLabel(i_part+1,particle_ratios[i_part])
-            hRatioToFitParticle.GetXaxis().SetLabelSize(0.2)
+            hNSigmaRatioFitParticle.GetXaxis().SetBinLabel(i_part+1,particle_ratios[i_part])
+            hNSigmaRatioFitParticle.GetXaxis().SetLabelSize(0.2)
             ratio = 1
             ratio_err = 0
             fit = 1
@@ -320,21 +320,21 @@ for i_cent, cent in enumerate(centrality_classes):
                 ratio = ratio_he3
                 ratio_err = np.sqrt(syst_he3*syst_he3+stat_he3*stat_he3)
                 fit = fit_expo.Eval(9,0.5)
-            hRatioToFitParticle.SetBinContent(i_part+1,ratio/fit)
-            hRatioToFitParticle.SetBinError(i_part+1,ratio_err/fit)
-        hRatioToFitParticle.SetLineColor(centrality_colors[i_cent])
-        hRatioToFitParticle.SetMarkerColor(centrality_colors[i_cent])
-        hRatioToFitParticle.SetTitle("")
-        hRatioToFitParticle.GetXaxis().SetTickSize(0.07)
-        hRatioToFitParticle.GetYaxis().SetTickSize(0.035)
-        hRatioToFitParticle.GetYaxis().SetTitleSize(0.13)
-        hRatioToFitParticle.GetYaxis().SetLabelSize(0.12)
-        hRatioToFitParticle.GetYaxis().SetTitleOffset(0.4)
-        hRatioToFitParticle.GetXaxis().SetLabelOffset(0.01)
-        hRatioToFitParticle.SetLineWidth(1)
-        hRatioToFitParticle.GetYaxis().SetTitle("Data / Fit")
-        hRatioToFitParticle.GetYaxis().SetRangeUser(0.62,1.38)
-        hLineOne = ROOT.TLine(0.,1.,4.,1.)
+            hNSigmaRatioFitParticle.SetBinContent(i_part+1,(ratio-fit)/ratio_err)
+            hNSigmaRatioFitParticle.SetBinError(i_part+1,0)
+        hNSigmaRatioFitParticle.SetLineColor(centrality_colors[i_cent])
+        hNSigmaRatioFitParticle.SetMarkerColor(centrality_colors[i_cent])
+        hNSigmaRatioFitParticle.SetTitle("")
+        hNSigmaRatioFitParticle.GetXaxis().SetTickSize(0.07)
+        hNSigmaRatioFitParticle.GetYaxis().SetTickSize(0.035)
+        hNSigmaRatioFitParticle.GetYaxis().SetTitleSize(0.13)
+        hNSigmaRatioFitParticle.GetYaxis().SetLabelSize(0.12)
+        hNSigmaRatioFitParticle.GetYaxis().SetTitleOffset(0.4)
+        hNSigmaRatioFitParticle.GetXaxis().SetLabelOffset(0.01)
+        hNSigmaRatioFitParticle.SetLineWidth(1)
+        hNSigmaRatioFitParticle.GetYaxis().SetTitle("(Data - Fit) / #sigma")
+        hNSigmaRatioFitParticle.GetYaxis().SetRangeUser(-2.4,2.4)
+        hLineOne = ROOT.TLine(0.,0.,4.,0.)
         hLineOne.SetLineColor(ROOT.kGray+1)
         hLineOne.SetLineStyle(ROOT.kDashed)
 
@@ -372,9 +372,9 @@ for i_cent, cent in enumerate(centrality_classes):
         text_chi2.Draw("same")
         leg_ratios_particle.Draw("same")
         pad2.cd()
-        hRatioToFitParticle.Draw("axis")
+        hNSigmaRatioFitParticle.Draw("axis")
         hLineOne.Draw("same")
-        hRatioToFitParticle.Draw("same")
+        hNSigmaRatioFitParticle.Draw("same")
         cRatiosParticle.Write()
         cRatiosParticle.Print(f"{cRatiosParticle.GetName()}.pdf")
 
