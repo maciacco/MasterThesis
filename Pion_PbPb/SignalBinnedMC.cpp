@@ -178,7 +178,7 @@ void SignalBinnedMC(const char *cutSettings = "", const double roi_min_limit_inp
         double mean_tmp = signalRegionFit.GetParameter(1);
         double rms_tmp = signalRegionFit.GetParameter(2);
         double roi_max_limit = mean_tmp+(roi_max_limit_input-2.)*rms_tmp; // smaller signal window in MC than in data
-        if (ptMin>1.19)
+        if (ptMin>1.29)
           roi_max_limit = mean_tmp+(roi_max_limit_input-4.)*rms_tmp;
 
         // DEFINE K SIGNAL REGION -> MISMATCH FIT REGION
@@ -197,8 +197,10 @@ void SignalBinnedMC(const char *cutSettings = "", const double roi_min_limit_inp
         double mean_tmp_K = signalRegionFitK.GetParameter(1);
         double rms_tmp_K = signalRegionFitK.GetParameter(2);
         double mismatch_left_limit = mean_tmp_K+mismatch_min_limit_input*rms_tmp_K;
+        if (iCent==0) mismatch_left_limit = mean_tmp_K+(mismatch_min_limit_input-1.)*rms_tmp_K;
         if (iCent==2&&ptMin>1.39&&ptMin<1.44) mismatch_left_limit = mean_tmp_K+(mismatch_min_limit_input+2.)*rms_tmp_K;
         double mismatch_right_limit = mean_tmp_K+mismatch_max_limit_input*rms_tmp_K;
+        if (iCent==0) mismatch_right_limit = mean_tmp_K+(mismatch_max_limit_input+1.)*rms_tmp_K;
 
         // roofit data
         double maxNsigma=17.;
