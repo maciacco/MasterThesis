@@ -60,6 +60,7 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
   swatch.Start(true);
 
   TFile *specFile = TFile::Open(Form("%s/SpectraProtonSys.root", kOutDir));
+  TFile *hijingFile = TFile::Open("../HIJINGRatios.root");
   //TFile *fileEffFit=TFile::Open("out/SpectraProton_MC21l5_raw_fitEff.root");
   TFile *fG4 = TFile::Open("out/SpectraProton_MC21l5_raw_primaryInjected.root");      
   TFile *inFileSec = TFile::Open(Form("%s/PrimaryProton_large.root", kOutDir));
@@ -133,7 +134,7 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
     bkgFlag = 1;
     sigmoidFlag = 0;
     iNsigma = 1;
-    for (int iTrackCuts=1; iTrackCuts<1; ++iTrackCuts){
+    for (int iTrackCuts=1; iTrackCuts<5; ++iTrackCuts){
       auto tmpCutSettings = trackCutSettings[iTrackCuts];
       auto cutIndex = trackCutIndexes[iTrackCuts];
       auto tmpCutIndex = Form("%d",cutIndex);
@@ -161,7 +162,7 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
     bkgFlag = 1;
     sigmoidFlag = 0;
     iNsigma = 1;
-    for (int iTrackCuts=1; iTrackCuts<7; ++iTrackCuts){
+    for (int iTrackCuts=5; iTrackCuts<7; ++iTrackCuts){
       auto tmpCutSettings = trackCutSettings[iTrackCuts];
       auto cutIndex = trackCutIndexes[iTrackCuts];
       auto tmpCutIndex = Form("%d",cutIndex);
@@ -413,7 +414,7 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
     }
     TCanvas cVarTot(fRatiosVsPtTot.GetName(),fRatiosVsPtTot.GetTitle());
     fRatiosVsPtTot.Draw("colz");
-    fRatiosVsPtTot.GetXaxis()->SetRangeUser(1.,2.);
+    fRatiosVsPtTot.GetXaxis()->SetRangeUser(1.,3.);
     fRatiosVsPtTot.GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
     fRatiosVsPtTot.GetYaxis()->SetTitle("Ratio #bar{p}/p");
     cVarTot.Print(Form("%s.pdf",fRatiosVsPtTot.GetName()));
@@ -430,6 +431,7 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
     fSystematicUncertaintyDCAz.Write();
     fSystematicUncertaintyPID.Write();
     fSystematicUncertaintyTPCCls.Write();
+    fSystematicUncertaintyChi2TPC.Write();
     fSystematicUncertaintyPrim.Write();
     fSystematicUncertaintyROI.Write();
     fSystematicUncertaintyEff.Write();
@@ -439,12 +441,12 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
     // * * * * * * * * * * * * * * * * * * * * * * * * * //
     //   C O M P U T E   P T   C O R R E L A T I O N S   //
     // * * * * * * * * * * * * * * * * * * * * * * * * * //
-    TH2D fSystematicsCorrelationsDCAxy(Form("fSystematicsCorrelationsDCAxy_%.0f_%.0f", kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]),Form("%.0f-%.0f%%", kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]),5,0.095,0.145,1000,-.02,.02);
-    TH2D fSystematicsCorrelationsDCAz(Form("fSystematicsCorrelationsDCAz_%.0f_%.0f", kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]),Form("%.0f-%.0f%%", kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]),31,0.475,2.025,1000,-.02,.02);
-    TH2D fSystematicsCorrelationsTPCCls(Form("fSystematicsCorrelationsTPCCls_%.0f_%.0f", kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]),Form("%.0f-%.0f%%", kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]),24,58.5,82.5,1000,-.02,.02);
-    TH2D fSystematicsCorrelationsChi2TPC(Form("fSystematicsCorrelationsChi2TPC_%.0f_%.0f", kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]),Form("%.0f-%.0f%%", kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]),26,1.995,2.255,1000,-.02,.02);
-    TH2D fSystematicsCorrelationsPID(Form("fSystematicsCorrelationsPID_%.0f_%.0f", kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]),Form("%.0f-%.0f%%", kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]),25,3.245,3.505,1000,-.02,.02);
-    TH2D fSystematicsCorrelationsROI(Form("fSystematicsCorrelationsROI_%.0f_%.0f", kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]),Form("%.0f-%.0f%%", kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]),51,7.49,8.51,1000,-.02,.02);
+    TH2D fSystematicsCorrelationsDCAxy(Form("fSystematicsCorrelationsDCAxy_%.0f_%.0f", kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]),Form("%.0f-%.0f%%", kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]),5,0.095,0.145,1000,-.04,.04);
+    TH2D fSystematicsCorrelationsDCAz(Form("fSystematicsCorrelationsDCAz_%.0f_%.0f", kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]),Form("%.0f-%.0f%%", kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]),31,0.475,2.025,1000,-.04,.04);
+    TH2D fSystematicsCorrelationsTPCCls(Form("fSystematicsCorrelationsTPCCls_%.0f_%.0f", kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]),Form("%.0f-%.0f%%", kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]),24,58.5,82.5,1000,-.04,.04);
+    TH2D fSystematicsCorrelationsChi2TPC(Form("fSystematicsCorrelationsChi2TPC_%.0f_%.0f", kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]),Form("%.0f-%.0f%%", kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]),26,1.995,2.255,1000,-.04,.04);
+    TH2D fSystematicsCorrelationsPID(Form("fSystematicsCorrelationsPID_%.0f_%.0f", kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]),Form("%.0f-%.0f%%", kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]),25,3.245,3.505,1000,-.04,.04);
+    TH2D fSystematicsCorrelationsROI(Form("fSystematicsCorrelationsROI_%.0f_%.0f", kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]),Form("%.0f-%.0f%%", kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]),51,7.49,8.51,1000,-.04,.04);
 
     // roi
     cutVariable = 0;
@@ -536,7 +538,7 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
     double correlationPID = fSystematicsCorrelationsPID.GetCorrelationFactor();
     std::cout << "CorrelationPID = " << correlationPID <<std::endl;
     double correlationChi2TPC = fSystematicsCorrelationsChi2TPC.GetCorrelationFactor();
-    std::cout << "CorrelationChi2TPC = " << correlationPID <<std::endl;
+    std::cout << "CorrelationChi2TPC = " << correlationChi2TPC <<std::endl;
     std::cout << "* * * * * * * * * *"<<std::endl;
     double correlationROI = fSystematicsCorrelationsROI.GetCorrelationFactor();
     std::cout << "CorrelationROI = " << correlationROI <<std::endl;
@@ -574,6 +576,22 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
     fSystematicsCorrelationsROI.Draw("colz");
     cCorrROI.Print(Form("%s.pdf",cCorrROI.GetName()));
     fSystematicsCorrelationsROI.Write();
+
+    TCanvas cCorrDCAxy(fSystematicsCorrelationsDCAxy.GetName(),fSystematicsCorrelationsDCAxy.GetTitle());
+    fSystematicsCorrelationsDCAxy.GetXaxis()->SetTitle("DCA_{xy}cut (cm)");
+    fSystematicsCorrelationsDCAxy.GetYaxis()->SetTitle("#it{p}_{T}-differential ratios - default");
+    fSystematicsCorrelationsDCAxy.GetYaxis()->SetRangeUser(-0.05,0.05);
+    fSystematicsCorrelationsDCAxy.Draw("colz");
+    cCorrDCAxy.Print(Form("%s.pdf",cCorrDCAxy.GetName()));
+    fSystematicsCorrelationsDCAxy.Write();
+
+    TCanvas cCorrChi2TPC(fSystematicsCorrelationsChi2TPC.GetName(),fSystematicsCorrelationsChi2TPC.GetTitle());
+    fSystematicsCorrelationsChi2TPC.GetXaxis()->SetTitle("#chi^{2}_{TPC} cut");
+    fSystematicsCorrelationsChi2TPC.GetYaxis()->SetTitle("#it{p}_{T}-differential ratios - default");
+    fSystematicsCorrelationsChi2TPC.GetYaxis()->SetRangeUser(-0.05,0.05);
+    fSystematicsCorrelationsChi2TPC.Draw("colz");
+    cCorrChi2TPC.Print(Form("%s.pdf",cCorrChi2TPC.GetName()));
+    fSystematicsCorrelationsChi2TPC.Write();
 
     fSystematicsCorrelationsDCAxy.Write();
     fSystematicsCorrelationsChi2TPC.Write();
@@ -664,7 +682,7 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
     hRatio.Write();
 
     TH1D h_trial("h_trial","h_trial",kNPtBins,kPtBins);
-    TH1D fRatioDistributionTrials(Form("fRatioDistributionTrials_%.0f_%.0f", kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]),Form("%.0f-%.0f%%", kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]),500,0.95,1.05);
+    TH1D fRatioDistributionTrials(Form("fRatioDistributionTrials_%.0f_%.0f", kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]),Form("%.0f-%.0f%%", kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]),2000,0.95,1.05);
     for (int iTrial=0;iTrial<nTrials;++iTrial){
       double nsigma=gRandom->Gaus(0,1);
       for (int iPtBin=5;iPtBin<nUsedPtBins;++iPtBin){
@@ -680,13 +698,16 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
       fSystematicUncertaintyTotalPtCorrelated.SetBinContent(iPtBin,fSystematicUncertaintyTotalPtCorrelated.GetBinContent(iPtBin)*fRatioFromVariationsTot.GetBinContent(iPtBin));
     }
     TCanvas cRatio(Form("cRatio_%.0f_%.0f", kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]), "cRatio");
+    TLegend lProtonRatio(0.2,0.6,0.4,0.8);
+    TH1D *hijingProtonRatio=(TH1D*)hijingFile->Get(Form("fProtonRatio_%.0f_%.0f", kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]));
+    hijingProtonRatio->GetXaxis()->SetRangeUser(1.,3.);
     cRatio.SetTicks(1, 1);
     hRatio.SetMarkerStyle(20);
     hRatio.SetMarkerSize(0.8);
     hRatio.GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
     hRatio.GetYaxis()->SetTitle("Ratio #bar{p}/p");
     hRatio.GetXaxis()->SetRangeUser(1.,3.);
-    hRatio.GetYaxis()->SetRangeUser(0.8, 1.2);
+    hRatio.GetYaxis()->SetRangeUser(0.75, 1.25);
     hRatio.SetStats(0);
     hRatio.Draw("pe2");
     hRatio.SetLineColor(centrality_colors[iC]);
@@ -698,19 +719,29 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
     TGraphErrors gRatioCorr(&hRatio);
     //gRatio.Draw("P5 same");
     gRatio.GetXaxis()->SetRangeUser(1.,3.);
-    gRatio.GetYaxis()->SetRangeUser(0.8, 1.2);
+    gRatio.GetYaxis()->SetRangeUser(0.75, 1.25);
     gRatioCorr.SetFillStyle(3145);
     gRatioCorr.SetFillColor(centrality_colors[iC]);
     gRatio.Draw("e5 same");
     gRatioCorr.Draw("P5 same");
     hRatio.GetFunction("pol0")->Draw("same");
+    hijingProtonRatio->SetMarkerStyle(0);
+    hijingProtonRatio->SetMarkerSize(0);
+    hijingProtonRatio->SetFillColor(kGreen+1);
+    hijingProtonRatio->SetFillStyle(3154);
+    hijingProtonRatio->Draw("e3same");
+    lProtonRatio.AddEntry(&gRatio,"Data");
+    lProtonRatio.AddEntry(hRatio.GetFunction("pol0"),"Fit");
+    lProtonRatio.AddEntry(hijingProtonRatio,"HIJING");
     TLatex chi2(2.2, 1.1, Form("#chi^{2}/NDF = %.2f/%d", hRatio.GetFunction("pol0")->GetChisquare(), hRatio.GetFunction("pol0")->GetNDF()));
     chi2.SetTextSize(28);
     TLatex p0(2.2, 1.15, Form("R = %.4f #pm %.4f", hRatio.GetFunction("pol0")->GetParameter(0), hRatio.GetFunction("pol0")->GetParError(0)));
     p0.SetTextSize(28);
     chi2.Draw("same");
     p0.Draw("same");
+    lProtonRatio.Draw("same");
     cRatio.Modified();
+    cRatio.Write();
     cRatio.Print(Form("%s/%s.pdf", kPlotDir, hRatio.GetName()));
 
     TCanvas cPtCorrelatedError(fRatioDistributionTrials.GetName(),fRatioDistributionTrials.GetTitle());

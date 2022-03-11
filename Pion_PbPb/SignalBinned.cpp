@@ -256,7 +256,7 @@ void SignalBinned(const char *cutSettings = "", const double roi_min_limit_input
           background1 = (RooAbsPdf *)new RooExponential("background1", "background1", tofSignal, *slope1);
           background2 = (RooAbsPdf *)new RooExponential("background2", "background2", tofSignal, *slope2);
           background3 = (RooAbsPdf *)new RooExponential("background2", "background2", *tofSignal_full, *slope2);
-          nBackground3 = new RooRealVar("#it{N}_{Bkg,3}", "nBackground3", 0.,1.e8);
+          nBackground3 = new RooRealVar("#it{N}_{Bkg,2}", "nBackground3", 0.,1.e8);
           nBackground1 = new RooRealVar("#it{N}_{Bkg,1}", "nBackground1", 0., 1.e10);
           modelMismatch = (RooAddPdf*)new RooAddPdf("model", "model", RooArgList(*background0), RooArgList(*nBackground1));
         }
@@ -485,7 +485,7 @@ void SignalBinned(const char *cutSettings = "", const double roi_min_limit_input
         lsx.Draw("same");
         TLine ldx(signalRightLimit, 0, signalRightLimit, peakMaximum*0.1);
         //TLine ldx(signalRightLimit, 0, signalRightLimit, peakMaximum*0.75);
-        if(ptMin>1.19)ldx.SetY2(peakMaximum*0.6);
+        //if(ptMin>1.19)ldx.SetY2(peakMaximum*0.6);
         ldx.SetLineStyle(kDashed);
         ldx.Draw("same");
         canv.SetName(plotTitle);

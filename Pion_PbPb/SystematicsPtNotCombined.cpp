@@ -39,6 +39,7 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
   swatch.Start(true);
 
   TFile *specFile = TFile::Open(Form("%s/SpectraPionSys.root", kOutDir));
+  TFile *hijingFile = TFile::Open("../HIJINGRatios.root");
   TFile *inFileSec = TFile::Open(Form("%s/PrimaryPion.root", kOutDir));
   TFile *effFile = TFile::Open(Form("%s/EfficiencyPionMC_21l5_false_.root", kOutDir));
   TFile *outFile = TFile::Open(Form("%s/%s.root", kOutDir, outFileName), "recreate");
@@ -489,7 +490,7 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
       fRatioFromVariationsTot.SetBinError(iPtBins,0);
     }
     TCanvas cRatioVsPtTot("c","c");
-    fRatiosVsPtTot.GetXaxis()->SetRangeUser(0.7,1.1);
+    fRatiosVsPtTot.GetXaxis()->SetRangeUser(0.7,1.6);
     fRatiosVsPtTot.GetYaxis()->SetRangeUser(0.92,1.08);
     fRatiosVsPtTot.GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
     fRatiosVsPtTot.GetYaxis()->SetTitle("Ratio #pi^{-}/#pi^{+}");
@@ -692,7 +693,7 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
     double correlationPID = fSystematicsCorrelationsPID.GetCorrelationFactor();
     std::cout << "CorrelationPID = " << correlationPID <<std::endl;
     double correlationChi2TPC = fSystematicsCorrelationsChi2TPC.GetCorrelationFactor();
-    std::cout << "CorrelationChi2TPC = " << correlationPID <<std::endl;
+    std::cout << "CorrelationChi2TPC = " << correlationChi2TPC <<std::endl;
     std::cout << "* * * * * * * * * *"<<std::endl;
     double correlationROIUp = fSystematicsCorrelationsROIUp.GetCorrelationFactor();
     std::cout << "CorrelationROIUp = " << correlationROIUp <<std::endl;
@@ -816,6 +817,9 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
     }
 
     TCanvas cRatio(Form("cRatio_%.0f_%.0f", kCentBinsLimitsPion[iC][0], kCentBinsLimitsPion[iC][1]), "cRatio");
+    TLegend lPionRatio(0.2,0.65,0.4,0.85);
+    TH1D *hijingPionRatio=(TH1D*)hijingFile->Get(Form("fPionRatio_%.0f_%.0f", kCentBinsLimitsPion[iC][0], kCentBinsLimitsPion[iC][1]));
+    hijingPionRatio->GetXaxis()->SetRangeUser(0.7,1.6);
     cRatio.SetTicks(1, 1);
     hRatio.SetMarkerStyle(20);
     hRatio.SetMarkerSize(0.8);
@@ -838,16 +842,26 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
     gRatio.GetXaxis()->SetRangeUser(0.70,1.6);
     gRatio.GetYaxis()->SetRangeUser(0.92, 1.08);
     gRatioCorr.SetFillStyle(3145);
-    gRatioCorr.SetFillColor(centrality_colors[iC]); 
-    hRatio.GetFunction("pol0")->Draw("same");
+    gRatioCorr.SetFillColor(centrality_colors[iC]);
     gRatioCorr.Draw("P5 same");
-    TLatex chi2(0.9, 1.06, Form("#chi^{2}/NDF = %.2f/%d", hRatio.GetFunction("pol0")->GetChisquare(), hRatio.GetFunction("pol0")->GetNDF()));
+    hRatio.GetFunction("pol0")->Draw("same");
+    hijingPionRatio->SetMarkerStyle(0);
+    hijingPionRatio->SetMarkerSize(0);
+    hijingPionRatio->SetFillColor(kGreen+1);
+    hijingPionRatio->SetFillStyle(3154);
+    hijingPionRatio->Draw("e3same");
+    lPionRatio.AddEntry(&gRatio,"Data");
+    lPionRatio.AddEntry(hRatio.GetFunction("pol0"),"Fit");
+    lPionRatio.AddEntry(hijingPionRatio,"HIJING");
+    TLatex chi2(1.2, 1.06, Form("#chi^{2}/NDF = %.2f/%d", hRatio.GetFunction("pol0")->GetChisquare(), hRatio.GetFunction("pol0")->GetNDF()));
     chi2.SetTextSize(28);
-    TLatex p0(0.9, 1.04, Form("R = %.4f #pm %.4f", hRatio.GetFunction("pol0")->GetParameter(0), hRatio.GetFunction("pol0")->GetParError(0)));
+    TLatex p0(1.2, 1.04, Form("R = %.4f #pm %.4f", hRatio.GetFunction("pol0")->GetParameter(0), hRatio.GetFunction("pol0")->GetParError(0)));
     p0.SetTextSize(28);
     chi2.Draw("same");
     p0.Draw("same");
+    lPionRatio.Draw("same");
     cRatio.Modified();
+    cRatio.Write();
     cRatio.Print(Form("%s/%s.pdf", kPlotDir, hRatio.GetName()));
 
     TCanvas cPtCorrelatedError(fRatioDistributionTrials.GetName(),fRatioDistributionTrials.GetTitle());

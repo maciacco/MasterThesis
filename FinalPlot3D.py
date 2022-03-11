@@ -21,6 +21,12 @@ ROOT.gStyle.SetOptFit(0)
 ROOT.gStyle.SetTextFont(44)
 
 file_out = ROOT.TFile.Open('FinalPlot3D.root', 'recreate')
+file_hijing = ROOT.TFile.Open('HIJINGRatios.root')
+
+hMuBCentFrame = ROOT.TH1D("frame",";Centrality (%);#mu_{#it{B}} (MeV)",1,0,50)
+hMuICentFrame = ROOT.TH1D("frame",";Centrality (%);#mu_{#it{I}_{3}} (MeV)",1,0,50)
+gMuBCent = ROOT.TGraphErrors()
+gMuICent = ROOT.TGraphErrors()
 
 for i_cent, cent in enumerate(centrality_classes):
     results_muB = []
@@ -162,7 +168,7 @@ for i_cent, cent in enumerate(centrality_classes):
         formatted_mu_b_error = "{:.2f}".format(fit_parameter_error_0*155)
 
         formatted_mu_I = "{:.2f}".format(fit_parameter_1*155)
-        mu_I_error = np.sqrt(fit_parameter_error_1*fit_parameter_error_1/fit_parameter_1/fit_parameter_1)*fit_parameter_1*155
+        mu_I_error = np.sqrt(fit_parameter_error_1*fit_parameter_error_1/fit_parameter_1/fit_parameter_1)*np.abs(fit_parameter_1)*155
         formatted_mu_I_error = "{:.2f}".format(fit_parameter_error_1*155)
         
         # chi2 text
@@ -205,7 +211,7 @@ for i_cent, cent in enumerate(centrality_classes):
         text_mu_b.SetTextColor(ROOT.kBlack)
 
         # mu_I3 at T = 155 MeV
-        formatted_temperature_error = "{:.2f}".format(fit_parameter_0*2)
+        formatted_temperature_error = "{:.2f}".format(fit_parameter_1*2)
         text_mu_I = ROOT.TLatex(-0.27, -0.59, "#mu_{#it{I}_{3}} = "+formatted_mu_I+" #pm "+formatted_mu_I_error+" #pm "+formatted_mi_error+" #pm "+formatted_temperature_error+" MeV")
         text_mu_I.SetTextSize(TLATEX_TEXT_SIZE)
         text_mu_I.SetTextColor(ROOT.kBlack)
@@ -377,5 +383,50 @@ for i_cent, cent in enumerate(centrality_classes):
         hNSigmaRatioFitParticle.Draw("same")
         cRatiosParticle.Write()
         cRatiosParticle.Print(f"{cRatiosParticle.GetName()}.pdf")
+
+        gMuBCent.AddPoint(0.5*(cent[1]+cent[0]),fit_parameter_0*155)
+        gMuBCent.SetPointError(gMuBCent.GetN()-1,0.,mu_b_error)
+        gMuICent.AddPoint(0.5*(cent[1]+cent[0]),fit_parameter_1*155)
+        gMuICent.SetPointError(gMuBCent.GetN()-1,0.,mu_I_error)
+        print(f'mu_I_error = {mu_I_error}')
+
+gMuBCent.SetName("MuBCent")
+gMuICent.SetName("MuICent")
+
+legMuBCent = ROOT.TLegend(0.6,0.6,0.8,0.8)
+cMuBCent = ROOT.TCanvas("cMuBCent","cMuBCent")
+gHijingMuB = file_hijing.Get("gMuBCent")
+cMuBCent.cd()
+gMuBCent.SetMarkerStyle(20)
+gMuBCent.SetMarkerSize(1.0)
+gMuBCent.SetMarkerColor(ROOT.kRed)
+gMuBCent.SetLineColor(ROOT.kRed)
+hMuBCentFrame.GetYaxis().SetRangeUser(0.,2.)
+hMuBCentFrame.Draw("pe")
+gMuBCent.Draw("pesame")
+gHijingMuB.Draw("e3same")
+legMuBCent.AddEntry(gMuBCent,"Data")
+legMuBCent.AddEntry(gHijingMuB,"HIJING")
+legMuBCent.Draw("same")
+cMuBCent.Print("MuBvsCent.pdf")
+
+legMuICent = ROOT.TLegend(0.6,0.6,0.8,0.8)
+cMuICent = ROOT.TCanvas("cMuICent","cMuICent")
+gHijingMuI = file_hijing.Get("gMuICent")
+cMuICent.cd()
+gMuICent.SetMarkerStyle(20)
+gMuICent.SetMarkerSize(1.0)
+gMuICent.SetMarkerColor(ROOT.kRed)
+gMuICent.SetLineColor(ROOT.kRed)
+hMuICentFrame.GetYaxis().SetRangeUser(-0.6,0.8)
+hMuICentFrame.Draw("pe")
+gMuICent.Draw("pesame")
+gHijingMuI.Draw("e3same")
+legMuICent.AddEntry(gMuICent,"Data")
+legMuICent.AddEntry(gHijingMuI,"HIJING")
+legMuBCent.Draw("same")
+cMuICent.Print("MuIvsCent.pdf")
+gMuBCent.Write()
+gMuICent.Write()
 
 file_out.Close()

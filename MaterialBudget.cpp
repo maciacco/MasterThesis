@@ -6,6 +6,7 @@ const double fitRange[3][2]={{0.5,1.6},{0.8,3.},{1.5,10}};
 const bool VERBOSE=false;
 
 void MaterialBudget(){
+  gStyle->SetOptStat(0);
   TFile fitSHM3D("FinalPlot3D.root");
   TFile outFile("MaterialBudgetUncertainty.root","recreate");
   TFile *f[3][3];
@@ -46,7 +47,7 @@ void MaterialBudget(){
         effError[iSp][iM]=new TH1D(*eff[0]);
         effError[iSp][iM]->SetName(Form("f%s%sEffError_%.0f_%.0f",antiMatter[iM],species[iSp],cent[iC][0],cent[iC][1]));
         effError[iSp][iM]->Add(effRatio[iSp][iM][1],effRatio[iSp][iM][0],-1./sqrt(12),1./sqrt(12));
-        for (int iB=0;iB<effError[iSp][iM]->GetNbinsX();++iB){
+        for (int iB=0;iB<effError[iSp][iM]->GetNbinsX()+1;++iB){
           effError[iSp][iM]->SetBinContent(iB,std::abs(effError[iSp][iM]->GetBinContent(iB)));
         }
         if (iC==0 && iM==1) {
@@ -57,9 +58,17 @@ void MaterialBudget(){
             effError[iSp][iM]->SetBinError(effError[iSp][iM]->FindBin(1.12),0.);
           }
         }
+        effError[iSp][iM]->GetXaxis()->SetRangeUser(fitRange[iSp][0],fitRange[iSp][1]);
         TF1 fitFunction("fitFunction","[0]*TMath::Power(x,[1])",fitRange[iSp][0],fitRange[iSp][1]);
         effError[iSp][iM]->Fit("fitFunction","QR","",fitRange[iSp][0],fitRange[iSp][1]);
         effError[iSp][iM]->Write();
+        TCanvas c(Form("c%s",effError[iSp][iM]->GetName()),Form("c%s",effError[iSp][iM]->GetName()));
+        effError[iSp][iM]->SetTitle(" ");
+        effError[iSp][iM]->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
+        effError[iSp][iM]->GetYaxis()->SetTitle("#epsilon #times A relative uncertainty");
+        effError[iSp][iM]->Draw();
+        //c.Write();
+        c.Print(Form("%s.pdf",effError[iSp][iM]->GetName()));
       }
     }
   }

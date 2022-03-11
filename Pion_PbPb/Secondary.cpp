@@ -557,7 +557,7 @@ void Secondary(const char *cutSettings = "", const double DCAxyCut=0.12, const c
       TCanvas cPrim("cPrim", "cPrim");
       cPrim.cd();
       fPrimaryFrac.GetXaxis()->SetRangeUser(0.7, 1.6);
-      fPrimaryFrac.GetYaxis()->SetRangeUser(0.0, 1.1);
+      fPrimaryFrac.GetYaxis()->SetRangeUser(0.8, 1.);
       fPrimaryFrac.Draw("");
       cPrim.Print(Form("%s/primary_plots/%s.pdf", kPlotDir, fPrimaryFrac.GetName()));
     }

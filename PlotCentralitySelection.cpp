@@ -16,19 +16,26 @@
 
 using utils::TTList;
 
-void PlotCentralitySelection(const char *outFileName = "CentralitySelectionPlotProton", const char *inFileName = "AnalysisResults_largeNsigma")
+void PlotCentralitySelection(const char *outFileName = "CentralitySelectionPlotProton", const char *inFileName = "AnalysisResults_LHC18qr")
 {
   gStyle->SetOptStat(0);
 
-  TFile *inFile = TFile::Open(Form("data/Proton_PbPb/%s.root", inFileName));
-  if (!inFile)
+  TFile *inFile_q = TFile::Open(Form("data/He3_PbPb/%s_q.root", inFileName));
+  TFile *inFile_r = TFile::Open(Form("data/He3_PbPb/%s_r.root", inFileName));
+  if (!inFile_q || !inFile_r)
   {
     std::cout << "Input files do not exist!" << std::endl;
     return;
   }
-  auto inList = (TTList *)inFile->Get("nuclei_proton_");
-  auto fNormalisationHist = (TH2F *)inList->Get("fNormalisationHist");
-  TH1D *fCent = fNormalisationHist->ProjectionX("fCent", 4, 4);
+  auto inList_q = (TTList *)inFile_q->Get("mpuccio_he3_");
+  auto inList_r = (TTList *)inFile_r->Get("mpuccio_he3_");
+  auto fNormalisationHist_q = (TH2F *)inList_q->Get("fNormalisationHist");
+  auto fNormalisationHist_r = (TH2F *)inList_r->Get("fNormalisationHist");
+  TH1D *fCent_q = fNormalisationHist_q->ProjectionX("fCent_1", 4, 4);
+  TH1D *fCent_r = fNormalisationHist_r->ProjectionX("fCent_2", 4, 4);
+  TH1D *fCent = new TH1D(*fCent_q);
+  fCent->Clear();
+  fCent->Add(fCent_q,fCent_r,1,1);
 
   TFile outFile(Form("%s.root", outFileName), "recreate");
   TCanvas cCent("cCent_LHC18qr", "cCent_LHC18qr");

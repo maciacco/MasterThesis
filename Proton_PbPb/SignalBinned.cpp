@@ -594,8 +594,8 @@ void SignalBinned(const char *cutSettings = "", const double roi_nsigma = 8., co
         TLine lsx(mean_tmp - (roi_nsigma_down+extend_roi) * rms_tmp, 0, mean_tmp - (roi_nsigma_down+extend_roi) * rms_tmp, peakMaximum);
         lsx.SetLineStyle(kDashed);
         lsx.Draw("same");
-        TLine ldx(mean_tmp + (roi_nsigma_up+extend_roi) * rms_tmp, 0, mean_tmp + (roi_nsigma_up+extend_roi) * rms_tmp, peakMaximum*0.75);
-        if(ptMin>1.19)ldx.SetY2(peakMaximum*0.6);
+        TLine ldx(mean_tmp + (roi_nsigma_up+extend_roi) * rms_tmp, 0, mean_tmp + (roi_nsigma_up+extend_roi) * rms_tmp, peakMaximum*0.03);
+        //if(ptMin>1.19)ldx.SetY2(peakMaximum*0.6);
         ldx.SetLineStyle(kDashed);
         ldx.Draw("same");
         canv.SetName(plotTitle);

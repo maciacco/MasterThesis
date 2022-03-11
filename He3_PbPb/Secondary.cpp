@@ -21,7 +21,7 @@
 #include "../utils/Utils.h"
 #include "../utils/Config.h"
 
-bool superimpose_centrality_plots = false;
+bool superimpose_centrality_plots = true;
 bool gaus_fit = false;
 
 using namespace he3;
@@ -126,7 +126,7 @@ void Secondary(const float cutDCAz = 1.f, const int cutTPCcls = 89, const double
 
           fDCAMcProjPrim = fDCAprim->ProjectionZ(TString::Format("f%sDCAPrimary_%.0f_%.0f_%.2f_%.2f", kAntimatterMatter[iMatt], fDCAdat->GetXaxis()->GetBinLowEdge(kCentBinsHe3[iCent][0]), fDCAdat->GetXaxis()->GetBinUpEdge(kCentBinsHe3[iCent][1]), fDCAdat->GetYaxis()->GetBinLowEdge(lowerPtBinIndex), fDCAdat->GetYaxis()->GetBinUpEdge(upperPtBinIndex)), kCentBinsHe3[iCent][0], kCentBinsHe3[iCent][1], lowerPtBinIndex, upperPtBinIndex);
           fDCAMcProjPrim->SetTitle(projTitle);
-          fDCAMcProjSec = fDCAsec->ProjectionZ(TString::Format("f%sDCASecondary_%.0f_%.0f_%.2f_%.2f", kAntimatterMatter[iMatt], fDCAdat->GetXaxis()->GetBinLowEdge(kCentBinsHe3[iCent][0]), fDCAdat->GetXaxis()->GetBinUpEdge(kCentBinsHe3[iCent][1]), fDCAdat->GetYaxis()->GetBinLowEdge(lowerPtBinIndex), fDCAdat->GetYaxis()->GetBinUpEdge(upperPtBinIndex)), kCentBinsHe3[iCent][0], kCentBinsHe3[iCent][1], lowerPtBinIndex, upperPtBinIndex);
+          fDCAMcProjSec = fDCAsec->ProjectionZ(TString::Format("f%sDCASecondary_%.0f_%.0f_%.2f_%.2f", kAntimatterMatter[iMatt], fDCAdat->GetXaxis()->GetBinLowEdge(kCentBinsHe3[iCent][0]), fDCAdat->GetXaxis()->GetBinUpEdge(kCentBinsHe3[iCent][1]), fDCAdat->GetYaxis()->GetBinLowEdge(lowerPtBinIndex), fDCAdat->GetYaxis()->GetBinUpEdge(upperPtBinIndex)), kCentBinsHe3[3][0], kCentBinsHe3[3][1], lowerPtBinIndex, upperPtBinIndex);
           fDCAMcProjSec->SetTitle(projTitle);
           fDCAMcProjSecWeak = fDCAsecWeak->ProjectionZ(TString::Format("f%sDCASecondaryWeak_%.0f_%.0f_%.2f_%.2f", kAntimatterMatter[iMatt], fDCAdat->GetXaxis()->GetBinLowEdge(kCentBinsHe3[iCent][0]), fDCAdat->GetXaxis()->GetBinUpEdge(kCentBinsHe3[iCent][1]), fDCAdat->GetYaxis()->GetBinLowEdge(lowerPtBinIndex), fDCAdat->GetYaxis()->GetBinUpEdge(upperPtBinIndex)), kCentBinsHe3[iCent][0], kCentBinsHe3[iCent][1], lowerPtBinIndex, upperPtBinIndex);
           fDCAMcProjSecWeak->SetTitle(projTitle);

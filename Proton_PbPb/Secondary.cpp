@@ -564,7 +564,7 @@ void Secondary(const char *cutSettings = "", const double DCAxyCut=0.12, const c
           }
 
           // save canvas plot
-          canv.Print(Form("%s/primary_fraction/%s_%s/cent_%.0f_%.0f_pt_%.2f_%.2f.png", kPlotDir, kAntimatterMatter[iMatt], cutSettings, kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1], ptMin, ptMax));
+          canv.Print(Form("%s/primary_fraction/%s_%s/cent_%.0f_%.0f_pt_%.2f_%.2f.pdf", kPlotDir, kAntimatterMatter[iMatt], cutSettings, kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1], ptMin, ptMax));
         }
       } // end of loop on centrality bin
 
@@ -627,7 +627,7 @@ void Secondary(const char *cutSettings = "", const double DCAxyCut=0.12, const c
       fPrimaryFrac.GetXaxis()->SetRangeUser(1., 3.0);
       fPrimaryFrac.GetYaxis()->SetRangeUser(0.0, 1.1);
       fPrimaryFrac.Draw("");
-      cPrim.Print(Form("%s/primary_plots/%s.png", kPlotDir, fPrimaryFrac.GetName()));
+      cPrim.Print(Form("%s/primary_plots/%s.pdf", kPlotDir, fPrimaryFrac.GetName()));
     }
   }
   outFile->Close();
