@@ -11,6 +11,7 @@ centrality_classes = [[0, 5], [5, 10], [30, 50]]
 centrality_colors = [ROOT.kOrange+7, ROOT.kAzure+4, ROOT.kTeal+4]
 particle_ratios = ["#pi^{-} / #pi^{+}","#bar{p} / p","{}_{#bar{#Lambda}}^{3}#bar{H} / ^{3}_{#Lambda}H","^{3}#bar{He} / ^{3}He"]
 
+apply_scaling_radius = False
 
 TLATEX_TEXT_SIZE = 28
 
@@ -21,6 +22,8 @@ ROOT.gStyle.SetOptFit(0)
 ROOT.gStyle.SetTextFont(44)
 
 file_out = ROOT.TFile.Open('FinalPlot3D.root', 'recreate')
+if apply_scaling_radius:
+    file_out = ROOT.TFile.Open('FinalPlot3D_LHC22b9.root', 'recreate')
 file_hijing = ROOT.TFile.Open('HIJINGRatios.root')
 
 hMuBCentFrame = ROOT.TH1D("frame",";Centrality (%);#mu_{#it{B}} (MeV)",1,0,50)
@@ -41,6 +44,9 @@ for i_cent, cent in enumerate(centrality_classes):
         file_he3_syst = ROOT.TFile.Open(path_he3 + '/SystematicsAll.root')
         file_he3_syst_eff_prim = ROOT.TFile.Open(path_he3 + '/SystematicsEfficiencyPrimary.root')
         file_hyp_syst = ROOT.TFile.Open(path_hyp + '/Systematics.root')
+        file_he3_scaling = ROOT.TFile.Open('He3_PbPb/MaterialRadiusCheck.root')
+        file_proton_scaling = ROOT.TFile.Open('Proton_PbPb/MaterialRadiusCheck.root')
+        file_pion_scaling = ROOT.TFile.Open('Pion_PbPb/MaterialRadiusCheck.root')
 
         file_out.cd()
         ratio_he3 = file_he3.Get(f'1.0_89_0.1_2.5_1_1_1/fRatio_{cent[0]}_{cent[1]}')
@@ -93,10 +99,10 @@ for i_cent, cent in enumerate(centrality_classes):
 
         # get ratios and errors
         ratio_he3 = fit_he3.GetParameter(0)
-        ratio_he3_err = fit_he3.GetParError(0)
+        ratio_he3_err = fit_he3.GetParError(0)/ratio_he3
 
         ratio_hyp = fit_hyp.GetParameter(0)
-        ratio_hyp_err = fit_hyp.GetParError(0)
+        ratio_hyp_err = fit_hyp.GetParError(0)/ratio_hyp
         
         ratio_proton = fit_proton.GetParameter(0)
         ratio_proton_err = 0#fit_proton.GetParError(0)
@@ -105,11 +111,36 @@ for i_cent, cent in enumerate(centrality_classes):
         ratio_pion_err = 0#fit_proton.GetParError(0)
 
         # systematic error
-        syst_he3 = ratio_he3_distribution.GetRMS()
-        syst_he3_eff_prim = ratio_he3_distribution_eff_prim.GetRMS()
+        syst_he3 = ratio_he3_distribution.GetRMS()/ratio_he3
+        syst_he3_eff_prim = ratio_he3_distribution_eff_prim.GetRMS()/ratio_he3
+        syst_hyp = ratio_hyp_distribution.GetRMS()/ratio_hyp
+
+        if apply_scaling_radius:
+            a_scaling = file_he3_scaling.Get(f"GraphA")
+            m_scaling = file_he3_scaling.Get(f"GraphM")
+            a_scaling_val = a_scaling.GetFunction("pol0").GetParameter(0)
+            m_scaling_val = m_scaling.GetFunction("pol0").GetParameter(0)
+            ratio_he3 = ratio_he3*(1+m_scaling_val-a_scaling_val)
+            ratio_hyp = ratio_hyp*(1+m_scaling_val-a_scaling_val)
+            a_scaling = file_proton_scaling.Get(f"GraphA")
+            m_scaling = file_proton_scaling.Get(f"GraphM")
+            a_scaling_val = a_scaling.GetFunction("pol0").GetParameter(0)
+            m_scaling_val = m_scaling.GetFunction("pol0").GetParameter(0)
+            ratio_proton = ratio_proton*(1+m_scaling_val-a_scaling_val)
+            a_scaling = file_pion_scaling.Get(f"GraphA")
+            m_scaling = file_pion_scaling.Get(f"GraphM")
+            a_scaling_val = a_scaling.GetFunction("pol0").GetParameter(0)
+            m_scaling_val = m_scaling.GetFunction("pol0").GetParameter(0)
+            ratio_pion = ratio_pion*(1+m_scaling_val-a_scaling_val)
+
+        ratio_he3_err = ratio_he3_err*ratio_he3
+        ratio_hyp_err = ratio_hyp_err*ratio_hyp
+
+        syst_he3 = syst_he3*ratio_he3
+        syst_he3_eff_prim = syst_he3_eff_prim*ratio_he3
         syst_he3_abs = np.sqrt(0.00861352*0.00861352+0.00473124*0.00473124)*ratio_he3 # from absorption cross section variation
         syst_he3 = np.sqrt(syst_he3*syst_he3+syst_he3_abs*syst_he3_abs+syst_he3_eff_prim*syst_he3_eff_prim)
-        syst_hyp = ratio_hyp_distribution.GetRMS()
+        syst_hyp = syst_hyp*ratio_hyp
         syst_hyp_abs = np.sqrt(0.00861352*0.00861352+0.00473124*0.00473124)*ratio_hyp # from absorption cross section variation
         syst_hyp = np.sqrt(syst_hyp*syst_hyp+syst_hyp_abs*syst_hyp_abs)
         syst_proton = fit_proton.GetParError(0)
@@ -169,7 +200,7 @@ for i_cent, cent in enumerate(centrality_classes):
 
         formatted_mu_I = "{:.2f}".format(fit_parameter_1*155)
         mu_I_error = np.sqrt(fit_parameter_error_1*fit_parameter_error_1/fit_parameter_1/fit_parameter_1)*np.abs(fit_parameter_1)*155
-        formatted_mu_I_error = "{:.2f}".format(fit_parameter_error_1*155)
+        formatted_mu_I_error = "{:.2f}".format(np.abs(fit_parameter_error_1*155))
         
         # chi2 text
         text_chi2 = ROOT.TLatex(-0.27, -0.44, "#chi^{2}/NDF = "+formatted_chi2+"/"+str(fit_expo.GetNDF()))
@@ -211,7 +242,7 @@ for i_cent, cent in enumerate(centrality_classes):
         text_mu_b.SetTextColor(ROOT.kBlack)
 
         # mu_I3 at T = 155 MeV
-        formatted_temperature_error = "{:.2f}".format(fit_parameter_1*2)
+        formatted_temperature_error = "{:.2f}".format(np.abs(fit_parameter_1)*2)
         text_mu_I = ROOT.TLatex(-0.27, -0.59, "#mu_{#it{I}_{3}} = "+formatted_mu_I+" #pm "+formatted_mu_I_error+" #pm "+formatted_mi_error+" #pm "+formatted_temperature_error+" MeV")
         text_mu_I.SetTextSize(TLATEX_TEXT_SIZE)
         text_mu_I.SetTextColor(ROOT.kBlack)
@@ -243,7 +274,7 @@ for i_cent, cent in enumerate(centrality_classes):
         c.Print(f"Ratios_{cent[0]}_{cent[1]}_3D.pdf")
 
         # make final plot for approval
-        leg_ratios_particle = ROOT.TLegend(0.199248,0.601242,0.414787,0.785093)
+        leg_ratios_particle = ROOT.TLegend(0.199248,0.601242-.05,0.414787,0.785093)
         cRatiosParticle = ROOT.TCanvas(f"cRatiosParticle_{cent[0]}_{cent[1]}",f"cRatiosParticle_{cent[0]}_{cent[1]}")
         pad1 = ROOT.TPad("pad1","pad1",0.0,0.3,1.0,1.0,0)
         pad1.SetFillColor(0)
@@ -300,10 +331,16 @@ for i_cent, cent in enumerate(centrality_classes):
         for i_part in range(0,4):
             gRatiosParticle.SetPointError(i_part,0,hRatiosParticle.GetBinError(i_part+1))
             gRatiosParticleFit.SetPointError(i_part,0.3,0)
+        hijing_predictions = file_hijing.Get(f"fRatios_{cent[0]}_{cent[1]}")
+        gHijingPredictions = ROOT.TGraphErrors()
+        gHijingPredictions.AddPoint(gRatiosParticle.GetPointX(0),hijing_predictions.GetBinContent(1,21)) # pion
+        gHijingPredictions.SetPointError(0,0.25,hijing_predictions.GetBinError(1,21)) # pion
+        gHijingPredictions.AddPoint(gRatiosParticle.GetPointX(1),hijing_predictions.GetBinContent(4,16)) # proton
+        gHijingPredictions.SetPointError(1,0.25,hijing_predictions.GetBinError(4,16)) # pion
 
         # data to fit ratio
         for i_ticks in range(5):
-            hNSigmaRatioFitParticle.GetYaxis().SetNdivisions(5)
+            hNSigmaRatioFitParticle.GetYaxis().SetNdivisions(6,6,1)
         for i_part in range(0,4):
             hNSigmaRatioFitParticle.GetXaxis().SetBinLabel(i_part+1,particle_ratios[i_part])
             hNSigmaRatioFitParticle.GetXaxis().SetLabelSize(0.2)
@@ -328,8 +365,8 @@ for i_cent, cent in enumerate(centrality_classes):
                 fit = fit_expo.Eval(9,0.5)
             hNSigmaRatioFitParticle.SetBinContent(i_part+1,(ratio-fit)/ratio_err)
             hNSigmaRatioFitParticle.SetBinError(i_part+1,0)
-        hNSigmaRatioFitParticle.SetLineColor(centrality_colors[i_cent])
-        hNSigmaRatioFitParticle.SetMarkerColor(centrality_colors[i_cent])
+        hNSigmaRatioFitParticle.SetLineColor(ROOT.kRed) #(centrality_colors[i_cent])
+        hNSigmaRatioFitParticle.SetMarkerColor(ROOT.kRed) #(centrality_colors[i_cent])
         hNSigmaRatioFitParticle.SetTitle("")
         hNSigmaRatioFitParticle.GetXaxis().SetTickSize(0.07)
         hNSigmaRatioFitParticle.GetYaxis().SetTickSize(0.035)
@@ -338,8 +375,11 @@ for i_cent, cent in enumerate(centrality_classes):
         hNSigmaRatioFitParticle.GetYaxis().SetTitleOffset(0.4)
         hNSigmaRatioFitParticle.GetXaxis().SetLabelOffset(0.01)
         hNSigmaRatioFitParticle.SetLineWidth(1)
-        hNSigmaRatioFitParticle.GetYaxis().SetTitle("(Data - Fit) / #sigma")
-        hNSigmaRatioFitParticle.GetYaxis().SetRangeUser(-2.4,2.4)
+        hNSigmaRatioFitParticle.GetYaxis().SetTitle("(Data - Mod.) / #sigma")
+        hNSigmaRatioFitParticle.GetYaxis().SetRangeUser(-7.3,7.3)
+        gHijingNsigma = ROOT.TGraphErrors(gHijingPredictions)
+        gHijingNsigma.SetPointY(0,(gHijingNsigma.GetPointY(0)-fit_expo.Eval(0,1))/np.sqrt(syst_pion*syst_pion+stat_pion*stat_pion))
+        gHijingNsigma.SetPointY(1,(gHijingNsigma.GetPointY(1)-fit_expo.Eval(3,0.5))/np.sqrt(syst_proton*syst_proton+stat_proton*stat_proton))
         hLineOne = ROOT.TLine(0.,0.,4.,0.)
         hLineOne.SetLineColor(ROOT.kGray+1)
         hLineOne.SetLineStyle(ROOT.kDashed)
@@ -360,10 +400,14 @@ for i_cent, cent in enumerate(centrality_classes):
         gRatiosParticle.SetMarkerColor(centrality_colors[i_cent])
         gRatiosParticleFit.SetMarkerSize(0)
         gRatiosParticleFit.SetLineColor(ROOT.kRed)
+        gHijingPredictions.SetLineColor(ROOT.kGreen+1)
+        gHijingPredictions.SetLineWidth(2)
         gRatiosParticleFit.Draw("e same")
+        gHijingPredictions.Draw("pe same")
         gRatiosParticle.Draw("pe same")
         leg_ratios_particle.AddEntry(gRatiosParticle,"Data")
         leg_ratios_particle.AddEntry(gRatiosParticleFit,"Fit")
+        leg_ratios_particle.AddEntry(gHijingPredictions,"HIJING")
         text_mu_b.SetTextSize(24)
         text_mu_I.SetTextSize(24)
         text_chi2.SetTextSize(24)
@@ -380,7 +424,10 @@ for i_cent, cent in enumerate(centrality_classes):
         pad2.cd()
         hNSigmaRatioFitParticle.Draw("axis")
         hLineOne.Draw("same")
+        gHijingNsigma.SetLineColor(ROOT.kGreen+1)
+        gHijingNsigma.SetLineWidth(2)
         hNSigmaRatioFitParticle.Draw("same")
+        gHijingNsigma.Draw("pe same")
         cRatiosParticle.Write()
         cRatiosParticle.Print(f"{cRatiosParticle.GetName()}.pdf")
 
@@ -401,13 +448,13 @@ gMuBCent.SetMarkerStyle(20)
 gMuBCent.SetMarkerSize(1.0)
 gMuBCent.SetMarkerColor(ROOT.kRed)
 gMuBCent.SetLineColor(ROOT.kRed)
-hMuBCentFrame.GetYaxis().SetRangeUser(0.,2.)
+hMuBCentFrame.GetYaxis().SetRangeUser(0.,1.5)
 hMuBCentFrame.Draw("pe")
 gMuBCent.Draw("pesame")
-gHijingMuB.Draw("e3same")
+#gHijingMuB.Draw("e3same")
 legMuBCent.AddEntry(gMuBCent,"Data")
 legMuBCent.AddEntry(gHijingMuB,"HIJING")
-legMuBCent.Draw("same")
+#legMuBCent.Draw("same")
 cMuBCent.Print("MuBvsCent.pdf")
 
 legMuICent = ROOT.TLegend(0.6,0.6,0.8,0.8)
@@ -418,13 +465,13 @@ gMuICent.SetMarkerStyle(20)
 gMuICent.SetMarkerSize(1.0)
 gMuICent.SetMarkerColor(ROOT.kRed)
 gMuICent.SetLineColor(ROOT.kRed)
-hMuICentFrame.GetYaxis().SetRangeUser(-0.6,0.8)
+hMuICentFrame.GetYaxis().SetRangeUser(-0.3,0.5)
 hMuICentFrame.Draw("pe")
 gMuICent.Draw("pesame")
-gHijingMuI.Draw("e3same")
+#gHijingMuI.Draw("e3same")
 legMuICent.AddEntry(gMuICent,"Data")
 legMuICent.AddEntry(gHijingMuI,"HIJING")
-legMuBCent.Draw("same")
+#legMuICent.Draw("same")
 cMuICent.Print("MuIvsCent.pdf")
 gMuBCent.Write()
 gMuICent.Write()

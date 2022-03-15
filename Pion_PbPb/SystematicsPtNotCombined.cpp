@@ -29,7 +29,7 @@ const int nTrials=10000;
 
 bool barlow_criterion = true;
 
-void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = true, const bool binCountingVar = true, const bool expVar = true, const bool sigmoidVar = true, const char *outFileName = "SystematicsAllEPtNotCombined")
+void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = true, const bool binCountingVar = true, const bool expVar = true, const bool sigmoidVar = true, const char *outFileName = "SystematicsAllEPtNotCombined_LHC22b9")
 {
   gStyle->SetTextFont(44);
   gStyle->SetOptStat(110001110);
@@ -38,10 +38,10 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
   TStopwatch swatch;
   swatch.Start(true);
 
-  TFile *specFile = TFile::Open(Form("%s/SpectraPionSys.root", kOutDir));
+  TFile *specFile = TFile::Open(Form("%s/SpectraPionSys_LHC22b9.root", kOutDir));
   TFile *hijingFile = TFile::Open("../HIJINGRatios.root");
-  TFile *inFileSec = TFile::Open(Form("%s/PrimaryPion.root", kOutDir));
-  TFile *effFile = TFile::Open(Form("%s/EfficiencyPionMC_21l5_false_.root", kOutDir));
+  TFile *inFileSec = TFile::Open(Form("%s/PrimaryPion_LHC22b9.root", kOutDir));
+  TFile *effFile = TFile::Open(Form("%s/EfficiencyPionMC_21l5_false__LHC22b9.root", kOutDir));
   TFile *outFile = TFile::Open(Form("%s/%s.root", kOutDir, outFileName), "recreate");
 
   for (int iC = 0; iC < kNCentClasses; ++iC) // TODO: extend the analysis to the third centrality class as well

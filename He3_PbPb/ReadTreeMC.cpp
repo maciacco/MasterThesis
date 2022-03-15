@@ -33,9 +33,9 @@ void ReadTreeMC(const float cutDCAz = 1.f, const int cutTPCcls = 89, const float
 
   // read tree
   ROOT::EnableImplicitMT(4);                                                  // use all cores
-  ROOT::RDataFrame dataFrameR("RTree", /* "../data/AnalysisResults_LHC22b9_3.root" */Form("%s/mc.root", kDataDir));        // get reconstructed tree from file
+  ROOT::RDataFrame dataFrameR("RTree", "../../AnalysisResults_LHC22b9_radius.root"/* Form("%s/mc.root", kDataDir) */);        // get reconstructed tree from file
   ROOT::RDataFrame dataFrameRSec("RTree", Form("%s/mc_sec.root", kDataDir)); // get reconstructed (deuteron) tree from file
-  ROOT::RDataFrame dataFrameS("STree", /* "../data/AnalysisResults_LHC22b9_3.root" */Form("%s/mc.root", kDataDir));        // get simulated tree from file
+  ROOT::RDataFrame dataFrameS("STree", "../../AnalysisResults_LHC22b9_radius.root"/* Form("%s/mc.root", kDataDir) */);        // get simulated tree from file
 
   dirOutFile->cd();
   // track selection

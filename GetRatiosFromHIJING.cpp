@@ -45,16 +45,11 @@ void GetRatiosFromHIJING(){
       fRatio->SetFillColor(kRed);
       fRatio->SetFillStyle(1001);
       fRatio->Write();
-      if (/* (tmpSpecies/2==0)|| */(tmpSpecies/2==2)||(tmpSpecies/2==3)){
-        fRatios.SetBinContent(fRatios.GetXaxis()->FindBin(kQuantumNumbers[(tmpSpecies)/2][0]+0.001),fRatios.GetYaxis()->FindBin(kQuantumNumbers[(tmpSpecies)/2][1]+0.001),yield[0]/yield[1]);
-        fRatios.SetBinError(fRatios.GetXaxis()->FindBin(kQuantumNumbers[(tmpSpecies)/2][0]+0.001),fRatios.GetYaxis()->FindBin(kQuantumNumbers[(tmpSpecies)/2][1]+0.001),yield[0]/yield[1]*TMath::Sqrt(1/yield[0]+1/yield[1]));
-        /* if (kQuantumNumbers[(tmpSpecies)/2][1]>-0.1||kQuantumNumbers[(tmpSpecies)/2][1]<0.6){
-          fRatios1D.SetBinContent(fRatios1D.GetXaxis()->FindBin(kQuantumNumbers[(tmpSpecies)/2][0]+0.001),yield[0]/yield[1]);
-          fRatios1D.SetBinError(fRatios1D.GetXaxis()->FindBin(kQuantumNumbers[(tmpSpecies)/2][0]+0.001),yield[0]/yield[1]*TMath::Sqrt(1/yield[0]+1/yield[1]));
-        } */
-      }
+      fRatios.SetBinContent(fRatios.GetXaxis()->FindBin(kQuantumNumbers[(tmpSpecies)/2][0]+0.001),fRatios.GetYaxis()->FindBin(kQuantumNumbers[(tmpSpecies)/2][1]+0.001),yield[0]/yield[1]);
+      fRatios.SetBinError(fRatios.GetXaxis()->FindBin(kQuantumNumbers[(tmpSpecies)/2][0]+0.001),fRatios.GetYaxis()->FindBin(kQuantumNumbers[(tmpSpecies)/2][1]+0.001),yield[0]/yield[1]*TMath::Sqrt(1/yield[0]+1/yield[1]));
     }
     TF2 fitExpo(Form("fitExpo_%.0f_%.0f",kCentralityClasses[iC][0],kCentralityClasses[iC][1]), "TMath::Exp(-2./3.*[0]*x-2.*[1]*y)", -0.5, 9.5,-0.05,1.05,"");
+    fitExpo.FixParameter(1,0);
     fRatios.Fit(Form("fitExpo_%.0f_%.0f",kCentralityClasses[iC][0],kCentralityClasses[iC][1]),"SN");
     fRatios.GetZaxis()->SetRangeUser(0.8,1.0);
     fitExpo.SetMinimum(0.8);

@@ -30,6 +30,7 @@ void MaterialBudget(){
             std::cout<<"Efficiency name = "<<Form("%sf%sEff_%s_%.0f_%.0f",directory.Data(),antiMatter[iM],detector.Data(),cent[iC][0],cent[iC][1])<<std::endl;
           }
           eff[iProd]=(TH1D*)f[iSp][iProd]->Get(Form("%sf%sEff_%s_%.0f_%.0f",directory.Data(),antiMatter[iM],detector.Data(),cent[iC][0],cent[iC][1]));
+          //if (iSp==0)eff[iProd]=(TH1D*)f[iSp][iProd]->Get(Form("%sf%sEff_%s_0_90",directory.Data(),antiMatter[iM],detector.Data()));
           if (!eff[iProd]) continue;
           //outFile.cd();
           //eff[iProd]->Write();
@@ -40,6 +41,10 @@ void MaterialBudget(){
           iVar == 0 ? effRatio[iSp][iM][iVar]->Divide(eff[0],eff[1]) : effRatio[iSp][iM][iVar]->Divide(eff[2],eff[1]);
           for (int iP=1;iP<effRatio[iSp][iM][iVar]->GetNbinsX();++iP){
             if (effRatio[iSp][iM][iVar]->GetBinContent(iP)<1.e-9) effRatio[iSp][iM][iVar]->SetBinError(iP,0.);
+            if (iSp==0 && effRatio[iSp][iM][iVar]->GetBinCenter(iP)>1.3 && effRatio[iSp][iM][iVar]->GetBinCenter(iP)<1.35){
+              effRatio[iSp][iM][iVar]->SetBinContent(iP,0.);
+              effRatio[iSp][iM][iVar]->SetBinError(iP,0.);
+            }
           }
           outFile.cd();
           effRatio[iSp][iM][iVar]->Write();
