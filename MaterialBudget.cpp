@@ -2,7 +2,7 @@ const char *species[]={"Pion","Proton","He3"};
 const char *antiMatter[]={"A","M"};
 const char *var[]={"Minus","Plus"};
 const double cent[3][2]={{0,5},{5,10},{30,50}};
-const double fitRange[3][2]={{0.5,1.6},{0.8,3.},{1.5,10}};
+const double fitRange[3][2]={{0.5,1.5},{0.8,3.},{1.5,10}};
 const bool VERBOSE=false;
 
 void MaterialBudget(){
@@ -29,7 +29,7 @@ void MaterialBudget(){
             std::cout<<"File Name = "<<Form("%s_PbPb/out/Efficiency%s_LHC22b9_%d.root",species[iSp],species[iSp],iProd+1)<<std::endl;
             std::cout<<"Efficiency name = "<<Form("%sf%sEff_%s_%.0f_%.0f",directory.Data(),antiMatter[iM],detector.Data(),cent[iC][0],cent[iC][1])<<std::endl;
           }
-          eff[iProd]=(TH1D*)f[iSp][iProd]->Get(Form("%sf%sEff_%s_%.0f_%.0f",directory.Data(),antiMatter[iM],detector.Data(),cent[iC][0],cent[iC][1]));
+          eff[iProd]=(TH1D*)f[iSp][iProd]->Get(Form("%sf%sEff_%s_%.0f_%.0f",directory.Data(),antiMatter[iM],detector.Data(),0.,90./* ,cent[iC][0],cent[iC][1] */));
           //if (iSp==0)eff[iProd]=(TH1D*)f[iSp][iProd]->Get(Form("%sf%sEff_%s_0_90",directory.Data(),antiMatter[iM],detector.Data()));
           if (!eff[iProd]) continue;
           //outFile.cd();
@@ -42,6 +42,10 @@ void MaterialBudget(){
           for (int iP=1;iP<effRatio[iSp][iM][iVar]->GetNbinsX();++iP){
             if (effRatio[iSp][iM][iVar]->GetBinContent(iP)<1.e-9) effRatio[iSp][iM][iVar]->SetBinError(iP,0.);
             if (iSp==0 && effRatio[iSp][iM][iVar]->GetBinCenter(iP)>1.3 && effRatio[iSp][iM][iVar]->GetBinCenter(iP)<1.35){
+              effRatio[iSp][iM][iVar]->SetBinContent(iP,0.);
+              effRatio[iSp][iM][iVar]->SetBinError(iP,0.);
+            }
+            if (iSp==1 && effRatio[iSp][iM][iVar]->GetBinCenter(iP)>1.8 && effRatio[iSp][iM][iVar]->GetBinCenter(iP)<1.85){
               effRatio[iSp][iM][iVar]->SetBinContent(iP,0.);
               effRatio[iSp][iM][iVar]->SetBinError(iP,0.);
             }

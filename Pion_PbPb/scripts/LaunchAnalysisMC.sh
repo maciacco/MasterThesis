@@ -12,14 +12,14 @@ extractRatios=1
 # fileMC="../AnalysisResults_LHC22b9_1"
 # fileData="AnalysisResults_LHC21l5_full_largeDCA_cutChi2"
 # fileMC="AnalysisResults_LHC21l5_full_largeDCA_cutChi2"
-fileData="../../data/AnalysisResults_LHC22b9_1"
-fileMC="../../data/AnalysisResults_LHC22b9_1"
+fileData="../../data/AnalysisResults_LHC22b9_2"
+fileMC="../../data/AnalysisResults_LHC22b9_2"
 # fileData="LHC20e3a"
 # fileMC="LHC20e3a"
-signalName="SignalPionMC_21l5_false__LHC22b9_1"
-spectraName="SpectraPionMC_21l5_false_LHC22b9_1"
-EfficiencyHe3="EfficiencyPion_LHC22b9_1"
-PrimaryHe3="PrimaryPionMC_21l5_false_LHC22b9_1"
+signalName="SignalPionMC_21l5_false__LHC22b9_2"
+spectraName="SpectraPionMC_21l5_false_LHC22b9_2"
+EfficiencyHe3="EfficiencyPion_LHC22b9_2"
+PrimaryHe3="PrimaryPionMC_21l5_false_LHC22b9_2"
 
 # create output directories
 DIR_OUT=out

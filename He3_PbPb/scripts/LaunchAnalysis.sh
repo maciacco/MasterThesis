@@ -8,18 +8,18 @@ binCountingFlag=1
 expFlag=1 # 0->pol1, 1->expo, 2->pol2
 sigmoidFlag=1
 spectraHistNameId="1.0_89_0.1_2.5_1_1_1"
-readTree=1
+readTree=0
 extractRatios=1
 
 treeData="TreeOutData"
 # treeMC="TreeOutMC_XSPlus"
-treeMC="TreeOutMC_LHC22b9_r"
-signalName="SignalHe3_LHC22b9"
-spectraName="SpectraHe3_LHC22b9"
+treeMC="TreeOutMC"
+signalName="SignalHe3"
+spectraName="SpectraHe3"
 # EfficiencyHe3="EfficiencyHe3_XSPlus"
-EfficiencyHe3="EfficiencyHe3_LHC22b9"
-EfficiencyHe3SecWD="EfficiencyHe3SecWD_LHC22b9"
-PrimaryHe3="PrimaryHe3_LHC22b9"
+EfficiencyHe3="EfficiencyHe3"
+EfficiencyHe3SecWD="EfficiencyHe3SecWD"
+PrimaryHe3="PrimaryHe3"
 
 # create output directories
 DIR_OUT=out
@@ -87,11 +87,11 @@ if [ $extractRatios -eq 1 ]; then
 // SignalUnbinned($argumentCuts,$argumentSignal,"TreeOutData_NoPID","SignalHe3_NoPID","recreate",true,false)
 // SignalUnbinned($argumentCuts,$argumentSignal,"TreeOutData_He3PID","SignalHe3_He3PID","recreate",true,false)
 // SignalUnbinned($argumentCuts,$argumentSignal,"TreeOutData_AlphaPID","SignalHe3_AlphaPID","recreate",true,true)
-//SignalUnbinned($argumentCuts,0.1f,2.5,$argumentSignal,"$treeData","$signalName","recreate")
+SignalUnbinned($argumentCuts,0.1f,2.5,$argumentSignal,"$treeData","$signalName","recreate")
 Efficiency($argumentCuts,0.1f,2.5,"$treeMC","$EfficiencyHe3")
-//EfficiencySec($argumentCuts,0.1f,2.5,"$treeMC","$EfficiencyHe3SecWD",0.3365047128558935)
-//Secondary($argumentCuts,0.1f,2.5,"$treeData","$treeMC","$EfficiencyHe3SecWD","$PrimaryHe3")
-//Spectra($argumentCuts,0.1f,2.5,$argumentSignal,$sigmoidFlag,"$spectraHistNameId","$spectraName","recreate","AnalysisResults","$signalName","$EfficiencyHe3","$PrimaryHe3")
+EfficiencySec($argumentCuts,0.1f,2.5,"$treeMC","$EfficiencyHe3SecWD",0.3365047128558935)
+Secondary($argumentCuts,0.1f,2.5,"$treeData","$treeMC","$EfficiencyHe3SecWD","$PrimaryHe3")
+Spectra($argumentCuts,0.1f,2.5,$argumentSignal,$sigmoidFlag,"$spectraHistNameId","$spectraName","recreate","AnalysisResults","$signalName","$EfficiencyHe3","$PrimaryHe3")
 // SignalLoss()
 //AbsorptionError("AbsError","recreate","$spectraName")
 .q

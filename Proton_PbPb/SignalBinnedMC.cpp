@@ -271,9 +271,9 @@ void SignalBinnedMC(const char *cutSettings = "", const double roi_nsigma = 8., 
         RooRealVar nSignal("N_{sig}", "nSignal", 1., 1.e2);
 
         slope1 = new RooRealVar("#tau_{1}", "slope1", -10., 10.);
-        slope2 = new RooRealVar("#tau_{2}", "slope2",-0.9, -10.,0.);
+        slope2 = new RooRealVar("#tau_{2}", "slope2",-0.9, -20.,20.);
         //slope2->setConstant();
-        nBackground1 = new RooRealVar("#it{N}_{Bkg,1}", "nBackground1", 10., 0., 1.e6);
+        nBackground1 = new RooRealVar("#it{N}_{Bkg,1}", "nBackground1", 10., 0., 1.e8);
 
         if (bkg_shape == 1)
         { // expo
@@ -282,7 +282,7 @@ void SignalBinnedMC(const char *cutSettings = "", const double roi_nsigma = 8., 
           {
             background1 = (RooAbsPdf *)new RooExponential("background1", "background1", tofSignal, *slope1);
             background2 = (RooAbsPdf *)new RooExponential("background2", "background2", tofSignal, *slope2);
-            nBackground2 = new RooRealVar("#it{N}_{Bkg,2}", "nBackground2", 0., 0., 1.e6);
+            nBackground2 = new RooRealVar("#it{N}_{Bkg,2}", "nBackground2", 0., 0., 1.e8);
             nBackground2->setConstant();
             model = new RooAddPdf("model", "model", RooArgList(*background1), RooArgList(*nBackground1));
           }
@@ -291,7 +291,7 @@ void SignalBinnedMC(const char *cutSettings = "", const double roi_nsigma = 8., 
             background1 = (RooAbsPdf *)new RooExponential("background1", "background1", tofSignal, *slope1);
             background0 = new RooAddPdf("background0","background0",RooArgList(*background1),RooArgList(*nBackground1));
             background2 = (RooAbsPdf *)new RooExponential("background2", "background2", tofSignal, *slope2);
-            nBackground2 = new RooRealVar("#it{N}_{Bkg,2}", "nBackground2",0.,  0., 1.e6);
+            nBackground2 = new RooRealVar("#it{N}_{Bkg,2}", "nBackground2",0.,  0., 1.e8);
             //nBackground2->setConstant();
             model = new RooAddPdf("model", "model", RooArgList(*background1, *background2), RooArgList(*nBackground1, *nBackground2));
           }
