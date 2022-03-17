@@ -1,7 +1,8 @@
 constexpr float minpt = 0.65;
 constexpr float maxpt = 1.65;
-constexpr float miny = 0.97;
-constexpr float maxy = 1.03;
+constexpr float miny = 0.955;
+constexpr float maxy = 1.055;
+
 std::array<TPad*,3> CreatePads(TCanvas* &cv)
 {
   if (!cv) cv = new TCanvas;
@@ -60,16 +61,16 @@ std::array<TPad*,3> CreatePads(TCanvas* &cv)
 Color_t colors[]={kOrange+7, kAzure+4, kTeal+4};
 double x_limits[1][2]={{0.7,1.6}};
 int i_particle=0;
-const char *format_fit_results[] = {"Ratio = %.3f #pm %.3f"};
-const char *format_fit_results_more[] = {"Ratio = %.4f #pm %.4f"};
+const char *format_fit_results[] = {"R=%.3f #pm0.000 (stat.) #pm%.3f (syst.) #pm%.3f (mat.)"};
+const char *format_fit_results_more[] = {"R=%.3f #pm0.000 (stat.) #pm%.3f (syst.) #pm%.3f (mat.)"};
 
 void newratios() {
   gStyle->SetOptStat(0);
   const float leftmargin = 0.16;
   const float rigthmargin = 0.04;
 
-  const float minpt = 0.4;
-  const float maxpt = 8.4;
+  // const float minpt = 0.4;
+  // const float maxpt = 8.4;
   const float deltaRatio = 0.89;
   const float kMarkerSize = 0.9;
 
@@ -88,21 +89,28 @@ void newratios() {
   text.SetTextFont(63);
   text.SetTextSize(18);
   pads[0]->cd();
-  text.DrawText(1.2,1.023,"ALICE Preliminary");
+  double mean_y = 0.5*(miny+maxy);
+  double half_width_y = 0.5*(maxy-miny);
+  double mean_x = 0.5*(minpt+maxpt);
+  double half_width_x = 0.5*(maxpt-minpt);
+  text.DrawText(mean_x+0.12*half_width_x,mean_y+0.8*half_width_y,"ALICE Preliminary");
 
   pads[0]->cd();
   text.SetTextFont(43);
-  text.DrawLatex(1.2,1.017,"Pb-Pb #sqrt{#it{s}_{NN}}=5.02 TeV");
+  text.DrawLatex(mean_x+0.12*half_width_x,mean_y+0.6*half_width_y,"Pb-Pb #sqrt{#it{s}_{NN}}=5.02 TeV");
 
   const string labels[3]{"0-5%","5-10%","30-50%"};
   const string names[3]{"0_5","5_10","30_50"};
   //text.SetTextAlign(31);
   TFile input("Pion_PbPb/out/SystematicsAllEPtNotCombined.root");
+  TFile input_material("FinalPlot3D.root");
   TGraphErrors *g[3];
   TH1D* h[3];
+  TF1 *f[3];
   for (int iP = 0; iP < 3; ++iP) {
     pads[iP]->cd();
-    text.DrawText(0.71,1.023,labels[iP].data());
+    text.SetTextSize(18);
+    text.DrawText(mean_x-0.91*half_width_x,mean_y+0.8*half_width_y,labels[iP].data());
     h[iP] = (TH1D*)input.Get(Form("fRatio_%s",names[iP].data()));
     g[iP]=new TGraphErrors(h[iP]);
     g[iP]->SetMarkerStyle(20);
@@ -110,6 +118,12 @@ void newratios() {
     g[iP]->SetMarkerColor(colors[iP]);
     g[iP]->SetLineColor(colors[iP]);
     g[iP]->SetFillStyle(0);
+    double ratio_mat[3];
+    for (int iMat=0;iMat<3;++iMat){
+      auto hMaterial=(TH1D*)input_material.Get(Form("fRatio_%s;%.d",names[iP].data(),iMat*4+4));
+      ratio_mat[iMat] = hMaterial->GetFunction("pol0")->GetParameter(0);
+    }
+    double material_error = std::abs(ratio_mat[1]-ratio_mat[0])*0.5;
     int iPoint{0};
     while (iPoint<g[iP]->GetN()){
       double x=g[iP]->GetPointX(iPoint);
@@ -118,11 +132,16 @@ void newratios() {
       }
       else ++iPoint;
     }
-    h[iP]->GetFunction("pol0")->Draw("same");
+    f[iP]=new TF1("fit","pol0",minpt,maxpt);
+    f[iP]->SetParameter(0,h[iP]->GetFunction("pol0")->GetParameter(0));
+    f[iP]->SetLineColor(kBlack);
+    f[iP]->Draw("same");
     g[iP]->Draw("pe5same");
+    text.SetTextSize(15);
     if (i_particle==0 && iP==1)
-      text.DrawLatex(0.71,1.017,Form(format_fit_results_more[i_particle],h[iP]->GetFunction("pol0")->GetParameter(0),h[iP]->GetFunction("pol0")->GetParError(0)));
-    else text.DrawLatex(0.71,1.017,Form(format_fit_results[i_particle],h[iP]->GetFunction("pol0")->GetParameter(0),h[iP]->GetFunction("pol0")->GetParError(0)));
+      text.DrawLatex(mean_x-0.91*half_width_x,mean_y-0.8*half_width_y,Form(format_fit_results_more[i_particle],h[iP]->GetFunction("pol0")->GetParameter(0),h[iP]->GetFunction("pol0")->GetParError(0),material_error));
+    else if (iP==0) text.DrawLatex(mean_x-0.91*half_width_x,mean_y-0.8*half_width_y,Form(format_fit_results[i_particle],h[iP]->GetFunction("pol0")->GetParameter(0),h[iP]->GetFunction("pol0")->GetParError(0),material_error));
+    else text.DrawLatex(mean_x-0.91*half_width_x,mean_y-0.8*half_width_y,Form(format_fit_results[i_particle],h[iP]->GetFunction("pol0")->GetParameter(0),h[iP]->GetFunction("pol0")->GetParError(0),material_error));
     // TH1* syst = (TH1*)input.Get(Form("ratio/%i/syst",iP));
     //stat->Draw("esamex0");
     // syst->Draw("e2same");
