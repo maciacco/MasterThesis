@@ -15,14 +15,6 @@
 using utils::TTList;
 using namespace proton;
 
-double protonCorrectionPt(int iMatt,double pt){
-  if (iMatt == 1) 
-    return 1;
-    //return 0.99876*TMath::Power(pt,0.00036);
-  //return 1.03176*TMath::Power(pt,-0.01249);
-  return 1;
-};
-
 void SystematicsXS(const char *cutSettings = "", const char *outFileName = "SystematicsXS", const char *outFileOption = "recreate", const char *effFile = "EfficiencyProtonMC_21l5_false_XS")
 {
   std::cout << "cutSettings = " << cutSettings << std::endl;

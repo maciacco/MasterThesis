@@ -8,16 +8,16 @@ sigmoidFlag=0
 spectraHistNameId=""
 extractRatios=1
 
-fileData="../AnalysisResults_LHC22b9_1"
-fileMC="../AnalysisResults_LHC22b9_1"
-# fileData="AnalysisResults_LHC21l5_full_largeDCA_cutChi2"
-# fileMC="AnalysisResults_LHC21l5_full_largeDCA_cutChi2"
+# fileData="../AnalysisResults_LHC22b9_1"
+# fileMC="../AnalysisResults_LHC22b9_1"
+fileData="AnalysisResults_LHC21l5_full_largeDCA_cutChi2"
+fileMC="AnalysisResults_LHC21l5_full_largeDCA_cutChi2"
 # fileData="AnalysisResults-6"
 # fileMC="AnalysisResults-6"
-signalName="SignalProtonMC_21l5_false___LHC22b9_1"
-spectraName="SpectraProtonMCMC_21l5_false_LHC22b9_1"
-EfficiencyHe3="EfficiencyProton_LHC22b9_1"
-PrimaryHe3="PrimaryProtonMC_21l5_false_LHC22b9_1"
+signalName="SignalProtonMC_21l5_false__prova"
+spectraName="SpectraProtonMCMC_21l5_falseprova"
+EfficiencyHe3="EfficiencyProtonMC_21l5_false__prova"
+PrimaryHe3="PrimaryProtonMC_21l5_falseprova"
 
 # create output directories
 DIR_OUT=out

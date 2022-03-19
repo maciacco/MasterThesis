@@ -16,7 +16,7 @@
 using utils::TTList;
 using namespace proton;
 
-void PlotEfficiencies(const float cutDCAz = 1.f, const int cutTPCcls = 89, const char *outFileName = "EfficiencyPlots", const char *histoNameDir = "", const char *outFileOption = "recreate", const char *inFile = "EfficiencyProton")
+void PlotEfficiencies(const char *outFileName = "EfficiencyPlots", const char *histoNameDir = "", const char *outFileOption = "recreate", const char *inFile = "EfficiencyProtonMC_21l5_false__")
 {
   gStyle->SetOptFit(0);
   gStyle->SetOptStat(0);
@@ -45,7 +45,7 @@ void PlotEfficiencies(const float cutDCAz = 1.f, const int cutTPCcls = 89, const
   TH1D *fEff[kNCentClasses];
   for (int iMatt = 0; iMatt < 2; ++iMatt)
   {
-    fEff[iMatt] = (TH1D *)inFileEff->Get(Form("f%sEff_TOF_0_90", kAntimatterMatter[iMatt]));
+    fEff[iMatt] = (TH1D *)inFileEff->Get(Form("_/f%sEff_TOF_0_5", kAntimatterMatter[iMatt]));
     fEff[iMatt]->SetTitle("");
     fEff[iMatt]->GetYaxis()->SetRangeUser(0., 1.1);
     fEff[iMatt]->GetXaxis()->SetRangeUser(1., 5.0);

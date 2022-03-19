@@ -1,7 +1,7 @@
 constexpr float minpt = 0.65;
 constexpr float maxpt = 1.65;
 constexpr float miny = 0.955;
-constexpr float maxy = 1.055;
+constexpr float maxy = 1.045;
 
 std::array<TPad*,3> CreatePads(TCanvas* &cv)
 {

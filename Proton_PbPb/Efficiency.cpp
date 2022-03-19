@@ -20,10 +20,7 @@ void Efficiency(const char *cutSettings = "", const char *inFileNameMC = "Analys
   // make signal extraction plots directory
   system(Form("mkdir %s/efficiency", kPlotDir));
 
-  TFile inFile3(Form("%s/%s.root", kDataDir, inFileNameMC));
-  //TFile inFile2(Form("%s/%s_dataSet1.root", kDataDir, inFileNameMC));
-  //TFile inFile3(Form("%s/%s_20g7_20210929.root", kDataDir, inFileNameMC));
-  //TFile inFile1(Form("%s/%s.root", kDataDir, inFileNameMC));
+  TFile inFile(Form("%s/%s.root", kDataDir, inFileNameMC));
   TFile outFile(Form("%s/%s.root", kOutDir, outFileNameEff), "RECREATE");
 
   gStyle->SetOptStat(0);
@@ -35,32 +32,12 @@ void Efficiency(const char *cutSettings = "", const char *inFileNameMC = "Analys
 
     // get TTList
     std::string listName = Form("nuclei_proton_mcTrue_%s", cutSettings);
-    /* TTList *list1 = (TTList *)inFile1.Get(listName.data()); */
-    //TTList *list2 = (TTList *)inFile2.Get(listName.data());
-    TTList *list3 = (TTList *)inFile3.Get(listName.data());
+    TTList *list = (TTList *)inFile.Get(listName.data());
 
     // get histograms from file
-    /* TH2F *fTotal1 = (TH2F *)list1->Get(TString::Format("f%sTotal", kAntimatterMatter[iMatt]).Data());
-    TH2F *fITS_TPC_TOF1 = (TH2F *)list1->Get(TString::Format("f%sITS_TPC_TOF", kAntimatterMatter[iMatt]).Data()); */
-    // TH2F *fTotal2 = (TH2F *)list2->Get(TString::Format("f%sTotal", kAntimatterMatter[iMatt]).Data());
-    // TH2F *fITS_TPC_TOF2 = (TH2F *)list2->Get(TString::Format("f%sITS_TPC_TOF", kAntimatterMatter[iMatt]).Data());
-    TH2F *fTotal3 = (TH2F *)list3->Get(TString::Format("f%sTotal", kAntimatterMatter[iMatt]).Data());
-    TH2F *fITS_TPC3 = (TH2F *)list3->Get(TString::Format("f%sITS_TPC", kAntimatterMatter[iMatt]).Data());
-    TH2F *fITS_TPC_TOF3 = (TH2F *)list3->Get(TString::Format("f%sITS_TPC_TOF", kAntimatterMatter[iMatt]).Data());
-
-    ////////////////////////////////////////////////////////////////////////////
-    // merge datasets *** ONLY IF WORKING WITH LHC18q AND LHC18r SEPARATELY ***
-    ////////////////////////////////////////////////////////////////////////////
-    /* fTotal3->Add(fTotal2);
-    fITS_TPC_TOF3->Add(fITS_TPC_TOF2); */
-    ////////////////////////////////////////////////////////////////////////////
-
-    /* TH2F *fTotal = (TH2F *)fTotal1->Clone(fTotal1->GetName());
-    fTotal->Add(fTotal2); */
-    //fTotal->Add(fTotal3);
-    /* TH2F *fITS_TPC_TOF = (TH2F *)fITS_TPC_TOF1->Clone(fITS_TPC_TOF1->GetName());
-    fITS_TPC_TOF->Add(fITS_TPC_TOF2); */
-    //fITS_TPC_TOF->Add(fITS_TPC_TOF3);
+    TH2F *fTotal = (TH2F *)list->Get(TString::Format("f%sTotal", kAntimatterMatter[iMatt]).Data());
+    TH2F *fITS_TPC = (TH2F *)list->Get(TString::Format("f%sITS_TPC", kAntimatterMatter[iMatt]).Data());
+    TH2F *fITS_TPC_TOF = (TH2F *)list->Get(TString::Format("f%sITS_TPC_TOF", kAntimatterMatter[iMatt]).Data());
 
     for (int iCent = 0; iCent < kNCentClasses + 1; ++iCent) // SET FIRST CENTRALITY BIN TO 1 EXCEPT FOR LHC16h7c_g4_2
     {                                                       // loop over centrality
@@ -69,8 +46,8 @@ void Efficiency(const char *cutSettings = "", const char *inFileNameMC = "Analys
       double cent_bin_lim_min = kCentBinsLimitsProton[iCent][0];
       double cent_bin_lim_max = kCentBinsLimitsProton[iCent][1];
 
-      TH1D *fTotal_Pt;       // = fTotal->ProjectionY(TString::Format("f%sTotal_Pt", kAntimatterMatter[iMatt]), cent_bin_min, cent_bin_max);
-      TH1D *fITS_TPC_TOF_Pt; // = fITS_TPC_TOF->ProjectionY(TString::Format("f%sITS_TPC_TOF_Pt", kAntimatterMatter[iMatt]), cent_bin_min, cent_bin_max);
+      TH1D *fTotal_Pt;
+      TH1D *fITS_TPC_TOF_Pt;
       TH1D *fITS_TPC_Pt;
       
       if (iCent < -1)
@@ -80,9 +57,9 @@ void Efficiency(const char *cutSettings = "", const char *inFileNameMC = "Analys
       }
       else
       {
-        fTotal_Pt = fTotal3->ProjectionY(TString::Format("f%sTotal_Pt", kAntimatterMatter[iMatt]), cent_bin_min, cent_bin_max);
-        fITS_TPC_TOF_Pt = fITS_TPC_TOF3->ProjectionY(TString::Format("f%sITS_TPC_TOF_Pt", kAntimatterMatter[iMatt]), cent_bin_min, cent_bin_max);
-        fITS_TPC_Pt = fITS_TPC3->ProjectionY(TString::Format("f%sITS_TPC_Pt", kAntimatterMatter[iMatt]), cent_bin_min, cent_bin_max);
+        fTotal_Pt = fTotal->ProjectionY(TString::Format("f%sTotal_Pt", kAntimatterMatter[iMatt]), cent_bin_min, cent_bin_max);
+        fITS_TPC_TOF_Pt = fITS_TPC_TOF->ProjectionY(TString::Format("f%sITS_TPC_TOF_Pt", kAntimatterMatter[iMatt]), cent_bin_min, cent_bin_max);
+        fITS_TPC_Pt = fITS_TPC->ProjectionY(TString::Format("f%sITS_TPC_Pt", kAntimatterMatter[iMatt]), cent_bin_min, cent_bin_max);
       }
       fTotal_Pt = (TH1D *)fTotal_Pt->Rebin(kNPtBins, TString::Format("f%sTotal_Pt", kAntimatterMatter[iMatt]), kPtBins);
       fITS_TPC_TOF_Pt = (TH1D *)fITS_TPC_TOF_Pt->Rebin(kNPtBins, TString::Format("f%sITS_TPC_TOF_Pt", kAntimatterMatter[iMatt]), kPtBins);
@@ -90,11 +67,6 @@ void Efficiency(const char *cutSettings = "", const char *inFileNameMC = "Analys
       TH1D fEffPt(TString::Format("f%sEff_TOF_%.0f_%.0f", kAntimatterMatter[iMatt], cent_bin_lim_min, cent_bin_lim_max), TString::Format("%s Efficiency #times Acceptance, %.0f-%.0f%%", kAntimatterMatterLabel[iMatt], kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1]), kNPtBins, kPtBins);
       TH1D fEffPt_TPC(TString::Format("f%sEff_TPC_%.0f_%.0f", kAntimatterMatter[iMatt], cent_bin_lim_min, cent_bin_lim_max), TString::Format("%s Efficiency #times Acceptance, %.0f-%.0f%%", kAntimatterMatterLabel[iMatt], kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1]), kNPtBins, kPtBins);
 
-      /* for (int iPtBin = 1; iPtBin < fEffPt.GetNbinsX() + 1; ++iPtBin)
-      {
-        fEffPt.SetBinContent(iPtBin, Eff(fITS_TPC_TOF_Pt, fTotal_Pt, fEffPt.GetXaxis()->GetBinCenter(iPtBin)));
-        fEffPt.SetBinError(iPtBin, EffErr(&fEffPt, fTotal_Pt, fEffPt.GetXaxis()->GetBinCenter(iPtBin)));
-      } */
       fEffPt.Divide(fITS_TPC_TOF_Pt, fTotal_Pt, 1, 1, "B");
       fEffPt.SetMarkerStyle(20);
       fEffPt.SetMarkerSize(0.8);
