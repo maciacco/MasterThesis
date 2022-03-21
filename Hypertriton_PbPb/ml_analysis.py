@@ -157,7 +157,7 @@ if TRAINING:
                 # features plot
                 leg_labels = ['background', 'signal']
 
-                model_clf = xgb.XGBClassifier(use_label_encoder=False)
+                model_clf = xgb.XGBClassifier(use_label_encoder=False, n_jobs=4)
                 model_hdl = ModelHandler(model_clf, TRAINING_COLUMNS_LIST)
                 model_hdl.set_model_params(HYPERPARAMS)
 

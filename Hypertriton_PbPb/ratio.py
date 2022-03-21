@@ -14,7 +14,7 @@ import yaml
 SPEED_OF_LIGHT = 2.99792458
 SPLIT = True
 
-centrality_colors = [ROOT.kOrange+7, ROOT.kAzure+4, ROOT.kTeal+4]
+centrality_colors = [ROOT.kOrange+7, ROOT.kAzure+4, ROOT.kTeal+4, ROOT.kBlack, ROOT.kBlack, ROOT.kBlack]
 
 # avoid pandas warning
 warnings.simplefilter(action='ignore', category=FutureWarning)

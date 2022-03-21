@@ -14,13 +14,13 @@ from helpers import he3_correction_pt
 
 def he3_correction_pt(i_matt, pt):
    if i_matt == 0:
-       return 1.034*ROOT.TMath.Power(pt,-0.007623)
-   return 1.01*ROOT.TMath.Power(pt,-0.000002392)
+       return 0.005394*ROOT.TMath.Power(pt,-0.2237)
+   return 0.002128*ROOT.TMath.Power(pt,0.1574)
     
 def he3_uncertainty_pt(i_matt, pt):
     if i_matt == 0:
-        return 0.02088*ROOT.TMath.Power(pt,-0.48766)
-    return 0.00294*ROOT.TMath.Power(pt,-0.19483)
+        return 1.
+    return 1.
 
 TOY_MC_EFF = 0.8 # value used in the toy MC (no physical meaning, just to keep eff < 1)
 TOY_MC_CT = 7.6  # value of the proper decay length used in the toy MC
@@ -48,7 +48,7 @@ cent_bins_MB = [[0, 10], [10, 40], [40, 90]]
 
 # mc input file
 mc_file = './AnalysisResults.root'
-outfile = ROOT.TFile("EffAbsCorrection.root", "recreate")
+outfile = ROOT.TFile("MaterialBudgetUncertaintyHyp.root", "recreate")
 centfile = ROOT.TFile("../data/Hypertriton_PbPb/AnalysisResults_18.root")
 
 # get event centrality distribution
