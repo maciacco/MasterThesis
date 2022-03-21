@@ -734,17 +734,6 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
       double sigma_Prim=fSystematicUncertaintyPrim.GetBinContent(iPtBins);
       double sigma_Eff=fSystematicUncertaintyEff.GetBinContent(iPtBins);
       double sigma_TFF=fSystematicUncertaintyTFF.GetBinContent(iPtBins);
-      // covariances ROI
-      /* double covariance_ROIDCAz=fSystematicCorrelationsPtROIDCAz.GetBinContent(iPtBins);
-      double covariance_ROIPID=fSystematicCorrelationsPtROIPID.GetBinContent(iPtBins);
-      double covariance_ROITPCCls=fSystematicCorrelationsPtROITPCCls.GetBinContent(iPtBins);
-      double covariance_ROIDCAxy=fSystematicCorrelationsPtROIDCAxy.GetBinContent(iPtBins); */
-      // covariances Prim
-      /* double covariance_PrimDCAz=fSystematicCorrelationsPtPrimDCAz.GetBinContent(iPtBins);
-      double covariance_PrimPID=fSystematicCorrelationsPtPrimPID.GetBinContent(iPtBins);
-      double covariance_PrimTPCCls=fSystematicCorrelationsPtPrimTPCCls.GetBinContent(iPtBins);
-      double covariance_PrimDCAxy=fSystematicCorrelationsPtPrimDCAxy.GetBinContent(iPtBins); */
-      // fractions (uncorrelated)
       double fraction_uncorr_DCAz=1.-std::abs(correlationDCAz);
       double fraction_uncorr_PID=1.-std::abs(correlationPID);
       double fraction_uncorr_TPCCls=1.-std::abs(correlationTPCCls);
@@ -760,10 +749,6 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
       +sigma_TPCCls*sigma_TPCCls*fraction_uncorr_TPCCls*fraction_uncorr_TPCCls
       +sigma_DCAxy*sigma_DCAxy*fraction_uncorr_DCAxy*fraction_uncorr_DCAxy
       +sigma_Chi2TPC*sigma_Chi2TPC*fraction_uncorr_Chi2TPC*fraction_uncorr_Chi2TPC
-      /* +2*(covariance_PrimDCAxy+covariance_ROIDCAxy)
-      +2*(covariance_PrimDCAz+covariance_ROIDCAz)
-      +2*(covariance_PrimPID+covariance_ROIPID)
-      +2*(covariance_PrimTPCCls+covariance_ROITPCCls) */
       +sigma_ROI_down*sigma_ROI_down*fraction_uncorr_ROI_down*fraction_uncorr_ROI_down
       +sigma_ROI_up*sigma_ROI_up*fraction_uncorr_ROI_up*fraction_uncorr_ROI_up
       +sigma_Mismatch_down*sigma_Mismatch_down*fraction_uncorr_Mismatch_down*fraction_uncorr_Mismatch_down

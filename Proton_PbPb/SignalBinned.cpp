@@ -66,10 +66,8 @@ void SignalBinned(const char *cutSettings = "", const double roi_nsigma = 8., co
   if (outFile->GetDirectory(Form("%s_%d_%d_%d", cutSettings, binCounting, bkg_shape,iNsigma)))
     return;
   TDirectory *dirOutFile = outFile->mkdir(Form("%s_%d_%d_%d", cutSettings, binCounting, bkg_shape, iNsigma));
-  //TFile *dataFile = TFile::Open(TString::Format("%s/%s_largeNsigma.root", kDataDir, inFileDat)); // open data TFile
   TFile *dataFile = TFile::Open(TString::Format("%s/%s_largeNsigma_cutDCAxyChi2TPC_lowPt.root", kDataDir, inFileDat)); // open data TFile
 
-  //TFile *dataFile2 = TFile::Open(TString::Format("%s/%s.root", kDataDir, inFileDat)); // open data TFile
   if (!dataFile)
   {
     if (kVerbose) std::cout << "File not found!" << std::endl; // check data TFile opening
@@ -79,7 +77,6 @@ void SignalBinned(const char *cutSettings = "", const double roi_nsigma = 8., co
   // get TTList
   std::string listName = Form("nuclei_proton_%s", cutSettings);
   TTList *list = (TTList *)dataFile->Get(listName.data());
-  //TTList *list2 = (TTList *)dataFile2->Get(listName.data());
 
   // merge antimatter + matter histograms
   std::string histNameTPCA = Form("f%sTPCcounts", kAntimatterMatter[0]);
@@ -88,16 +85,12 @@ void SignalBinned(const char *cutSettings = "", const double roi_nsigma = 8., co
   std::string histNameM = Form("f%sTOFnSigma", kAntimatterMatter[1]);
   TH3F *fTPCSignalA = (TH3F *)list->Get(histNameTPCA.data());
   TH3F *fTOFSignalA = (TH3F *)list->Get(histNameA.data());
-  // TH3F *fTOFSignalA2 = (TH3F *)list2->Get(histNameA.data());
   TH3F *fTPCSignalAll = (TH3F *)fTPCSignalA->Clone(fTPCSignalA->GetName());
   TH3F *fTOFSignalAll = (TH3F *)fTOFSignalA->Clone(fTOFSignalA->GetName());
   TH3F *fTPCSignalM = (TH3F *)list->Get(histNameTPCM.data());
   TH3F *fTOFSignalM = (TH3F *)list->Get(histNameM.data());
-  //TH3F *fTOFSignalM2 = (TH3F *)list2->Get(histNameM.data());
-  //fTOFSignalAll->Add(fTOFSignalA2);
   fTPCSignalAll->Add(fTPCSignalM);
   fTOFSignalAll->Add(fTOFSignalM);
-  //fTOFSignalAll->Add(fTOFSignalM2);
 
   /////////////////////////////////////////////////////////////////////////////////////
   // FIT PROTON PEAK - SAVE PARAMETERS
@@ -114,7 +107,6 @@ void SignalBinned(const char *cutSettings = "", const double roi_nsigma = 8., co
     std::string histNameTPC = Form("f%sTPCcounts", kAntimatterMatter[iMatt]);
     std::string histName = Form("f%sTOFnSigma", kAntimatterMatter[iMatt]);
     TH3F *fTOFSignal1 = (TH3F *)list->Get(histName.data());
-    //TH3F *fTOFSignal2 = (TH3F *)list2->Get(histName.data());
     if (!fTOFSignal1)
     {
       if (kVerbose) std::cout << "Hstogram not found!" << std::endl; // check data TFile opening
@@ -123,7 +115,6 @@ void SignalBinned(const char *cutSettings = "", const double roi_nsigma = 8., co
 
     TH3F *fTPCSignal = (TH3F *)list->Get(histNameTPC.data());
     TH3F *fTOFSignal = (TH3F *)fTOFSignal1->Clone(fTOFSignal1->GetName());
-    //fTOFSignal->Add(fTOFSignal2);
 
     // make plot subdirectory
     system(Form("mkdir %s/signal_extraction/%s_%s_%d_%d", kPlotDir, kAntimatterMatter[iMatt], cutSettings, binCounting, bkg_shape));
@@ -141,7 +132,7 @@ void SignalBinned(const char *cutSettings = "", const double roi_nsigma = 8., co
       TH1D fMean("fMean", "fMean", kNPtBins, kPtBins);
       TH1D fAlphaL("fAlphaL", "fAlphaL", kNPtBins, kPtBins);
       TH1D fAlphaR("fAlphaR", "fAlphaR", kNPtBins, kPtBins);
-      int nUsedPtBins = 42; // up to 2.00 GeV/c
+      int nUsedPtBins = 42; // up to 3.00 GeV/c
 
       for (int iPtBin = 1; iPtBin < nUsedPtBins + 1; ++iPtBin)
       { // loop on pT bins

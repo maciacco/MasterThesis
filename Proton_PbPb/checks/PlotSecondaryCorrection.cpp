@@ -5,22 +5,28 @@
 #include <TLegend.h>
 #include <TStyle.h>
 #include <TLatex.h>
-#include "../utils/Config.h"
+#include "../../utils/Config.h"
 
 using namespace proton;
 const int kMarkerSize[] = {20,24};
 const char* kFittingMethod[] = {"TFF","RooFit"};
 const Color_t kHistColor[] = {kRed,kBlue};
+const bool use_spectra=false;
 
-void PlotSecondaryCorrection(const char *inFileRooFitName = "PrimaryProtonRoo", const char *inFileTFFName = "PrimaryProton", const char *outFileCompareName = "PrimaryCompareRooFitTFF", const char *inFileSpectraTFFName = "SpectraProton_MC21l5_raw", const char* inFileSpectraRooName = "SpectraProton_MC21l5_raw_ROO"){
+void PlotSecondaryCorrection(const char *inFileRooFitName = "PrimaryProton_large_ROOFIT", const char *inFileTFFName = "PrimaryProton_large", const char *outFileCompareName = "PrimaryCompareRooFitTFF", const char *inFileSpectraTFFName = "SpectraProton_MC21l5_raw", const char* inFileSpectraRooName = "SpectraProton_MC21l5_raw_ROO"){
   gStyle->SetOptFit(0000);
   gStyle->SetOptStat(0000);
   // compare RooFit and ROOT::TFractionFitter
   TFile *InFile[2];
-  InFile[0] = new TFile(Form("out/%s.root",inFileTFFName));
-  InFile[1] = new TFile(Form("out/%s.root",inFileRooFitName));
-  TFile inFileSpectraTFF(Form("out/%s.root",inFileSpectraTFFName));
-  TFile inFileSpectraRoo(Form("out/%s.root",inFileSpectraRooName));
+  InFile[0] = new TFile(Form("../out/%s.root",inFileTFFName));
+  InFile[1] = new TFile(Form("../out/%s.root",inFileRooFitName));
+
+  TFile inFileSpectraTFF;
+  TFile inFileSpectraRoo;
+  if (use_spectra){
+    inFileSpectraTFF.Open(Form("../out/%s.root",inFileSpectraTFFName));
+    inFileSpectraRoo.Open(Form("../out/%s.root",inFileSpectraRooName));
+  }
   TFile OutFileCompare(Form("%s.root",outFileCompareName),"recreate");
   for (int iC = 0; iC < kNCentClasses; ++iC){
     TH1D *hPrimary[2][2];
@@ -58,7 +64,7 @@ void PlotSecondaryCorrection(const char *inFileRooFitName = "PrimaryProtonRoo", 
       hPrimary[iM][1]->Draw("same");
       l.Draw("same");
       c.Write();
-      c.Print(Form("plots/%s.pdf",hPrimary[iM][0]->GetName()));
+      c.Print(Form("../plots/%s.pdf",hPrimary[iM][0]->GetName()));
     }
     TH1D hDivideTFF(*hPrimary[0][0]);
     hDivideTFF.SetName(Form("fDivideTFF_%.0f_%.0f",kCentBinsLimitsProton[iC][0],kCentBinsLimitsProton[iC][1]));
@@ -88,31 +94,33 @@ void PlotSecondaryCorrection(const char *inFileRooFitName = "PrimaryProtonRoo", 
     lCompareDivide.Draw("same");
     cCompareDivide.Write();
     // plot ratios
-    TCanvas cRatio("cRatio","cRatio");
-    TLegend lRatio(0.666667,0.701754,0.890977,0.85614);
-    TH1D *hRatioTFF = (TH1D*)inFileSpectraTFF.Get(Form("fRatio_%.0f_%.0f",kCentBinsLimitsProton[iC][0],kCentBinsLimitsProton[iC][1]));
-    TH1D *hRatioRoo = (TH1D*)inFileSpectraRoo.Get(Form("fRatio_%.0f_%.0f",kCentBinsLimitsProton[iC][0],kCentBinsLimitsProton[iC][1]));
-    hRatioTFF->SetMarkerSize(0.9);
-    hRatioTFF->SetMarkerColor(kRed);
-    hRatioTFF->SetLineColor(kRed);
-    hRatioTFF->GetYaxis()->SetRangeUser(0.90,1.10);
-    hRatioTFF->GetXaxis()->SetRangeUser(1.,2.);
-    hRatioTFF->Draw("");
-    hRatioRoo->SetMarkerStyle(24);
-    hRatioRoo->SetMarkerSize(0.9);
-    hRatioRoo->SetLineColor(kBlue);
-    hRatioRoo->SetMarkerColor(kBlue);
-    hRatioRoo->GetFunction("pol0")->SetLineColor(kBlue);
-    hRatioRoo->GetFunction("pol0")->SetLineStyle(7);
-    hRatioRoo->Draw("same");
-    lRatio.AddEntry(hRatioTFF,"TFF");
-    lRatio.AddEntry(hRatioRoo,"RooFit");
-    lRatio.Draw("same");
-    TLatex ratioTFF(1.1,1.08,Form("R_{TFF} = %.4f #pm %.4f",hRatioTFF->GetFunction("pol0")->GetParameter(0),hRatioTFF->GetFunction("pol0")->GetParError(0)));
-    TLatex ratioRoo(1.1,1.06,Form("R_{RooFit} = %.4f #pm %.4f",hRatioRoo->GetFunction("pol0")->GetParameter(0),hRatioRoo->GetFunction("pol0")->GetParError(0)));
-    ratioTFF.Draw("same");
-    ratioRoo.Draw("same");
-    cRatio.Write();
+    if (use_spectra){
+      TCanvas cRatio("cRatio","cRatio");
+      TLegend lRatio(0.666667,0.701754,0.890977,0.85614);
+      TH1D *hRatioTFF = (TH1D*)inFileSpectraTFF.Get(Form("fRatio_%.0f_%.0f",kCentBinsLimitsProton[iC][0],kCentBinsLimitsProton[iC][1]));
+      TH1D *hRatioRoo = (TH1D*)inFileSpectraRoo.Get(Form("fRatio_%.0f_%.0f",kCentBinsLimitsProton[iC][0],kCentBinsLimitsProton[iC][1]));
+      hRatioTFF->SetMarkerSize(0.9);
+      hRatioTFF->SetMarkerColor(kRed);
+      hRatioTFF->SetLineColor(kRed);
+      hRatioTFF->GetYaxis()->SetRangeUser(0.90,1.10);
+      hRatioTFF->GetXaxis()->SetRangeUser(1.,2.);
+      hRatioTFF->Draw("");
+      hRatioRoo->SetMarkerStyle(24);
+      hRatioRoo->SetMarkerSize(0.9);
+      hRatioRoo->SetLineColor(kBlue);
+      hRatioRoo->SetMarkerColor(kBlue);
+      hRatioRoo->GetFunction("pol0")->SetLineColor(kBlue);
+      hRatioRoo->GetFunction("pol0")->SetLineStyle(7);
+      hRatioRoo->Draw("same");
+      lRatio.AddEntry(hRatioTFF,"TFF");
+      lRatio.AddEntry(hRatioRoo,"RooFit");
+      lRatio.Draw("same");
+      TLatex ratioTFF(1.1,1.08,Form("R_{TFF} = %.4f #pm %.4f",hRatioTFF->GetFunction("pol0")->GetParameter(0),hRatioTFF->GetFunction("pol0")->GetParError(0)));
+      TLatex ratioRoo(1.1,1.06,Form("R_{RooFit} = %.4f #pm %.4f",hRatioRoo->GetFunction("pol0")->GetParameter(0),hRatioRoo->GetFunction("pol0")->GetParError(0)));
+      ratioTFF.Draw("same");
+      ratioRoo.Draw("same");
+      cRatio.Write();
+    }
   }
   OutFileCompare.Close();
 }

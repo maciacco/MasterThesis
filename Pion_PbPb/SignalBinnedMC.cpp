@@ -281,13 +281,7 @@ void SignalBinnedMC(const char *cutSettings = "", const double roi_min_limit_inp
         int covQ = -999;
         double intersectionBinCenter=-20.;
         intersectionBinCenter=mean_tmp-roi_min_limit_input*rms_tmp;
-        double signalRightLimit=roi_max_limit;/* -1.;
-        if(ptMin>0.89)
-        signalRightLimit=roi_max_limit-2.;
-        if(ptMin>1.09)
-        signalRightLimit=roi_max_limit-3.;
-        if(ptMin>1.14)
-        signalRightLimit=roi_max_limit-5.; */
+        double signalRightLimit=roi_max_limit;
         
         if (extractSignal)
         {
@@ -353,34 +347,6 @@ void SignalBinnedMC(const char *cutSettings = "", const double roi_min_limit_inp
           int iB=1;
           
           int binShiftIndex=tofSignalProjection->FindBin(leftSignalLimit);
-          /* while (!intersection){
-            double pdfValue=0;
-            double binContent=data.weight(iB);
-            if (ptMin<0.99){
-              TF1* bkgFunction=modelAll->asTF(tofSignal,RooArgList(*slope1));
-              double normBkgFunction=nBackground2->getVal() * tofSignalProjection->GetBinWidth(1) / bkgFunction->Integral(-10.,maxNsigma);
-              pdfValue=normBkgFunction*bkgFunction->Eval(tofSignalProjection->GetBinCenter(iB+binShiftIndex));
-            }
-            else if (ptMin>0.99) {
-              TF1* bkgFunction1=background1->asTF(tofSignal,RooArgList(*slope1));
-              TF1* bkgFunction2=background2->asTF(tofSignal,RooArgList(*slope2));
-              double val1=bkgFunction1->Eval(tofSignalProjection->GetBinCenter(iB+binShiftIndex));
-              double val2=bkgFunction2->Eval(tofSignalProjection->GetBinCenter(iB+binShiftIndex));
-              double frac=nBackground1->getVal();
-              double integral_1 = bkgFunction1->Integral(-10.,maxNsigma);
-              double integral_2 = bkgFunction2->Integral(-10.,maxNsigma);
-              double val_tot = val1/integral_1+frac*val2/integral_2;
-              double normBkgFunction=nBackground2->getVal() * tofSignalProjection->GetBinWidth(1);
-              pdfValue=normBkgFunction*val_tot;
-            }
-            if(binContent>pdfValue)
-            {
-              intersection=true;
-              if (kVerbose) std::cout << "bin = " << iB << "; weight = " << binContent << "; pdf = " << pdfValue << std::endl;
-            }
-            else iB++;
-          } */
-          //intersectionBinCenter=tofSignalProjection->GetBinCenter(iB+binShiftIndex);
           if (kVerbose) std::cout << "intersection bin center = " << intersectionBinCenter << std::endl;
           tofSignal.setRange("signalRange", intersectionBinCenter, signalRightLimit);
 
@@ -415,8 +381,6 @@ void SignalBinnedMC(const char *cutSettings = "", const double roi_min_limit_inp
           else{
             modelMismatch->plotOn(xframe_full, RooFit::Name("model"), RooFit::LineColor(kBlue), RooFit::NormRange("rightSidebandK"), RooFit::Range("full"));
             model->plotOn(xframe, RooFit::Name("model"), RooFit::LineColor(kBlue), RooFit::NormRange("rightSideband"), RooFit::Range("model"));
-            //modelMismatch->plotOn(xframe, RooFit::Name("modelMismatch"), RooFit::LineColor(kGreen), RooFit::NormRange("rightSidebandK"), RooFit::Range("model"));
-            //modelMismatch->paramOn(xframe, RooFit::Label(TString::Format("#chi^{2}/NDF = %2.2f", xframe->chiSquare("modelMismatch", "dataNsigma"))), RooFit::Layout(0.58812,0.911028,0.861955));
           }
           xframe->GetYaxis()->SetMaxDigits(2);
 

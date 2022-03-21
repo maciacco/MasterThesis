@@ -63,14 +63,10 @@ void SignalBinnedMCv2(const char *cutSettings = "", const double roi_min_limit_i
   gStyle->SetOptFit(1111);
 
   TFile *outFile = TFile::Open(TString::Format("%s/%s.root", kOutDir, outFileName), outFileOption); // output file
-  /* if (outFile->GetDirectory(Form("%s_%d_%d", cutSettings, binCounting, bkg_shape)))
-    return; */
   TDirectory *dirOutFile = outFile->mkdir(Form("%s_%d_%d", cutSettings, binCounting, bkg_shape));
-  //TFile *mcFile_21l5 = TFile::Open(TString::Format("%s/%s_largeNsigma.root", kDataDir, inFileDat)); // open data TFile
   TFile *mcFile_21l5 = TFile::Open(TString::Format("%s/%s.root", kDataDir, inFileDat)); // open data TFile
   TFile *mcFile_20g7 = TFile::Open(TString::Format("%s/%s.root", kDataDir, "mc_20g7_likeData_largeNsigma")); // open data TFile
 
-  //TFile *dataFile2 = TFile::Open(TString::Format("%s/%s.root", kDataDir, inFileDat)); // open data TFile
   if (!mcFile_21l5)
   {
     if (kVerbose) std::cout << "File not found!" << std::endl; // check data TFile opening
@@ -80,28 +76,13 @@ void SignalBinnedMCv2(const char *cutSettings = "", const double roi_min_limit_i
   // get TTList
   std::string listName_21l5 = Form("nuclei_pion_mcFalse_%s", cutSettings);
   TTList *list_21l5 = (TTList *)mcFile_21l5->Get(listName_21l5.data());
-  // std::string listName_20g7 = Form("nuclei_proton_%s", cutSettings);
-  // TTList *list_20g7 = (TTList *)mcFile_20g7->Get(listName_20g7.data());
-  //TTList *list2 = (TTList *)dataFile2->Get(listName.data());
 
   // merge antimatter + matter histograms
   std::string histNameA = Form("f%sTOFnSigma", kAntimatterMatter[0]);
   std::string histNameM = Form("f%sTOFnSigma", kAntimatterMatter[1]);
   TH3F *fTOFSignalA = (TH3F *)list_21l5->Get(histNameA.data());
-  //TH3F *fTOFSignalA_20g7 = (TH3F *)list_20g7->Get(histNameA.data());
-  /* if (ADD20g7)
-    fTOFSignalA->Add(fTOFSignalA_20g7); */
-  // TH3F *fTOFSignalA2 = (TH3F *)list2->Get(histNameA.data());
   TH3F *fTOFSignalAll = (TH3F *)fTOFSignalA->Clone(fTOFSignalA->GetName());
   TH3F *fTOFSignalM = (TH3F *)list_21l5->Get(histNameM.data());
-  //TH3F *fTOFSignalM_20g7 = (TH3F *)list_20g7->Get(histNameM.data());
-  /* if (ADD20g7)
-    fTOFSignalM->Add(fTOFSignalM_20g7); */
-  //TH3F *fTOFSignalM2 = (TH3F *)list2->Get(histNameM.data());
-  //fTOFSignalAll->Add(fTOFSignalA2);
-/*   if (ADD20g7)
-    fTOFSignalAll->Add(fTOFSignalM); */
-  //fTOFSignalAll->Add(fTOFSignalM2);
 
   for (int iMatt = 1; iMatt > -1; --iMatt)
   { // loop on antimatter/matter
@@ -109,8 +90,7 @@ void SignalBinnedMCv2(const char *cutSettings = "", const double roi_min_limit_i
     std::string histName = Form("f%sTOFnSigma", kAntimatterMatter[iMatt]);
     TH3F *fTOFSignal1 = (TH3F *)list_21l5->Get(histName.data());
     fTOFSignal1->SetName("A");
-    // TH3F *fTOFSignal2 = (TH3F *)list_20g7->Get(histName.data());
-    // fTOFSignal1->SetName("B");
+
     if (!fTOFSignal1)
     {
       if (kVerbose) std::cout << "Hstogram not found!" << std::endl; // check data TFile opening
@@ -118,8 +98,6 @@ void SignalBinnedMCv2(const char *cutSettings = "", const double roi_min_limit_i
     }
 
     TH3F *fTOFSignal = (TH3F *)fTOFSignal1->Clone(histName.data());
-    // if (ADD20g7)
-    //   fTOFSignal->Add(fTOFSignal2);
 
     // make plot subdirectory
     system(Form("mkdir %s/signal_extraction/%s_%s_%d_%d", kPlotDir, kAntimatterMatter[iMatt], cutSettings, binCounting, bkg_shape));
@@ -351,8 +329,6 @@ void SignalBinnedMCv2(const char *cutSettings = "", const double roi_min_limit_i
           else{
             modelMismatch->plotOn(xframe_full, RooFit::Name("model"), RooFit::LineColor(kBlue), RooFit::NormRange("rightSidebandK"), RooFit::Range("full"));
             model->plotOn(xframe, RooFit::Name("model"), RooFit::LineColor(kBlue), RooFit::NormRange("rightSideband"), RooFit::Range("model"));
-            //modelMismatch->plotOn(xframe, RooFit::Name("modelMismatch"), RooFit::LineColor(kGreen), RooFit::NormRange("rightSidebandK"), RooFit::Range("model"));
-            //modelMismatch->paramOn(xframe, RooFit::Label(TString::Format("#chi^{2}/NDF = %2.2f", xframe->chiSquare("modelMismatch", "dataNsigma"))), RooFit::Layout(0.58812,0.911028,0.861955));
           }
           xframe->GetYaxis()->SetMaxDigits(2);
 

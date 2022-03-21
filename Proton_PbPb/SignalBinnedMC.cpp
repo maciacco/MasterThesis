@@ -66,47 +66,29 @@ void SignalBinnedMC(const char *cutSettings = "", const double roi_nsigma = 8., 
   if (outFile->GetDirectory(Form("%s_%d_%d", cutSettings, binCounting, bkg_shape)))
     return;
   TDirectory *dirOutFile = outFile->mkdir(Form("%s_%d_%d", cutSettings, binCounting, bkg_shape));
-  //TFile *mcFile_21l5 = TFile::Open(TString::Format("%s/%s_largeNsigma.root", kDataDir, inFileDat)); // open data TFile
-  TFile *mcFile_21l5 = TFile::Open(TString::Format("%s/%s.root", kDataDir, inFileDat)); // open data TFile
-  TFile *mcFile_20g7 = TFile::Open(TString::Format("%s/%s.root", kDataDir, "mc_20g7_likeData_largeNsigma")); // open data TFile
+  TFile *inputMcFile = TFile::Open(TString::Format("%s/%s.root", kDataDir, inFileDat)); // open data TFile
 
-  //TFile *dataFile2 = TFile::Open(TString::Format("%s/%s.root", kDataDir, inFileDat)); // open data TFile
-  if (!mcFile_21l5)
+  if (!inputMcFile)
   {
     if (kVerbose) std::cout << "File not found!" << std::endl; // check data TFile opening
     return;
   }
 
   // get TTList
-  std::string listName_21l5 = Form("nuclei_proton_mcFalse_%s", cutSettings);
-  TTList *list_21l5 = (TTList *)mcFile_21l5->Get(listName_21l5.data());
-  // std::string listName_20g7 = Form("nuclei_proton_%s", cutSettings);
-  // TTList *list_20g7 = (TTList *)mcFile_20g7->Get(listName_20g7.data());
-  //TTList *list2 = (TTList *)dataFile2->Get(listName.data());
+  std::string listName_mcFalse = Form("nuclei_proton_mcFalse_%s", cutSettings);
+  TTList *list_mcFalse = (TTList *)inputMcFile->Get(listName_mcFalse.data());
 
   // merge antimatter + matter histograms
   std::string histNameTPCA = Form("f%sTPCcounts", kAntimatterMatter[0]);
   std::string histNameTPCM = Form("f%sTPCcounts", kAntimatterMatter[1]);
   std::string histNameA = Form("f%sTOFnSigma", kAntimatterMatter[0]);
   std::string histNameM = Form("f%sTOFnSigma", kAntimatterMatter[1]);
-  TH3F *fTPCSignalA = (TH3F *)list_21l5->Get(histNameTPCA.data());
-  TH3F *fTOFSignalA = (TH3F *)list_21l5->Get(histNameA.data());
-  //TH3F *fTOFSignalA_20g7 = (TH3F *)list_20g7->Get(histNameA.data());
-  /* if (ADD20g7)
-    fTOFSignalA->Add(fTOFSignalA_20g7); */
-  // TH3F *fTOFSignalA2 = (TH3F *)list2->Get(histNameA.data());
+  TH3F *fTPCSignalA = (TH3F *)list_mcFalse->Get(histNameTPCA.data());
+  TH3F *fTOFSignalA = (TH3F *)list_mcFalse->Get(histNameA.data());
   TH3F *fTPCSignalAll = (TH3F *)fTPCSignalA->Clone(fTPCSignalA->GetName());
   TH3F *fTOFSignalAll = (TH3F *)fTOFSignalA->Clone(fTOFSignalA->GetName());
-  TH3F *fTPCSignalM = (TH3F *)list_21l5->Get(histNameTPCM.data());
-  TH3F *fTOFSignalM = (TH3F *)list_21l5->Get(histNameM.data());
-  //TH3F *fTOFSignalM_20g7 = (TH3F *)list_20g7->Get(histNameM.data());
-  /* if (ADD20g7)
-    fTOFSignalM->Add(fTOFSignalM_20g7); */
-  //TH3F *fTOFSignalM2 = (TH3F *)list2->Get(histNameM.data());
-  //fTOFSignalAll->Add(fTOFSignalA2);
-/*   if (ADD20g7)
-    fTOFSignalAll->Add(fTOFSignalM); */
-  //fTOFSignalAll->Add(fTOFSignalM2);
+  TH3F *fTPCSignalM = (TH3F *)list_mcFalse->Get(histNameTPCM.data());
+  TH3F *fTOFSignalM = (TH3F *)list_mcFalse->Get(histNameM.data());
 
   /////////////////////////////////////////////////////////////////////////////////////
   // FIT PROTON PEAK - SAVE PARAMETERS
@@ -122,7 +104,7 @@ void SignalBinnedMC(const char *cutSettings = "", const double roi_nsigma = 8., 
     // Get histograms from file
     std::string histNameTPC = Form("f%sTPCcounts", kAntimatterMatter[iMatt]);
     std::string histName = Form("f%sTOFnSigma", kAntimatterMatter[iMatt]);
-    TH3F *fTOFSignal1 = (TH3F *)list_21l5->Get(histName.data());
+    TH3F *fTOFSignal1 = (TH3F *)list_mcFalse->Get(histName.data());
     fTOFSignal1->SetName("A");
     // TH3F *fTOFSignal2 = (TH3F *)list_20g7->Get(histName.data());
     // fTOFSignal1->SetName("B");
@@ -132,7 +114,7 @@ void SignalBinnedMC(const char *cutSettings = "", const double roi_nsigma = 8., 
       return;
     }
 
-    TH3F *fTPCSignal = (TH3F *)list_21l5->Get(histNameTPC.data());
+    TH3F *fTPCSignal = (TH3F *)list_mcFalse->Get(histNameTPC.data());
     TH3F *fTOFSignal = (TH3F *)fTOFSignal1->Clone(histName.data());
     // if (ADD20g7)
     //   fTOFSignal->Add(fTOFSignal2);

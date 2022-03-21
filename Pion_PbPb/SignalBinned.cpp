@@ -75,10 +75,8 @@ void SignalBinned(const char *cutSettings = "", const double roi_min_limit_input
   if (outFile->GetDirectory(Form("%s_%d_%d_%d_%d_%d_%d", cutSettings, binCounting, bkg_shape,iNsigmaDown,iNsigmaUp,iNsigmaMismatchDown,iNsigmaMismatchUp)))
     return;
   TDirectory *dirOutFile = outFile->mkdir(Form("%s_%d_%d_%d_%d_%d_%d", cutSettings, binCounting, bkg_shape, iNsigmaDown, iNsigmaUp,iNsigmaMismatchDown,iNsigmaMismatchUp));
-  //TFile *dataFile = TFile::Open(TString::Format("%s/%s_largeNsigma.root", kDataDir, inFileDat)); // open data TFile
   TFile *dataFile = TFile::Open(TString::Format("%s/%s_largeNsigma_cutDCAxyChi2TPC.root", kDataDir, inFileDat)); // open data TFile
 
-  //TFile *dataFile2 = TFile::Open(TString::Format("%s/%s.root", kDataDir, inFileDat)); // open data TFile
   if (!dataFile)
   {
     if (kVerbose)std::cout << "File not found!" << std::endl; // check data TFile opening
@@ -88,26 +86,19 @@ void SignalBinned(const char *cutSettings = "", const double roi_min_limit_input
   // get TTList
   std::string listName = Form("nuclei_pion_%s", cutSettings);
   TTList *list = (TTList *)dataFile->Get(listName.data());
-  //TTList *list2 = (TTList *)dataFile2->Get(listName.data());
 
   // merge antimatter + matter histograms
   std::string histNameA = Form("f%sTOFnSigma", kAntimatterMatter[0]);
   std::string histNameM = Form("f%sTOFnSigma", kAntimatterMatter[1]);
   TH3F *fTOFSignalA = (TH3F *)list->Get(histNameA.data());
-  // TH3F *fTOFSignalA2 = (TH3F *)list2->Get(histNameA.data());
   TH3F *fTOFSignalAll = (TH3F *)fTOFSignalA->Clone(fTOFSignalA->GetName());
   TH3F *fTOFSignalM = (TH3F *)list->Get(histNameM.data());
-  //TH3F *fTOFSignalM2 = (TH3F *)list2->Get(histNameM.data());
-  //fTOFSignalAll->Add(fTOFSignalA2);
-  fTOFSignalAll->Add(fTOFSignalM);
-  //fTOFSignalAll->Add(fTOFSignalM2);
 
   for (int iMatt = 1; iMatt > -1; --iMatt)
   { // loop on antimatter/matter
     // Get histograms from file
     std::string histName = Form("f%sTOFnSigma", kAntimatterMatter[iMatt]);
     TH3F *fTOFSignal1 = (TH3F *)list->Get(histName.data());
-    //TH3F *fTOFSignal2 = (TH3F *)list2->Get(histName.data());
     if (!fTOFSignal1)
     {
       if (kVerbose)std::cout << "Hstogram not found!" << std::endl; // check data TFile opening
@@ -115,7 +106,6 @@ void SignalBinned(const char *cutSettings = "", const double roi_min_limit_input
     }
 
     TH3F *fTOFSignal = (TH3F *)fTOFSignal1->Clone(fTOFSignal1->GetName());
-    //fTOFSignal->Add(fTOFSignal2);
 
     // make plot subdirectory
     system(Form("mkdir %s/signal_extraction/%s_%s_%d_%d", kPlotDir, kAntimatterMatter[iMatt], cutSettings, binCounting, bkg_shape));
@@ -331,35 +321,8 @@ void SignalBinned(const char *cutSettings = "", const double roi_min_limit_input
           int iB=1;
           
           int binShiftIndex=tofSignalProjection->FindBin(leftSignalLimit);
-          /* while (!intersection){
-            double pdfValue=0;
-            double binContent=data.weight(iB);
-            if (ptMin<0.89){
-              TF1* bkgFunction=modelAll->asTF(tofSignal,RooArgList(*slope1));
-              double normBkgFunction=nBackground2->getVal() * tofSignalProjection->GetBinWidth(1) / bkgFunction->Integral(-10.,maxNsigma);
-              pdfValue=normBkgFunction*bkgFunction->Eval(tofSignalProjection->GetBinCenter(iB+binShiftIndex));
-            }
-            else if (ptMin>0.89) {
-              TF1* bkgFunction1=background1->asTF(tofSignal,RooArgList(*slope1));
-              TF1* bkgFunction2=background2->asTF(tofSignal,RooArgList(*slope2));
-              double val1=bkgFunction1->Eval(tofSignalProjection->GetBinCenter(iB+binShiftIndex));
-              double val2=bkgFunction2->Eval(tofSignalProjection->GetBinCenter(iB+binShiftIndex));
-              double frac=nBackground1->getVal();
-              double integral_1 = bkgFunction1->Integral(-10.,maxNsigma);
-              double integral_2 = bkgFunction2->Integral(-10.,maxNsigma);
-              double val_tot = val1/integral_1+frac*val2/integral_2;
-              double normBkgFunction=nBackground2->getVal() * tofSignalProjection->GetBinWidth(1);
-              pdfValue=normBkgFunction*val_tot;
-            }
-            if(binContent>pdfValue)
-            {
-              intersection=true;
-              if (kVerbose)std::cout << "bin = " << iB << "; weight = " << binContent << "; pdf = " << pdfValue << std::endl;
-            }
-            else iB++;
-          } */
-          intersectionHistogramFit=-5.;//tofSignalProjection->GetBinCenter(iB+binShiftIndex);
-          intersectionBinCenter=mean_tmp-roi_min_limit_input*rms_tmp; //tofSignalProjection->GetBinCenter(iB+binShiftIndex);
+          intersectionHistogramFit=-5.;
+          intersectionBinCenter=mean_tmp-roi_min_limit_input*rms_tmp;
           if (kVerbose)std::cout << "intersection bin center = " << intersectionBinCenter << std::endl;
           tofSignal.setRange("signalRange", intersectionBinCenter, signalRightLimit);
 
@@ -395,8 +358,6 @@ void SignalBinned(const char *cutSettings = "", const double roi_min_limit_input
           else{
             modelMismatch->plotOn(xframe_full, RooFit::Name("model"), RooFit::LineColor(kBlue), RooFit::NormRange("rightSidebandK"), RooFit::Range("full"));
             model->plotOn(xframe, RooFit::Name("model"), RooFit::LineColor(kBlue), RooFit::NormRange("rightSideband"), RooFit::Range("model"));
-            //modelMismatch->plotOn(xframe, RooFit::Name("modelMismatch"), RooFit::LineColor(kGreen), RooFit::NormRange("rightSidebandK"), RooFit::Range("model"));
-            //modelMismatch->paramOn(xframe, RooFit::Label(TString::Format("#chi^{2}/NDF = %2.2f", xframe->chiSquare("modelMismatch", "dataNsigma"))), RooFit::Layout(0.58812,0.911028,0.861955));
           }
           xframe->GetYaxis()->SetMaxDigits(2);
 
@@ -420,10 +381,6 @@ void SignalBinned(const char *cutSettings = "", const double roi_min_limit_input
             rawYield = counts - bkgIntegral_val; // signal=counts-error
             if (kVerbose)std::cout << "Counts: " << counts << ", Background: "<< bkgIntegral_val << std::endl;
             rawYieldError = TMath::Sqrt(counts); // counts=signal+bkg => correct error from poisson statistics
-            if (binCountingNoFit)
-            {
-              rawYield = data.sumEntries(Form("tofSignal>%f && tofSignal<%f", -0.7815 * kNSigma, 0.7815 * kNSigma)); // only for He4 in signal loss studies
-            }
           }
           else
           {
