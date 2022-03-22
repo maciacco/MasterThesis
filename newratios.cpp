@@ -1,7 +1,7 @@
 constexpr float minpt = 0.65;
 constexpr float maxpt = 1.65;
-constexpr float miny = 0.955;
-constexpr float maxy = 1.045;
+constexpr float miny = 0.965;
+constexpr float maxy = 1.035;
 
 std::array<TPad*,3> CreatePads(TCanvas* &cv)
 {
@@ -138,10 +138,10 @@ void newratios() {
     f[iP]->Draw("same");
     g[iP]->Draw("pe5same");
     text.SetTextSize(15);
-    if (i_particle==0 && iP==1)
-      text.DrawLatex(mean_x-0.91*half_width_x,mean_y-0.8*half_width_y,Form(format_fit_results_more[i_particle],h[iP]->GetFunction("pol0")->GetParameter(0),h[iP]->GetFunction("pol0")->GetParError(0),material_error));
-    else if (iP==0) text.DrawLatex(mean_x-0.91*half_width_x,mean_y-0.8*half_width_y,Form(format_fit_results[i_particle],h[iP]->GetFunction("pol0")->GetParameter(0),h[iP]->GetFunction("pol0")->GetParError(0),material_error));
-    else text.DrawLatex(mean_x-0.91*half_width_x,mean_y-0.8*half_width_y,Form(format_fit_results[i_particle],h[iP]->GetFunction("pol0")->GetParameter(0),h[iP]->GetFunction("pol0")->GetParError(0),material_error));
+    // if (i_particle==0 && iP==1)
+    //   text.DrawLatex(mean_x-0.91*half_width_x,mean_y-0.8*half_width_y,Form(format_fit_results_more[i_particle],h[iP]->GetFunction("pol0")->GetParameter(0),h[iP]->GetFunction("pol0")->GetParError(0),material_error));
+    // else if (iP==0) text.DrawLatex(mean_x-0.91*half_width_x,mean_y-0.8*half_width_y,Form(format_fit_results[i_particle],h[iP]->GetFunction("pol0")->GetParameter(0),h[iP]->GetFunction("pol0")->GetParError(0),material_error));
+    // else text.DrawLatex(mean_x-0.91*half_width_x,mean_y-0.8*half_width_y,Form(format_fit_results[i_particle],h[iP]->GetFunction("pol0")->GetParameter(0),h[iP]->GetFunction("pol0")->GetParError(0),material_error));
     // TH1* syst = (TH1*)input.Get(Form("ratio/%i/syst",iP));
     //stat->Draw("esamex0");
     // syst->Draw("e2same");

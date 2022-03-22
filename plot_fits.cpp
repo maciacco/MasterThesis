@@ -56,7 +56,7 @@ std::array<TPad*,6> CreatePads(TCanvas* &cv)
       rframe->GetXaxis()->SetBinLabel(i_part+1,particle_ratios[i_part]);
 
     rframe->GetYaxis()->CenterTitle();
-    rframe->GetYaxis()->SetTickLength(0.006 / sx[center] / sy[1-bot]);
+    rframe->GetYaxis()->SetTickLength(0.004 / sx[center] / sy[1-bot]);
     //if (row==1) rframe->GetYaxis()->SetTickLength(0.012 / sx[center] / 1.2);
     rframe->GetYaxis()->SetTitleSize(20);
     rframe->GetYaxis()->SetTitleFont((!col) * 43);
@@ -68,7 +68,7 @@ std::array<TPad*,6> CreatePads(TCanvas* &cv)
     rframe->GetYaxis()->SetLabelSize((!col) * 15);
 
     /* rframe->GetXaxis()->CenterTitle(); */
-    rframe->GetXaxis()->SetTickLength(0.006 / sx[1-center] / sy[bot]);
+    rframe->GetXaxis()->SetTickLength(0.004 / sx[1-center] / sy[bot]);
     //if (col==1) rframe->GetXaxis()->SetTickLength(0.012 / sy[bot] / 1.35);
     rframe->GetXaxis()->SetLabelSize(20);
     rframe->GetXaxis()->SetLabelFont(43);
@@ -143,6 +143,7 @@ void plot_fits() {
     g[iP] = (TGraphErrors*)input.Get(Form("Graph_from_hRatiosParticle_%s",names[iP].data()));
     gFit[iP] = (TGraphErrors*)input.Get(Form("Graph_from_hRatiosParticleFit_%s",names[iP].data()));
     hRatio[iP] = (TH1D*)input.Get(Form("hNSigmaRatioFitParticle_%s",names[iP].data()));
+    gFit[iP]->SetLineWidth(2);
     gFit[iP]->Draw("esame");
     g[iP]->Draw("pesame");  
     pads[iP+3]->cd();
