@@ -342,7 +342,9 @@ for i_cent, cent in enumerate(centrality_classes):
             print(f"fit = {fit}")
         hRatiosParticle.GetYaxis().SetRangeUser(0.62,1.4)
         gRatiosParticle = ROOT.TGraphErrors(hRatiosParticle)
+        gRatiosParticle.SetName(f"gRatiosParticle_{cent[0]}_{cent[1]}")
         gRatiosParticleFit = ROOT.TGraphErrors(hRatiosParticleFit)
+        gRatiosParticleFit.SetName(f"gRatiosParticleFit_{cent[0]}_{cent[1]}")
         for i_part in range(0,4):
             gRatiosParticle.SetPointError(i_part,0,hRatiosParticle.GetBinError(i_part+1))
             gRatiosParticleFit.SetPointError(i_part,0.3,0)
@@ -468,6 +470,9 @@ for i_cent, cent in enumerate(centrality_classes):
         # gHijingNsigma.Draw("pe same")
         cRatiosParticle.Write()
         cRatiosParticle.Print(f"{cRatiosParticle.GetName()}.pdf")
+        gRatiosParticle.Write()
+        gRatiosParticleFit.Write()
+        hNSigmaRatioFitParticle.Write()
 
         gMuBCent.AddPoint(n_part[i_cent],fit_parameter_0*155)
         gMuBCent.SetPointError(gMuBCent.GetN()-1,n_part_err[i_cent],mu_b_error)
