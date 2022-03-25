@@ -1,7 +1,7 @@
 constexpr float minpt = 0.;
 constexpr float maxpt = 37;
-constexpr float miny = 0.25;
-constexpr float maxy = 1.75;
+constexpr float miny = 0.3;
+constexpr float maxy = 1.7;
 std::array<TPad*,3> CreatePads(TCanvas* &cv)
 {
   if (!cv) cv = new TCanvas;
@@ -33,7 +33,7 @@ std::array<TPad*,3> CreatePads(TCanvas* &cv)
     cv->cd();
     pads[iP]->Draw();
     pads[iP]->cd();
-    TH2F *rframe = new TH2F(Form("rframe%i",iP),";#it{c}t (cm);{}^{3}_{#bar{#Lambda}}#bar{H}/^{3}_{#Lambda}H;",100,minpt,maxpt,100,miny,maxy);
+    TH2F *rframe = new TH2F(Form("rframe%i",iP),";#it{ct} (cm);{}^{3}_{#bar{#Lambda}}#bar{H}/^{3}_{#Lambda}H;",100,minpt,maxpt,100,miny,maxy);
 
     rframe->GetYaxis()->CenterTitle();
     rframe->GetYaxis()->SetTickLength(0.03 * sx[0] / sx[col]);
@@ -97,11 +97,11 @@ void newratios_hyp() {
   double half_width_y = 0.5*(maxy-miny);
   double mean_x = 0.5*(minpt+maxpt);
   double half_width_x = 0.5*(maxpt-minpt);
-  text.DrawText(mean_x+0.12*half_width_x,mean_y+0.8*half_width_y,"ALICE Preliminary");
+  text.DrawText(mean_x+0.08*half_width_x,mean_y+0.75*half_width_y,"ALICE Preliminary");
 
   pads[0]->cd();
   text.SetTextFont(43);
-  text.DrawLatex(mean_x+0.12*half_width_x,mean_y+0.6*half_width_y,"Pb-Pb #sqrt{#it{s}_{NN}}=5.02 TeV");
+  text.DrawLatex(mean_x+0.08*half_width_x,mean_y+0.55*half_width_y,"Pb-Pb #sqrt{#it{s}_{NN}} = 5.02 TeV");
 
   const string labels[3]{"0-5%","5-10%","30-50%"};
   const string names[3]{"0_5","5_10","30_50"};
@@ -115,7 +115,7 @@ void newratios_hyp() {
   for (int iP = 0; iP < 3; ++iP) {
     pads[iP]->cd();
     text.SetTextSize(18);
-    text.DrawText(mean_x-0.91*half_width_x,mean_y+0.8*half_width_y,labels[iP].data());
+    text.DrawText(mean_x-0.89*half_width_x,mean_y+0.75*half_width_y,labels[iP].data());
     h[iP] = (TH1D*)input.Get(Form("fRatio_%s",names[iP].data()));
     g[iP]=new TGraphErrors(h[iP]);
     g[iP]->SetMarkerStyle(20);
@@ -163,6 +163,6 @@ void newratios_hyp() {
     // syst->Draw("e2same");
     // l.DrawLine(0.7,1.,6.3,1.);
   }
-  cv->SaveAs("RatioRun2_hyp.pdf");
+  cv->SaveAs("RatioRun2_hyp.eps");
 
 }

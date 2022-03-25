@@ -1,17 +1,18 @@
 constexpr float minpt = 0;
 constexpr float maxpt = 4;
-constexpr float miny[] = {0.67,-2.3};
-constexpr float maxy[] = {1.13,2.3};
+constexpr float miny[] = {0.66,-2.3};
+constexpr float maxy[] = {1.14,2.3};
 
 constexpr double sx[2]{0.355,1.-2*sx[0]};
-constexpr double sy[2]{0.6,1.-sy[0]};
+constexpr double sy[2]{0.7,1.-sy[0]};
 constexpr double fx = sx[1];
-constexpr double fy = sy[1];
+constexpr double fy = 0.6;
 double global_y = 1.;
 double global_x = 0.;
-const char *titles[2]={"; ;antiparticle / particle", "; ;#frac{data - fit}{#sigma_{data}}"};
+const char *titles[2]={"; ;Ratio", "; ;#frac{data - fit}{#sigma_{data}}"};
 
 const char *particle_ratios[] = {"#pi^{-} / #pi^{+}","#bar{p} / p","{}_{#bar{#Lambda}}^{3}#bar{H} / ^{3}_{#Lambda}H","^{3}#bar{He} / ^{3}He"};
+// const char *particle_ratios[] = {"#frac{#pi^{-}}{#pi^{+}}","#frac{#bar{p}}{p}","#frac{{}_{#bar{#Lambda}}^{3}#bar{H}}{^{3}_{#Lambda}H}","#frac{^{3}#bar{He}}{^{3}He}"};
 constexpr int nRow=2;
 constexpr int nCol=3;
 
@@ -39,7 +40,7 @@ std::array<TPad*,6> CreatePads(TCanvas* &cv)
     pads[iP]->SetLeftMargin(left * (1 - fx / sx[center]));
     pads[iP]->SetTopMargin(0.0);
     if (row == 0) pads[iP]->SetTopMargin(0.01);
-    pads[iP]->SetBottomMargin(bot * (1 - fx / sy[bot]));
+    pads[iP]->SetBottomMargin(bot * (1 - fy));
 
     cv->cd();
     pads[iP]->Draw();
@@ -56,7 +57,7 @@ std::array<TPad*,6> CreatePads(TCanvas* &cv)
       rframe->GetXaxis()->SetBinLabel(i_part+1,particle_ratios[i_part]);
 
     rframe->GetYaxis()->CenterTitle();
-    rframe->GetYaxis()->SetTickLength(0.004 / sx[center] / sy[1-bot]);
+    rframe->GetYaxis()->SetTickLength(0.01 / sx[center] * (1+bot*fy));
     //if (row==1) rframe->GetYaxis()->SetTickLength(0.012 / sx[center] / 1.2);
     rframe->GetYaxis()->SetTitleSize(20);
     rframe->GetYaxis()->SetTitleFont((!col) * 43);
@@ -126,7 +127,7 @@ void plot_fits() {
 
   pads[0]->cd();
   text.SetTextFont(43);
-  text.DrawLatex(mean_x-0.85*half_width_x,mean_y-0.6*half_width_y,"Pb-Pb #sqrt{#it{s}_{NN}}=5.02 TeV");
+  text.DrawLatex(mean_x-0.85*half_width_x,mean_y-0.6*half_width_y,"Pb-Pb #sqrt{#it{s}_{NN}} = 5.02 TeV");
 
   const string labels[3]{"0-5%","5-10%","30-50%"};
   const string names[3]{"0_5","5_10","30_50"};
@@ -139,8 +140,9 @@ void plot_fits() {
     text.SetTextSize(18);
     text.DrawText(mean_x-0.85*half_width_x,mean_y+0.8*half_width_y,labels[iP].data());
     auto ff = (TF2*)input.Get(Form("fit_expo_%s",names[iP].data()));
-    text.DrawLatex(mean_x-0.85*half_width_x,mean_y-0.8*half_width_y,Form("#chi^{2}/NDF=%.1f/%d",ff->GetChisquare(),ff->GetNDF()));
+    text.DrawLatex(mean_x-0.85*half_width_x,mean_y-0.8*half_width_y,Form("#chi^{2}/NDF = %.1f/%d",ff->GetChisquare(),ff->GetNDF()));
     g[iP] = (TGraphErrors*)input.Get(Form("Graph_from_hRatiosParticle_%s",names[iP].data()));
+    g[iP]->SetMarkerSize(1.0);
     gFit[iP] = (TGraphErrors*)input.Get(Form("Graph_from_hRatiosParticleFit_%s",names[iP].data()));
     hRatio[iP] = (TH1D*)input.Get(Form("hNSigmaRatioFitParticle_%s",names[iP].data()));
     gFit[iP]->SetLineWidth(2);
@@ -148,11 +150,12 @@ void plot_fits() {
     g[iP]->Draw("pesame");  
     pads[iP+3]->cd();
     hRatio[iP]->Draw("psame");
+    hRatio[iP]->SetMarkerSize(1.0);
     // TH1* syst = (TH1*)input.Get(Form("ratio/%i/syst",iP));
     //stat->Draw("esamex0");
     // syst->Draw("e2same");
     // l.DrawLine(0.7,1.,6.3,1.);
   }
-  cv->SaveAs("RatioRun2_he3_try.pdf");
+  cv->SaveAs("SHMfitToRatios_all.eps");
 
 }

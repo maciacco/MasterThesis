@@ -1,5 +1,5 @@
-constexpr float minpt = 1.5;
-constexpr float maxpt = 8.5;
+constexpr float minpt = 1.6;
+constexpr float maxpt = 8.4;
 constexpr float miny = 0.55;
 constexpr float maxy = 1.45;
 std::array<TPad*,3> CreatePads(TCanvas* &cv)
@@ -96,11 +96,11 @@ void newratios_he3() {
   double half_width_y = 0.5*(maxy-miny);
   double mean_x = 0.5*(minpt+maxpt);
   double half_width_x = 0.5*(maxpt-minpt);
-  text.DrawText(mean_x+0.12*half_width_x,mean_y+0.8*half_width_y,"ALICE Preliminary");
+  text.DrawText(mean_x+0.08*half_width_x,mean_y+0.75*half_width_y,"ALICE Preliminary");
 
   pads[0]->cd();
   text.SetTextFont(43);
-  text.DrawLatex(mean_x+0.12*half_width_x,mean_y+0.6*half_width_y,"Pb-Pb #sqrt{#it{s}_{NN}}=5.02 TeV");
+  text.DrawLatex(mean_x+0.08*half_width_x,mean_y+0.55*half_width_y,"Pb-Pb #sqrt{#it{s}_{NN}} = 5.02 TeV");
 
   const string labels[3]{"0-5%","5-10%","30-50%"};
   const string names[3]{"0_5","5_10","30_50"};
@@ -115,7 +115,7 @@ void newratios_he3() {
   for (int iP = 0; iP < 3; ++iP) {
     pads[iP]->cd();
     text.SetTextSize(18);
-    text.DrawText(mean_x-0.91*half_width_x,mean_y+0.8*half_width_y,labels[iP].data());
+    text.DrawText(mean_x-0.89*half_width_x,mean_y+0.75*half_width_y,labels[iP].data());
     h[iP] = (TH1D*)input.Get(Form("1.0_89_0.1_2.5_1_1_1/fRatio_%s",names[iP].data()));
     g[iP]=new TGraphErrors(h[iP]);
     g[iP]->SetMarkerStyle(20);
@@ -161,6 +161,6 @@ void newratios_he3() {
     // syst->Draw("e2same");
     // l.DrawLine(0.7,1.,6.3,1.);
   }
-  cv->SaveAs("RatioRun2_he3.pdf");
+  cv->SaveAs("RatioRun2_he3.eps");
 
 }

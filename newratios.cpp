@@ -1,5 +1,5 @@
-constexpr float minpt = 0.65;
-constexpr float maxpt = 1.65;
+constexpr float minpt = 0.66;
+constexpr float maxpt = 1.64;
 constexpr float miny = 0.965;
 constexpr float maxy = 1.035;
 
@@ -93,11 +93,11 @@ void newratios() {
   double half_width_y = 0.5*(maxy-miny);
   double mean_x = 0.5*(minpt+maxpt);
   double half_width_x = 0.5*(maxpt-minpt);
-  text.DrawText(mean_x+0.12*half_width_x,mean_y+0.8*half_width_y,"ALICE Preliminary");
+  text.DrawText(mean_x+0.08*half_width_x,mean_y+0.75*half_width_y,"ALICE Preliminary");
 
   pads[0]->cd();
   text.SetTextFont(43);
-  text.DrawLatex(mean_x+0.12*half_width_x,mean_y+0.6*half_width_y,"Pb-Pb #sqrt{#it{s}_{NN}}=5.02 TeV");
+  text.DrawLatex(mean_x+0.08*half_width_x,mean_y+0.55*half_width_y,"Pb-Pb #sqrt{#it{s}_{NN}} = 5.02 TeV");
 
   const string labels[3]{"0-5%","5-10%","30-50%"};
   const string names[3]{"0_5","5_10","30_50"};
@@ -110,7 +110,7 @@ void newratios() {
   for (int iP = 0; iP < 3; ++iP) {
     pads[iP]->cd();
     text.SetTextSize(18);
-    text.DrawText(mean_x-0.91*half_width_x,mean_y+0.8*half_width_y,labels[iP].data());
+    text.DrawText(mean_x-0.89*half_width_x,mean_y+0.75*half_width_y,labels[iP].data());
     h[iP] = (TH1D*)input.Get(Form("fRatio_%s",names[iP].data()));
     g[iP]=new TGraphErrors(h[iP]);
     g[iP]->SetMarkerStyle(20);
@@ -147,6 +147,6 @@ void newratios() {
     // syst->Draw("e2same");
     // l.DrawLine(0.7,1.,6.3,1.);
   }
-  cv->SaveAs("RatioRun2_pion.pdf");
+  cv->SaveAs("RatioRun2_pion.eps");
 
 }

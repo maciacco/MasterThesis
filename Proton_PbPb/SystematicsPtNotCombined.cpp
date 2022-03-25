@@ -697,13 +697,16 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
     hijingProtonRatio->GetXaxis()->SetRangeUser(1.,3.);
     cRatio.SetTicks(1, 1);
     hRatio.SetMarkerStyle(20);
-    hRatio.SetMarkerSize(0.8);
-    hRatio.GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
-    hRatio.GetYaxis()->SetTitle("Ratio #bar{p}/p");
-    hRatio.GetXaxis()->SetRangeUser(1.,3.);
-    hRatio.GetYaxis()->SetRangeUser(0.75, 1.25);
+    hRatio.SetMarkerSize(1.0);
+    hRatio.GetXaxis()->SetRangeUser(.9,3.1);
+    hRatio.GetYaxis()->SetRangeUser(0.94, 1.06);
     hRatio.SetStats(0);
-    hRatio.Draw("pe2");
+    TH2D hhRatio("hhRatio",";#it{p}_{T} (GeV/#it{c});#bar{p}/p",100,0.9,3.1,100,0.93,1.07);
+    hhRatio.GetYaxis()->SetNdivisions(505);
+    hhRatio.SetStats(0);
+    hhRatio.GetYaxis()->CenterTitle();
+    hhRatio.Draw("axis");
+    //hRatio.Draw("pe2");
     hRatio.SetLineColor(centrality_colors[iC]);
     hRatio.SetMarkerColor(centrality_colors[iC]);
     TGraphErrors gRatio(&hRatio);
@@ -712,13 +715,27 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
     }
     TGraphErrors gRatioCorr(&hRatio);
     //gRatio.Draw("P5 same");
-    gRatio.GetXaxis()->SetRangeUser(1.,3.);
-    gRatio.GetYaxis()->SetRangeUser(0.75, 1.25);
+    int iPoint{0};
+    while (iPoint<gRatio.GetN()){
+      double x=gRatio.GetPointX(iPoint);
+      if (x<1.||x>3.){
+        gRatio.RemovePoint(iPoint);
+      }
+      else ++iPoint;
+    }
+    gRatio.GetXaxis()->SetRangeUser(.9,3.1);
+    gRatio.GetYaxis()->SetRangeUser(0.93, 1.08);
+    gRatio.SetFillColor(0);
+    gRatio.SetFillStyle(0);
     gRatioCorr.SetFillStyle(3145);
     gRatioCorr.SetFillColor(centrality_colors[iC]);
-    gRatio.Draw("e5 same");
-    gRatioCorr.Draw("P5 same");
-    hRatio.GetFunction("pol0")->Draw("same");
+    TF1 plotFit("plotFit","pol0",0.9,3.1);
+    plotFit.SetParameter(0,hRatio.GetFunction("pol0")->GetParameter(0));
+    plotFit.SetLineColor(kBlack);
+    plotFit.SetLineWidth(2);
+    plotFit.Draw("same");
+    gRatio.Draw("pe5 same");
+    //gRatioCorr.Draw("P5 same");
     hijingProtonRatio->SetMarkerStyle(0);
     hijingProtonRatio->SetMarkerSize(0);
     hijingProtonRatio->SetFillColor(kGreen+1);
@@ -731,12 +748,27 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
     chi2.SetTextSize(28);
     TLatex p0(2.2, 1.15, Form("R = %.4f #pm %.4f", hRatio.GetFunction("pol0")->GetParameter(0), hRatio.GetFunction("pol0")->GetParError(0)));
     p0.SetTextSize(28);
-    chi2.Draw("same");
-    p0.Draw("same");
+    TLatex text_alice(0.6,0.8,"ALICE Preliminary");
+    text_alice.SetNDC(true);
+    text_alice.SetTextFont(63);
+    text_alice.SetTextSize(25);
+    TLatex text_energy(0.6,0.73,"Pb-Pb #sqrt{#it{s}_{NN}} = 5.02 TeV");
+    text_energy.SetNDC(true);
+    text_energy.SetTextFont(43);
+    text_energy.SetTextSize(25);
+    TLatex text_centrality(0.18,0.8,Form("%.0f-%.0f%%",kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]));
+    text_centrality.SetNDC(true);
+    text_centrality.SetTextFont(43);
+    text_centrality.SetTextSize(25);
+    //chi2.Draw("same");
+    //p0.Draw("same");
     //lProtonRatio.Draw("same");
+    text_alice.Draw("same");
+    text_energy.Draw("same");
+    text_centrality.Draw("same");
     cRatio.Modified();
     cRatio.Write();
-    cRatio.Print(Form("%s/%s.pdf", kPlotDir, hRatio.GetName()));
+    cRatio.Print(Form("%s/RatiosRun2_proton_%.0f_%.0f.eps", kPlotDir, kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]));
 
     TCanvas cPtCorrelatedError(fRatioDistributionTrials.GetName(),fRatioDistributionTrials.GetTitle());
     fRatioDistributionTrials.GetXaxis()->SetRangeUser(fRatioDistributionTrials.GetMean()-5*fRatioDistributionTrials.GetRMS(),fRatioDistributionTrials.GetMean()+5*fRatioDistributionTrials.GetRMS());
