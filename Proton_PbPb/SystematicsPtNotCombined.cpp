@@ -705,6 +705,8 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
     hhRatio.GetYaxis()->SetNdivisions(505);
     hhRatio.SetStats(0);
     hhRatio.GetYaxis()->CenterTitle();
+    hhRatio.GetYaxis()->SetDecimals();
+    hhRatio.GetXaxis()->SetDecimals();
     hhRatio.Draw("axis");
     //hRatio.Draw("pe2");
     hRatio.SetLineColor(centrality_colors[iC]);

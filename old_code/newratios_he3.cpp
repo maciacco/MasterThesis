@@ -1,7 +1,8 @@
-constexpr float minpt = 0.9;
-constexpr float maxpt = 3.1;
-constexpr float miny = 0.94;
-constexpr float maxy = 1.06;
+constexpr float minpt = 1.6;
+constexpr float maxpt = 8.4;
+constexpr float miny = 0.55;
+constexpr float maxy = 1.45;
+
 std::array<TPad*,3> CreatePads(TCanvas* &cv)
 {
   if (!cv) cv = new TCanvas;
@@ -33,7 +34,7 @@ std::array<TPad*,3> CreatePads(TCanvas* &cv)
     cv->cd();
     pads[iP]->Draw();
     pads[iP]->cd();
-    TH2F *rframe = new TH2F(Form("rframe%i",iP),";#it{p}_{T} (GeV/#it{c});#bar{p}/p;",100,minpt,maxpt,100,miny,maxy);
+    TH2F *rframe = new TH2F(Form("rframe%i",iP),";#it{p}_{T} (GeV/#it{c});^{3}#bar{He}/^{3}He;",100,minpt,maxpt,100,miny,maxy);
 
     rframe->GetYaxis()->CenterTitle();
     rframe->GetYaxis()->SetTickLength(0.03 * sx[0] / sx[col]);
@@ -41,6 +42,7 @@ std::array<TPad*,3> CreatePads(TCanvas* &cv)
     rframe->GetYaxis()->SetTitleFont((!col) * 43);
     rframe->GetYaxis()->SetTitleOffset(2.);
     rframe->GetYaxis()->SetNdivisions(505);
+    rframe->GetYaxis()->SetDecimals(1);
     rframe->GetYaxis()->SetLabelFont(43); // Absolute font size in pixel (precision 3)
     rframe->GetYaxis()->SetLabelSize((!col) * 15);
 
@@ -49,6 +51,7 @@ std::array<TPad*,3> CreatePads(TCanvas* &cv)
     rframe->GetXaxis()->SetTitleFont(43);
     rframe->GetXaxis()->SetTitleOffset(3);
     rframe->GetXaxis()->SetNdivisions(510);
+    rframe->GetXaxis()->SetDecimals(1);
     rframe->GetXaxis()->SetLabelFont(43); // Absolute font size in pixel (precision 3)
     rframe->GetXaxis()->SetLabelSize(bot * 15);
 
@@ -58,16 +61,16 @@ std::array<TPad*,3> CreatePads(TCanvas* &cv)
 }
 
 Color_t colors[]={kOrange+7, kAzure+4, kTeal+4};
-double x_limits[2][2]={{0.7,1.6},{1.0,3.0}};
-int i_particle=1;
-const char *format_fit_results[] = {"R=%.3f #pm %.3f","R=%.3f #pm0.000 (stat.) #pm%.3f (syst.) #pm%.3f (mat.)"};
+double x_limits[3][2]={{0.7,1.6},{1.0,3.0},{2.,8.}};
+int i_particle=2;
+const char *format_fit_results[] = {"R=%.3f #pm %.3f","R=%.3f #pm %.3f","R=%.2f #pm%.2f (stat.) #pm%.2f (syst.) #pm%.2f (mat.)"};
 const char *format_fit_results_more[] = {"R=%.4f #pm %.4f"};
-double text_position_up_right[2][2]={{1.2,1.023},{2.12,1.063}};
-double text_position_low_right[2][2]={{1.2,1.017},{2.12,1.047}};
-double text_position_up_left[2][2]={{0.71,1.023},{1.04,1.063}};
-double text_position_low_left[2][2]={{0.71,1.017},{1.04,1.047}};
+double text_position_up_right[3][2]={{1.2,1.023},{2.12,1.063},{1.9,1.4}};
+double text_position_low_right[3][2]={{1.2,1.017},{2.12,1.050},{1.9,1.3}};
+double text_position_up_left[3][2]={{0.71,1.023},{1.06,1.063},{8.2,1.4}};
+double text_position_low_left[3][2]={{0.71,1.017},{1.06,1.050},{1.9,1.2}};
 
-void newratios_proton() {
+void newratios_he3() {
   gStyle->SetOptStat(0);
   const float leftmargin = 0.16;
   const float rigthmargin = 0.04;
@@ -105,16 +108,18 @@ void newratios_proton() {
   const string labels[3]{"0-5%","5-10%","30-50%"};
   const string names[3]{"0_5","5_10","30_50"};
   //text.SetTextAlign(31);
-  TFile input("Proton_PbPb/out/SystematicsAllEPtNotCombined.root");
+  TFile input_sys("He3_PbPb/out/SystematicsAll.root");
   TFile input_material("FinalPlot3D.root");
-  TGraphErrors *g[3];
+  TFile input_sys_MC("He3_PbPb/out/SystematicsEfficiencyPrimary.root");
+  TFile input("He3_PbPb/out/SpectraHe3.root");
+  TGraphErrors *g[3],*gSys[3];
   TH1D* h[3];
-  TF1 *f[3];
+  TF1* f[3];
   for (int iP = 0; iP < 3; ++iP) {
     pads[iP]->cd();
     text.SetTextSize(18);
     text.DrawText(mean_x-0.89*half_width_x,mean_y+0.75*half_width_y,labels[iP].data());
-    h[iP] = (TH1D*)input.Get(Form("fRatio_%s",names[iP].data()));
+    h[iP] = (TH1D*)input.Get(Form("1.0_89_0.1_2.5_1_1_1/fRatio_%s",names[iP].data()));
     g[iP]=new TGraphErrors(h[iP]);
     g[iP]->SetMarkerStyle(20);
     g[iP]->SetMarkerSize(1.);
@@ -131,25 +136,34 @@ void newratios_proton() {
     }
     double ratio_mat[3];
     for (int iMat=0;iMat<3;++iMat){
-      auto hMaterial=(TH1D*)input_material.Get(Form("fRatio_%s;%.d",names[iP].data(),iMat*4+3));
+      auto hMaterial=(TH1D*)input_material.Get(Form("fRatio_%s;%.d",names[iP].data(),iMat*4+1));
       ratio_mat[iMat] = hMaterial->GetFunction("pol0")->GetParameter(0);
       //std::cout<<"r = "<<ratio_mat[iMat]<<std::endl;
     }
     double material_error = std::abs(ratio_mat[1]-ratio_mat[0])*0.5;
+    TH1D *sys=(TH1D*)input_sys.Get(Form("hist/fFitPar_%s",names[iP].data()));
+    TH1D *sys_MC=(TH1D*)input_sys_MC.Get(Form("fRatioDistribution_%s",names[iP].data()));
+    gSys[iP]=new TGraphErrors(*g[iP]);
+    for (int iPoint=0;iPoint<g[iP]->GetN();++iPoint){
+      double sys_tot = TMath::Sqrt(sys->GetRMS()*sys->GetRMS()+sys_MC->GetRMS()*sys_MC->GetRMS());
+      gSys[iP]->SetPointError(iPoint,h[iP]->GetBinWidth(h[iP]->FindBin(g[iP]->GetPointX(iPoint)))*0.5,sys_tot);
+      g[iP]->SetPointError(iPoint,0.,g[iP]->GetErrorY(iPoint));
+    }
     f[iP]=new TF1("fit","pol0",minpt,maxpt);
-    f[iP]->SetLineColor(kBlack);
     f[iP]->SetParameter(0,h[iP]->GetFunction("pol0")->GetParameter(0));
+    f[iP]->SetLineColor(kBlack);
     f[iP]->Draw("same");
-    g[iP]->Draw("pe5same");
+    g[iP]->Draw("esame");
+    gSys[iP]->Draw("pe5same");
     text.SetTextSize(15);
-    double sys_err = sqrt(h[iP]->GetFunction("pol0")->GetParameter(0)*h[iP]->GetFunction("pol0")->GetParameter(0)*(0.00115085*0.00115085+0.000172469*0.000172469)+h[iP]->GetFunction("pol0")->GetParError(0)*h[iP]->GetFunction("pol0")->GetParError(0));
-    // if (iP==0)text.DrawLatex(mean_x-0.91*half_width_x,mean_y-0.8*half_width_y,Form(format_fit_results[i_particle],h[iP]->GetFunction("pol0")->GetParameter(0),sys_err,material_error));
-    // else text.DrawLatex(mean_x-0.91*half_width_x,mean_y-0.8*half_width_y,Form(format_fit_results[i_particle],h[iP]->GetFunction("pol0")->GetParameter(0),sys_err,material_error));
+    double sys_err = sqrt(h[iP]->GetFunction("pol0")->GetParameter(0)*h[iP]->GetFunction("pol0")->GetParameter(0)*( 0.00861352*0.00861352+0.00473124*0.00473124)+sys->GetRMS()*sys->GetRMS()+sys_MC->GetRMS()*sys_MC->GetRMS());
+      if (iP==0)text.DrawLatex(mean_x-0.91*half_width_x,mean_y-0.8*half_width_y,Form(format_fit_results[i_particle],h[iP]->GetFunction("pol0")->GetParameter(0),h[iP]->GetFunction("pol0")->GetParError(0),sys_err,material_error));
+    else text.DrawLatex(mean_x-0.91*half_width_x,mean_y-0.8*half_width_y,Form(format_fit_results[i_particle],h[iP]->GetFunction("pol0")->GetParameter(0),h[iP]->GetFunction("pol0")->GetParError(0),sys_err,material_error));
     // TH1* syst = (TH1*)input.Get(Form("ratio/%i/syst",iP));
     //stat->Draw("esamex0");
     // syst->Draw("e2same");
     // l.DrawLine(0.7,1.,6.3,1.);
   }
-  cv->SaveAs("RatioRun2_proton.eps");
+  cv->SaveAs("RatioRun2_he3.eps");
 
 }

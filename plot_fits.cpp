@@ -12,7 +12,6 @@ double global_x = 0.;
 const char *titles[2]={"; ;Ratio", "; ;#frac{data - fit}{#sigma_{data}}"};
 
 const char *particle_ratios[] = {"#pi^{-} / #pi^{+}","#bar{p} / p","{}_{#bar{#Lambda}}^{3}#bar{H} / ^{3}_{#Lambda}H","^{3}#bar{He} / ^{3}He"};
-// const char *particle_ratios[] = {"#frac{#pi^{-}}{#pi^{+}}","#frac{#bar{p}}{p}","#frac{{}_{#bar{#Lambda}}^{3}#bar{H}}{^{3}_{#Lambda}H}","#frac{^{3}#bar{He}}{^{3}He}"};
 constexpr int nRow=2;
 constexpr int nCol=3;
 
@@ -46,37 +45,30 @@ std::array<TPad*,6> CreatePads(TCanvas* &cv)
     pads[iP]->Draw();
     pads[iP]->cd();
     if (row == 1)pads[iP]->SetGridy();
-    // if (iP == nCol - 1) {
-    //   TLine border;
-    //   border.SetLineColor(kBlack);
-    //   border.DrawLineNDC(0.,0.,0.,fy / sy[bot]);
-    //   continue;
-    // }
+
     TH2F *rframe = new TH2F(Form("rframe%i",iP),titles[row],4,minpt,maxpt,100,miny[row],maxy[row]);
     for (int i_part=0;i_part<4;i_part++)
       rframe->GetXaxis()->SetBinLabel(i_part+1,particle_ratios[i_part]);
 
     rframe->GetYaxis()->CenterTitle();
     rframe->GetYaxis()->SetTickLength(0.01 / sx[center] * (1+bot*fy));
-    //if (row==1) rframe->GetYaxis()->SetTickLength(0.012 / sx[center] / 1.2);
     rframe->GetYaxis()->SetTitleSize(20);
     rframe->GetYaxis()->SetTitleFont((!col) * 43);
     rframe->GetYaxis()->SetTitleOffset(1.5);
     rframe->GetYaxis()->SetLabelOffset(0.01);
     rframe->GetYaxis()->SetNdivisions(505);
+    rframe->GetYaxis()->SetDecimals(1);
     if (row==1) rframe->GetYaxis()->SetNdivisions(5);
     rframe->GetYaxis()->SetLabelFont(43); // Absolute font size in pixel (precision 3)
     rframe->GetYaxis()->SetLabelSize((!col) * 15);
 
     /* rframe->GetXaxis()->CenterTitle(); */
     rframe->GetXaxis()->SetTickLength(0.004 / sx[1-center] / sy[bot]);
-    //if (col==1) rframe->GetXaxis()->SetTickLength(0.012 / sy[bot] / 1.35);
     rframe->GetXaxis()->SetLabelSize(20);
     rframe->GetXaxis()->SetLabelFont(43);
     rframe->GetXaxis()->SetLabelOffset(0.04);
     rframe->GetXaxis()->SetNdivisions(505);
-    /* rframe->GetXaxis()->SetLabelFont(43); // Absolute font size in pixel (precision 3)
-    rframe->GetXaxis()->SetLabelSize(bot * 15); */
+    rframe->GetXaxis()->SetDecimals(1);
     std::cout<<rframe->GetXaxis()->GetLabelSize()<<" "<<rframe->GetXaxis()->GetTickLength()<<" "<<rframe->GetYaxis()->GetLabelSize()<<" "<<rframe->GetYaxis()->GetTickLength()<<std::endl;
 
     rframe->Draw("col");
@@ -99,8 +91,6 @@ void plot_fits() {
   const float leftmargin = 0.16;
   const float rigthmargin = 0.04;
 
-  /* const float minpt = 0.4;
-  const float maxpt = 8.4; */
   const float deltaRatio = 0.89;
   const float kMarkerSize = 0.9;
 
@@ -151,10 +141,6 @@ void plot_fits() {
     pads[iP+3]->cd();
     hRatio[iP]->Draw("psame");
     hRatio[iP]->SetMarkerSize(1.0);
-    // TH1* syst = (TH1*)input.Get(Form("ratio/%i/syst",iP));
-    //stat->Draw("esamex0");
-    // syst->Draw("e2same");
-    // l.DrawLine(0.7,1.,6.3,1.);
   }
   cv->SaveAs("SHMfitToRatios_all.eps");
 
