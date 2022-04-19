@@ -697,11 +697,11 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
     hijingProtonRatio->GetXaxis()->SetRangeUser(1.,3.);
     cRatio.SetTicks(1, 1);
     hRatio.SetMarkerStyle(20);
-    hRatio.SetMarkerSize(1.0);
+    hRatio.SetMarkerSize(1.7);
     hRatio.GetXaxis()->SetRangeUser(.9,3.1);
-    hRatio.GetYaxis()->SetRangeUser(0.94, 1.06);
+    hRatio.GetYaxis()->SetRangeUser(0.95, 1.05);
     hRatio.SetStats(0);
-    TH2D hhRatio("hhRatio",";#it{p}_{T} (GeV/#it{c});#bar{p}/p",100,0.9,3.1,100,0.93,1.07);
+    TH2D hhRatio("hhRatio",";#it{p}_{T} (GeV/#it{c});#bar{p}/p",100,0.9,3.1,100,0.95,1.05);
     hhRatio.GetYaxis()->SetNdivisions(505);
     hhRatio.SetStats(0);
     hhRatio.GetYaxis()->CenterTitle();
@@ -726,7 +726,7 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
       else ++iPoint;
     }
     gRatio.GetXaxis()->SetRangeUser(.9,3.1);
-    gRatio.GetYaxis()->SetRangeUser(0.93, 1.08);
+    gRatio.GetYaxis()->SetRangeUser(0.95, 1.05);
     gRatio.SetFillColor(0);
     gRatio.SetFillStyle(0);
     gRatioCorr.SetFillStyle(3145);
@@ -758,7 +758,7 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
     text_energy.SetNDC(true);
     text_energy.SetTextFont(43);
     text_energy.SetTextSize(25);
-    TLatex text_centrality(0.18,0.8,Form("%.0f-%.0f%%",kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]));
+    TLatex text_centrality(0.6,0.66,Form("%.0f-%.0f%% V0M centrality",kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]));
     text_centrality.SetNDC(true);
     text_centrality.SetTextFont(43);
     text_centrality.SetTextSize(25);

@@ -113,11 +113,11 @@ void plot_fits() {
   double half_width_y = 0.5*(maxy[0]-miny[0]);
   double mean_x = 0.5*(minpt+maxpt);
   double half_width_x = 0.5*(maxpt-minpt);
-  text.DrawText(mean_x-0.85*half_width_x,mean_y-0.4*half_width_y,"ALICE Preliminary");
+  text.DrawText(mean_x-0.85*half_width_x,mean_y-0.2*half_width_y,"ALICE Preliminary");
 
   pads[0]->cd();
   text.SetTextFont(43);
-  text.DrawLatex(mean_x-0.85*half_width_x,mean_y-0.6*half_width_y,"Pb-Pb #sqrt{#it{s}_{NN}} = 5.02 TeV");
+  text.DrawLatex(mean_x-0.85*half_width_x,mean_y-0.4*half_width_y,"Pb-Pb #sqrt{#it{s}_{NN}} = 5.02 TeV");
 
   const string labels[3]{"0-5%","5-10%","30-50%"};
   const string names[3]{"0_5","5_10","30_50"};
@@ -125,6 +125,7 @@ void plot_fits() {
   TFile input("FinalPlot3D.root");
   TGraphErrors *g[3],*gFit[3];
   TH1D* hRatio[3];
+  TLegend *leg;
   for (int iP = 0; iP < 3; ++iP) {
     pads[iP]->cd();
     text.SetTextSize(18);
@@ -137,7 +138,14 @@ void plot_fits() {
     hRatio[iP] = (TH1D*)input.Get(Form("hNSigmaRatioFitParticle_%s",names[iP].data()));
     gFit[iP]->SetLineWidth(2);
     gFit[iP]->Draw("esame");
-    g[iP]->Draw("pesame");  
+    g[iP]->Draw("pesame");
+    if (iP==0){
+      leg=new TLegend(0.22808,0.172684,0.611348,0.273155);
+      leg->AddEntry(gFit[iP],"fit");
+      leg->SetTextFont(43);
+      leg->SetTextSize(18);
+      leg->Draw("same");
+    }
     pads[iP+3]->cd();
     hRatio[iP]->Draw("psame");
     hRatio[iP]->SetMarkerSize(1.0);
