@@ -1,0 +1,53 @@
+PSEUDODATA_PATH: "../data/LambdaPrompt_PbPb/pseudodataFull.root"
+PSEUDODATA_BKG_PATH: "../data/LambdaPrompt_PbPb/pseudodataBackground.root"
+BKG_PATH: "../data/LambdaPrompt_PbPb/trainingBackground.root"
+ANALYSIS_RESULTS_PATH: "../data/LambdaPrompt_PbPb/StrangenessRatios_summary.root"
+MC_SIGNAL_PATH: "../data/LambdaPrompt_PbPb/trainingSample.root"
+MC_SIGNAL_RED_PATH: "../data/LambdaPrompt_PbPb/mc_cols_rec.root"
+MC_SIGNAL_PATH_GEN: "../data/LambdaPrompt_PbPb/mc_cols.root"
+
+CT_BINS: [[5,10]] # ,[10,15],[15,20],[20,25],[25,30],[30,35]] # training
+CT_BINS_APPLY:  [[[5,5.5,6,6.5,7,7.5,8,8.5,9,9.5,10]]] #,[10,10.5,11,11.5,12,12.5,13,13.5,14,14.5,15],[15,15.5,16,16.5,17,17.5,18,18.5,19,19.5,20],[20,20.5,21,21.5,22,22.5,23,23.5,24,24.5,25],[25,25.5,26,26.5,27,27.5,28,28.5,29,29.5,30],[30,30.5,31,31.5,32,32.5,33,33.5,34,34.5,35]]]
+CT_BINS_CENT: [[5,5.5]] #,6,6.5,7,7.5,8,8.5,9,9.5,10,10.5,11,11.5,12,12.5,13,13.5,14,14.5,15,15.5,16,16.5,17,17.5,18,18.5,19,19.5,20,20.5,21,21.5,22,22.5,23,23.5,24,24.5,25,25.5,26,26.5,27,27.5,28,28.5,29,29.5,30,30.5,31,31.5,32,32.5,33,33.5,34,34.5,35]]#[[5,5.5,6,6.5,7,7.5,8,8.5,9,9.5,10,10.5,11,11.5,12,12.5,13,13.5,14,14.5,15,15.5,16,16.5,17,17.5,18,18.5,19,19.5,20,20.5,21,21.5,22,22.5,23,23.5,24,24.5,25,25.5,26,26.5,27,27.5,28,28.5,29,29.5,30,30.5,31,31.5,32,32.5,33,33.5,34,34.5,35]]
+PT_BINS: [0,0.5,1,1.5,2,2.5,3,3.5,4,4.5,5,5.5,6,6.5,7,7.5,8,8.5,9,9.5,10] 
+CENTRALITY_LIST:  [[0, 90]]
+
+RANDOM_STATE: 42
+
+HYPERPARAMS:
+  n_estimators: 500
+  max_depth: 3
+  learning_rate: 0.05
+  # max_depth: 13
+  # learning_rate: 0.0982
+  # n_estimators: 181
+  # gamma: 0.4467
+  # min_child_weight: 5.75
+  # subsample: 0.74
+  # colsample_bytree: 0.57
+  seed: 42
+
+HYPERPARAMS_RANGES:
+  # booster parameters
+  n_estimators: [200,1000]
+  max_depth: [2,4]
+  learning_rate: [0.01,0.1]
+  # max_depth: !!python/tuple [5, 20] # defines the maximum depth of a single tree (regularization)
+  # learning_rate: !!python/tuple [0.01, 0.3] # learning rate
+  # n_estimators: !!python/tuple [50, 500] # number of boosting trees
+  # gamma: !!python/tuple [0.3, 1.1] # specifies the minimum loss reduction required to make a split
+  # min_child_weight: !!python/tuple [1, 12]
+  # subsample: !!python/tuple [0.5, 0.9] # denotes the fraction of observations to be randomly samples for each tree
+  # colsample_bytree: !!python/tuple [0.5, 0.9] # denotes the fraction of columns to be randomly samples for each tree
+
+TRAINING_COLUMNS:
+  - cosPA
+  - dcaV0tracks
+  - dcaPiPV
+  - dcaPrPV
+  - dcaV0PV
+  - tpcNsigmaPr
+  #- tpcNsigmaPi
+  #- tpcClV0Pr
+  #- tpcClV0Pi
+  - radius
