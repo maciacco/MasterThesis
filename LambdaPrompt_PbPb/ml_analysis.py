@@ -213,11 +213,13 @@ if TRAINING:
                         model_hdl.load_model_handler(f'models/{bin_model}_trained')
                 else:
                     continue
+                model_file_name = str(f'models/{bin_model}')
+                model_hdl.dump_original_model(model_file_name,True)
 
-                ct_bins_df_index = int(ct_bins[0]/5 -1)
+                ct_bins_df_index = int(ct_bins[0]/5)
                 for ct_bins_df in zip(CT_BINS_APPLY[i_cent_bins][ct_bins_df_index][:-1], CT_BINS_APPLY[i_cent_bins][ct_bins_df_index][1:]):
                     bin_df = f'{split}_{cent_bins[0]}_{cent_bins[1]}_{ct_bins_df[0]}_{ct_bins_df[1]}'
-                    
+                    print(bin_df)
                     # get only centrality selected
                     train_test_data_cent = [pd.DataFrame(), [], pd.DataFrame(), []]
                     train_test_data_cent[0] = train_test_data[0].query(f'matter {split_ineq_sign} and centrality > {cent_bins[0]} and centrality < {cent_bins[1]} and ct >= {ct_bins_df[0]} and ct < {ct_bins_df[1]}')
@@ -226,6 +228,9 @@ if TRAINING:
                     train_test_data_cent[3] = train_test_data_cent[2]['y_true']
 
                     # get predictions for training and test sets
+                    print(train_test_data_cent[2])
+                    if (ct_bins_df[0]==0):
+                        continue
                     test_y_score = model_hdl.predict(train_test_data_cent[2], output_margin=False)
                     train_y_score = model_hdl.predict(train_test_data_cent[0], output_margin=False)
                     train_test_data_cent[0].loc[:,'model_output_prompt'] = train_y_score[:,2]
