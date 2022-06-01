@@ -1,3 +1,4 @@
+DATA_PATH: "../data/LambdaPrompt_PbPb/AnalysisResults.root"
 PSEUDODATA_PATH: "../data/LambdaPrompt_PbPb/pseudodataFull.root"
 PSEUDODATA_BKG_PATH: "../data/LambdaPrompt_PbPb/pseudodataBackground.root"
 BKG_PATH: "../data/LambdaPrompt_PbPb/trainingBackground.root"
@@ -42,7 +43,7 @@ TRAINING_COLUMNS:
   - dcaPrPV
   - dcaV0PV
   - tpcNsigmaPr
-  #- tpcNsigmaPi
+  # - tpcNsigmaPi
   #- tpcClV0Pr
   #- tpcClV0Pi
   - radius
