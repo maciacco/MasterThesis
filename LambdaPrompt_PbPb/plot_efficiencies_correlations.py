@@ -63,7 +63,7 @@ DUMP_HYPERPARAMS = False
 TRAINING = not args.application
 PLOT_DIR = 'plots'
 MAKE_PRESELECTION_EFFICIENCY = args.eff
-MAKE_FEATURES_PLOTS = False
+MAKE_FEATURES_PLOTS = True
 MAKE_TRAIN_TEST_PLOT = args.train
 OPTIMIZE = False
 OPTIMIZED = False
@@ -167,6 +167,8 @@ if TRAINING:
 
         ######################################################################
 
+    del df_signal
+    df_signal = uproot.open(os.path.expandvars(MC_SIGNAL_PATH))['LambdaTree'].arrays(library="pd")
     # second condition needed because of issue with Qt libraries
     if MAKE_FEATURES_PLOTS and not MAKE_PRESELECTION_EFFICIENCY and not TRAIN:
         ######################################################
@@ -174,23 +176,28 @@ if TRAINING:
         ######################################################
 
         df_background = uproot.open(os.path.expandvars(BKG_PATH))['LambdaTree'].arrays(library="pd")
-        df_signal_ct = df_signal.query(f'pt > 0.5 and pt < 3 and isReconstructed') # pt cut?
-        df_background_ct = df_background.query(f'pt > 0.5 and pt < 3 and ( mass < 1.105 or mass > 1.13 )') # pt cut?
+        df_prompt_ct = df_signal.query(f'pt > 0 and pt < 3.5 and flag==1') # pt cut?
+        df_non_prompt_ct = df_signal.query(f'pt > 0 and pt < 3.5 and flag==2') # pt cut?
+        df_background_ct = df_background.query(f'pt > 0 and pt < 3.5') # pt cut?
+        #print(df_prompt_ct.keys())
+        #print(df_background_ct.keys())
 
         # define tree handlers
-        signal_tree_handler = TreeHandler()
+        prompt_tree_handler = TreeHandler()
+        non_prompt_tree_handler = TreeHandler()
         background_tree_handler = TreeHandler()
-        signal_tree_handler.set_data_frame(df_signal_ct)
+        prompt_tree_handler.set_data_frame(df_prompt_ct)
+        non_prompt_tree_handler.set_data_frame(df_non_prompt_ct)
         background_tree_handler.set_data_frame(df_background_ct)
-        del df_signal_ct, df_background_ct
+        del df_prompt_ct, df_non_prompt_ct, df_background_ct
 
         if not os.path.isdir(f'{PLOT_DIR}/features'):
             os.mkdir(f'{PLOT_DIR}/features')
 
-        leg_labels = ['background', 'signal']
+        leg_labels = ['background', 'non-prompt', 'prompt']
         plot_distr = plot_utils.plot_distr(
-            [background_tree_handler, signal_tree_handler],
-            TRAINING_COLUMNS_LIST, bins=40, labels=leg_labels, log=True, density=True, figsize=(10, 12),
+            [background_tree_handler, non_prompt_tree_handler, prompt_tree_handler],
+            TRAINING_COLUMNS_LIST, bins=40, labels=leg_labels, log=True, density=True, figsize=(12, 12),
             alpha=0.5, grid=False)
         plt.subplots_adjust(left=0.06, bottom=0.06, right=0.99, top=0.96, hspace=0.50, wspace=0.50)
         plt.tight_layout()
@@ -200,10 +207,14 @@ if TRAINING:
         plt.subplots_adjust(left=0.1, bottom=0.06, right=0.99, top=0.96, hspace=0.55, wspace=0.55)
         plt.tight_layout()
         plt.savefig(f'{PLOT_DIR}/features/BackgroundCorrelationMatrix.pdf')
-        sig_corr = plot_utils.plot_corr([signal_tree_handler], TRAINING_COLUMNS_LIST, ['Signal'])
-        sig_corr.set_size_inches(6,6)
+        np_corr = plot_utils.plot_corr([non_prompt_tree_handler], TRAINING_COLUMNS_LIST, ['Non-prompt'])
+        np_corr.set_size_inches(6,6)
         plt.tight_layout()
-        plt.savefig(f'{PLOT_DIR}/features/SignalCorrelationMatrix.pdf')
+        plt.savefig(f'{PLOT_DIR}/features/NonPromptCorrelationMatrix.pdf')
+        p_corr = plot_utils.plot_corr([prompt_tree_handler], TRAINING_COLUMNS_LIST, ['Prompt'])
+        p_corr.set_size_inches(6,6)
+        plt.tight_layout()
+        plt.savefig(f'{PLOT_DIR}/features/PromptCorrelationMatrix.pdf')
         plt.close('all')
 
         ###########################################################
