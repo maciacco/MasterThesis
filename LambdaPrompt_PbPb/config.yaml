@@ -1,15 +1,15 @@
-DATA_PATH: "../data/LambdaPrompt_PbPb/AnalysisResults.root"
-PSEUDODATA_PATH: "../data/LambdaPrompt_PbPb/pseudodataFull.root"
-PSEUDODATA_BKG_PATH: "../data/LambdaPrompt_PbPb/pseudodataBackground.root"
-BKG_PATH: "../data/LambdaPrompt_PbPb/trainingBackground.root"
-ANALYSIS_RESULTS_PATH: "../data/LambdaPrompt_PbPb/StrangenessRatios_summary.root"
-MC_SIGNAL_PATH: "../data/LambdaPrompt_PbPb/trainingSample.root"
-MC_SIGNAL_RED_PATH: "../data/LambdaPrompt_PbPb/mc_cols_rec.root"
-MC_SIGNAL_PATH_GEN: "../data/LambdaPrompt_PbPb/mc_cols.root"
+DATA_PATH: "/data/mciacco/LambdaPrompt_PbPb/AnalysisResults_data.root"
+PSEUDODATA_PATH: "/data/mciacco/LambdaPrompt_PbPb/pseudodataFull.root"
+PSEUDODATA_BKG_PATH: "/data/mciacco/LambdaPrompt_PbPb/pseudodataBackground.root"
+BKG_PATH: "/data/mciacco/LambdaPrompt_PbPb/trainingBackground.root"
+ANALYSIS_RESULTS_PATH: "/data/mciacco/LambdaPrompt_PbPb/StrangenessRatios_summary.root"
+MC_SIGNAL_PATH: "/data/mciacco/LambdaPrompt_PbPb/trainingSample.root"
+MC_SIGNAL_RED_PATH: "/data/mciacco/LambdaPrompt_PbPb/mc_cols_rec.root"
+MC_SIGNAL_PATH_GEN: "/data/mciacco/LambdaPrompt_PbPb/mc_cols.root"
 
-CT_BINS: [[0, 5], [5,10] ,[10,15],[15,20],[20,25],[25,30],[30,40]] # training
-CT_BINS_APPLY:  [[[0,1,1.5,2,2.5,3,3.5,4,4.5,5],[5,5.5,6,6.5,7,7.5,8,8.5,9,9.5,10],[10,10.5,11,11.5,12,12.5,13,13.5,14,14.5,15],[15,15.5,16,16.5,17,17.5,18,18.5,19,19.5,20],[20,20.5,21,21.5,22,22.5,23,23.5,24,24.5,25],[25,25.5,26,26.5,27,27.5,28,28.5,29,29.5,30],[30,30.5,31,31.5,32,32.5,33,33.5,34,34.5,35],[35,35.5,36,36.5,37,37.5,38,38.5,39,39.5,40]]]
-CT_BINS_CENT: [[0,1,1.5,2,2.5,3,3.5,4,4.5,5,5.5,6,6.5,7,7.5,8,8.5,9,9.5,10,10.5,11,11.5,12,12.5,13,13.5,14,14.5,15,15.5,16,16.5,17,17.5,18,18.5,19,19.5,20,20.5,21,21.5,22,22.5,23,23.5,24,24.5,25,25.5,26,26.5,27,27.5,28,28.5,29,29.5,30,30.5,31,31.5,32,32.5,33,33.5,34,34.5,35,35.5,36,36.5,37,37.5,38,38.5,39,39.5,40]]
+CT_BINS: [[1, 5], [5,10] ,[10,15],[15,20],[20,25],[25,30],[30,40]] # training
+CT_BINS_APPLY:  [[[1,1.5,2,2.5,3,3.5,4,4.5,5],[5,5.5,6,6.5,7,7.5,8,8.5,9,9.5,10],[10,10.5,11,11.5,12,12.5,13,13.5,14,14.5,15],[15,15.5,16,16.5,17,17.5,18,18.5,19,19.5,20],[20,20.5,21,21.5,22,22.5,23,23.5,24,24.5,25],[25,25.5,26,26.5,27,27.5,28,28.5,29,29.5,30],[30,30.5,31,31.5,32,32.5,33,33.5,34,34.5,35.5,36,36.5,37,37.5,38,38.5,39,39.5,40]]]
+CT_BINS_CENT: [[1,1.5,2,2.5,3,3.5,4,4.5,5,5.5,6,6.5,7,7.5,8,8.5,9,9.5,10,10.5,11,11.5,12,12.5,13,13.5,14,14.5,15,15.5,16,16.5,17,17.5,18,18.5,19,19.5,20,20.5,21,21.5,22,22.5,23,23.5,24,24.5,25,25.5,26,26.5,27,27.5,28,28.5,29,29.5,30,30.5,31,31.5,32,32.5,33,33.5,34,34.5,35,35.5,36,36.5,37,37.5,38,38.5,39,39.5,40]]
 PT_BINS: [0,0.5,1,1.5,2,2.5,3,3.5,4,4.5,5,5.5,6,6.5,7,7.5,8,8.5,9,9.5,10] 
 CENTRALITY_LIST:  [[0, 90]]
 
@@ -17,7 +17,7 @@ RANDOM_STATE: 42
 
 HYPERPARAMS:
   n_estimators: 1000
-  max_depth: 6
+  max_depth: 4
   learning_rate: 0.05
   gamma: 1
   # learning_rate: 0.0982

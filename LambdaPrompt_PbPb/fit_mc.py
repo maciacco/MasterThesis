@@ -60,7 +60,7 @@ for split in SPLIT_LIST:
     for i_cent_bins in range(len(CENTRALITY_LIST)):
         cent_bins = CENTRALITY_LIST[i_cent_bins]
         for ct_bins in zip(CT_BINS_CENT[i_cent_bins][:-1], CT_BINS_CENT[i_cent_bins][1:]):
-            if ct_bins[0] < 1 or ct_bins[1] > 20:
+            if ct_bins[0] < 1 or ct_bins[1] > 20.:
                  continue
             bdt_cut = 1
             bin = f'{split}_{cent_bins[0]}_{cent_bins[1]}_{ct_bins[0]}_{ct_bins[1]}'
@@ -109,7 +109,7 @@ for split in SPLIT_LIST:
 
             # fit to bdt output
             bdt_out = ROOT.RooRealVar("BDT out","BDT out",0.,1.)
-            bdt_out.setBins(800)
+            bdt_out.setBins(20)
             bdt_roo_data = helpers.ndarray2roo(data_bdt_non_prompt_out.to_numpy(), bdt_out)
             bdt_data = ROOT.RooDataHist("dh", "dh", ROOT.RooArgList(bdt_out), bdt_roo_data)
             bdt_roo_mc_prompt = helpers.ndarray2roo(mc_prompt_bdt_non_prompt_out.to_numpy(), bdt_out)
@@ -165,7 +165,7 @@ for split in SPLIT_LIST:
 
             # features
             f.mkdir(bin)
-            features = ['cosPA','dcaV0tracks','dcaPiPV','dcaPrPV','dcaV0PV','tpcNsigmaPr','radius']
+            features = ['cosPA','dcaV0tracks','dcaPiPV','dcaPrPV','dcaV0PV','tpcNsigmaPr','mass']
             regions_labels = ["main","second"]
             for i_f, ft in enumerate(features):
                 d = []
@@ -173,9 +173,8 @@ for split in SPLIT_LIST:
                 h_features = []
                 for i_r, ranges in enumerate(bdt_score_region):
                     d.append(df_mc_cut.query(f"y_true==2 and model_output_non_prompt > {ranges[0]} and model_output_non_prompt < {ranges[1]}")[ft].to_numpy())
-                    mn = d[i_r].min()
-                    mx = d[i_r].max()
-                    h_features.append(ROOT.TH1D(f"fHist_{ft}",f";{ft};Entries",400,mn,mx))
+                    
+                    h_features.append(ROOT.TH1D(f"fHist_{ft}",f";{ft};Entries",400,0,10))
                     for i_l in np.arange(d[i_r].size):
                         h_features[i_r].Fill(d[i_r][i_l])
                     f.cd(bin)
@@ -183,7 +182,7 @@ for split in SPLIT_LIST:
                     h_features[i_r].SetMarkerColor(colors[i_r])
                     h_features[i_r].SetMarkerStyle(20)
                     h_features[i_r].SetMarkerSize(1)
-                    h_features[i_r].Scale(1/h_features[i_r].Integral())
+                    #h_features[i_r].Scale(1/h_features[i_r].Integral())
                     h_features[i_r].SetDrawOption("LP")
                     h_features[i_r].Write()
                     plot.cd()
