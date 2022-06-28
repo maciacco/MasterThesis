@@ -166,7 +166,8 @@ if TRAINING:
         else:
             train_test_data[0] = pd.read_parquet(f'df/train_data_{ct_bins[0]}_{ct_bins[1]}.parquet.gzip')
             train_test_data[2] = pd.read_parquet(f'df/test_data_{ct_bins[0]}_{ct_bins[1]}.parquet.gzip')
-
+            train_test_data[1] = train_test_data[0]['y_true']
+            train_test_data[3] = train_test_data[2]['y_true']
 
         for split in SPLIT_LIST:
             split_ineq_sign = '> -0.1'

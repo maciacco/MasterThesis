@@ -61,7 +61,7 @@ f = ROOT.TFile("f_split.root","recreate")
 df_MC = ROOT.RDataFrame("LambdaTree","/data/mciacco/LambdaPrompt_PbPb/mc.root")
 
 for split in SPLIT_LIST:
-    split_ineq_sign = '> -0.1'
+    split_ineq_sign = '> -999999999.'
     if SPLIT:
         split_ineq_sign = '> 0.5'
         if split == 'antimatter':
@@ -97,12 +97,14 @@ for split in SPLIT_LIST:
         # h.Fit("expo","","I")
         # lifetime = ROOT.TLatex(10,1000,"#it{c}#tau = " + str(-1./h.GetFunction("expo").GetParameter(1)/speed_of_light) + " +/- "  + str(h.GetFunction("expo").GetParError(1)/h.GetFunction("expo").GetParameter(1)/h.GetFunction("expo").GetParameter(1)/speed_of_light) + " ps")
         bins = np.asarray(CT_BINS_CENT[i_cent_bins],dtype="float")
-        df_MC_gen = df_MC.Filter(f"matter {split_ineq_sign} && centrality > {cent_bins[0]} && centrality < {cent_bins[1]} && ptMC > 0.5 && ptMC < 3.5 && index_1 < 0.3 && flag == 1")
+        df_MC_gen = df_MC.Filter(f"pdg {split_ineq_sign} && centrality > {cent_bins[0]} && centrality < {cent_bins[1]} && ptMC > 0.5 && ptMC < 3.5 && index_1 < 0.3 && flag == 1")
         h_MC_gen_tmp = df_MC_gen.Histo1D((f"h_{split}",f"h_{split}",len(CT_BINS_CENT[i_cent_bins])-1,1,40),"ctMC")
+        h_MC_gen_tmp_pt = df_MC_gen.Histo1D((f"h_{split}_pt",f"h_{split}_pt",1000,0,10),"ptMC")
         delta_t = CT_BINS_CENT[i_cent_bins][1]-CT_BINS_CENT[i_cent_bins][0]
         h_MC_gen = h_MC_gen_tmp.GetPtr()
         h_MC_gen.Scale(1./delta_t)
         f.cd()
+        h_MC_gen_tmp_pt.Write()
         c = ROOT.TCanvas(f"fYield_{split}",f"yield {split}")
         c.SetLogy()
         h_MC_gen.Draw()
@@ -120,3 +122,4 @@ for split in SPLIT_LIST:
         h.Write()
         h_MC_gen.Write()
         c.Write()
+        del h, h_MC_gen

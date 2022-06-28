@@ -121,7 +121,7 @@ if TRAINING:
 
     for split in SPLIT_LIST:
 
-        split_ineq_sign = '> -0.1'
+        split_ineq_sign = '> -999999999.'
         if SPLIT:
             split_ineq_sign = '> 0.5'
             if split == 'antimatter':
@@ -138,7 +138,7 @@ if TRAINING:
                 df_signal_cent = df_signal.query(
                     f'matter {split_ineq_sign} and centrality > {cent_bins[0]} and centrality < {cent_bins[1]} and pt > 0.5 and pt < 3.5 and isReconstructed and tpcClV0Pi > 69 and tpcClV0Pr > 69 and radius > 3 and radius < 100 and dcaPrPV < 20 and dcaPiPV < 20 and dcaV0PV < 10 and eta < 0.8 and eta > -0.8 and flag==1') # pt cut?
                 df_generated_cent = df_signal.query(
-                    f'matter {split_ineq_sign} and centrality > {cent_bins[0]} and centrality < {cent_bins[1]} and ptMC > 0.5 and ptMC < 3.5 and flag==1') # pt cut?
+                    f'pdg {split_ineq_sign} and centrality > {cent_bins[0]} and centrality < {cent_bins[1]} and ptMC > 0.5 and ptMC < 3.5 and flag==1') # pt cut?
                 #del df_generated
 
                 # fill histograms (vs. ct and vs. pt)
