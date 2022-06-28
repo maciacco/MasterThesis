@@ -55,7 +55,7 @@ TRAIN = args.dotraining
 COMPUTE_SCORES_FROM_EFF = args.computescoreff
 TRAINING = args.train and (COMPUTE_SCORES_FROM_EFF or TRAIN)
 MERGE_CENTRALITY = args.mergecentrality
-CREATE_TRAIN_TEST = True
+CREATE_TRAIN_TEST = False
 
 # application
 APPLICATION = args.application
@@ -157,7 +157,7 @@ if TRAINING:
 
             # split data into training and test set
             train_test_data = train_test_generator([background_tree_handler, nonprompt_tree_handler, prompt_tree_handler], [
-                0, 1, 2], test_size=0.05, random_state=RANDOM_STATE)
+                0, 1, 2], test_size=0.2, random_state=RANDOM_STATE)
             train_test_data[0]['y_true'] = train_test_data[1]
             train_test_data[2]['y_true'] = train_test_data[3]
             train_test_data[0].to_parquet(f'df/train_data_{ct_bins[0]}_{ct_bins[1]}.parquet.gzip',compression='gzip')
@@ -195,6 +195,11 @@ if TRAINING:
                 model_hdl.set_model_params(HYPERPARAMS)
 
                 # hyperparameters optimization and model training
+                print(
+                f'Number of candidates ({split}) for training in {ct_bins[0]} <= ct < {ct_bins[1]} cm: {len(train_test_data[0])}')
+                print(
+                f'prompt candidates: {np.count_nonzero(train_test_data[1] == 2)}; non-prompt candidates: {np.count_nonzero(train_test_data[1] == 1)}; background candidates: {np.count_nonzero(train_test_data[1] == 0)}; n_cand_bkg / n_cand_signal = {np.count_nonzero(train_test_data[1] == 0) / np.count_nonzero(train_test_data[1] == 1)}')
+                
                 if not os.path.isdir('models'):
                     os.mkdir('models')
                 bin_model = bin
@@ -207,12 +212,7 @@ if TRAINING:
 
                 isModelTrained = os.path.isfile(f'models/{bin_model}_trained')
                 print(f'isModelTrained {bin_model}: {isModelTrained}')
-                if TRAIN and not isModelTrained:
-                    print(
-                    f'Number of candidates ({split}) for training in {ct_bins[0]} <= ct < {ct_bins[1]} cm: {len(train_test_data[0])}')
-                    print(
-                    f'prompt candidates: {np.count_nonzero(train_test_data[1] == 2)}; non-prompt candidates: {np.count_nonzero(train_test_data[1] == 1)}; background candidates: {np.count_nonzero(train_test_data[1] == 0)}; n_cand_bkg / n_cand_signal = {np.count_nonzero(train_test_data[1] == 0) / np.count_nonzero(train_test_data[1] == 1)}')
-                    #weights={0:1,1:2,2:1}
+                if TRAIN and not isModelTrained:#weights={0:1,1:2,2:1}
                     #sample_weights = compute_sample_weight(class_weight=weights,y=train_test_data[0]['y_true'])
                     model_hdl.train_test_model(train_test_data, multi_class_opt="ovr", return_prediction=True, output_margin=False) #, sample_weight=sample_weights)
                     model_file_name = str(f'models/{bin_model}_trained')
@@ -331,20 +331,20 @@ if TRAINING:
                 if MAKE_TRAIN_TEST_PLOT and not MAKE_PRESELECTION_EFFICIENCY:
                     if not os.path.isdir(f'{PLOT_DIR}/train_test_out'):
                         os.mkdir(f'{PLOT_DIR}/train_test_out')
-                    out_figs = plot_utils.plot_output_train_test(model_hdl, train_test_data_cent, bins=50,
+                    out_figs = plot_utils.plot_output_train_test(model_hdl, train_test_data_cent, bins=25,
                                                     logscale=True, density=True, labels=leg_labels, output_margin=False)
                     for i_label, label in enumerate(leg_labels):
                         out_figs[i_label].savefig(f'{PLOT_DIR}/train_test_out/{bin_df}_out_{label}.pdf')
 
-                    # feat_imp = plot_utils.plot_feature_imp(train_test_data_cent[0], train_test_data_cent[1], model_hdl)
-                    # for i_label, label in enumerate(leg_labels):
-                    #     feat_imp[i_label].savefig(f'{PLOT_DIR}/train_test_out/feature_imp_training_{bin_df}_{label}.pdf')
-                    # feat_imp[3].savefig(f'{PLOT_DIR}/train_test_out/feature_imp_training_{bin_df}_all.pdf')
-                    # plot_utils.plot_roc_train_test(
-                    #     train_test_data_cent[3],
-                    #     test_y_score, train_test_data_cent[1],
-                    #     train_y_score, labels=leg_labels, multi_class_opt="ovr")
-                    # plt.savefig(f'{PLOT_DIR}/train_test_out/roc_train_test_{bin_df}.pdf')
+                    feat_imp = plot_utils.plot_feature_imp(train_test_data_cent[0], train_test_data_cent[1], model_hdl)
+                    for i_label, label in enumerate(leg_labels):
+                        feat_imp[i_label].savefig(f'{PLOT_DIR}/train_test_out/feature_imp_training_{bin_df}_{label}.pdf')
+                    feat_imp[3].savefig(f'{PLOT_DIR}/train_test_out/feature_imp_training_{bin_df}_all.pdf')
+                    plot_utils.plot_roc_train_test(
+                        train_test_data_cent[3],
+                        test_y_score, train_test_data_cent[1],
+                        train_y_score, labels=leg_labels, multi_class_opt="ovr")
+                    plt.savefig(f'{PLOT_DIR}/train_test_out/roc_train_test_{bin_df}.pdf')
                     plt.close('all')
 
                 if COMPUTE_SCORES_FROM_EFF:

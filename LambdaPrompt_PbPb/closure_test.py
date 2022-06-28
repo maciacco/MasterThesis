@@ -10,12 +10,13 @@ import helpers
 import numpy as np
 import uproot
 
-SPLIT = False
+SPLIT = True
 N_TRIALS = 10000
 MAX_EFF = 1
 speed_of_light = 0.0299792458
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
+ROOT.EnableImplicitMT(40)
 ROOT.gROOT.SetBatch()
 
 bkg_function = ['pol','expo']
@@ -51,11 +52,13 @@ SPLIT_LIST = ['all']
 if SPLIT:
     SPLIT_LIST = ['antimatter', 'matter']
 
-raw_yields_file = ROOT.TFile('out_1_mc.root')
+raw_yields_file = ROOT.TFile('out_1_mc_split.root')
 score_eff_dict = pickle.load(open('second_round/file_score_eff_dict','rb'))
 eff_array = np.arange(0.10, MAX_EFF, 0.01)
 presel_eff_file = ROOT.TFile('PreselEff.root')
-f = ROOT.TFile("f.root","recreate")
+f = ROOT.TFile("f_split.root","recreate")
+
+df_MC = ROOT.RDataFrame("LambdaTree","/data/mciacco/LambdaPrompt_PbPb/mc.root")
 
 for split in SPLIT_LIST:
     split_ineq_sign = '> -0.1'
@@ -65,13 +68,13 @@ for split in SPLIT_LIST:
             split_ineq_sign = '< 0.5'
 
     for i_cent_bins in range(len(CENTRALITY_LIST)):
-        h = ROOT.TH1D("h","h",len(CT_BINS_CENT[i_cent_bins])-1,np.asarray(CT_BINS_CENT[i_cent_bins],dtype="float"))
-        h_pres_eff = presel_eff_file.Get("fPreselEff_vs_ct_all_0_90")
+        h = ROOT.TH1D(f"hYield_{split}",f"hYield_{split}",len(CT_BINS_CENT[i_cent_bins])-1,np.asarray(CT_BINS_CENT[i_cent_bins],dtype="float"))
+        h_pres_eff = presel_eff_file.Get(f"fPreselEff_vs_ct_{split}_0_90")
         cent_bins = CENTRALITY_LIST[i_cent_bins]
         for ct_bins in zip(CT_BINS_CENT[i_cent_bins][:-1], CT_BINS_CENT[i_cent_bins][1:]):
-            if ct_bins[0] < 5 or ct_bins[1] > 40:
+            if ct_bins[0] < 1 or ct_bins[1] > 40:
                 continue
-            h_raw = raw_yields_file.Get(f"all_0_0_{ct_bins[0]}_{ct_bins[1]}_bkg/fRawYields")
+            h_raw = raw_yields_file.Get(f"{split}_0_0_{ct_bins[0]}_{ct_bins[1]}_bkg/fRawYields")
             if not h_raw:
                 continue
             bin = f'{split}_{cent_bins[0]}_{cent_bins[1]}_{ct_bins[0]}_{ct_bins[1]}'
@@ -91,40 +94,29 @@ for split in SPLIT_LIST:
                 raw_yield_error = h_raw.GetBinError(h_raw.FindBin(0.861+i))
             h.SetBinContent(h.FindBin(0.5*(ct_bins[0]+ct_bins[1])),raw_yield/delta_t/h_pres_eff.GetBinContent(h.FindBin(0.5*(ct_bins[0]+ct_bins[1]))))
             h.SetBinError(h.FindBin(0.5*(ct_bins[0]+ct_bins[1])),raw_yield_error/delta_t/h_pres_eff.GetBinContent(h.FindBin(0.5*(ct_bins[0]+ct_bins[1]))))
-        h.Fit("expo","","I")
-        lifetime = ROOT.TLatex(10,1000,"#it{c}#tau = " + str(-1./h.GetFunction("expo").GetParameter(1)/speed_of_light) + " +/- "  + str(h.GetFunction("expo").GetParError(1)/h.GetFunction("expo").GetParameter(1)/h.GetFunction("expo").GetParameter(1)/speed_of_light) + " ps")
+        # h.Fit("expo","","I")
+        # lifetime = ROOT.TLatex(10,1000,"#it{c}#tau = " + str(-1./h.GetFunction("expo").GetParameter(1)/speed_of_light) + " +/- "  + str(h.GetFunction("expo").GetParError(1)/h.GetFunction("expo").GetParameter(1)/h.GetFunction("expo").GetParameter(1)/speed_of_light) + " ps")
+        bins = np.asarray(CT_BINS_CENT[i_cent_bins],dtype="float")
+        df_MC_gen = df_MC.Filter(f"matter {split_ineq_sign} && centrality > {cent_bins[0]} && centrality < {cent_bins[1]} && ptMC > 0.5 && ptMC < 3.5 && index_1 < 0.3 && flag == 1")
+        h_MC_gen_tmp = df_MC_gen.Histo1D((f"h_{split}",f"h_{split}",len(CT_BINS_CENT[i_cent_bins])-1,1,40),"ctMC")
+        delta_t = CT_BINS_CENT[i_cent_bins][1]-CT_BINS_CENT[i_cent_bins][0]
+        h_MC_gen = h_MC_gen_tmp.GetPtr()
+        h_MC_gen.Scale(1./delta_t)
         f.cd()
-        c = ROOT.TCanvas("lifetime","lifetime")
-        h.Draw()
-        lifetime.Draw("same")
+        c = ROOT.TCanvas(f"fYield_{split}",f"yield {split}")
+        c.SetLogy()
+        h_MC_gen.Draw()
+        h_MC_gen.GetXaxis().SetTitle("#it{c}t (cm)")
+        h_MC_gen.GetYaxis().SetTitle("d#it{N}/d(#it{c}t) (cm^{-1})")
+        leg = ROOT.TLegend()
+        leg.SetX1NDC(0.3)
+        leg.SetY1NDC(0.4)
+        leg.AddEntry(h_MC_gen,"generated","l")
+        leg.AddEntry(h,"reconstructed","l")
+        h.SetLineColor(ROOT.kRed)
+        h.Draw("same")
+        leg.Draw("same")
+        # lifetime.Draw("same")
         h.Write()
+        h_MC_gen.Write()
         c.Write()
-
-        # systematics
-        # h_sys = ROOT.TH1D("h_sys","h_sys",10000,0,1000)
-        # i=0
-        # while i < N_TRIALS:
-        #     h_tmp = ROOT.TH1D("h_tmp","h_tmp",80,0,40)
-        #     h_pres_eff = presel_eff_file.Get("fPreselEff_vs_ct_all_0_90")
-        #     cent_bins = CENTRALITY_LIST[i_cent_bins]
-        #     for ct_bins in zip(CT_BINS_CENT[i_cent_bins][:-1], CT_BINS_CENT[i_cent_bins][1:]):
-        #         if ct_bins[0] < 10 or ct_bins[1] > 40:
-        #             continue
-        #         cut_rndm = int(ROOT.gRandom.Rndm()*5)*0.04+0.76
-        #         bkg_index = int(ROOT.gRandom.Rndm())
-        #         h_raw = raw_yields_file.Get(f"all_0_0_{ct_bins[0]}_{ct_bins[1]}_{bkg_function[bkg_index]}/fRawYields")
-        #         if not h_raw:
-        #             continue
-        #         bin = f'{split}_{cent_bins[0]}_{cent_bins[1]}_{ct_bins[0]}_{ct_bins[1]}'
-        #         print(bin)
-
-        #         h_tmp.SetBinContent(h_tmp.FindBin(0.5*(ct_bins[0]+ct_bins[1])),h_raw.GetBinContent(h_raw.FindBin(cut_rndm+0.001))/h_pres_eff.GetBinContent(h_tmp.FindBin(0.5*(ct_bins[0]+ct_bins[1]))))
-        #         h_tmp.SetBinError(h_tmp.FindBin(0.5*(ct_bins[0]+ct_bins[1])),h_raw.GetBinError(h_raw.FindBin(cut_rndm+0.001))/h_pres_eff.GetBinContent(h_tmp.FindBin(0.5*(ct_bins[0]+ct_bins[1]))))
-            
-        #     h_tmp.Fit("expo")
-        #     i = i+1
-        #     if (h_tmp.GetFunction("expo").GetChisquare()/h_tmp.GetFunction("expo").GetNDF()>2.) or h_tmp.GetFunction("expo").GetNDF()<10:
-        #         continue
-        #     slope = h_tmp.GetFunction("expo").GetParameter(1)
-        #     h_sys.Fill(-1./slope/speed_of_light)
-        # h_sys.Write()
