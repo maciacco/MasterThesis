@@ -58,6 +58,9 @@ if SPLIT:
 score_eff_dict = pickle.load(open('file_score_eff_dict','rb'))
 eff_array = np.arange(0.10, MAX_EFF, 0.01)
 
+if not os.path.isdir("plots/signal_extraction"):
+    os.mkdir("plots/signal_extraction")
+
 for split in SPLIT_LIST:
     split_ineq_sign = '> -0.1'
     if SPLIT:
@@ -69,6 +72,8 @@ for split in SPLIT_LIST:
         # df_data = uproot.open(os.path.expandvars("/data/mciacco/LambdaPrompt_PbPb/AnalysisResults.root"))['LambdaTreeBDTOut'].arrays(library="pd")
 
         cent_bins = CENTRALITY_LIST[i_cent_bins]
+        if not os.path.isdir(f"plots/signal_extraction/{cent_bins[0]}_{cent_bins[1]}"):
+            os.mkdir(f"plots/signal_extraction/{cent_bins[0]}_{cent_bins[1]}")
         for ct_ in CT_BINS:
             if ct_[0] < 10 or ct_[1] > 40:
                 continue
@@ -81,7 +86,7 @@ for split in SPLIT_LIST:
                 for bkg_function in ['pol','expo']:
                     h_raw_yields = ROOT.TH1D("fRawYields","fRawYields",100,0,1)
 
-                    bin = f'{split}_{cent_bins[0]}_{cent_bins[1]}_{ct_[0]}_{ct_[1]}'
+                    bin = f'all_{cent_bins[0]}_{cent_bins[1]}_{ct_[0]}_{ct_[1]}'
                     df_data = pd.read_parquet(f'df/{bin}.parquet.gzip')
 
                     bin_mc_sig = f'mc_sig_all_{cent_bins[0]}_{cent_bins[1]}_{ct_[0]}_{ct_[1]}'
@@ -103,12 +108,12 @@ for split in SPLIT_LIST:
                     del df_mc_sig, df_mc_bkg
 
                     for bdt_score, bdt_eff in zip(score, eff_selected):
-                        if bdt_eff < 0.85 or bdt_eff > 0.87:
+                        if bdt_eff < 0.78 or bdt_eff > 0.84:
                             continue
                         print(f'processing {bin}: bkg cut = {bdt_score:.4f}')
 
                         # apply cut
-                        df_data_cut = df_data.query(f"model_output_0 < {bdt_score} and ct > {ct_bins[0]} and ct < {ct_bins[1]} and mass > 1.09 and mass < 1.15")
+                        df_data_cut = df_data.query(f"model_output_0 < {bdt_score} and ct > {ct_bins[0]} and ct < {ct_bins[1]} and mass > 1.09 and mass < 1.15 and matter {split_ineq_sign}")
                         df_mc_cut = df_mc.query(f"model_output_0 < {bdt_score} and ct > {ct_bins[0]} and ct < {ct_bins[1]} and mass > 1.09 and mass < 1.15")
                         # df_mc_no_bdt = df_mc.query(f"ct > {ct_bins[0]} and ct < {ct_bins[1]} and mass > 1.09 and mass < 1.15")
 
@@ -133,28 +138,28 @@ for split in SPLIT_LIST:
                         # mc_count_np = mc_non_prompt_bdt_non_prompt_out.count()
 
                         # fit to invariant mass
-                        inv_mass = ROOT.RooRealVar("m","m",1.09,1.15)
+                        inv_mass = ROOT.RooRealVar("m","#it{M} (p + #pi^{-})",1.09,1.15,"GeV/#it{c}^{2}")
                         inv_mass.setBins(50)
                         inv_mass_roo_data = helpers.ndarray2roo(data_inv_mass.to_numpy(),inv_mass)
                         inv_mass_data = ROOT.RooDataHist("db_m","db_m",ROOT.RooArgList(inv_mass),inv_mass_roo_data)
                         inv_mass_roo_mc = helpers.ndarray2roo(mc_inv_mass_sig.to_numpy(),inv_mass)
                         inv_mass_mc = ROOT.RooDataHist("db_m_mc","db_m_mc",ROOT.RooArgList(inv_mass),inv_mass_roo_mc)
-                        mass = ROOT.RooRealVar('mass','mass',1.11,1.12)
-                        sigma = ROOT.RooRealVar('sigma','sigma',0.001,0.005)
-                        alpha_left = ROOT.RooRealVar('alpha_left','alpha_left',0.,2.)
-                        alpha_right = ROOT.RooRealVar('alpha_right','alpha_right',0.,2.)
-                        n_left = ROOT.RooRealVar('n_left','n_left',0.,15.)
-                        n_right = ROOT.RooRealVar('n_right','n_right',0.,15.)
-                        par_a = ROOT.RooRealVar('a','a',-20.,20.)
-                        par_b = ROOT.RooRealVar('b','b',-20.,20.)
-                        slope = ROOT.RooRealVar('slope','slope',-20.,20.)
+                        mass = ROOT.RooRealVar('#it{m}_{#Lambda}','mass',1.11,1.12,"GeV/#it{c}^{2}")
+                        sigma = ROOT.RooRealVar('#sigma','sigma',0.001,0.005,"GeV/#it{c}^{2}")
+                        alpha_left = ROOT.RooRealVar('#alpha_{left}','alpha_left',0.,2.)
+                        alpha_right = ROOT.RooRealVar('#alpha_{right}','alpha_right',0.,2.)
+                        n_left = ROOT.RooRealVar('n_{left}','n_left',0.,15.)
+                        n_right = ROOT.RooRealVar('n_{right}','n_right',0.,15.)
+                        par_a = ROOT.RooRealVar('a','a',-20.,20.,"#it{c}^{2}/GeV")
+                        par_b = ROOT.RooRealVar('b','b',-20.,20.,"#it{c}^{4}/GeV^{2}")
+                        slope = ROOT.RooRealVar('slope','slope',-20.,20.,"#it{c}^{2}/GeV")
                         #signal_pdf = ROOT.RooGaussian('signal','signal',inv_mass,mass,sigma)
                         signal_pdf = ROOT.RooDSCBShape('signal','signal',inv_mass,mass,sigma,alpha_left,n_left,alpha_right,n_right)
                         bkg_pdf = ROOT.RooPolynomial('bkg','bkg',inv_mass,ROOT.RooArgList(par_a,par_b))
                         if bkg_function == 'expo':
                             bkg_pdf = ROOT.RooExponential('bkg','bkg',inv_mass,slope)
-                        w_signal = ROOT.RooRealVar("w_signal","w_signal",0.,1.)
-                        n_tot = ROOT.RooRealVar("n_tot","n_tot",0.,1.e8)
+                        w_signal = ROOT.RooRealVar("#it{f}_{signal}","w_signal",0.,1.)
+                        n_tot = ROOT.RooRealVar("#it{N}_{tot}","n_tot",0.,1.e8)
                         model_mass_ = ROOT.RooAddPdf("model_mass_","model_mass_",signal_pdf,bkg_pdf,w_signal)
                         model_mass = ROOT.RooAddPdf("model_mass","model_mass",ROOT.RooArgList(model_mass_),ROOT.RooArgList(n_tot))
                         model_mass.fitTo(inv_mass_data)
@@ -187,7 +192,8 @@ for split in SPLIT_LIST:
                         # bdt_mc_bkg_pdf = ROOT.RooHistPdf("dbpdf", "dbpdf", ROOT.RooArgList(bdt_out), bdt_mc_bkg)
                         bdt_mc_bkg_pdf = ROOT.RooParamHistFunc("dbpdf", "dbpdf", bdt_mc_bkg)
                         frame = bdt_out.frame(ROOT.RooFit.Name(f"fBDTOutNonPrompt_{ct_bins[0]}_{ct_bins[1]}_{bdt_eff:.2f}"))
-                        w_non_prompt = ROOT.RooRealVar("w_non_prompt","w_non_prompt",0.,1.)
+                        frame.SetTitle(str(ct_bins[0]) + " #leq #it{c}t < " + str(ct_bins[1]) + " cm")
+                        w_non_prompt = ROOT.RooRealVar("#it{f}_{non-prompt}","w_non_prompt",0.,1.)
                         #model_signal = ROOT.RooAddPdf("model_signal","model_signal",bdt_mc_non_prompt_pdf,bdt_mc_prompt_pdf,w_non_prompt)
                         #model = ROOT.RooAddPdf("model","model",model_signal,bdt_mc_bkg_pdf,w_signal)
                         
@@ -229,28 +235,48 @@ for split in SPLIT_LIST:
 
                         # mass plot
                         frame_mass = inv_mass.frame(ROOT.RooFit.Name(f"fMass_{ct_bins[0]}_{ct_bins[1]}_{bdt_eff:.2f}"))
+                        frame_mass.SetTitle(f"BDT eff = {bdt_eff:.2f}")
                         inv_mass_data.plotOn(frame_mass,ROOT.RooFit.Name("inv_mass_data"))
                         model_mass.plotOn(frame_mass,ROOT.RooFit.Components("bkg"),ROOT.RooFit.Name('background'),ROOT.RooFit.LineStyle(ROOT.kDashed),ROOT.RooFit.LineColor(ROOT.kGreen))
                         model_mass.plotOn(frame_mass,ROOT.RooFit.Components("signal"),ROOT.RooFit.Name('signal'),ROOT.RooFit.LineStyle(ROOT.kDashed),ROOT.RooFit.LineColor(ROOT.kRed))
                         model_mass.plotOn(frame_mass,ROOT.RooFit.Name('model_mass'))
-                        model_mass.paramOn(frame_mass, ROOT.RooFit.Label("#chi^{2}/NDF = " + "{:.2f}".format(frame_mass.chiSquare("model_mass", "inv_mass_data"))), ROOT.RooFit.Layout(0.58812,0.911028,0.861955))
+                        model_mass.paramOn(frame_mass, ROOT.RooFit.Label("#chi^{2}/NDF = " + "{:.2f}".format(frame_mass.chiSquare("model_mass", "inv_mass_data"))), ROOT.RooFit.Layout(0.546084,0.867801,0.883868))
                 
                         # bdt plot
-                        bdt_data.plotOn(frame)
+                        bdt_data.plotOn(frame,ROOT.RooFit.Name("bdt_out_data"))
                         model.plotOn(frame,ROOT.RooFit.Components('dbpdf_'),ROOT.RooFit.Name('background'),ROOT.RooFit.LineStyle(ROOT.kDashed),ROOT.RooFit.LineColor(ROOT.kGreen))
                         model.plotOn(frame,ROOT.RooFit.Components('dnppdf_'),ROOT.RooFit.Name('non-prompt'),ROOT.RooFit.LineStyle(ROOT.kDashed),ROOT.RooFit.LineColor(ROOT.kOrange))
                         model.plotOn(frame,ROOT.RooFit.Components('dppdf_'),ROOT.RooFit.Name('prompt'),ROOT.RooFit.LineStyle(ROOT.kDashed),ROOT.RooFit.LineColor(ROOT.kRed))
                         model.plotOn(frame,ROOT.RooFit.Name('model'),ROOT.RooFit.LineColor(ROOT.kBlue))
+                        model.paramOn(frame, ROOT.RooFit.Parameters((w_signal,w_non_prompt)), ROOT.RooFit.Label("#chi^{2}/NDF = " + "{:.2f}".format(frame.chiSquare("model", "bdt_out_data"))), ROOT.RooFit.Layout(0.14959,0.47130,0.860544))
 
-                        f = ROOT.TFile("out_1_bb_.root","update")
+                        f = ROOT.TFile("out_1_bb__.root","update")
                         f.cd()
-                        f.mkdir(f'{split}_{cent_bins[0]}_{cent_bins[0]}_{ct_bins[0]}_{ct_bins[1]}_{bkg_function}')
-                        f.cd(f'{split}_{cent_bins[0]}_{cent_bins[0]}_{ct_bins[0]}_{ct_bins[1]}_{bkg_function}')
+                        f.mkdir(f'{split}_{cent_bins[0]}_{cent_bins[1]}_{ct_bins[0]}_{ct_bins[1]}_{bkg_function}')
+                        f.cd(f'{split}_{cent_bins[0]}_{cent_bins[1]}_{ct_bins[0]}_{ct_bins[1]}_{bkg_function}')
+                        frame.getAttText().SetTextFont(44)
+                        frame.getAttText().SetTextSize(15)
+                        frame.getAttLine().SetLineWidth(0)
                         frame.Write()
+                        frame_mass.getAttText().SetTextFont(44)
+                        frame_mass.getAttText().SetTextSize(15)
+                        frame_mass.getAttLine().SetLineWidth(0)
                         frame_mass.Write()
                         # h_p.Write()
                         # h_np.Write()
                         # h_b.Write()
+                        c_sim_fit = ROOT.TCanvas(f"cSimFit_{ct_bins[0]}_{ct_bins[1]}_{bdt_eff:.2f}",f"cSimFit_{ct_bins[0]}_{ct_bins[1]}_{bdt_eff:.2f}",1200,550)
+                        c_sim_fit.Divide(2,1)
+                        c_sim_fit.cd(1)
+                        frame.Draw()
+                        c_sim_fit.cd(2)
+                        frame_mass.Draw()
+
+                        if not os.path.isdir(f"plots/signal_extraction/{cent_bins[0]}_{cent_bins[1]}/{ct_bins[0]}_{ct_bins[1]}_BB"):
+                            os.mkdir(f"plots/signal_extraction/{cent_bins[0]}_{cent_bins[1]}/{ct_bins[0]}_{ct_bins[1]}_BB")
+                        c_sim_fit.Print(f"plots/signal_extraction/{cent_bins[0]}_{cent_bins[1]}/{ct_bins[0]}_{ct_bins[1]}_BB/{split}_{bkg_function}_{bdt_eff:.2f}.pdf")
+                        c_sim_fit.Write()
+
                         f.Close()
 
                         h_raw_yields.SetBinContent(h_raw_yields.FindBin(bdt_eff+0.0001),n_tot.getVal()*w_signal.getVal()*(1-w_non_prompt.getVal())/bdt_eff)
@@ -270,7 +296,7 @@ for split in SPLIT_LIST:
                         h_raw_yields.SetBinError(h_raw_yields.FindBin(bdt_eff+0.0001),np.sqrt(var_N)/bdt_eff)
                         #print(f'Non-prompt / prompt = {mc_count_np/(mc_count_p+mc_count_np)}')
 
-                    f = ROOT.TFile("out_1_bb_.root","update")
-                    f.cd(f'{split}_{cent_bins[0]}_{cent_bins[0]}_{ct_bins[0]}_{ct_bins[1]}_{bkg_function}')
+                    f = ROOT.TFile("out_1_bb__.root","update")
+                    f.cd(f'{split}_{cent_bins[0]}_{cent_bins[1]}_{ct_bins[0]}_{ct_bins[1]}_{bkg_function}')
                     h_raw_yields.Write()
                     f.Close()

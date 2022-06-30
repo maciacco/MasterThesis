@@ -332,7 +332,7 @@ if TRAINING:
                 if MAKE_TRAIN_TEST_PLOT and not MAKE_PRESELECTION_EFFICIENCY:
                     if not os.path.isdir(f'{PLOT_DIR}/train_test_out'):
                         os.mkdir(f'{PLOT_DIR}/train_test_out')
-                    out_figs = plot_utils.plot_output_train_test(model_hdl, train_test_data_cent, bins=25,
+                    out_figs = plot_utils.plot_output_train_test(model_hdl, train_test_data_cent, bins=50,
                                                     logscale=True, density=True, labels=leg_labels, output_margin=False)
                     for i_label, label in enumerate(leg_labels):
                         out_figs[i_label].savefig(f'{PLOT_DIR}/train_test_out/{bin_df}_out_{label}.pdf')

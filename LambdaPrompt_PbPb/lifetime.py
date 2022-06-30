@@ -78,17 +78,17 @@ for split in SPLIT_LIST:
             print(bin)
 
             delta_t = ct_bins[1]-ct_bins[0]
-            raw_yield = h_raw.GetBinContent(h_raw.FindBin(0.861))
-            raw_yield_error = h_raw.GetBinError(h_raw.FindBin(0.861))
+            raw_yield = h_raw.GetBinContent(h_raw.FindBin(0.801))
+            raw_yield_error = h_raw.GetBinError(h_raw.FindBin(0.801))
             i = 0.
-            while raw_yield < 1.e-6 and (0.861+i < 0.95):
+            while raw_yield < 1.e-6 and (0.801+i < 0.9):
                 i = i + 0.01
-                raw_yield = h_raw.GetBinContent(h_raw.FindBin(0.861+i))
-                raw_yield_error = h_raw.GetBinError(h_raw.FindBin(0.861+i))
-            while raw_yield < 1.e-6 and (0.861+i > 0.76):
+                raw_yield = h_raw.GetBinContent(h_raw.FindBin(0.801+i))
+                raw_yield_error = h_raw.GetBinError(h_raw.FindBin(0.801+i))
+            while raw_yield < 1.e-6 and (0.801+i > 0.7):
                 i = i - 0.01
-                raw_yield = h_raw.GetBinContent(h_raw.FindBin(0.861+i))
-                raw_yield_error = h_raw.GetBinError(h_raw.FindBin(0.861+i))
+                raw_yield = h_raw.GetBinContent(h_raw.FindBin(0.801+i))
+                raw_yield_error = h_raw.GetBinError(h_raw.FindBin(0.801+i))
             h.SetBinContent(h.FindBin(0.5*(ct_bins[0]+ct_bins[1])),raw_yield/delta_t/h_pres_eff.GetBinContent(h.FindBin(0.5*(ct_bins[0]+ct_bins[1]))))
             h.SetBinError(h.FindBin(0.5*(ct_bins[0]+ct_bins[1])),raw_yield_error/delta_t/h_pres_eff.GetBinContent(h.FindBin(0.5*(ct_bins[0]+ct_bins[1]))))
         h.Fit("expo","","I")
@@ -110,7 +110,7 @@ for split in SPLIT_LIST:
         #     for ct_bins in zip(CT_BINS_CENT[i_cent_bins][:-1], CT_BINS_CENT[i_cent_bins][1:]):
         #         if ct_bins[0] < 10 or ct_bins[1] > 40:
         #             continue
-        #         cut_rndm = int(ROOT.gRandom.Rndm()*5)*0.04+0.76
+        #         cut_rndm = int(ROOT.gRandom.Rndm()*5)*0.04+0.7
         #         bkg_index = int(ROOT.gRandom.Rndm())
         #         h_raw = raw_yields_file.Get(f"all_0_0_{ct_bins[0]}_{ct_bins[1]}_{bkg_function[bkg_index]}/fRawYields")
         #         if not h_raw:

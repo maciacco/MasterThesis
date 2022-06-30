@@ -52,11 +52,11 @@ SPLIT_LIST = ['all']
 if SPLIT:
     SPLIT_LIST = ['antimatter', 'matter']
 
-raw_yields_file = ROOT.TFile('out_1_mc_split.root')
+raw_yields_file = ROOT.TFile('out_1_mc_bb_split_splitMC.root')
 score_eff_dict = pickle.load(open('second_round/file_score_eff_dict','rb'))
 eff_array = np.arange(0.10, MAX_EFF, 0.01)
 presel_eff_file = ROOT.TFile('PreselEff.root')
-f = ROOT.TFile("f_split.root","recreate")
+f = ROOT.TFile("f_split_bb_splitMC.root","recreate")
 
 df_MC = ROOT.RDataFrame("LambdaTree","/data/mciacco/LambdaPrompt_PbPb/mc.root")
 
@@ -69,6 +69,7 @@ for split in SPLIT_LIST:
 
     for i_cent_bins in range(len(CENTRALITY_LIST)):
         h = ROOT.TH1D(f"hYield_{split}",f"hYield_{split}",len(CT_BINS_CENT[i_cent_bins])-1,np.asarray(CT_BINS_CENT[i_cent_bins],dtype="float"))
+        hDiff = ROOT.TH1D(f"hDiff_{split}",f"hDiff_{split}",len(CT_BINS_CENT[i_cent_bins])-1,np.asarray(CT_BINS_CENT[i_cent_bins],dtype="float"))
         h_pres_eff = presel_eff_file.Get(f"fPreselEff_vs_ct_{split}_0_90")
         cent_bins = CENTRALITY_LIST[i_cent_bins]
         for ct_bins in zip(CT_BINS_CENT[i_cent_bins][:-1], CT_BINS_CENT[i_cent_bins][1:]):
@@ -94,6 +95,8 @@ for split in SPLIT_LIST:
                 raw_yield_error = h_raw.GetBinError(h_raw.FindBin(0.861+i))
             h.SetBinContent(h.FindBin(0.5*(ct_bins[0]+ct_bins[1])),raw_yield/delta_t/h_pres_eff.GetBinContent(h.FindBin(0.5*(ct_bins[0]+ct_bins[1]))))
             h.SetBinError(h.FindBin(0.5*(ct_bins[0]+ct_bins[1])),raw_yield_error/delta_t/h_pres_eff.GetBinContent(h.FindBin(0.5*(ct_bins[0]+ct_bins[1]))))
+            hDiff.SetBinContent(hDiff.FindBin(0.5*(ct_bins[0]+ct_bins[1])),raw_yield/delta_t/h_pres_eff.GetBinContent(hDiff.FindBin(0.5*(ct_bins[0]+ct_bins[1]))))
+            hDiff.SetBinError(hDiff.FindBin(0.5*(ct_bins[0]+ct_bins[1])),raw_yield_error/delta_t/h_pres_eff.GetBinContent(hDiff.FindBin(0.5*(ct_bins[0]+ct_bins[1]))))
         # h.Fit("expo","","I")
         # lifetime = ROOT.TLatex(10,1000,"#it{c}#tau = " + str(-1./h.GetFunction("expo").GetParameter(1)/speed_of_light) + " +/- "  + str(h.GetFunction("expo").GetParError(1)/h.GetFunction("expo").GetParameter(1)/h.GetFunction("expo").GetParameter(1)/speed_of_light) + " ps")
         bins = np.asarray(CT_BINS_CENT[i_cent_bins],dtype="float")
@@ -103,6 +106,10 @@ for split in SPLIT_LIST:
         delta_t = CT_BINS_CENT[i_cent_bins][1]-CT_BINS_CENT[i_cent_bins][0]
         h_MC_gen = h_MC_gen_tmp.GetPtr()
         h_MC_gen.Scale(1./delta_t)
+        for ct_bins in zip(CT_BINS_CENT[i_cent_bins][:-1], CT_BINS_CENT[i_cent_bins][1:]):
+            if hDiff.GetBinContent(hDiff.FindBin(0.5*(ct_bins[0]+ct_bins[1])))<1.e-6:
+                continue
+            hDiff.SetBinContent(hDiff.FindBin(0.5*(ct_bins[0]+ct_bins[1])),hDiff.GetBinContent(hDiff.FindBin(0.5*(ct_bins[0]+ct_bins[1])))-h_MC_gen.GetBinContent(hDiff.FindBin(0.5*(ct_bins[0]+ct_bins[1]))))
         f.cd()
         h_MC_gen_tmp_pt.Write()
         c = ROOT.TCanvas(f"fYield_{split}",f"yield {split}")
@@ -122,4 +129,7 @@ for split in SPLIT_LIST:
         h.Write()
         h_MC_gen.Write()
         c.Write()
-        del h, h_MC_gen
+        hDiff.GetXaxis().SetTitle("#it{c}t (cm)")
+        hDiff.GetYaxis().SetTitle("d#it{N}_{rec} / d(#it{c}t) - d#it{N}_{gen} / d(#it{c}t) (cm^{-1})")
+        hDiff.Write()
+        del h, h_MC_gen, hDiff
