@@ -63,7 +63,7 @@ DUMP_HYPERPARAMS = False
 TRAINING = not args.application
 PLOT_DIR = 'plots'
 MAKE_PRESELECTION_EFFICIENCY = args.eff
-MAKE_FEATURES_PLOTS = True
+MAKE_FEATURES_PLOTS = False
 MAKE_TRAIN_TEST_PLOT = args.train
 OPTIMIZE = False
 OPTIMIZED = False
@@ -109,7 +109,7 @@ if SPLIT:
 
 if TRAINING:
 
-    df_signal = uproot.open("/data/mciacco/LambdaPrompt_PbPb/AnalysisResults_fullMC.root")['LambdaTree'].arrays(library="pd")
+    df_signal = uproot.open("/data/mciacco/Lambda_PbPb/mc_20e3a.root")['XiOmegaTree'].arrays(library="pd")
 
     # make plot directory
     if not os.path.isdir(PLOT_DIR):
@@ -134,11 +134,11 @@ if TRAINING:
                 ##############################################################
                 # PRESELECTION EFFICIENCY
                 ##############################################################
-                # df_generated = uproot.open(os.path.expandvars(MC_SIGNAL_PATH_GEN))['LambdaTree'].arrays(library="pd")
+                # df_generated = uproot.open(os.path.expandvars(MC_SIGNAL_PATH_GEN))['XiOmegaTree'].arrays(library="pd")
                 df_signal_cent = df_signal.query(
-                    f'matter {split_ineq_sign} and centrality > {cent_bins[0]} and centrality < {cent_bins[1]} and pt > 0.5 and pt < 3.5 and isReconstructed and tpcClV0Pi > 69 and tpcClV0Pr > 69 and radius > 3 and radius < 100 and dcaPrPV < 20 and dcaPiPV < 20 and dcaV0PV < 10 and eta < 0.8 and eta > -0.8 and flag==1') # pt cut?
+                    f'matter {split_ineq_sign} and centrality > {cent_bins[0]} and centrality < {cent_bins[1]} and pt > 0.5 and pt < 4.5 and isReconstructed and tpcClV0Pi > 69 and tpcClV0Pr > 69 and radius > 3 and radius < 100 and dcaPrPV < 20 and dcaPiPV < 20 and dcaV0PV < 10 and eta < 0.8 and eta > -0.8 and (pdg==3334 or pdg==-3334)') # pt cut?
                 df_generated_cent = df_signal.query(
-                    f'pdg {split_ineq_sign} and centrality > {cent_bins[0]} and centrality < {cent_bins[1]} and ptMC > 0.5 and ptMC < 3.5 and flag==1') # pt cut?
+                    f'pdg {split_ineq_sign} and centrality > {cent_bins[0]} and centrality < {cent_bins[1]} and ptMC > 0.5 and ptMC < 4.5 and (pdg==3334 or pdg==-3334)') # pt cut?
                 #del df_generated
 
                 # fill histograms (vs. ct and vs. pt)
@@ -157,7 +157,7 @@ if TRAINING:
                 hist_eff_pt.Draw("histo")
                 c1.Print(f'{PLOT_DIR}/presel_eff/hPreselEffVsPt_{split}_{cent_bins[0]}_{cent_bins[1]}.pdf')
 
-                root_file_presel_eff = ROOT.TFile("PreselEff_0_5.root", "update")
+                root_file_presel_eff = ROOT.TFile("PreselEff.root", "update")
                 hist_eff_ct.Write()
                 hist_eff_pt.Write()
                 root_file_presel_eff.Close()
@@ -168,53 +168,46 @@ if TRAINING:
         ######################################################################
 
     del df_signal
-    df_signal = uproot.open(os.path.expandvars("/data/mciacco/LambdaPrompt_PbPb/AnalysisResults_fullMC.root"))['LambdaTree'].arrays(library="pd")
+    df_signal = uproot.open(os.path.expandvars("/data/mciacco/Lambda_PbPb/mc_20e3abc.root"))['XiOmegaTree'].arrays(library="pd")
     # second condition needed because of issue with Qt libraries
     if MAKE_FEATURES_PLOTS and not MAKE_PRESELECTION_EFFICIENCY and not TRAIN:
         ######################################################
         # PLOT FEATURES DISTRIBUTIONS AND CORRELATIONS
         ######################################################
 
-        df_background = uproot.open(os.path.expandvars("/data/mciacco/LambdaPrompt_PbPb/trainingBackground.root"))['LambdaTree'].arrays(library="pd")
-        df_prompt_ct = df_signal.query(f'pt > 0 and pt < 3.5 and flag==1 and isReconstructed and tpcClV0Pi > 69 and tpcClV0Pr > 69 and radius > 3 and radius < 100 and dcaPrPV < 20 and dcaPiPV < 20 and dcaV0PV < 10 and eta < 0.8 and eta > -0.8') # pt cut?
-        df_non_prompt_ct = df_signal.query(f'pt > 0 and pt < 3.5 and (flag==2 or flag==4) and isReconstructed and tpcClV0Pi > 69 and tpcClV0Pr > 69 and radius > 3 and radius < 100 and dcaPrPV < 20 and dcaPiPV < 20 and dcaV0PV < 10 and eta < 0.8 and eta > -0.8') # pt cut?
-        df_background_ct = df_background.query(f'pt > 0 and pt < 3.5 and tpcClV0Pi > 69 and tpcClV0Pr > 69 and radius > 3 and radius < 100 and dcaPrPV < 20 and dcaPiPV < 20 and dcaV0PV < 10 and eta < 0.8 and eta > -0.8') # pt cut?
-        #print(df_prompt_ct.keys())
+        df_background = uproot.open(os.path.expandvars("/data/mciacco/Lambda_PbPb/data.root"))['XiOmegaTree'].arrays(library="pd")
+        df_signal_ct = df_signal.query(f'pt > 0 and pt < 4.5 and (pdg==3334 or pdg==-3334) and isReconstructed and tpcClV0Pi > 69 and tpcClV0Pr > 69 and radius > 3 and radius < 100 and dcaPrPV < 20 and dcaPiPV < 20 and dcaV0PV < 10 and eta < 0.8 and eta > -0.8') # pt cut?
+        df_background_ct = df_background.query(f'pt > 0 and pt < 4.5 and (mass < 1.55 || mass > 1.75) and tpcClV0Pi > 69 and tpcClV0Pr > 69 and radius > 3 and radius < 100 and dcaPrPV < 20 and dcaPiPV < 20 and dcaV0PV < 10 and eta < 0.8 and eta > -0.8') # pt cut?
+        #print(df_signal_ct.keys())
         #print(df_background_ct.keys())
 
         # define tree handlers
-        prompt_tree_handler = TreeHandler()
-        non_prompt_tree_handler = TreeHandler()
+        signal_tree_handler = TreeHandler()
         background_tree_handler = TreeHandler()
-        prompt_tree_handler.set_data_frame(df_prompt_ct)
-        non_prompt_tree_handler.set_data_frame(df_non_prompt_ct)
+        signal_tree_handler.set_data_frame(df_signal_ct)
         background_tree_handler.set_data_frame(df_background_ct)
-        del df_prompt_ct, df_non_prompt_ct, df_background_ct
+        del df_signal_ct,  df_background_ct
 
         if not os.path.isdir(f'{PLOT_DIR}/features'):
             os.mkdir(f'{PLOT_DIR}/features')
 
-        leg_labels = ['background', 'non-prompt', 'prompt']
+        leg_labels = ['background', 'signal']
         plot_distr = plot_utils.plot_distr(
-            [background_tree_handler, non_prompt_tree_handler, prompt_tree_handler],
+            [background_tree_handler, signal_tree_handler],
             TRAINING_COLUMNS_LIST, bins=40, labels=leg_labels, log=True, density=True, figsize=(12, 12),
             alpha=0.5, grid=False)
         plt.subplots_adjust(left=0.06, bottom=0.06, right=0.99, top=0.96, hspace=0.50, wspace=0.50)
         plt.tight_layout()
-        plt.savefig(f'{PLOT_DIR}/features/FeaturePlots_fullMC.pdf')
+        plt.savefig(f'{PLOT_DIR}/features/FeaturePlots.pdf')
         bkg_corr = plot_utils.plot_corr([background_tree_handler], TRAINING_COLUMNS_LIST, ['Background'])
         bkg_corr.set_size_inches(6,6)
         plt.subplots_adjust(left=0.1, bottom=0.06, right=0.99, top=0.96, hspace=0.55, wspace=0.55)
         plt.tight_layout()
-        plt.savefig(f'{PLOT_DIR}/features/BackgroundCorrelationMatrix_fullMC.pdf')
-        np_corr = plot_utils.plot_corr([non_prompt_tree_handler], TRAINING_COLUMNS_LIST, ['Non-prompt'])
-        np_corr.set_size_inches(6,6)
-        plt.tight_layout()
-        plt.savefig(f'{PLOT_DIR}/features/NonPromptCorrelationMatrix_fullMC.pdf')
-        p_corr = plot_utils.plot_corr([prompt_tree_handler], TRAINING_COLUMNS_LIST, ['Prompt'])
+        plt.savefig(f'{PLOT_DIR}/features/BackgroundCorrelationMatrix.pdf')
+        p_corr = plot_utils.plot_corr([signal_tree_handler], TRAINING_COLUMNS_LIST, ['signal'])
         p_corr.set_size_inches(6,6)
         plt.tight_layout()
-        plt.savefig(f'{PLOT_DIR}/features/PromptCorrelationMatrix_fullMC.pdf')
+        plt.savefig(f'{PLOT_DIR}/features/SignalCorrelationMatrix.pdf')
         plt.close('all')
 
         ###########################################################

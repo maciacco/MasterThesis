@@ -10,8 +10,8 @@ import helpers
 import numpy as np
 import uproot
 
-SPLIT = False
-N_TRIALS = 10000
+SPLIT = True
+N_TRIALS = 100
 MAX_EFF = 1
 speed_of_light = 0.0299792458
 
@@ -51,11 +51,11 @@ SPLIT_LIST = ['all']
 if SPLIT:
     SPLIT_LIST = ['antimatter', 'matter']
 
-raw_yields_file = ROOT.TFile('out_1_mc.root')
+raw_yields_file = ROOT.TFile('fit_lambda_splitCentInMC_saveHistos_0_5.root')
 score_eff_dict = pickle.load(open('second_round/file_score_eff_dict','rb'))
 eff_array = np.arange(0.10, MAX_EFF, 0.01)
 presel_eff_file = ROOT.TFile('PreselEff.root')
-f = ROOT.TFile("f.root","recreate")
+f = ROOT.TFile("lifetime_lambda_0_5_splitCentInMC__saveHistos_0_5.root","recreate")
 
 for split in SPLIT_LIST:
     split_ineq_sign = '> -0.1'
@@ -65,13 +65,13 @@ for split in SPLIT_LIST:
             split_ineq_sign = '< 0.5'
 
     for i_cent_bins in range(len(CENTRALITY_LIST)):
-        h = ROOT.TH1D("h","h",len(CT_BINS_CENT[i_cent_bins])-1,np.asarray(CT_BINS_CENT[i_cent_bins],dtype="float"))
-        h_pres_eff = presel_eff_file.Get("fPreselEff_vs_ct_all_0_90")
+        h = ROOT.TH1D(f"h_{split}",f"h_{split}",len(CT_BINS_CENT[i_cent_bins])-1,np.asarray(CT_BINS_CENT[i_cent_bins],dtype="float"))
         cent_bins = CENTRALITY_LIST[i_cent_bins]
+        h_pres_eff = presel_eff_file.Get(f"fPreselEff_vs_ct_{split}_{cent_bins[0]}_{cent_bins[1]};2")
         for ct_bins in zip(CT_BINS_CENT[i_cent_bins][:-1], CT_BINS_CENT[i_cent_bins][1:]):
-            if ct_bins[0] < 5 or ct_bins[1] > 40:
+            if (ct_bins[0] < 8 or ct_bins[1] > 40): # or (ct_bins[0] > 32 and ct_bins[1] < 35):
                 continue
-            h_raw = raw_yields_file.Get(f"all_0_0_{ct_bins[0]}_{ct_bins[1]}_bkg/fRawYields")
+            h_raw = raw_yields_file.Get(f"{split}_{cent_bins[0]}_{cent_bins[1]}_{ct_bins[0]}_{ct_bins[1]}_pol/fRawYields_pol")
             if not h_raw:
                 continue
             bin = f'{split}_{cent_bins[0]}_{cent_bins[1]}_{ct_bins[0]}_{ct_bins[1]}'
@@ -80,39 +80,41 @@ for split in SPLIT_LIST:
             delta_t = ct_bins[1]-ct_bins[0]
             raw_yield = h_raw.GetBinContent(h_raw.FindBin(0.801))
             raw_yield_error = h_raw.GetBinError(h_raw.FindBin(0.801))
-            i = 0.
-            while raw_yield < 1.e-6 and (0.801+i < 0.9):
-                i = i + 0.01
-                raw_yield = h_raw.GetBinContent(h_raw.FindBin(0.801+i))
-                raw_yield_error = h_raw.GetBinError(h_raw.FindBin(0.801+i))
-            while raw_yield < 1.e-6 and (0.801+i > 0.7):
-                i = i - 0.01
+            j = 0
+            i = np.power(-1,j)*0.01*int(j/2)
+            while raw_yield < 1.e-6 and (0.801+i < 0.9) and (0.801+i > 0.7):
+                i = np.power(-1,j)*0.01*int(j/2)
+                j = j + 1
                 raw_yield = h_raw.GetBinContent(h_raw.FindBin(0.801+i))
                 raw_yield_error = h_raw.GetBinError(h_raw.FindBin(0.801+i))
             h.SetBinContent(h.FindBin(0.5*(ct_bins[0]+ct_bins[1])),raw_yield/delta_t/h_pres_eff.GetBinContent(h.FindBin(0.5*(ct_bins[0]+ct_bins[1]))))
             h.SetBinError(h.FindBin(0.5*(ct_bins[0]+ct_bins[1])),raw_yield_error/delta_t/h_pres_eff.GetBinContent(h.FindBin(0.5*(ct_bins[0]+ct_bins[1]))))
         h.Fit("expo","","I")
-        lifetime = ROOT.TLatex(10,1000,"#it{c}#tau = " + str(-1./h.GetFunction("expo").GetParameter(1)/speed_of_light) + " +/- "  + str(h.GetFunction("expo").GetParError(1)/h.GetFunction("expo").GetParameter(1)/h.GetFunction("expo").GetParameter(1)/speed_of_light) + " ps")
+        h.GetXaxis().SetTitle("#it{c}t (cm)")
+        h.GetYaxis().SetTitle("d#it{N}/d(#it{c}t) (cm^{-1})")
+        lifetime = ROOT.TLatex(1,1000,"#it{c}#tau = " + str(-1./h.GetFunction("expo").GetParameter(int(1))/speed_of_light) + " +/- "  + str(h.GetFunction("expo").GetParError(1)/h.GetFunction("expo").GetParameter(1)/h.GetFunction("expo").GetParameter(1)/speed_of_light) + " ps")
         f.cd()
-        c = ROOT.TCanvas("lifetime","lifetime")
+        c = ROOT.TCanvas(f"lifetime_{split}",f"lifetime_{split}")
         h.Draw()
         lifetime.Draw("same")
         h.Write()
+        c.SetLogy()
         c.Write()
+        c.Print(f"plots/lifetime_{split}_{cent_bins[0]}_{cent_bins[1]}.png")
 
         # systematics
-        # h_sys = ROOT.TH1D("h_sys","h_sys",10000,0,1000)
+        # h_sys = ROOT.TH1D(f"h_sys_{split}",f"h_sys_{split}",10000,0,1000)
         # i=0
         # while i < N_TRIALS:
-        #     h_tmp = ROOT.TH1D("h_tmp","h_tmp",80,0,40)
-        #     h_pres_eff = presel_eff_file.Get("fPreselEff_vs_ct_all_0_90")
+        #     h_tmp = ROOT.TH1D("h_tmp","h_tmp",len(CT_BINS_CENT[i_cent_bins])-1,np.asarray(CT_BINS_CENT[i_cent_bins],dtype="float"))
         #     cent_bins = CENTRALITY_LIST[i_cent_bins]
+        #     h_pres_eff = presel_eff_file.Get(f"fPreselEff_vs_ct_{split}_{cent_bins[0]}_{cent_bins[1]}")
         #     for ct_bins in zip(CT_BINS_CENT[i_cent_bins][:-1], CT_BINS_CENT[i_cent_bins][1:]):
         #         if ct_bins[0] < 10 or ct_bins[1] > 40:
         #             continue
         #         cut_rndm = int(ROOT.gRandom.Rndm()*5)*0.04+0.7
         #         bkg_index = int(ROOT.gRandom.Rndm())
-        #         h_raw = raw_yields_file.Get(f"all_0_0_{ct_bins[0]}_{ct_bins[1]}_{bkg_function[bkg_index]}/fRawYields")
+        #         h_raw = raw_yields_file.Get(f"{split}_{cent_bins[0]}_{cent_bins[1]}_{ct_bins[0]}_{ct_bins[1]}_{bkg_function[bkg_index]}/fRawYields_{bkg_function[bkg_index]}")
         #         if not h_raw:
         #             continue
         #         bin = f'{split}_{cent_bins[0]}_{cent_bins[1]}_{ct_bins[0]}_{ct_bins[1]}'
@@ -123,7 +125,7 @@ for split in SPLIT_LIST:
             
         #     h_tmp.Fit("expo")
         #     i = i+1
-        #     if (h_tmp.GetFunction("expo").GetChisquare()/h_tmp.GetFunction("expo").GetNDF()>2.) or h_tmp.GetFunction("expo").GetNDF()<10:
+        #     if (h_tmp.GetFunction("expo").GetChisquare()/h_tmp.GetFunction("expo").GetNDF()>2.):
         #         continue
         #     slope = h_tmp.GetFunction("expo").GetParameter(1)
         #     h_sys.Fill(-1./slope/speed_of_light)
