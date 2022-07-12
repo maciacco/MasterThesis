@@ -3,7 +3,7 @@
 #include <TFile.h>
 #include <Riostream.h>
 #include <TH3F.h>
-#include <TH1D.h>
+#include <TH1F.h>
 #include <TF1.h>
 #include <RooRealVar.h>
 #include <RooPlot.h>
@@ -18,21 +18,24 @@
 using namespace proton;
 using namespace utils;
 
-void ITSrecalibration(){
-  TFile *inFile=TFile::Open("../data/Proton_PbPb/AnalysisResults_.root");
+const char *in_name[] = {"","low_pt_proton_mc"};
+const char *out_name[] = {"Data","Mc"};
+const char *ls_name[] = {"","mcFalse_"};
+
+void ITSrecalibration(bool mc=false, bool save_fits=false){
+  TFile *inFile=TFile::Open(Form("../data/Proton_PbPb/AnalysisResults_%s.root",in_name[(int)mc]));
   if (!inFile) std::cout << "Input file does not exist!" << std::endl;
-  TFile outFile("out/ITScalib.root","recreate");
-  TTList *ls_proton=(TTList*)inFile->Get("nuclei_proton_");
+  TFile outFile(Form("out/ITScalib%s.root",out_name[(int)mc]),"recreate");
+  TTList *ls_proton=(TTList*)inFile->Get(Form("nuclei_proton_%s",ls_name[(int)mc]));
   TH3F *fNSigmaITSpTCentA=(TH3F*)ls_proton->Get(Form("f%sITSnSigma",kAntimatterMatter[0]));
   TH3F *fNSigmaITSpTCentM=(TH3F*)ls_proton->Get(Form("f%sITSnSigma",kAntimatterMatter[1]));
-  TH1D fITSCalibMean("fITSCalibMean",";#it{p}_{T} (GeV/#it{c});Mean (a.u.)",kNPtBins,kPtBins);
-  TH1D fITSCalibSigma("fITSCalibSigma",";#it{p}_{T} (GeV/#it{c});Sigma (a.u.)",kNPtBins,kPtBins);
-  TH1D fITSCalibMeanRoo("fITSCalibMeanRoo",";#it{p}_{T} (GeV/#it{c});Mean (a.u.)",kNPtBins,kPtBins);
-  TH1D fITSCalibSigmaRoo("fITSCalibSigmaRoo",";#it{p}_{T} (GeV/#it{c});Sigma (a.u.)",kNPtBins,kPtBins);
-  outFile.mkdir("fits");
-  for (int iB=1;iB<kNPtBins+1;iB++){
-    if(kPtBins[iB-1]>0.89) continue;
-    outFile.cd("fits");
+  TH1F fITSCalibMean("fITSCalibMean",";#it{p}_{T} (GeV/#it{c});Mean (a.u.)",11,0.3,0.85);
+  TH1F fITSCalibSigma("fITSCalibSigma",";#it{p}_{T} (GeV/#it{c});Sigma (a.u.)",11,0.3,0.85);
+  TH1F fITSCalibMeanRoo("fCustomITSpidMu",";#it{p}_{T} (GeV/#it{c});Mean (a.u.)",11,0.3,0.85);
+  TH1F fITSCalibSigmaRoo("fCustomITSpidSigma",";#it{p}_{T} (GeV/#it{c});Sigma (a.u.)",11,0.3,0.85);
+  TH1F fITSCalibRatio("fITSCalibRatio",";#it{p}_{T} (GeV/#it{c});Ratio (a.u.)",11,0.3,0.85);
+  if (save_fits) outFile.mkdir("fits");
+  for (int iB=1;iB<12;iB++){
     TH1D* fNSigmaITSpT=fNSigmaITSpTCentA->ProjectionZ(Form("proj_%.2f_%.2f",kPtBins[iB-1],kPtBins[iB]),1,10,iB,iB);
     TH1D* fNSigmaITSpTM=fNSigmaITSpTCentM->ProjectionZ(Form("proj_%.2f_%.2f",kPtBins[iB-1],kPtBins[iB]),1,10,iB,iB);
     fNSigmaITSpT->Add(fNSigmaITSpTM);
@@ -75,12 +78,18 @@ void ITSrecalibration(){
     fITSCalibMeanRoo.SetBinError(iB,mu.getError());
     fITSCalibSigmaRoo.SetBinContent(iB,sig.getVal());
     fITSCalibSigmaRoo.SetBinError(iB,sig.getError());
-    fNSigmaITSpT->Write();
-    xframe->Write();
+    fITSCalibRatio.SetBinContent(iB,mu.getVal()/sig.getVal());
+    fITSCalibRatio.SetBinError(iB,mu.getVal()/sig.getVal()*TMath::Sqrt(mu.getError()*mu.getError()/mu.getVal()/mu.getVal()+sig.getError()*sig.getError()/sig.getVal()/sig.getVal()));
+    if (save_fits){
+      outFile.cd("fits");
+      fNSigmaITSpT->Write();
+      xframe->Write();
+    }
   }
   outFile.cd("");
-  fITSCalibMean.Write();
-  fITSCalibSigma.Write();
+  //fITSCalibMean.Write();
+  //fITSCalibSigma.Write();
   fITSCalibMeanRoo.Write();
   fITSCalibSigmaRoo.Write();
+  //fITSCalibRatio.Write();
 }
