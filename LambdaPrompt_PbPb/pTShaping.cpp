@@ -48,7 +48,7 @@ double full_bw_max(TF1 *bw_array[], double max_steps = 1.e3, double max_pT = 10.
   return h.GetMaximum();
 }
 
-const char* kInFileMCName = "../data/LambdaPrompt_PbPb/AnalysisResults_LambdaMCTrainingReweight.root";
+const char* kInFileMCName = "../data/LambdaPrompt_PbPb/AnalysisResults_LHC21l5_lambdaMC_child123.root";
 const char* kInFileCentName = "../data/LambdaPrompt_PbPb/StrangenessRatios_summary.root";
 const char* kOutFileName = "pTShapesLXiOm.root";
 
@@ -106,7 +106,7 @@ void pTShaping(const char *inFileMCName=kInFileMCName, const char *inFileCentNam
     std::cout << "cut variable = " << cut_variable.data() << "; iPart = " << iPart << "; int_pow_part = " << int_pow_part << std::endl;
     dff.Filter(Form("(flag & BIT(%d))==%d",iPart,int_pow_part)).Filter(reweight,{cut_variable.data()}).Snapshot("LambdaTree",Form("AnalysisResults_%d.root",iPart));
   }
-  gSystem->Exec("alihadd AnalysisResults.root AnalysisResults_0.root AnalysisResults_1.root AnalysisResults_2.root");
+  gSystem->Exec("alihadd AnalysisResults_reweight_BW_0_90.root AnalysisResults_0.root AnalysisResults_1.root AnalysisResults_2.root");
   gSystem->Exec("rm AnalysisResults_0.root AnalysisResults_1.root AnalysisResults_2.root");
   outFile.Close();
 }
