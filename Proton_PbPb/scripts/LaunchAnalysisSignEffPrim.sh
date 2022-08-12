@@ -10,14 +10,17 @@ G3G4Prim="$6"
 extractRatios=1
 
 fileData="AnalysisResults"
-fileDataEff="AnalysisResults_LHC21l5_full_largeDCA_cutChi2"
+#fileDataEff="AnalysisResults_LHC21l5_full_largeDCA_cutChi2" # uncomment for high pt proton analysis (this is also the MCinj file in that case)
+#fileMCInj="AnalysisResults_LHC21l5_full_largeDCA_cutChi2" # uncomment for high pt proton analysis (this is also the MCinj file in that case)
+fileDataEff="AnalysisResults_LHC21l5_lowPtProton" # uncomment for low pt proton analysis
 fileMC="mc"
-signalNameEff="SignalProtonSysEff"
-spectraNameEff="SpectraProtonSysEff"
-signalName="SignalProtonSys"
-spectraName="SpectraProtonSys"
-EfficiencyHe3="EfficiencyProtonSys"
-PrimaryHe3="PrimaryProtonSys"
+fileMCInj="AnalysisResults_LHC21l5_LambdaCtMotherAndProtonsITSPID"
+signalNameEff="SignalProtonSysEffTPC"
+spectraNameEff="SpectraProtonSysEffTPC"
+signalName="SignalProtonSysTPC"
+spectraName="SpectraProtonSysTPC"
+EfficiencyHe3="EfficiencyProtonSysTPC"
+PrimaryHe3="PrimaryProtonSysTPCTOF"
 PrimaryHe3TPC="PrimaryProtonSysTPC"
 
 # create output directories
@@ -74,8 +77,8 @@ if [ $extractRatios -eq 1 ]; then
 .L EfficiencyNew.cpp+
 .L SecondaryMC.cpp+
 SignalBinnedMC("$cutSettings",$roiNsigma,$argumentSignal,"$fileDataEff","$signalNameEff","recreate")
-SecondaryMC("$cutSettings",$dcaxycut,"$fileDataEff","$fileDataEff","$PrimaryHe3Eff")
-EfficiencyNew("$cutSettings","$fileDataEff","$EfficiencyHe3","$signalNameEff","$PrimaryHe3Eff")//,"update")
+SecondaryMC("$cutSettings",$dcaxycut,"$fileDataEff","$fileMCInj","$PrimaryHe3Eff")
+EfficiencyNew("$cutSettings","$fileMCInj","$EfficiencyHe3","$signalNameEff","$PrimaryHe3Eff")//,"update")
 .q
 EOF
 fi

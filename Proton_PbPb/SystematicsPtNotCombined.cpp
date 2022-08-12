@@ -48,7 +48,7 @@ const bool sys_eff_error = true;
 const int used_pt_bins = 24;
 const int nTrials=10000;
 
-void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = true, const bool binCountingVar = true, const bool expVar = true, const bool sigmoidVar = true, const char *outFileName = "SystematicsAllEPtNotCombined")
+void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = true, const bool binCountingVar = true, const bool expVar = true, const bool sigmoidVar = true, const char *outFileName = "SystematicsAllEPtNotCombinedTOFTEST")
 {
 
   const int nUsedPtBins = 43;
@@ -59,7 +59,7 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
   TStopwatch swatch;
   swatch.Start(true);
 
-  TFile *specFile = TFile::Open(Form("%s/SpectraProtonSys.root", kOutDir));
+  TFile *specFile = TFile::Open(Form("%s/SpectraProtonSysTOF.root", kOutDir));
   TFile *hijingFile = TFile::Open("../HIJINGRatios.root");
   //TFile *fileEffFit=TFile::Open("out/SpectraProton_MC21l5_raw_fitEff.root");
   TFile *fG4 = TFile::Open("out/SpectraProton_MC21l5_raw_primaryInjected.root");      
@@ -668,11 +668,21 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
     // Compute pt correlated systematic uncertainty
     TH1D hRatio(Form("fRatio_%.0f_%.0f", kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]),Form("%.0f-%.0f%%", kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]),kNPtBins,kPtBins);
     for (int iPtBin=5;iPtBin<nUsedPtBins;++iPtBin){
-      //double scalingFactor = scaling_factor_antip(hRatio.GetBinCenter(iPtBin));
-      hRatio.SetBinContent(iPtBin,fRatioFromVariationsTot.GetBinContent(iPtBin));
-      hRatio.SetBinError(iPtBin,hRatio.GetBinContent(iPtBin)*fSystematicUncertaintyTotal.GetBinContent(iPtBin));
+      if (hRatio.GetBinCenter(iPtBin)<0.81){
+        TFile inFileTPC("out/SystematicsAllEPtNotCombinedTPC.root");
+        auto htmp=(TH1D*)inFileTPC.Get(Form("fRatio_%.0f_%.0f", kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]));
+        hRatio.SetBinContent(iPtBin,htmp->GetBinContent(iPtBin));
+        hRatio.SetBinError(iPtBin,htmp->GetBinError(iPtBin));
+        inFileTPC.Close();
+      }
+      else{
+        //double scalingFactor = scaling_factor_antip(hRatio.GetBinCenter(iPtBin));
+        hRatio.SetBinContent(iPtBin,fRatioFromVariationsTot.GetBinContent(iPtBin));
+        hRatio.SetBinError(iPtBin,hRatio.GetBinContent(iPtBin)*fSystematicUncertaintyTotal.GetBinContent(iPtBin));
+      }
     }
-    hRatio.Fit("pol0","R","",1.,3.);
+    outFile->cd();
+    hRatio.Fit("pol0","R","",.5,3.);
     hRatio.Write();
 
     TH1D h_trial("h_trial","h_trial",kNPtBins,kPtBins);
@@ -683,6 +693,7 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
         h_trial.SetBinContent(iPtBin,fRatioFromVariationsTot.GetBinContent(iPtBin)+nsigma*fSystematicUncertaintyTotalPtCorrelated.GetBinContent(iPtBin)*fRatioFromVariationsTot.GetBinContent(iPtBin));
         h_trial.SetBinError(iPtBin,hRatio.GetBinContent(iPtBin)*fSystematicUncertaintyTotal.GetBinContent(iPtBin));
       }
+      if (h_trial.GetEntries()) continue;
       h_trial.Fit("pol0","QR","",1.,3.);
       //if( /* h_trial.GetFunction("pol0")->GetProb()>0.025 &&  */h_trial.GetFunction("pol0")->GetProb()<0.95/* (h_trial.GetFunction("pol0")->GetChisquare()/h_trial.GetFunction("pol0")->GetNDF())<2. */)
       fRatioDistributionTrials.Fill(h_trial.GetFunction("pol0")->GetParameter(0));

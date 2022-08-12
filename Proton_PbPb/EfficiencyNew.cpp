@@ -66,7 +66,13 @@ void EfficiencyNew(const char *cutSettings = "", const char *inFileNameMC = "mc_
       fSec_TPC = (TH1D*)inFilePrimary.Get(Form("f%sPrimFracTPC_%.0f_%.0f", kAntimatterMatter[iMatt], kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1]));
       fITS_TPC_TOF_Pt = (TH1D*)inFileSignal.Get(Form("%s_%d_%d/f%sTOFrawYield_%.0f_%.0f", cutSettings, 1, 1, kAntimatterMatter[iMatt], kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1]));
       fITS_TPC_Pt = (TH1D*)inFileSignal.Get(Form("%s_%d_%d/f%sTPCrawYield_%.0f_%.0f", cutSettings, 1, 1, kAntimatterMatter[iMatt], kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1]));
-      if (!fSec || !fITS_TPC_TOF_Pt || !fTotal_Pt) return;
+      for (int iB=0;iB<fITS_TPC_Pt->GetXaxis()->GetNbins();++iB){
+        if (fITS_TPC_Pt->GetBinCenter(iB) > 0.9){
+          fITS_TPC_Pt->SetBinContent(iB,0);
+          fITS_TPC_Pt->SetBinError(iB,0);
+        }
+      }
+      if (!fSec || !fITS_TPC_TOF_Pt || !fTotal_Pt || !fITS_TPC_Pt) return;
       //fITS_TPC_TOF_Pt->Multiply(sec_f);
       fITS_TPC_TOF_Pt->Multiply(fSec);
       fITS_TPC_Pt->Multiply(fSec_TPC);

@@ -11,6 +11,8 @@
 !*.py
 !*.yaml
 !*.md
+!Proton_PbP_copy
+!Proton_PbP_copy/*
 
 # even if they are inside subdirectories
 !*/

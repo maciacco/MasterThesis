@@ -71,7 +71,7 @@ void LaunchAnalyses(const bool analyse = false)
           std::cout << "bkg selection = " << iBkg << "; roiNsigma = " << roi_n_sigma[iNsigma] << "; dcaxycut = " << DCAxyCut << "; G3G4Prim = " << iG3G4Prim << std::endl;
           if (analyse)
           {
-            gSystem->Exec(Form("bash ~/Code/MasterThesis/Proton_PbPb/scripts/LaunchAnalysisSignEffPrim.sh %s 1 1 %f %f %d", fullCutSettings, roi_n_sigma[iNsigma], DCAxyCut, iG3G4Prim));
+            gSystem->Exec(Form("bash ~/Code/MuBFromRatios_PbPb/Proton_PbPb/scripts/LaunchAnalysisSignEffPrim.sh %s 1 1 %f %f %d", fullCutSettings, roi_n_sigma[iNsigma], DCAxyCut, iG3G4Prim));
           }
 
           for (int iSgm = 1; iSgm < 2; ++iSgm)
@@ -87,7 +87,7 @@ void LaunchAnalyses(const bool analyse = false)
 
             if (analyse)
             {
-              gSystem->Exec(Form("bash ~/Code/MasterThesis/Proton_PbPb/scripts/LaunchAnalysisSpec.sh %s 1 %d %d %s %f %d", fullCutSettings, iBkg, sigmoidFlag, spectraNameId, roi_n_sigma[iNsigma], iG3G4Prim));
+              gSystem->Exec(Form("bash ~/Code/MuBFromRatios_PbPb/Proton_PbPb/scripts/LaunchAnalysisSpec.sh %s 1 %d %d %s %f %d", fullCutSettings, iBkg, sigmoidFlag, spectraNameId, roi_n_sigma[iNsigma], iG3G4Prim));
             }
           }
         }

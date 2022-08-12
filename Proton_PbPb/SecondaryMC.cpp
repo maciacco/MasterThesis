@@ -42,7 +42,8 @@ void SecondaryMC(const char *cutSettings = "", const double DCAxyCut = 0.12, con
   system(Form("mkdir %s/primary_fraction", kPlotDir));
 
   // open files
-  TFile *inFileMCInj = TFile::Open(Form("%s/%s.root", kDataDir, inFileMCName));
+  TFile *inFileMCInj_false = TFile::Open(Form("%s/%s.root", kDataDir, inFileDatName));
+  TFile *inFileMCInj_true = TFile::Open(Form("%s/%s.root", kDataDir, inFileMCName));
   TFile *outFile = TFile::Open(Form("%s/%s.root", kOutDir, outFileName), "recreate");
 
   for (int iMatt = 0; iMatt < 2; ++iMatt)
@@ -56,8 +57,8 @@ void SecondaryMC(const char *cutSettings = "", const double DCAxyCut = 0.12, con
     // get TTList(s)
     std::string listName_mcFalse = Form("nuclei_proton_mcFalse_%s", cutSettings);
     std::string listName_mcTrue = Form("nuclei_proton_mcTrue_%s", cutSettings);
-    TTList *listMcInj_likeData = (TTList *)inFileMCInj->Get(listName_mcFalse.data());
-    TTList *listMcInj = (TTList *)inFileMCInj->Get(listName_mcTrue.data());
+    TTList *listMcInj_likeData = (TTList *)inFileMCInj_false->Get(listName_mcFalse.data());
+    TTList *listMcInj = (TTList *)inFileMCInj_true->Get(listName_mcTrue.data());
 
     // get histograms from files
     TH3F *fDCAdat = (TH3F *)listMcInj_likeData->Get(Form("f%sDCAxyTOF", kAntimatterMatter[iMatt]));

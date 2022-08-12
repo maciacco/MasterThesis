@@ -23,7 +23,7 @@ void SpectraTPC(const char *cutSettings = "", const double roi_nsigma = 8., cons
   gStyle->SetTextFont(44);
 
   TH2F *fNevents;
-  TFile *inFileDat = TFile::Open(Form("%s/%s_largeNsigma_cutDCAxyChi2TPC_lowPt.root", kDataDir, dataFile));
+  TFile *inFileDat = TFile::Open(Form("%s/%s-48.root", kDataDir, dataFile)); // _largeNsigma_cutDCAxyChi2TPC_lowPt
   TTList *fMultList = (TTList *)inFileDat->Get("nuclei_proton_");
   fNevents = (TH2F *)fMultList->Get("fNormalisationHist");
   TFile *inFileRaw = TFile::Open(Form("%s/%s.root", kOutDir, signalFile));

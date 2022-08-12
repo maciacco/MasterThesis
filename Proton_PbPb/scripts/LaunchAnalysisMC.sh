@@ -10,14 +10,16 @@ extractRatios=1
 
 # fileData="../AnalysisResults_LHC22b9_1"
 # fileMC="../AnalysisResults_LHC22b9_1"
-fileData="AnalysisResults_LHC21l5_full_largeDCA_cutChi2"
-fileMC="AnalysisResults_LHC21l5_full_largeDCA_cutChi2"
+#fileData="AnalysisResults_LHC21l5_full_largeDCA_cutChi2"
+#fileMC="AnalysisResults_LHC21l5_full_largeDCA_cutChi2"
+fileData="AnalysisResults_LHC21l5_lowPtProton"
+fileMC="AnalysisResults_LHC21l5_LambdaCtMotherAndProtonsITSPID"
 # fileData="AnalysisResults-6"
 # fileMC="AnalysisResults-6"
-signalName="SignalProtonMC_21l5_false__prova"
-spectraName="SpectraProtonMCMC_21l5_falseprova"
-EfficiencyHe3="EfficiencyProtonMC_21l5_false__prova"
-PrimaryHe3="PrimaryProtonMC_21l5_falseprova"
+signalName="SignalProtonMC_21l5_LOWPT_TESTTPC"
+spectraName="SpectraProtonMCMC_21l5_LOWPT_TESTTPC"
+EfficiencyHe3="EfficiencyProtonMC_21l5_LOWPT_TESTTPC"
+PrimaryHe3="PrimaryProtonMC_21l5_LOWPT_TESTTPC"
 
 # create output directories
 DIR_OUT=out
@@ -48,10 +50,12 @@ if [ $extractRatios -eq 1 ]; then
 .L SignalBinnedMC.cpp+
 .L SecondaryMC.cpp+
 .L EfficiencyNew.cpp+
+.L Efficiency.cpp+
 //.L Spectra.cpp+
 SignalBinnedMC("$cutSettings",8.,$argumentSignal,"$fileData","$signalName","recreate")
 SecondaryMC("$cutSettings",0.12,"$fileData","$fileMC","$PrimaryHe3")
 EfficiencyNew("$cutSettings","$fileMC","$EfficiencyHe3","$signalName","$PrimaryHe3")
+//Efficiency("$cutSettings","$fileMC","$EfficiencyHe3")
 .q
 EOF
 fi

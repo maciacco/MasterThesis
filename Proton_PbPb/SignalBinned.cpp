@@ -66,7 +66,7 @@ void SignalBinned(const char *cutSettings = "", const double roi_nsigma = 8., co
   if (outFile->GetDirectory(Form("%s_%d_%d_%d", cutSettings, binCounting, bkg_shape,iNsigma)))
     return;
   TDirectory *dirOutFile = outFile->mkdir(Form("%s_%d_%d_%d", cutSettings, binCounting, bkg_shape, iNsigma));
-  TFile *dataFile = TFile::Open(TString::Format("%s/%s-48.root", kDataDir, inFileDat)); // open data TFile
+  TFile *dataFile = TFile::Open(TString::Format("%s/%s-48.root", kDataDir, inFileDat)); // open data TFile -48 _largeNsigma_cutDCAxyChi2TPC
 
   if (!dataFile)
   {
@@ -162,7 +162,7 @@ void SignalBinned(const char *cutSettings = "", const double roi_nsigma = 8., co
         double maxNsigma=20;
         double nSigmaLeft = -20;
         double nSigmaRight = -15.;
-        if (ptMin > 0.99)
+        if (ptMin > 0.79)
         {
           if (ptMin > 1.81)
           {
@@ -194,6 +194,7 @@ void SignalBinned(const char *cutSettings = "", const double roi_nsigma = 8., co
           if (kVerbose) std::cout << "nSigmaLeft = " << nSigmaLeft << std::endl;
         }
         else {
+          //continue;
           nSigmaLeft = -25;
           maxNsigma=25;
         }
@@ -247,13 +248,14 @@ void SignalBinned(const char *cutSettings = "", const double roi_nsigma = 8., co
 
         slope1 = new RooRealVar("#tau_{1}", "slope1", -10., 10.);
         slope2 = new RooRealVar("#tau_{2}", "slope2",-0.9, -10.,0.);
-        nBackground1 = new RooRealVar("#it{N}_{Bkg,1}", "nBackground1", 1., 1.e7);
+        nBackground1 = new RooRealVar("#it{N}_{Bkg,1}", "nBackground1", 0., 1.e7);
         
         if (bkg_shape == 1)
         { // expo
 
-          if (ptMin < 1.39)
+          if (ptMin < 1.39 && ptMin > 0.74)
           {
+            if (ptMin<0.99)slope1 = new RooRealVar("#tau_{1}", "slope1", -10., 0.);
             background1 = (RooAbsPdf *)new RooExponential("background1", "background1", tofSignal, *slope1);
             nBackground2 = new RooRealVar("#it{N}_{Bkg,2}", "nBackground2", 0., 0., 1.e9);
             nBackground2->setConstant();
@@ -277,6 +279,10 @@ void SignalBinned(const char *cutSettings = "", const double roi_nsigma = 8., co
         {
           roi_nsigma_down = roi_nsigma;
           roi_nsigma_up = roi_nsigma;
+          if (ptMin < 1.) {roi_nsigma_down=roi_nsigma+3; // default = 9sigma
+            roi_nsigma_up=roi_nsigma+4; // 10 sigma
+          }
+          
           if (ptMin > 1.51) roi_nsigma_down=roi_nsigma-2; // default = 6sigma
           if (ptMin > 1.99) {roi_nsigma_down=roi_nsigma-3; // default = 5sigma
             roi_nsigma_up=roi_nsigma+1.;
@@ -310,6 +316,7 @@ void SignalBinned(const char *cutSettings = "", const double roi_nsigma = 8., co
           covQ = r->covQual();
           
           // signal range
+          if (ptMin<0.99)roi_nsigma_down=roi_nsigma-1.;
           tofSignal.setRange("signalRange", mean_tmp - (roi_nsigma_down+extend_roi) * rms_tmp, mean_tmp + (roi_nsigma_up+extend_roi) * rms_tmp);
           tofSignal.setRange("aFitRange", mean_tmp - (roi_nsigma_down+extend_roi) * rms_tmp, mean_tmp + (roi_nsigma_up+extend_roi) * rms_tmp);
         }
@@ -373,8 +380,11 @@ void SignalBinned(const char *cutSettings = "", const double roi_nsigma = 8., co
           }
 
           // background integral
-          double bkgIntegral = ((RooAbsPdf *)model->createIntegral(RooArgSet(tofSignal), RooFit::NormSet(RooArgSet(tofSignal)), RooFit::Range("signalRange")))->getVal();
-          double bkgIntegral_val = (nBackground1->getVal() + nBackground2->getVal()) * bkgIntegral;
+          std::cout << "ptMin = " << ptMin << std::endl;
+          double bkgIntegral_1 = (((RooAbsPdf *)(model->pdfList().at(0)))->createIntegral(RooArgSet(tofSignal), RooFit::NormSet(RooArgSet(tofSignal)), RooFit::Range("signalRange")))->getVal();
+          double bkgIntegral_2 = 0;
+          if (!(ptMin < 1.39 && ptMin > 0.74)) bkgIntegral_2 = (((RooAbsPdf *)(model->pdfList().at(1)))->createIntegral(RooArgSet(tofSignal), RooFit::NormSet(RooArgSet(tofSignal)), RooFit::Range("signalRange")))->getVal();
+          double bkgIntegral_val = nBackground1->getVal() *bkgIntegral_1 + nBackground2->getVal() * bkgIntegral_2;
 
           double rawYield, rawYieldError, counts;
           if (binCounting)
@@ -415,10 +425,11 @@ void SignalBinned(const char *cutSettings = "", const double roi_nsigma = 8., co
 
           RooRealVar nSigmaTPC("nSigmaTPC","nSigmaTPC",-24.,24.);
           RooDataHist hNSigmaTPC("hNSigmaTPC","hNSigmaTPC",RooArgList(nSigmaTPC),tpcSignalProjection);
+          RooDataHist hNSigmaTPCAll("hNSigmaTPCAll","hNSigmaTPCAll",RooArgList(nSigmaTPC),tpcSignalProjectionAll);
           RooRealVar meanTPC("meanTPC","meanTPC",-2.,2.);
           RooRealVar sigmaTPC("sigmaTPC","sigmaTPC",0.,3.);
-          RooRealVar alpha1TPC("alpha1TPC","alpha1TPC",-3.,-0.5);
-          RooRealVar alpha2TPC("alpha2TPC","alpha2TPC",0.5,3.);
+          RooRealVar alpha1TPC("alpha1TPC","alpha1TPC",-5.,-0.5);
+          RooRealVar alpha2TPC("alpha2TPC","alpha2TPC",0.5,5.);
           RooRealVar meanTPCBkg("meanTPCBkg","meanTPCBkg",-20.,-4.);
           RooRealVar sigmaTPCBkg("sigmaTPCBkg","sigmaTPCBkg",0.5,3.);
           RooRealVar tauTPCBkg("tauTPCBkg","tauTPCBkg",0.,2.);
@@ -427,13 +438,16 @@ void SignalBinned(const char *cutSettings = "", const double roi_nsigma = 8., co
           RooRealVar nSignalTPC("nSignalTPC","nSignalTOPC",0.,1.e9);
           RooRealVar nBkgTPC("nBkgTPC","nBkgTPC",0.,1.e8);
           RooAddPdf modelTPC("modelTPC","modelTPC",RooArgList(signalTPC,bkgTPC),RooArgList(nSignalTPC,nBkgTPC));
-          double left_fit_range_factor = 2.;
-          if (ptMin > 0.54) left_fit_range_factor = 1.2;
+          double left_fit_range_factor = 2.5;
+          if (ptMin > 0.54) left_fit_range_factor = 1.4;
           nSigmaTPC.setRange("fitRange",tpcSignalProjectionAll->GetFunction("gaus")->GetParameter(1)+left_fit_range_factor*tpcSignalProjectionAll->GetFunction("gaus")->GetParameter(2),3);
           for (int i=0;i<2;++i)modelTPC.fitTo(hNSigmaTPC,RooFit::Range("fitRange"));
           nSigmaTPC.setRange("signalRange",meanTPC.getVal()-5.*sigmaTPC.getVal(),meanTPC.getVal()+5.*sigmaTPC.getVal());
           RooPlot *frameTPC = nSigmaTPC.frame(RooFit::Name(tpcSignalProjection->GetName()));
           hNSigmaTPC.plotOn(frameTPC);
+          double lowTPCrange=5;
+          if (ptMin > 0.74) lowTPCrange=4.;
+          nSigmaTPC.setRange("signalRange",meanTPC.getVal()-lowTPCrange*sigmaTPC.getVal(),meanTPC.getVal()+5.*sigmaTPC.getVal());
           modelTPC.plotOn(frameTPC,RooFit::Components("bkgTPC"),RooFit::LineColor(kGreen),RooFit::LineStyle(kDashed));
           modelTPC.plotOn(frameTPC,RooFit::Components("signalTPC"),RooFit::LineColor(kRed),RooFit::LineStyle(kDashed));
           modelTPC.plotOn(frameTPC);
@@ -448,7 +462,7 @@ void SignalBinned(const char *cutSettings = "", const double roi_nsigma = 8., co
           }
           TCanvas c(Form("%s",tpcSignalProjection->GetName()),Form("%s",tpcSignalProjection->GetName()));
           
-          double rawYieldTPC = hNSigmaTPC.sumEntries(Form("nSigmaTPC>%f && nSigmaTPC<%f",meanTPC.getVal()-5.*sigmaTPC.getVal(),meanTPC.getVal()+5.*sigmaTPC.getVal()));
+          double rawYieldTPC = hNSigmaTPC.sumEntries(Form("nSigmaTPC>%f && nSigmaTPC<%f",meanTPC.getVal()-lowTPCrange*sigmaTPC.getVal(),meanTPC.getVal()+5.*sigmaTPC.getVal()));
           if(ptMin>0.49)rawYieldTPC-=background;
           double rawYieldErrorTPC = TMath::Sqrt(rawYieldTPC);
           c.SetLogy();

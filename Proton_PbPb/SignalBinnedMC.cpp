@@ -129,6 +129,7 @@ void SignalBinnedMC(const char *cutSettings = "", const double roi_nsigma = 8., 
     {                                                                          // loop over centrality classes
       TH1D fTOFrawYield("fRawYield", "fRawYield", kNPtBins, kPtBins);          // declare raw yields histogram
       TH1D fTPCrawYield("fTPCRawYield", "fTPCRawYield", kNPtBins, kPtBins);          // declare raw yields histogram
+      fTPCrawYield.GetXaxis()->SetRangeUser(0.3,0.85);
       TH1D fSignificance("fSignificance", "fSignificance", kNPtBins, kPtBins); // declare significance
       TH1D fSigma("fSigma", "fSigma", kNPtBins, kPtBins);
       TH1D fMean("fMean", "fMean", kNPtBins, kPtBins);
@@ -158,6 +159,7 @@ void SignalBinnedMC(const char *cutSettings = "", const double roi_nsigma = 8., 
         tofSignalProjection->Rebin(2);
 
         // project histogram (antimatter + matter)
+        TH1D *tpcSignalProjectionAll = fTPCSignalAll->ProjectionZ(Form("f%sTPCSignalAll_%.0f_%.0f_%.2f_%.2f", kAntimatterMatter[iMatt], centMin, centMax, fTPCSignalAll->GetYaxis()->GetBinLowEdge(pTbinsIndexMin), fTPCSignalAll->GetYaxis()->GetBinUpEdge(pTbinsIndexMax)), centBinMin, centBinMax, pTbinsIndexMin, pTbinsIndexMax);
         TH1D *tofSignalProjectionAll = fTOFSignalAll->ProjectionZ(Form("f%sTOFSignalAll_%.0f_%.0f_%.2f_%.2f", kAntimatterMatter[iMatt], centMin, centMax, fTOFSignalAll->GetYaxis()->GetBinLowEdge(pTbinsIndexMin), fTOFSignalAll->GetYaxis()->GetBinUpEdge(pTbinsIndexMax)), centBinMin, centBinMax, pTbinsIndexMin, pTbinsIndexMax);
         tofSignalProjectionAll->Rebin(1);
 
@@ -369,8 +371,11 @@ void SignalBinnedMC(const char *cutSettings = "", const double roi_nsigma = 8., 
           }
 
           // background integral
-          double bkgIntegral = ((RooAbsPdf *)model->createIntegral(RooArgSet(tofSignal), RooFit::NormSet(RooArgSet(tofSignal)), RooFit::Range("signalRange")))->getVal();
-          double bkgIntegral_val = (nBackground1->getVal() + nBackground2->getVal()) * bkgIntegral;
+          std::cout << "ptMin = " << ptMin << std::endl;
+          double bkgIntegral_1 = (((RooAbsPdf *)(model->pdfList().at(0)))->createIntegral(RooArgSet(tofSignal), RooFit::NormSet(RooArgSet(tofSignal)), RooFit::Range("signalRange")))->getVal();
+          double bkgIntegral_2 = 0;
+          if (ptMin > 1.29) bkgIntegral_2 = (((RooAbsPdf *)(model->pdfList().at(1)))->createIntegral(RooArgSet(tofSignal), RooFit::NormSet(RooArgSet(tofSignal)), RooFit::Range("signalRange")))->getVal();
+          double bkgIntegral_val = nBackground1->getVal() *bkgIntegral_1 + nBackground2->getVal() * bkgIntegral_2;
 
           double rawYield, rawYieldError, counts;
           if (binCounting)
@@ -392,6 +397,8 @@ void SignalBinnedMC(const char *cutSettings = "", const double roi_nsigma = 8., 
             rawYieldError = nSignal.getError();
           }
 
+          tpcSignalProjectionAll->Rebin(1);
+          tpcSignalProjection->Rebin(1);
           tpcSignalProjection->SetMarkerStyle(20);
           tpcSignalProjection->SetMarkerSize(1.);
           tpcSignalProjection->SetDrawOption("pe");
@@ -401,89 +408,59 @@ void SignalBinnedMC(const char *cutSettings = "", const double roi_nsigma = 8., 
           tpcSignalProjection->GetXaxis()->SetTitle("n#sigma_{p}");
           tpcSignalProjection->GetYaxis()->SetTitle(Form("Entries / %.2f",tpcSignalProjection->GetBinWidth(1)));
 
-          double tpc_range_limit = (roi_nsigma-8.)*0.5+3.;
+          tpcSignalProjectionAll->GetXaxis()->SetRangeUser(-15.,-3.);
+          double max_bkg = tpcSignalProjectionAll->GetBinCenter(tpcSignalProjectionAll->GetMaximumBin());
+          tpcSignalProjectionAll->Fit("gaus","RLM+","",max_bkg-2.5,max_bkg+2.5);
+          tpcSignalProjectionAll->GetXaxis()->SetRangeUser(-24.,24.);
+
+
+          RooRealVar nSigmaTPC("nSigmaTPC","nSigmaTPC",-24.,24.);
+          RooDataHist hNSigmaTPC("hNSigmaTPC","hNSigmaTPC",RooArgList(nSigmaTPC),tpcSignalProjection);
+          RooRealVar meanTPC("meanTPC","meanTPC",-2.,2.);
+          RooRealVar sigmaTPC("sigmaTPC","sigmaTPC",0.,3.);
+          RooRealVar alpha1TPC("alpha1TPC","alpha1TPC",-3.,-0.5);
+          RooRealVar alpha2TPC("alpha2TPC","alpha2TPC",0.5,3.);
+          RooRealVar meanTPCBkg("meanTPCBkg","meanTPCBkg",-20.,-4.);
+          RooRealVar sigmaTPCBkg("sigmaTPCBkg","sigmaTPCBkg",0.5,3.);
+          RooRealVar tauTPCBkg("tauTPCBkg","tauTPCBkg",0.,2.);
+          RooGausDExp signalTPC("signalTPC","signalTPC",nSigmaTPC,meanTPC,sigmaTPC,alpha1TPC,alpha2TPC);
+          RooGausExp bkgTPC("bkgTPC","bkgTPC",nSigmaTPC,meanTPCBkg,sigmaTPCBkg,tauTPCBkg);
+          RooRealVar nSignalTPC("nSignalTPC","nSignalTOPC",0.,1.e9);
+          RooRealVar nBkgTPC("nBkgTPC","nBkgTPC",0.,1.e8);
+          RooAddPdf modelTPC("modelTPC","modelTPC",RooArgList(signalTPC,bkgTPC),RooArgList(nSignalTPC,nBkgTPC));
+          double left_fit_range_factor = 2.5;
+          if (ptMin > 0.54) left_fit_range_factor = 1.2;
+          nSigmaTPC.setRange("fitRange",tpcSignalProjectionAll->GetFunction("gaus")->GetParameter(1)+left_fit_range_factor*tpcSignalProjectionAll->GetFunction("gaus")->GetParameter(2),3);
+          for (int i=0;i<2;++i)modelTPC.fitTo(hNSigmaTPC,RooFit::Range("fitRange"));
+          double lowTPCrange=5;
+          if (ptMin > 0.74) lowTPCrange=4.;
+          nSigmaTPC.setRange("signalRange",meanTPC.getVal()-lowTPCrange*sigmaTPC.getVal(),meanTPC.getVal()+5.*sigmaTPC.getVal());
+          RooPlot *frameTPC = nSigmaTPC.frame(RooFit::Name(tpcSignalProjection->GetName()));
+          hNSigmaTPC.plotOn(frameTPC);
+          modelTPC.plotOn(frameTPC,RooFit::Components("bkgTPC"),RooFit::LineColor(kGreen),RooFit::LineStyle(kDashed));
+          modelTPC.plotOn(frameTPC,RooFit::Components("signalTPC"),RooFit::LineColor(kRed),RooFit::LineStyle(kDashed));
+          modelTPC.plotOn(frameTPC);
+          frameTPC->Write();
+
+          double tpc_range_limit = (roi_nsigma-8.)*0.5+5.;
           double tpc_tmp_mean=0., tpc_tmp_rms=0.;
           double background=0.;
+          if (ptMin > 0.49){
+            background = ((RooAbsPdf *)bkgTPC.createIntegral(RooArgSet(nSigmaTPC), RooFit::NormSet(RooArgSet(nSigmaTPC)), RooFit::Range("signalRange")))->getVal();
+            background *= nBkgTPC.getVal();
+          }
           TCanvas c(Form("%s",tpcSignalProjection->GetName()),Form("%s",tpcSignalProjection->GetName()));
-          if (ptMin < 0.59) {
-            tpcSignalProjection->Fit("gaus","QR0","",-1.,1.);
-            tpc_tmp_mean=tpcSignalProjection->GetFunction("gaus")->GetParameter(1);
-            tpc_tmp_rms=tpcSignalProjection->GetFunction("gaus")->GetParameter(2);
-          }
-          if (ptMin > 0.39 && ptMin < 0.44)tpcSignalProjection->Fit("expo","QR","",-7.,-5.5);
-          else if (ptMin > 0.44 && ptMin < 0.49)tpcSignalProjection->Fit("expo","QR","",-6.5,-5.);
-          else if (ptMin > 0.49 && ptMin < 0.51) tpcSignalProjection->Fit("expo","QR","",-6.,-4.5);
-          if (ptMin>0.54 && ptMin < 0.59) {
-            TF1 f("fit","gaus+expo(3)",-10.,10.);
-            f.SetParLimits(0,0,1e6);
-            f.SetParLimits(1,-6.,-3.);
-            f.SetParLimits(2,0.5,2.5);
-            f.SetParLimits(3,0.,10.);
-            f.SetParLimits(4,-7.,0.);
-            f.SetLineWidth(2);
-            f.SetLineColor(kBlue);
-            for(int I=0;I<2;++I)tpcSignalProjection->Fit("fit","QMR","",-6.5,-3.);
-            background = f.Integral(tpc_tmp_mean-tpc_range_limit*tpc_tmp_rms,tpc_tmp_mean+tpc_range_limit*tpc_tmp_rms);
-            tpcSignalProjection->Draw("pe");
-            f.Draw("same");
-            tpcSignalProjection->GetXaxis()->SetRangeUser(-6.,6.);
-            c.Write();
-          }
-          else if (ptMin>0.59 && ptMin < 0.89) {
-            TF1 f("fit","expo+gaus(2)");
-            f.SetParLimits(2,0,1e8);
-            f.SetParLimits(3,-1.,1.);
-            f.SetParLimits(4,0.5,2.5);
-            f.SetParLimits(0,0.,10.);
-            f.SetParLimits(1,-7.,-.5);
-            f.SetLineColor(kBlue);
-            f.SetRange(-20,20);
-            if (ptMin<0.69) {
-              for(int I=0;I<2;++I)tpcSignalProjection->Fit("fit","QMR0","",-6.2,1.4);
-            }
-            else if (ptMin < 0.79){
-              for(int I=0;I<2;++I)tpcSignalProjection->Fit("fit","QMR0","",-5.7,1.5);
-            }
-            else {
-              for(int I=0;I<2;++I)tpcSignalProjection->Fit("fit","QMR0","",-4.,1.5);
-            }
-            tpc_tmp_mean=f.GetParameter(3);
-            tpc_tmp_mean=f.GetParameter(4);
-            TF1 fBackground(Form("fit%s",tpcSignalProjection->GetName()),"expo",-10,10);
-            fBackground.FixParameter(0,f.GetParameter(0));
-            fBackground.FixParameter(1,f.GetParameter(1));
-            fBackground.SetLineColor(kBlue);
-            fBackground.SetLineWidth(2);
-            fBackground.Write();
-            background = fBackground.Integral(tpc_tmp_mean-tpc_range_limit*tpc_tmp_rms,tpc_tmp_mean+tpc_range_limit*tpc_tmp_rms);
-            tpcSignalProjection->Draw("pe");
-            fBackground.Draw("same");
-            tpcSignalProjection->GetXaxis()->SetRangeUser(-6.,6.);
-            if (ptMin>0.79)tpcSignalProjection->GetXaxis()->SetRangeUser(-4.,4.);
-            c.Write();
-          }
-          else if (ptMin > 0.39 && ptMin < 0.54) {
-            background = tpcSignalProjection->GetFunction("expo")->Integral(tpc_tmp_mean-tpc_range_limit*tpc_tmp_rms,tpc_tmp_mean+tpc_range_limit*tpc_tmp_rms);
-            tpcSignalProjection->GetFunction("expo")->SetLineColor(kBlue);
-            tpcSignalProjection->GetFunction("expo")->SetRange(-10,10);
-            tpcSignalProjection->Draw("pe");
-            tpcSignalProjection->GetFunction("expo")->Draw("same");
-            tpcSignalProjection->GetXaxis()->SetRangeUser(-6.,6.);
-            c.Write();
-          }
-          else if (ptMin < 0.39) {
-            tpcSignalProjection->Draw("pe");
-            tpcSignalProjection->GetXaxis()->SetRangeUser(-6.,6.);
-            c.Write();
-          }
-          double rawYieldTPC = tpcSignalProjection->Integral(tpcSignalProjection->FindBin(-tpc_range_limit),tpcSignalProjection->FindBin(tpc_range_limit-0.001));
-          if(ptMin>0.39)rawYieldTPC-=background;
+          
+          double rawYieldTPC = hNSigmaTPC.sumEntries(Form("nSigmaTPC>%f && nSigmaTPC<%f",meanTPC.getVal()-lowTPCrange*sigmaTPC.getVal(),meanTPC.getVal()+5.*sigmaTPC.getVal()));
+          if(ptMin>0.49)rawYieldTPC-=background;
           double rawYieldErrorTPC = TMath::Sqrt(rawYieldTPC);
+          c.SetLogy();
+          c.Print(Form("%s/signal_extraction/%s_%s_%d_%d/TPC_cent_%.0f_%.0f_pt_%.2f_%.2f.pdf", kPlotDir, kAntimatterMatter[iMatt], cutSettings, binCounting, bkg_shape, kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1], ptMin, ptMax));
 
           // fill raw yield histogram
           fTPCrawYield.SetBinContent(fTPCrawYield.FindBin((ptMax + ptMin) / 2.), rawYieldTPC);
           fTPCrawYield.SetBinError(fTPCrawYield.FindBin((ptMax + ptMin) / 2.), rawYieldErrorTPC);
-          if (ptMin>0.89){
+          if (ptMin>0.99){
             fTPCrawYield.SetBinContent(fTPCrawYield.FindBin((ptMax + ptMin) / 2.), 0.);
             fTPCrawYield.SetBinError(fTPCrawYield.FindBin((ptMax + ptMin) / 2.), 0.);
           }

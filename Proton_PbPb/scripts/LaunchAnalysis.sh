@@ -10,12 +10,12 @@ extractRatios=1
 
 fileData="AnalysisResults"
 fileMC="AnalysisResults_LHC21l5_full_largeDCA_cutChi2"
-signalName="SignalProton_LOWPT_TEST"
-spectraName="SpectraProton_LOWPT_TEST"
-spectraNameTPC="SpectraProtonTPC_MC21l5_raw_primary"
-EfficiencyHe3="EfficiencyProtonMC_21l5_false__"
-PrimaryHe3="PrimaryProton_large"
-PrimaryHe3TPC="PrimaryProtonTPC_large"
+signalName="SignalProton_LOWPT_TESTTPC"
+spectraName="SpectraProton_LOWPT_TESTTPC"
+spectraNameTPC="SpectraProtonTPC_MC21l5_raw_primaryTPC"
+EfficiencyHe3="EfficiencyProtonMC_21l5_LOWPT_TESTTPC"
+PrimaryHe3="PrimaryProton_largeTPC"
+PrimaryHe3TPC="PrimaryProtonTPC_largeTPC"
 
 # create output directories
 DIR_OUT=out
@@ -40,7 +40,7 @@ argumentSignal="$binCountingFlag,$expFlag"
 
 root -b -l <<EOF
 .L SecondaryTPC.cpp+
-//SecondaryTPC("$cutSettings",0.12,"$fileData","$fileMC","$PrimaryHe3TPC",false)
+SecondaryTPC("$cutSettings",0.12,"$fileData","$fileMC","$PrimaryHe3TPC",false)
 EOF
 
 if [ $extractRatios -eq 1 ]; then
@@ -54,8 +54,8 @@ if [ $extractRatios -eq 1 ]; then
 .L Spectra.cpp+
 .L AbsorptionError.cpp+
 SignalBinned("$cutSettings",8,$argumentSignal,"$fileData","$signalName","recreate")
-//Secondary("$cutSettings",0.12,"$fileData","$fileMC","$PrimaryHe3",false)
-//Spectra("$cutSettings",8,0,$argumentSignal,$sigmoidFlag,"$spectraHistNameId","$spectraName","recreate","AnalysisResults","$signalName","$EfficiencyHe3","$PrimaryHe3")
+Secondary("$cutSettings",0.12,"$fileData","$fileMC","$PrimaryHe3",false)
+Spectra("$cutSettings",8,0,$argumentSignal,$sigmoidFlag,"$spectraHistNameId","$spectraName","recreate","AnalysisResults","$signalName","$EfficiencyHe3","$PrimaryHe3")
 //AbsorptionError("AbsErrorMCorrection","recreate","$spectraName")
 .q
 EOF
@@ -63,5 +63,5 @@ fi
 
 root -b -l <<EOF
 .L SpectraTPC.cpp+
-//SpectraTPC("$cutSettings",8,0,$argumentSignal,$sigmoidFlag,"$spectraHistNameId","$spectraNameTPC","recreate","AnalysisResults","$signalName","$EfficiencyHe3","$PrimaryHe3TPC")
+SpectraTPC("$cutSettings",8,0,$argumentSignal,$sigmoidFlag,"$spectraHistNameId","$spectraNameTPC","recreate","AnalysisResults","$signalName","$EfficiencyHe3","$PrimaryHe3TPC")
 EOF
