@@ -51,11 +51,11 @@ SPLIT_LIST = ['all']
 if SPLIT:
     SPLIT_LIST = ['antimatter', 'matter']
 
-raw_yields_file = ROOT.TFile('fit_14_noRadius_nodcaV0tracksCut_lambda_splitCentInMC_saveHistos_0_5.root')
+raw_yields_file = ROOT.TFile('corrYields_noRadius_nodcaV0tracksCut_lambda_splitCentInMC_saveHistos_0_5.root')
 score_eff_dict = pickle.load(open('second_round/file_score_eff_dict','rb'))
 eff_array = np.arange(0.10, MAX_EFF, 0.01)
 presel_eff_file = ROOT.TFile('PreselEff_0_5.root')
-f = ROOT.TFile("lifetime_14_noRadius_nodcaV0tracksCut_lambda_0_5_splitCentInMC__saveHistos_0_5.root","recreate")
+f = ROOT.TFile("lifetime_cutVar_noRadius_nodcaV0tracksCut_lambda_0_5_splitCentInMC__saveHistos_0_5.root","recreate")
 
 for split in SPLIT_LIST:
     split_ineq_sign = '> -0.1'
@@ -69,26 +69,29 @@ for split in SPLIT_LIST:
         cent_bins = CENTRALITY_LIST[i_cent_bins]
         h_pres_eff = presel_eff_file.Get(f"fPreselEff_vs_ct_{split}_{cent_bins[0]}_{cent_bins[1]};1")
         for ct_bins in zip(CT_BINS_CENT[i_cent_bins][:-1], CT_BINS_CENT[i_cent_bins][1:]):
-            if (ct_bins[0] < 10 or ct_bins[1] > 40): # or (ct_bins[0] > 32 and ct_bins[1] < 35):
+            if (ct_bins[0] < 5 or ct_bins[1] > 15): # or (ct_bins[0] > 32 and ct_bins[1] < 35):
                 continue
-            h_raw = raw_yields_file.Get(f"{split}_{cent_bins[0]}_{cent_bins[1]}_{ct_bins[0]}_{ct_bins[1]}_pol/fRawYields_pol")
+            split_lett = 'M'
+            if split == 'antimatter':
+                split_lett = 'A'
+            h_raw = raw_yields_file.Get(f"{split}_{cent_bins[0]}_{cent_bins[1]}_{ct_bins[0]}_{ct_bins[1]}/f{split_lett}CorrYields_0_5")
             if not h_raw:
                 continue
             bin = f'{split}_{cent_bins[0]}_{cent_bins[1]}_{ct_bins[0]}_{ct_bins[1]}'
             print(bin)
 
             delta_t = ct_bins[1]-ct_bins[0]
-            raw_yield = h_raw.GetBinContent(h_raw.FindBin(0.8))
-            raw_yield_error = h_raw.GetBinError(h_raw.FindBin(0.8))
+            raw_yield = h_raw.GetBinContent(h_raw.FindBin(0.3))
+            raw_yield_error = h_raw.GetBinError(h_raw.FindBin(0.3))
             j = 0
             i = np.power(-1,j)*0.01*int(j/2)
-            while raw_yield < 1.e-6 and (0.8+i < 0.95) and (0.8+i > 0.85):
+            while raw_yield < 1.e-6 and (0.3+i < 0.95) and (0.3+i > 0.35):
                 i = np.power(-1,j)*0.01*int(j/2)
                 j = j + 1
-                raw_yield = h_raw.GetBinContent(h_raw.FindBin(0.8+i))
-                raw_yield_error = h_raw.GetBinError(h_raw.FindBin(0.8+i))
-            h.SetBinContent(h.FindBin(0.5*(ct_bins[0]+ct_bins[1])),raw_yield/delta_t/h_pres_eff.GetBinContent(h.FindBin(0.5*(ct_bins[0]+ct_bins[1]))))
-            h.SetBinError(h.FindBin(0.5*(ct_bins[0]+ct_bins[1])),raw_yield*h_pres_eff.GetBinError(h.FindBin(0.5*(ct_bins[0]+ct_bins[1])))/delta_t/h_pres_eff.GetBinContent(h.FindBin(0.5*(ct_bins[0]+ct_bins[1])))/h_pres_eff.GetBinContent(h.FindBin(0.5*(ct_bins[0]+ct_bins[1]))))
+                raw_yield = h_raw.GetBinContent(h_raw.FindBin(0.3+i))
+                raw_yield_error = h_raw.GetBinError(h_raw.FindBin(0.3+i))
+            h.SetBinContent(h.FindBin(0.5*(ct_bins[0]+ct_bins[1])),raw_yield/delta_t)
+            h.SetBinError(h.FindBin(0.5*(ct_bins[0]+ct_bins[1])),raw_yield_error/delta_t)
         h.Fit("expo","IMR+","",0,40)
         h.GetXaxis().SetTitle("#it{c}t (cm)")
         h.GetYaxis().SetTitle("d#it{N}/d(#it{c}t) (cm^{-1})")
@@ -112,7 +115,7 @@ for split in SPLIT_LIST:
         #     for ct_bins in zip(CT_BINS_CENT[i_cent_bins][:-1], CT_BINS_CENT[i_cent_bins][1:]):
         #         if ct_bins[0] < 7 or ct_bins[1] > 40:
         #             continue
-        #         cut_rndm = ROOT.gRandom.Rndm()*0.1+0.85
+        #         cut_rndm = ROOT.gRandom.Rndm()*0.1+0.35
         #         bkg_index = int(ROOT.gRandom.Rndm())
         #         h_raw = raw_yields_file.Get(f"{split}_{cent_bins[0]}_{cent_bins[1]}_{ct_bins[0]}_{ct_bins[1]}_{bkg_function[bkg_index]}/fRawYields_{bkg_function[bkg_index]}")
         #         if not h_raw:

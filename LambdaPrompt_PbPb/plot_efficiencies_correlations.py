@@ -109,7 +109,7 @@ if SPLIT:
 
 if TRAINING:
 
-    df_signal = uproot.open("/data/mciacco/LambdaPrompt_PbPb/AnalysisResults_fullMC.root")['LambdaTree'].arrays(library="pd")
+    df_signal = uproot.open("/data/mciacco/LambdaPrompt_PbPb/AnalysisResults_reweight_BW_0_5.root")['LambdaTree'].arrays(library="pd")
 
     # make plot directory
     if not os.path.isdir(PLOT_DIR):
@@ -136,15 +136,15 @@ if TRAINING:
                 ##############################################################
                 # df_generated = uproot.open(os.path.expandvars(MC_SIGNAL_PATH_GEN))['LambdaTree'].arrays(library="pd")
                 df_signal_cent = df_signal.query(
-                    f'matter {split_ineq_sign} and centrality > {cent_bins[0]} and centrality < {cent_bins[1]} and pt > 0.5 and pt < 3.5 and isReconstructed and tpcClV0Pi > 69 and tpcClV0Pr > 69 and radius > 3 and radius < 100 and dcaPrPV < 20 and dcaPiPV < 20 and dcaV0PV < 10 and eta < 0.8 and eta > -0.8 and flag==1') # pt cut?
+                    f'matter {split_ineq_sign} and pt > 0.5 and pt < 3.5 and isReconstructed and tpcClV0Pi > 69 and tpcClV0Pr > 69 and radius > 3 and radius < 100 and dcaPrPV < 20 and dcaPiPV < 20 and dcaV0PV < 10 and eta < 0.8 and eta > -0.8 and flag==1') # and (hasTOFhit or hasITSrefit)') # pt cut? (hasTOFhit or hasITSrefit) and 
                 df_generated_cent = df_signal.query(
-                    f'pdg {split_ineq_sign} and centrality > {cent_bins[0]} and centrality < {cent_bins[1]} and ptMC > 0.5 and ptMC < 3.5 and flag==1') # pt cut?
+                    f'pdg {split_ineq_sign} and ptMC > 0.5 and ptMC < 3.5 and flag==1') # pt cut?
                 #del df_generated
 
                 # fill histograms (vs. ct and vs. pt)
                 hist_eff_ct = presel_eff_hist([df_signal_cent, df_generated_cent], 'ct', split, cent_bins, CT_BINS_CENT[i_cent_bins])
                 hist_eff_pt = presel_eff_hist([df_signal_cent, df_generated_cent], 'pt', split, cent_bins, PT_BINS)
-
+                
                 # plot histograms
                 if not os.path.isdir(f'{PLOT_DIR}/presel_eff'):
                     os.mkdir(f'{PLOT_DIR}/presel_eff')
@@ -168,14 +168,14 @@ if TRAINING:
         ######################################################################
 
     del df_signal
-    df_signal = uproot.open(os.path.expandvars("/data/mciacco/LambdaPrompt_PbPb/AnalysisResults_fullMC.root"))['LambdaTree'].arrays(library="pd")
+    df_signal = uproot.open(os.path.expandvars("/data/mciacco/LambdaPrompt_PbPb/AnalysisResults_reweight_BW_0_5.root"))['LambdaTree'].arrays(library="pd")
     # second condition needed because of issue with Qt libraries
     if MAKE_FEATURES_PLOTS and not MAKE_PRESELECTION_EFFICIENCY and not TRAIN:
         ######################################################
         # PLOT FEATURES DISTRIBUTIONS AND CORRELATIONS
         ######################################################
 
-        df_background = uproot.open(os.path.expandvars("/data/mciacco/LambdaPrompt_PbPb/trainingBackground.root"))['LambdaTree'].arrays(library="pd")
+        df_background = uproot.open(os.path.expandvars("/data/mciacco/LambdaPrompt_PbPb/trainingBackground_0_5.root"))['LambdaTree'].arrays(library="pd")
         df_prompt_ct = df_signal.query(f'pt > 0 and pt < 3.5 and flag==1 and isReconstructed and tpcClV0Pi > 69 and tpcClV0Pr > 69 and radius > 3 and radius < 100 and dcaPrPV < 20 and dcaPiPV < 20 and dcaV0PV < 10 and eta < 0.8 and eta > -0.8') # pt cut?
         df_non_prompt_ct = df_signal.query(f'pt > 0 and pt < 3.5 and (flag==2 or flag==4) and isReconstructed and tpcClV0Pi > 69 and tpcClV0Pr > 69 and radius > 3 and radius < 100 and dcaPrPV < 20 and dcaPiPV < 20 and dcaV0PV < 10 and eta < 0.8 and eta > -0.8') # pt cut?
         df_background_ct = df_background.query(f'pt > 0 and pt < 3.5 and tpcClV0Pi > 69 and tpcClV0Pr > 69 and radius > 3 and radius < 100 and dcaPrPV < 20 and dcaPiPV < 20 and dcaV0PV < 10 and eta < 0.8 and eta > -0.8') # pt cut?
