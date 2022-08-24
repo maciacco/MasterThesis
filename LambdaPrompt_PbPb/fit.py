@@ -16,7 +16,9 @@ MAX_EFF = 1
 
 N_BINS_INV_MASS = 200
 N_BINS_OUTPUT_SCORE = 100
-SHM_FRAC = [0.505269,0.505189,0.505109,0.505031,0.504954,0.504877,0.504802,0.504727,0.504653,0.50458,0.504508,0.504436,0.504365,0.504295,0.504225,0.504156,0.504088,0.50402,0.503953,0.503886,0.50382]
+SHM_XI_MINUS = [0.000305003,0.000329881,0.000356453,0.000384808,0.000415043,0.000447256,0.000481548,0.000518026,0.000556799,0.000597981,0.000641689,0.000688045,0.000737174,0.000789207,0.000844277,0.000902522,0.000964086,0.00102912,0.00109776,0.00117018,0.00124654]
+SHM_XI_ZERO = [0.000311499,0.000336799,0.000363813,0.000392631,0.00042335,0.000456068,0.000490888,0.000527915,0.00056726,0.000609038,0.000653365,0.000700363,0.000750159,0.000802882,0.000858667,0.000917653,0.000979981,0.0010458,0.00111526,0.00118852,0.00126573]
+SHM_OM = [4.5159e-05,4.94286e-05,5.40398e-05,5.9015e-05,6.43773e-05,7.0151e-05,7.63618e-05,8.30361e-05,9.02019e-05,9.78884e-05,0.000106126,0.000114946,0.000124381,0.000134467,0.000145239,0.000156733,0.000168989,0.000182047,0.000195948,0.000210736,0.000226455]
 ROOT.gInterpreter.ProcessLine("#include \"../utils/RooDSCBShape.h\"")
 ROOT.gInterpreter.ProcessLine(".L ../utils/RooDSCBShape.cxx+")
 warnings.simplefilter(action='ignore', category=FutureWarning)
@@ -68,11 +70,18 @@ for i_cent_bins in range(len(CENTRALITY_LIST)):
 
     cent_bins = CENTRALITY_LIST[i_cent_bins]
     df_data = uproot.open(os.path.expandvars(f"/data/mciacco/LambdaPrompt_PbPb/AnalysisResults_LHC18qr_Lambda_{cent_bins[0]}_{cent_bins[1]}.root"))['LambdaTreeBDTOut'].arrays(library="pd")
+    df_mc_tot = uproot.open(os.path.expandvars(f"/data/mciacco/LambdaPrompt_PbPb/AnalysisResults_reweight_BW_{cent_bins[0]}_{cent_bins[1]}.root"))['LambdaTree'].arrays(library="pd")
+    df_mc_tot_om = df_mc_tot.query("ptMC > 0.5 and ptMC < 3.5 and flag==4")
+    n_gen_om = df_mc_tot_om.shape[0]
+    df_mc_xi0_tot = uproot.open(os.path.expandvars(f"/data/mciacco/LambdaPrompt_PbPb/AnalysisResults_Xi0_reweight_BW_{cent_bins[0]}_{cent_bins[1]}.root"))['LambdaTree'].arrays(library="pd")
+    df_mc_xi0_tot_filter = df_mc_xi0_tot.query("ptMC > 0.5 and ptMC < 3.5 and flag==2")
+    n_gen_xi0 = df_mc_xi0_tot_filter["weightMC"].sum()
+    n_gen_xi = df_mc_xi0_tot_filter.shape[0]
 
     if not os.path.isdir(f"plots/signal_extraction_/{cent_bins[0]}_{cent_bins[1]}"):
         os.mkdir(f"plots/signal_extraction_/{cent_bins[0]}_{cent_bins[1]}")
     for ct_ in CT_BINS:
-        if ct_[0] < 7 or ct_[1] > 40:
+        if ct_[0] < 10 or ct_[1] > 15:
             continue
         df_data__ = df_data.query(f"mass > 1.09 and mass < 1.15 and ct >= {ct_[0]} and ct < {ct_[1]}")
         for ct_bins in zip(CT_BINS_CENT[i_cent_bins][:-1], CT_BINS_CENT[i_cent_bins][1:]):
@@ -102,19 +111,12 @@ for i_cent_bins in range(len(CENTRALITY_LIST)):
             df_mc_prompt = df_mc.query('flag==1')
             df_mc_np_xi = df_mc.query('flag==2')
             df_mc_np_om = df_mc.query('flag==4')
-            weights_sum = df_mc_np_xi['weightMC'].sum()
-            entries_sum = df_mc_np_xi.shape[0]
-            print(f'weights_sum = {weights_sum}, entries_sum = {entries_sum}')
-            df_mc_np_xi0 = df_mc_np_xi.sample(frac=SHM_FRAC[10])
+            df_mc_np_xi0 = df_mc_np_xi.sample(frac=0.5)
             df_mc_np_xi.drop(df_mc_np_xi0.index)
-            weight_list = []
-            for _ in np.arange(df_mc_np_xi.shape[0]):
-                weight_list.append(weights_sum/entries_sum)
-            df_mc_np_xi.loc[:,'weightXiMinus'] = weight_list
 
             # merge mc data frames
             df_mc_np_xi0['flagXi0'] = df_mc_np_xi0['flag']
-            df_mc__ = [df_mc_np_xi0,df_mc_np_xi,df_mc_prompt]
+            df_mc__ = [df_mc_np_xi0,df_mc_np_xi,df_mc_np_om,df_mc_prompt]
             df_mc_ = pd.concat(df_mc__)
             df_mc_['bdtOutputBackground'] = df_mc_['model_output_background']
             df_mc_ = df_mc_.query(f'ct > {ct_bins[0]} and ct < {ct_bins[1]} and mass > 1.09 and mass < 1.15')
@@ -157,8 +159,8 @@ for i_cent_bins in range(len(CENTRALITY_LIST)):
                     # get prompt bdt prompt
                     data_bdt_prompt_out = df_data_cut["bdtOutputPrompt"]
                     mc_prompt_bdt_prompt_out = df_mc_cut.query("flag == 1")["model_output_prompt"]
-                    mc_non_prompt_bdt_prompt_out_xiMinus = df_mc_cut.query("flag==2 and weightXiMinus>0")["model_output_prompt"]
-                    mc_non_prompt_weights_out_xiMinus = df_mc_cut.query("flag==2 and weightXiMinus>0")["weightXiMinus"]
+                    mc_non_prompt_bdt_prompt_out_xiMinus = df_mc_cut.query("flag==2")["model_output_prompt"]
+                    mc_non_prompt_bdt_prompt_out_Omega = df_mc_cut.query("flag==4")["model_output_prompt"]
                     mc_non_prompt_bdt_prompt_out_xiZero = df_mc_cut.query("flag==2 and flagXi0==2")["model_output_prompt"]
                     mc_non_prompt_weights_out_xiZero = df_mc_cut.query("flag==2 and flagXi0==2")["weightMC"]
                     mc_background_bdt_prompt_out = df_mc_cut_bkg["bdtOutputPrompt"]
@@ -209,8 +211,28 @@ for i_cent_bins in range(len(CENTRALITY_LIST)):
                         bdt_mc_prompt = ROOT.RooDataHist("dp", "dp", ROOT.RooArgList(bdt_out), bdt_roo_mc_prompt)
                         bdt_mc_prompt_pdf = ROOT.RooHistPdf("dppdf", "dppdf", ROOT.RooArgList(bdt_out), bdt_mc_prompt)
                         h_np_xi = ROOT.TH1D("h_np_xi","h_np_xi",N_BINS_OUTPUT_SCORE,0,1)
-                        h_np_xi.FillN(mc_non_prompt_bdt_prompt_out_xiMinus.shape[0],np.asarray(mc_non_prompt_bdt_prompt_out_xiMinus.to_numpy(),dtype='float'),np.asarray(mc_non_prompt_weights_out_xiMinus.to_numpy(),dtype='float'))
-                        h_np_xi.FillN(mc_non_prompt_bdt_prompt_out_xiZero.shape[0],np.asarray(mc_non_prompt_bdt_prompt_out_xiZero.to_numpy(),dtype='float'),np.asarray(mc_non_prompt_weights_out_xiZero.to_numpy(),dtype='float'))
+                        h_np_om = ROOT.TH1D("h_np_om","h_np_om",N_BINS_OUTPUT_SCORE,0,1)
+                        h_np_xi_ = ROOT.TH1D("h_np_xi_zero","h_np_xi_zero",N_BINS_OUTPUT_SCORE,0,1)
+                        h_np_xi_w = np.full((1,mc_non_prompt_bdt_prompt_out_xiMinus.shape[0]),1,dtype='float')
+                        h_np_om_w = np.full((1,mc_non_prompt_bdt_prompt_out_Omega.shape[0]),1,dtype='float')
+                        h_np_xi.FillN(mc_non_prompt_bdt_prompt_out_xiMinus.shape[0],np.asarray(mc_non_prompt_bdt_prompt_out_xiMinus.to_numpy(),dtype='float'),h_np_xi_w)
+                        eff_xi_minus = h_np_xi.Integral()/n_gen_xi
+                        h_np_xi_.FillN(mc_non_prompt_bdt_prompt_out_xiZero.shape[0],np.asarray(mc_non_prompt_bdt_prompt_out_xiZero.to_numpy(),dtype='float'),np.asarray(mc_non_prompt_weights_out_xiZero.to_numpy(),dtype='float'))
+                        eff_xi_zero = h_np_xi_.Integral()/n_gen_xi0
+                        h_np_om.FillN(mc_non_prompt_bdt_prompt_out_Omega.shape[0],np.asarray(mc_non_prompt_bdt_prompt_out_Omega.to_numpy(),dtype='float'),h_np_om_w)
+                        eff_om = h_np_om.Integral()/n_gen_om
+                        print(f"eff_xi_minus = {eff_xi_minus}, eff_xi_zero = {eff_xi_zero}, eff_om = {eff_om}")
+                        f_xi_minus = SHM_XI_MINUS[10]*eff_xi_minus/(SHM_XI_MINUS[10]*eff_xi_minus+SHM_XI_ZERO[10]*eff_xi_zero+SHM_OM[10]*0.678*eff_om)
+                        f_xi_zero = SHM_XI_ZERO[10]*eff_xi_zero/(SHM_XI_MINUS[10]*eff_xi_minus+SHM_XI_ZERO[10]*eff_xi_zero+SHM_OM[10]*0.678*eff_om)
+                        f_om = 0.678*SHM_OM[10]*eff_om/(SHM_XI_MINUS[10]*eff_xi_minus+SHM_XI_ZERO[10]*eff_xi_zero+SHM_OM[10]*0.678*eff_om)
+                        h_np_xi.Scale(f_xi_minus/h_np_xi.Integral())
+                        h_np_xi_.Scale(f_xi_zero/h_np_xi_.Integral())
+                        h_np_om.Scale(f_om/h_np_om.Integral())
+                        h_np_xi_minus = ROOT.TH1D(h_np_xi)
+                        h_np_xi_minus.SetName("h_np_xi_minus")
+                        h_np_xi.Add(h_np_xi_)
+                        h_np_xi.Add(h_np_om)
+                        
                         bdt_mc_non_prompt = ROOT.RooDataHist("dnp", "dnp", ROOT.RooArgList(bdt_out), h_np_xi)
                         bdt_mc_non_prompt_pdf = ROOT.RooHistPdf("dnppdf", "dnppdf", ROOT.RooArgList(bdt_out), bdt_mc_non_prompt)
                         bdt_roo_mc_bkg = helpers.ndarray2roo(mc_background_bdt_prompt_out.to_numpy(), bdt_out)
@@ -381,6 +403,9 @@ for i_cent_bins in range(len(CENTRALITY_LIST)):
                         h_p.Write()
                         h_np.Write()
                         h_b.Write()
+                        h_np_xi_minus.Write()
+                        h_np_om.Write()
+                        h_np_xi_.Write()
                         c_ratio_data_MC.Write()
                         c_sim_fit = ROOT.TCanvas(f"cSimFit_{ct_bins[0]}_{ct_bins[1]}_{bdt_eff:.2f}",f"cSimFit_{ct_bins[0]}_{ct_bins[1]}_{bdt_eff:.2f}",1200,550)
                         c_sim_fit.Divide(2,1)
