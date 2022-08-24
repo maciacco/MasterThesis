@@ -1,11 +1,11 @@
 // particle sequence: pions, protons, hypertriton ,he3
 
-constexpr float minpt[] = {0.66, 0.9, 0., 1.6};
+constexpr float minpt[] = {0.66, 0.4, 0., 1.6};
 constexpr float maxpt[] = {1.64, 3.1, 37., 8.4};
 constexpr float miny[] = {0.965, 0.94, 0.3, 0.55};
 constexpr float maxy[] = {1.035, 1.06, 1.7, 1.45};
 const char *histoTitles[] = {";#it{p}_{T} (GeV/#it{c});#pi^{-}/#pi^{+};", ";#it{p}_{T} (GeV/#it{c});#bar{p}/p;", ";#it{ct} (cm);{}^{3}_{#bar{#Lambda}}#bar{H}/^{3}_{#Lambda}H;", ";#it{p}_{T} (GeV/#it{c});^{3}#bar{He}/^{3}He;"};
-const char *inputFiles[] = {"Pion_PbPb/out/SystematicsAllEPtNotCombined.root", "Proton_PbPb/out/SystematicsAllEPtNotCombined.root", "Hypertriton_PbPb/Ratio.root", "He3_PbPb/out/SpectraHe3.root"};
+const char *inputFiles[] = {"Pion_PbPb/out/SystematicsAllEPtNotCombined.root", "Proton_PbPb/out/SystematicsAllEPtNotCombinedTOFTEST.root", "Hypertriton_PbPb/Ratio.root", "He3_PbPb/out/SpectraHe3.root"};
 const char *outputFiles[] = {"pion","proton","hyp","he3"};
 const char *inputFilesSys[] = {"", "", "Hypertriton_PbPb/Systematics.root", "He3_PbPb/out/SystematicsAll.root"};
 const char *inputHistoSys[] = {"", "", "fParameterDistribution_%s", "hist/fFitPar_%s"};
@@ -73,8 +73,8 @@ std::array<TPad*,3> CreatePads(TCanvas* &cv, int i_part=0)
 }
 
 Color_t colors[]={kOrange+7, kAzure+4, kTeal+4};
-double x_limits[][2]={{0.7,1.6},{1., 3.},{2., 35.},{2., 8.}};
-double x_limits_30_50[][2]={{0.7,1.6},{1., 3.},{2., 14.},{2., 7.}};
+double x_limits[][2]={{0.7,1.6},{0.5, 3.},{2., 35.},{2., 8.}};
+double x_limits_30_50[][2]={{0.7,1.6},{.5, 3.},{2., 14.},{2., 7.}};
 double material_ratio_instance[] = {4,3,2,1};
 const char *format_fit_results[] = {"R=%.3f #pm0.000 (stat.) #pm%.3f (syst.) #pm%.3f (mat.)","R=%.3f #pm0.000 (stat.) #pm%.3f (syst.) #pm%.3f (mat.)","R=%.2f #pm%.2f (stat.) #pm%.2f (syst.) #pm%.2f (mat.)","R=%.2f #pm%.2f (stat.) #pm%.2f (syst.) #pm%.2f (mat.)"};
 
@@ -169,6 +169,6 @@ void newratios() {
         else text.DrawLatex(mean_x-0.91*half_width_x,mean_y-0.8*half_width_y,Form(format_fit_results[i_part],h[iP]->GetFunction("pol0")->GetParameter(0),h[iP]->GetFunction("pol0")->GetParError(0),sys_err,material_error));
       }
     }
-    cv->SaveAs(Form("RatioRun2_%s.eps",outputFiles[i_part]));
+    cv->SaveAs(Form("RatioRun2_%s.pdf",outputFiles[i_part]));
   }
 }

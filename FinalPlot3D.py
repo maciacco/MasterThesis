@@ -43,7 +43,7 @@ for i_cent, cent in enumerate(centrality_classes):
         file_material_budget_hyp = ROOT.TFile.Open("MaterialBudgetUncertaintyHyp.root")
         file_he3 = ROOT.TFile.Open(path_he3 + '/SpectraHe3.root')
         file_hyp = ROOT.TFile.Open(path_hyp + '/Ratio.root')
-        file_proton = ROOT.TFile.Open(path_proton + '/SystematicsAllEPtNotCombined.root')
+        file_proton = ROOT.TFile.Open(path_proton + '/SystematicsAllEPtNotCombinedTOFTEST.root')
         file_pion = ROOT.TFile.Open(path_pion + '/SystematicsAllEPtNotCombined.root')
         file_he3_syst = ROOT.TFile.Open(path_he3 + '/SystematicsAll.root')
         file_he3_syst_eff_prim = ROOT.TFile.Open(path_he3 + '/SystematicsEfficiencyPrimary.root')
@@ -70,6 +70,8 @@ for i_cent, cent in enumerate(centrality_classes):
         f_material_budget_antihyp = file_material_budget_hyp.Get(f"{cent[0]}_{cent[1]}/BGBW/fCorrection_antimatter_{cent[0]}_{cent[1]}_BGBW")
         f_material_budget_proton = file_material_budget.Get(f"fMProtonEffError_{cent[0]}_{cent[1]}")
         f_material_budget_antiproton = file_material_budget.Get(f"fAProtonEffError_{cent[0]}_{cent[1]}")
+        f_material_budget_proton_lowPT = file_material_budget.Get(f"fMProtonLowPTEffError_{cent[0]}_{cent[1]}")
+        f_material_budget_antiproton_lowPT = file_material_budget.Get(f"fAProtonLowPTEffError_{cent[0]}_{cent[1]}")
         f_material_budget_pion = file_material_budget.Get(f"fMPionEffError_{cent[0]}_{cent[1]}")
         f_material_budget_antipion = file_material_budget.Get(f"fAPionEffError_{cent[0]}_{cent[1]}")
         for i_bins in range(ratio_he3.GetNbinsX()):
@@ -93,8 +95,11 @@ for i_cent, cent in enumerate(centrality_classes):
             tmp_error_proton = f_material_budget_proton.GetFunction("fitFunction").Eval(tmp_bin_pt)
             tmp_error_antiproton = f_material_budget_antiproton.GetFunction("fitFunction").Eval(tmp_bin_pt)
             tmp_bin_content = ratio_proton.GetBinContent(i_bins)
+            if tmp_bin_pt<0.81:
+                tmp_error_proton = f_material_budget_proton_lowPT.GetFunction("fitFunction").Eval(tmp_bin_pt)
+                tmp_error_antiproton = f_material_budget_antiproton_lowPT.GetFunction("fitFunction").Eval(tmp_bin_pt)
             ratio_proton.SetBinContent(i_bins,tmp_bin_content*(1.+sign*np.sqrt(tmp_error_proton*tmp_error_proton+tmp_error_antiproton*tmp_error_antiproton)))
-        ratio_proton.Fit("pol0","QR","",1.,3.)
+        ratio_proton.Fit("pol0","QR","",0.5,3.)
         ratio_proton.Write()
         for i_bins in range(ratio_pion.GetNbinsX()):
             tmp_bin_pt = ratio_pion.GetBinCenter(i_bins)
