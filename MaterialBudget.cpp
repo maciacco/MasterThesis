@@ -38,7 +38,8 @@ void MaterialBudget(){
         }
         for (int iVar=0; iVar<2; ++iVar){
           effRatio[iSp][iM][iVar]=new TH1D(*eff[0]);
-          effRatio[iSp][iM][iVar]->SetName(Form("f%s%sEffRatio%s_%.0f_%.0f",antiMatter[iM],species[iSp],var[iVar],cent[iC][0],cent[iC][1]));
+          if (iSp<3) effRatio[iSp][iM][iVar]->SetName(Form("f%s%sEffRatio%s_%.0f_%.0f",antiMatter[iM],species[iSp],var[iVar],cent[iC][0],cent[iC][1]));
+          else if (iSp==3) effRatio[iSp][iM][iVar]->SetName(Form("f%s%sLowPTEffRatio%s_%.0f_%.0f",antiMatter[iM],species[iSp],var[iVar],cent[iC][0],cent[iC][1]));
           iVar == 0 ? effRatio[iSp][iM][iVar]->Divide(eff[0],eff[1]) : effRatio[iSp][iM][iVar]->Divide(eff[2],eff[1]);
           for (int iP=1;iP<effRatio[iSp][iM][iVar]->GetNbinsX();++iP){
             if (effRatio[iSp][iM][iVar]->GetBinContent(iP)<1.e-9) effRatio[iSp][iM][iVar]->SetBinError(iP,0.);

@@ -169,6 +169,6 @@ void newratios() {
         else text.DrawLatex(mean_x-0.91*half_width_x,mean_y-0.8*half_width_y,Form(format_fit_results[i_part],h[iP]->GetFunction("pol0")->GetParameter(0),h[iP]->GetFunction("pol0")->GetParError(0),sys_err,material_error));
       }
     }
-    cv->SaveAs(Form("RatioRun2_%s.pdf",outputFiles[i_part]));
+    cv->SaveAs(Form("RatioRun2_%s.eps",outputFiles[i_part]));
   }
 }

@@ -351,6 +351,7 @@ void SystematicsPtNotCombinedTPC(const int points = kNPoints, const bool cutVar 
       fSystematicUncertaintyDCAz.SetBinError(iPtBins,0);
 
       proj=fRatiosVsPtPID.ProjectionY("py",iPtBins,iPtBins);
+      if (iC==1)remove_outliers(proj,1.3);
       if (proj->GetEntries()==0 || proj->GetMean()==0){
         fSystematicUncertaintyPID.SetBinContent(iPtBins,0);
       }
@@ -359,6 +360,7 @@ void SystematicsPtNotCombinedTPC(const int points = kNPoints, const bool cutVar 
       }fSystematicUncertaintyPID.SetBinError(iPtBins,0);
 
       proj=fRatiosVsPtTPCCls.ProjectionY("py",iPtBins,iPtBins);
+      if (iC==1)remove_outliers(proj,1.3);
       if (proj->GetEntries()==0 || proj->GetMean()==0){
         fSystematicUncertaintyTPCCls.SetBinContent(iPtBins,0);
       }
@@ -368,6 +370,7 @@ void SystematicsPtNotCombinedTPC(const int points = kNPoints, const bool cutVar 
       fSystematicUncertaintyTPCCls.SetBinError(iPtBins,0);
 
       proj=fRatiosVsPtDCAxy.ProjectionY("py",iPtBins,iPtBins);
+      remove_outliers(proj,1.3);
       if (proj->GetEntries()==0 || proj->GetMean()==0){
         fSystematicUncertaintyDCAxy.SetBinContent(iPtBins,0);
       }

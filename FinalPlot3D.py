@@ -37,7 +37,7 @@ gMuICent = ROOT.TGraphErrors()
 for i_cent, cent in enumerate(centrality_classes):
     results_muB = []
     results_muI = []
-    for sign in [-1.,1.,0.]:
+    for sign in ["Minus","Plus","STD"]:
         # get histograms
         file_material_budget = ROOT.TFile.Open("MaterialBudgetUncertainty.root")
         file_material_budget_hyp = ROOT.TFile.Open("MaterialBudgetUncertaintyHyp.root")
@@ -64,49 +64,60 @@ for i_cent, cent in enumerate(centrality_classes):
         ratio_pion_pt_correlated = file_pion.Get(f'fRatioDistributionTrials_{cent[0]}_{cent[1]}')
 
         # apply material budget variation
-        f_material_budget_he3 = file_material_budget.Get(f"fMHe3EffError_{cent[0]}_{cent[1]}")
-        f_material_budget_antihe3 = file_material_budget.Get(f"fAHe3EffError_{cent[0]}_{cent[1]}")
+        f_material_budget_he3 = file_material_budget.Get(f"fMHe3EffRatio{sign}_{cent[0]}_{cent[1]}")
+        f_material_budget_antihe3 = file_material_budget.Get(f"fAHe3EffRatio{sign}_{cent[0]}_{cent[1]}")
         f_material_budget_hyp = file_material_budget_hyp.Get(f"{cent[0]}_{cent[1]}/BGBW/fCorrection_matter_{cent[0]}_{cent[1]}_BGBW")
         f_material_budget_antihyp = file_material_budget_hyp.Get(f"{cent[0]}_{cent[1]}/BGBW/fCorrection_antimatter_{cent[0]}_{cent[1]}_BGBW")
-        f_material_budget_proton = file_material_budget.Get(f"fMProtonEffError_{cent[0]}_{cent[1]}")
-        f_material_budget_antiproton = file_material_budget.Get(f"fAProtonEffError_{cent[0]}_{cent[1]}")
-        f_material_budget_proton_lowPT = file_material_budget.Get(f"fMProtonLowPTEffError_{cent[0]}_{cent[1]}")
-        f_material_budget_antiproton_lowPT = file_material_budget.Get(f"fAProtonLowPTEffError_{cent[0]}_{cent[1]}")
-        f_material_budget_pion = file_material_budget.Get(f"fMPionEffError_{cent[0]}_{cent[1]}")
-        f_material_budget_antipion = file_material_budget.Get(f"fAPionEffError_{cent[0]}_{cent[1]}")
-        for i_bins in range(ratio_he3.GetNbinsX()):
-            tmp_bin_pt = ratio_he3.GetBinCenter(i_bins)
-            tmp_error_he3 = f_material_budget_he3.GetFunction("fitFunction").Eval(tmp_bin_pt)
-            tmp_error_antihe3 = f_material_budget_antihe3.GetFunction("fitFunction").Eval(tmp_bin_pt)
-            tmp_bin_content = ratio_he3.GetBinContent(i_bins)
-            ratio_he3.SetBinContent(i_bins,tmp_bin_content*(1.+sign*np.sqrt(tmp_error_he3*tmp_error_he3+tmp_error_antihe3*tmp_error_antihe3)))
+        f_material_budget_proton = file_material_budget.Get(f"fMProtonEffRatio{sign}_{cent[0]}_{cent[1]}")
+        f_material_budget_antiproton = file_material_budget.Get(f"fAProtonEffRatio{sign}_{cent[0]}_{cent[1]}")
+        f_material_budget_proton_lowPT = file_material_budget.Get(f"fMProtonLowPTEffRatio{sign}_{cent[0]}_{cent[1]}")
+        f_material_budget_antiproton_lowPT = file_material_budget.Get(f"fAProtonLowPTEffRatio{sign}_{cent[0]}_{cent[1]}")
+        f_material_budget_pion = file_material_budget.Get(f"fMPionEffRatio{sign}_{cent[0]}_{cent[1]}")
+        f_material_budget_antipion = file_material_budget.Get(f"fAPionEffRatio{sign}_{cent[0]}_{cent[1]}")
+        if sign!= "STD":
+            for i_bins in range(1,ratio_he3.GetNbinsX()+1):
+                tmp_bin_pt = ratio_he3.GetBinCenter(i_bins)
+                eff_ratio_mat_he3 = f_material_budget_he3.GetBinContent(i_bins)
+                eff_ratio_mat_antihe3 = f_material_budget_antihe3.GetBinContent(i_bins)
+                if eff_ratio_mat_antihe3 < 1.e-6 or eff_ratio_mat_he3 < 1.e-6:
+                    continue
+                print(f"eff_ratio_mat_he3 = {eff_ratio_mat_he3}, eff_ratio_mat_antihe3 = {eff_ratio_mat_antihe3}")
+                tmp_bin_content = ratio_he3.GetBinContent(i_bins)
+                ratio_he3.SetBinContent(i_bins,tmp_bin_content*(eff_ratio_mat_he3/eff_ratio_mat_antihe3))
         ratio_he3.Fit("pol0","QR","",2.,10.)
         ratio_he3.Write()
-        for i_bins in range(ratio_hyp.GetNbinsX()):
-            tmp_bin_ct = ratio_hyp.GetBinCenter(i_bins)
-            tmp_error_hyp = f_material_budget_hyp.GetBinContent(f_material_budget_hyp.FindBin(tmp_bin_ct))
-            tmp_error_antihyp = f_material_budget_antihyp.GetBinContent(f_material_budget_hyp.FindBin(tmp_bin_ct))
-            tmp_bin_content = ratio_hyp.GetBinContent(i_bins)
-            ratio_hyp.SetBinContent(i_bins,tmp_bin_content*(1.+sign*np.sqrt(tmp_error_hyp*tmp_error_hyp+tmp_error_antihyp*tmp_error_antihyp)))
+        # if sign!= "STD":
+        #     for i_bins in range(1,ratio_hyp.GetNbinsX()+1):
+        #         tmp_bin_ct = ratio_hyp.GetBinCenter(i_bins)
+        #         eff_ratio_mat_hyp = f_material_budget_hyp.GetBinContent(f_material_budget_hyp.FindBin(tmp_bin_ct))
+        #         eff_ratio_mat_antihyp = f_material_budget_antihyp.GetBinContent(f_material_budget_hyp.FindBin(tmp_bin_ct))
+        #         tmp_bin_content = ratio_hyp.GetBinContent(i_bins)
+        #         ratio_hyp.SetBinContent(i_bins,tmp_bin_content*(eff_ratio_mat_hyp/eff_ratio_mat_antihyp))
         ratio_hyp.Fit("pol0","QR","",0.,35.)
         ratio_hyp.Write()
-        for i_bins in range(ratio_proton.GetNbinsX()):
-            tmp_bin_pt = ratio_proton.GetBinCenter(i_bins)
-            tmp_error_proton = f_material_budget_proton.GetFunction("fitFunction").Eval(tmp_bin_pt)
-            tmp_error_antiproton = f_material_budget_antiproton.GetFunction("fitFunction").Eval(tmp_bin_pt)
-            tmp_bin_content = ratio_proton.GetBinContent(i_bins)
-            if tmp_bin_pt<0.81:
-                tmp_error_proton = f_material_budget_proton_lowPT.GetFunction("fitFunction").Eval(tmp_bin_pt)
-                tmp_error_antiproton = f_material_budget_antiproton_lowPT.GetFunction("fitFunction").Eval(tmp_bin_pt)
-            ratio_proton.SetBinContent(i_bins,tmp_bin_content*(1.+sign*np.sqrt(tmp_error_proton*tmp_error_proton+tmp_error_antiproton*tmp_error_antiproton)))
+        if sign!= "STD":
+            for i_bins in range(1,ratio_proton.GetNbinsX()+1):
+                tmp_bin_pt = ratio_proton.GetBinCenter(i_bins)
+                eff_ratio_mat_proton = f_material_budget_proton.GetBinContent(i_bins)
+                eff_ratio_mat_antiproton = f_material_budget_antiproton.GetBinContent(i_bins)
+                if eff_ratio_mat_antiproton < 1.e-6 or eff_ratio_mat_proton < 1.e-6:
+                    continue
+                tmp_bin_content = ratio_proton.GetBinContent(i_bins)
+                if tmp_bin_pt<0.81:
+                    eff_ratio_mat_proton = f_material_budget_proton_lowPT.GetBinContent(i_bins)
+                    eff_ratio_mat_antiproton = f_material_budget_antiproton_lowPT.GetBinContent(i_bins)
+                ratio_proton.SetBinContent(i_bins,tmp_bin_content*(eff_ratio_mat_proton/eff_ratio_mat_antiproton))
         ratio_proton.Fit("pol0","QR","",0.5,3.)
         ratio_proton.Write()
-        for i_bins in range(ratio_pion.GetNbinsX()):
-            tmp_bin_pt = ratio_pion.GetBinCenter(i_bins)
-            tmp_error_pion = f_material_budget_pion.GetFunction("fitFunction").Eval(tmp_bin_pt)
-            tmp_error_antipion = f_material_budget_antipion.GetFunction("fitFunction").Eval(tmp_bin_pt)
-            tmp_bin_content = ratio_pion.GetBinContent(i_bins)
-            ratio_pion.SetBinContent(i_bins,tmp_bin_content*(1.+sign*np.sqrt(tmp_error_pion*tmp_error_pion+tmp_error_antipion*tmp_error_antipion)))
+        if sign!= "STD":
+            for i_bins in range(1,ratio_pion.GetNbinsX()+1):
+                tmp_bin_pt = ratio_pion.GetBinCenter(i_bins)
+                eff_ratio_mat_pion = f_material_budget_pion.GetBinContent(i_bins)
+                eff_ratio_mat_antipion = f_material_budget_antipion.GetBinContent(i_bins)
+                if eff_ratio_mat_antipion < 1.e-6 or eff_ratio_mat_pion < 1.e-6:
+                    continue
+                tmp_bin_content = ratio_pion.GetBinContent(i_bins)
+                ratio_pion.SetBinContent(i_bins,tmp_bin_content*(eff_ratio_mat_pion/eff_ratio_mat_antipion))
         ratio_pion.Fit("pol0","QR","",0.7,1.6)
         ratio_pion.Write()
 
@@ -239,7 +250,7 @@ for i_cent, cent in enumerate(centrality_classes):
         # write to file
         ratios_vs_b.Write()
 
-        if sign!=0:
+        if sign!="STD":
             results_muB.append(fit_parameter_0*155)
             results_muI.append(fit_parameter_1*155)
             continue
