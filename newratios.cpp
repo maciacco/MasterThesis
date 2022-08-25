@@ -13,7 +13,7 @@ const char *inputFilesSysMC[] = {"", "", "", "He3_PbPb/out/SystematicsEfficiency
 const double xsec_err_sq[] = {0., 0.00115085*0.00115085+0.000172469*0.000172469, 0.00861352*0.00861352+0.00473124*0.00473124, 0.00861352*0.00861352+0.00473124*0.00473124};
 const char *dir[] = {"", "", "", "1.0_89_0.1_2.5_1_1_1/"};
 const int n_part = 4;
-const bool draw_text = false;
+const bool draw_text = true;
 
 std::array<TPad*,3> CreatePads(TCanvas* &cv, int i_part=0)
 {

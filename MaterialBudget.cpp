@@ -21,7 +21,7 @@ void MaterialBudget(){
           else f[iSp][iProd]=new TFile(Form("%s_PbPb/out/Efficiency%s_lowPt_LHC22b9_%d.root",species[iSp],species[iSp],iProd+1));
           if (!f[iSp][iProd]) continue;
           TString detector("TOF");
-          TString directory("_/");
+          TString directory("");
           if (iSp>1) {
             detector=Form("TPC");
             directory=Form("");
@@ -43,14 +43,6 @@ void MaterialBudget(){
           iVar == 0 ? effRatio[iSp][iM][iVar]->Divide(eff[0],eff[1]) : effRatio[iSp][iM][iVar]->Divide(eff[2],eff[1]);
           for (int iP=1;iP<effRatio[iSp][iM][iVar]->GetNbinsX();++iP){
             if (effRatio[iSp][iM][iVar]->GetBinContent(iP)<1.e-9) effRatio[iSp][iM][iVar]->SetBinError(iP,0.);
-            if (iSp==0 && effRatio[iSp][iM][iVar]->GetBinCenter(iP)>1.3 && effRatio[iSp][iM][iVar]->GetBinCenter(iP)<1.35){
-              effRatio[iSp][iM][iVar]->SetBinContent(iP,0.);
-              effRatio[iSp][iM][iVar]->SetBinError(iP,0.);
-            }
-            if (iSp==1 && effRatio[iSp][iM][iVar]->GetBinCenter(iP)>1.8 && effRatio[iSp][iM][iVar]->GetBinCenter(iP)<1.85){
-              effRatio[iSp][iM][iVar]->SetBinContent(iP,0.);
-              effRatio[iSp][iM][iVar]->SetBinError(iP,0.);
-            }
           }
           outFile.cd();
           effRatio[iSp][iM][iVar]->Write();
