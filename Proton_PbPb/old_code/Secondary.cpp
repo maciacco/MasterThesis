@@ -55,7 +55,7 @@ void Secondary(const char *cutSettings = "", const double DCAxyCut=0.12, const c
   // open files
   TFile *inFileDat = TFile::Open(Form("%s/%s_largeNsigma_cutDCAxyChi2TPC.root", kDataDir, inFileDatName));
   TFile *inFileMCInj = TFile::Open(Form("%s/%s.root", kDataDir, "AnalysisResults_LHC21l5_full_largeDCA_cutChi2"));
-  TFile *inFileMCGP = TFile::Open(Form("%s/AnalysisResults_LHC20e3_DCAChi2TPC_old2.root", kDataDir));
+  TFile *inFileMCGP = TFile::Open(Form("%s/AnalysisResults_LHC20e3_DCAChi2TPC_old.root", kDataDir));
   TFile *outFile = TFile::Open(Form("%s/%s.root", kOutDir, outFileName), "recreate");
 
   for (int iMatt = 0; iMatt < 2; ++iMatt)
@@ -91,7 +91,6 @@ void Secondary(const char *cutSettings = "", const double DCAxyCut=0.12, const c
     }
     TH3F *fDCAsec = (TH3F *)listMcGP->Get(Form("f%sDCASecondaryTOF", kAntimatterMatter[iMatt]));
     TH3F *fDCAsecWD = (TH3F *)listMcGP->Get(Form("f%sDCASecondaryWeakTOF", kAntimatterMatter[iMatt]));
-    fDCAprim->Write();
 
     for (int iCent = 0; iCent < kNCentClasses; ++iCent)
     {
@@ -117,11 +116,8 @@ void Secondary(const char *cutSettings = "", const double DCAxyCut=0.12, const c
         double ptMax = fPrimaryFrac.GetXaxis()->GetBinUpEdge(iPtBin);
         int pTbinsIndexMin = fDCAdat->GetYaxis()->FindBin(ptMin);
         int pTbinsIndexMax = fDCAdat->GetYaxis()->FindBin(ptMax - 0.005);
-        int pTbinsIndexMinMC = fDCAprim->GetYaxis()->FindBin(ptMin);
-        int pTbinsIndexMaxMC = fDCAprim->GetYaxis()->FindBin(ptMax - 0.005);
-        std::cout << "ptMin = " << ptMin << "; ptMax = " << ptMax << "; pTbinsIndexMin = " << pTbinsIndexMin << "; pTbinsIndexMax = " << pTbinsIndexMax << std::endl;
         outFile->cd();
-        if (ptMin<0.79) continue;
+
         // project TH3 histogram
         TH1D *fDCAdatProj;
         TH1D *fDCAMcProjPrim;
@@ -139,11 +135,14 @@ void Secondary(const char *cutSettings = "", const double DCAxyCut=0.12, const c
           fDCAdatProj->Fit("gaus","R","",-0.1,0.1);
           fPrimaryRMS.SetBinContent(iPtBin,fDCAdatProj->GetFunction("gaus")->GetParameter(2));
         }
-        fDCAMcProjPrim = fDCAprim->ProjectionZ(TString::Format("f%sDCAPrimaryTOF_%.0f_%.0f_%.2f_%.2f", kAntimatterMatter[iMatt], fDCAprim->GetXaxis()->GetBinLowEdge(kCentBinsProton[iCent][0]), fDCAprim->GetXaxis()->GetBinUpEdge(kCentBinsProton[iCent][1]), fDCAprim->GetYaxis()->GetBinLowEdge(pTbinsIndexMinMC), fDCAprim->GetYaxis()->GetBinUpEdge(pTbinsIndexMaxMC)), kCentBinsProton[iCent][0], kCentBinsProton[iCent][1], pTbinsIndexMinMC, pTbinsIndexMaxMC);
+        fDCAMcProjPrim = fDCAprim->ProjectionZ(TString::Format("f%sDCAPrimaryTOF_%.0f_%.0f_%.2f_%.2f", kAntimatterMatter[iMatt], fDCAdat->GetXaxis()->GetBinLowEdge(kCentBinsProton[iCent][0]), fDCAdat->GetXaxis()->GetBinUpEdge(kCentBinsProton[iCent][1]), fDCAdat->GetYaxis()->GetBinLowEdge(pTbinsIndexMin), fDCAdat->GetYaxis()->GetBinUpEdge(pTbinsIndexMax)), kCentBinsProton[iCent][0], kCentBinsProton[iCent][1], pTbinsIndexMin, pTbinsIndexMax);
         fDCAMcProjPrim->SetTitle(projTitle);
-        fDCAMcProjSec = fDCAsec->ProjectionZ(TString::Format("f%sDCASecondaryTOF_%.0f_%.0f_%.2f_%.2f", kAntimatterMatter[iMatt], fDCAprim->GetXaxis()->GetBinLowEdge(kCentBinsProton[iCent][0]), fDCAprim->GetXaxis()->GetBinUpEdge(kCentBinsProton[iCent][1]), fDCAprim->GetYaxis()->GetBinLowEdge(pTbinsIndexMinMC), fDCAprim->GetYaxis()->GetBinUpEdge(pTbinsIndexMaxMC)), kCentBinsProton[3][0], kCentBinsProton[3][1], pTbinsIndexMinMC, pTbinsIndexMaxMC);
+        if ((ptMin > 0.99 && ptMin < 1.01 && iCent==0 && iMatt==1)) fDCAMcProjSec = fDCAsec->ProjectionZ(TString::Format("f%sDCASecondaryTOF_%.0f_%.0f_%.2f_%.2f", kAntimatterMatter[iMatt], fDCAdat->GetXaxis()->GetBinLowEdge(kCentBinsProton[iCent][0]), fDCAdat->GetXaxis()->GetBinUpEdge(kCentBinsProton[iCent][1]), fDCAdat->GetYaxis()->GetBinLowEdge(pTbinsIndexMin), fDCAdat->GetYaxis()->GetBinUpEdge(pTbinsIndexMax)), kCentBinsProton[iCent][0], kCentBinsProton[iCent][1], pTbinsIndexMin, pTbinsIndexMax);
+        else fDCAMcProjSec = fDCAsec->ProjectionZ(TString::Format("f%sDCASecondaryTOF_%.0f_%.0f_%.2f_%.2f", kAntimatterMatter[iMatt], fDCAdat->GetXaxis()->GetBinLowEdge(kCentBinsProton[iCent][0]), fDCAdat->GetXaxis()->GetBinUpEdge(kCentBinsProton[iCent][1]), fDCAdat->GetYaxis()->GetBinLowEdge(pTbinsIndexMin), fDCAdat->GetYaxis()->GetBinUpEdge(pTbinsIndexMax)), kCentBinsProton[3][0], kCentBinsProton[3][1], pTbinsIndexMin, pTbinsIndexMax);
         fDCAMcProjSec->SetTitle(projTitle);
-        fDCAMcProjSecWD = fDCAsecWD->ProjectionZ(TString::Format("f%sDCASecondaryWeakTOF_%.0f_%.0f_%.2f_%.2f", kAntimatterMatter[iMatt], fDCAprim->GetXaxis()->GetBinLowEdge(kCentBinsProton[iCent][0]), fDCAprim->GetXaxis()->GetBinUpEdge(kCentBinsProton[iCent][1]), fDCAprim->GetYaxis()->GetBinLowEdge(pTbinsIndexMinMC), fDCAprim->GetYaxis()->GetBinUpEdge(pTbinsIndexMaxMC)), kCentBinsProton[3][0], kCentBinsProton[3][1], pTbinsIndexMinMC, pTbinsIndexMaxMC); // integrate over centrality at high pt
+        if (((ptMin < 0.83|| (ptMin>1.99 && ptMin<2.01)) && iCent==0) || (iCent==2 && ptMin<0.99)) fDCAMcProjSecWD = fDCAsecWD->ProjectionZ(TString::Format("f%sDCASecondaryWeakTOF_%.0f_%.0f_%.2f_%.2f", kAntimatterMatter[iMatt], fDCAdat->GetXaxis()->GetBinLowEdge(kCentBinsProton[iCent][0]), fDCAdat->GetXaxis()->GetBinUpEdge(kCentBinsProton[iCent][1]), fDCAdat->GetYaxis()->GetBinLowEdge(pTbinsIndexMin), fDCAdat->GetYaxis()->GetBinUpEdge(pTbinsIndexMax)), kCentBinsProton[iCent][0], kCentBinsProton[iCent][1], pTbinsIndexMin, pTbinsIndexMax);
+        else
+        fDCAMcProjSecWD = fDCAsecWD->ProjectionZ(TString::Format("f%sDCASecondaryWeakTOF_%.0f_%.0f_%.2f_%.2f", kAntimatterMatter[iMatt], fDCAdat->GetXaxis()->GetBinLowEdge(kCentBinsProton[iCent][0]), fDCAdat->GetXaxis()->GetBinUpEdge(kCentBinsProton[iCent][1]), fDCAdat->GetYaxis()->GetBinLowEdge(pTbinsIndexMin), fDCAdat->GetYaxis()->GetBinUpEdge(pTbinsIndexMax)), kCentBinsProton[3][0], kCentBinsProton[3][1], pTbinsIndexMin, pTbinsIndexMax); // integrate over centrality at high pt
         fDCAMcProjSecWD->SetTitle(projTitle);
 
         // rebin
@@ -292,31 +291,17 @@ void Secondary(const char *cutSettings = "", const double DCAxyCut=0.12, const c
         //   }
         // }
         // else if (iMatt == 0 && iCent == 2)
-        //   fit->Constrain(1,0.,0.9);
+        //   fit->Constrain(1,0.,1);
 
-        if (ptMin < noSecMaterialThreshold)fit->Constrain(2, 0., .5);
-        if (iCent==0 && ptMin < noSecMaterialThreshold)fit->Constrain(2, 0., 1.);
+        if (ptMin < noSecMaterialThreshold)fit->Constrain(2, 0., 1.0);
         fit->Constrain(1, 0., 1.0);
         fit->Constrain(0, 0., 1.0);
-        if (iCent==0&& ptMin > noSecMaterialThreshold && iMatt==1)
-          fit->Constrain(1, 0., .99);
-        if (iCent<2&& ptMin > 2.59 && ptMin<2.61 && iMatt==1){
-          fit->Constrain(1, 0., .2);
-          fit->Constrain(0, 0., .99);
-        }
-        if (iCent==1&&iMatt==0&&ptMin>2.15&&ptMin<2.25){
-          fit->Constrain(1, 0., .3);
-          fit->Constrain(0, 0., .9);
-        }
-        if (iCent==2&&iMatt==1&&ptMin>1.29&&ptMin<1.31){
-          fit->Constrain(1, 0., .7);
-          fit->Constrain(0, 0., .9);
-          fit->Constrain(2, 0., .3);
-        }
 
-        TVirtualFitter::SetMaxIterations(MAX_ITER); 
+        if (ptMin < noSecMaterialThreshold && (iCent==2 && ptMin > 0.94 && ptMin<0.96)) fit->Constrain(2, 0., .9);
+        if ((iCent==0 && ptMin<0.83) || (ptMin>1.99 && ptMin<2.01 && iCent==0) || (ptMin>2.4 && ptMin<2.5 && iCent==2) || (ptMin>2.7&& iCent==2))fit->Constrain(1, 0., .99);
+
+        //TVirtualFitter::SetMaxIterations(MAX_ITER); 
         Int_t status=-999;
-        //ROOT::Math::MinimizerOptions::SetDefaultStrategy(0);
         for(int I = 0; I<2; ++I)status = fit->Fit(); // perform the fit
         if (status != 0)
         {
@@ -327,28 +312,36 @@ void Secondary(const char *cutSettings = "", const double DCAxyCut=0.12, const c
           TVirtualFitter::SetMaxIterations(MAX_ITER);
 
           fit->SetRangeX(fDCAdatProj->FindBin(-fitRange), fDCAdatProj->FindBin(fitRange-0.001));
+          fitter->Config().ParSettings(0).SetValue(0.710);
+          fitter->Config().ParSettings(0).SetLimits(0.500, 0.990);
           fitter->Config().ParSettings(0).Release();
-          fitter->Config().ParSettings(0).SetValue(0.800);
-          fitter->Config().ParSettings(0).SetLimits(0.600, 1.000);
           fitter->Config().ParSettings(0).SetStepSize(1.e-4);
+          fitter->Config().ParSettings(1).SetValue(0.300);
+          fitter->Config().ParSettings(1).SetLimits(0.010, 0.500);
           fitter->Config().ParSettings(1).Release();
-          fitter->Config().ParSettings(1).SetValue(0.200);
-          fitter->Config().ParSettings(1).SetLimits(0.0001, 0.400);
           fitter->Config().ParSettings(1).SetStepSize(1.e-4);
           if (ptMin < noSecMaterialThreshold)
           {
-            fitter->Config().ParSettings(2).Release();
-            fitter->Config().ParSettings(2).SetLimits(0.00001, 0.1);
-            fitter->Config().ParSettings(2).SetStepSize(1e-4);
-            if (ptMin> 1.2 and ptMin<1.5 && iCent==2) {
-              fitter->Config().ParSettings(2).SetLimits(0.00001, 0.2);
-              fitter->Config().ParSettings(1).SetLimits(0.0001, 0.300);
+            if (iCent<2)fitter->Config().ParSettings(2).SetValue(0.050);
+            fitter->Config().ParSettings(2).SetLimits(0.001, 0.15);
+            if (iCent==0 && ptMin>0.99 && ptMin < 1.01){
+              fitter->Config().ParSettings(0).SetValue(0.810);
+              fitter->Config().ParSettings(0).SetLimits(0.500, 1.);
+              fitter->Config().ParSettings(2).SetValue(0.0001);
+              fitter->Config().ParSettings(2).SetLimits(0.00,0.4);
+              fitter->Config().ParSettings(1).SetValue(0.100);
+              fitter->Config().ParSettings(1).SetLimits(0.00, 1.00);
+              fitter->Config().ParSettings(1).Release();
+              fitter->Config().ParSettings(1).SetStepSize(1.e-5);
+              fitter->Config().ParSettings(0).SetStepSize(1.e-5);
             }
+            fitter->Config().ParSettings(2).Release();
+            fitter->Config().ParSettings(2).SetStepSize(1e-5);
           }
           //ROOT::Math::MinimizerOptions::SetDefaultStrategy(0);
           for(int I = 0; I<2; ++I)status = fit->Fit();
         }
-        if (status == 0)
+        if (true/* status == 0 */)
         { // check on fit status
           TH1F *result = (TH1F *)fit->GetPlot();
           TH1F *mc1 = (TH1F *)fit->GetMCPrediction(0);

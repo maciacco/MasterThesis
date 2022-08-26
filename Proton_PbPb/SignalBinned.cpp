@@ -66,7 +66,7 @@ void SignalBinned(const char *cutSettings = "", const double roi_nsigma = 8., co
   if (outFile->GetDirectory(Form("%s_%d_%d_%d", cutSettings, binCounting, bkg_shape,iNsigma)))
     return;
   TDirectory *dirOutFile = outFile->mkdir(Form("%s_%d_%d_%d", cutSettings, binCounting, bkg_shape, iNsigma));
-  TFile *dataFile = TFile::Open(TString::Format("%s/%s-48.root", kDataDir, inFileDat)); // open data TFile -48 _largeNsigma_cutDCAxyChi2TPC
+  TFile *dataFile = TFile::Open(TString::Format("%s/%s_largeNsigma_cutDCAxyChi2TPC.root", kDataDir, inFileDat)); // open data TFile -48 _largeNsigma_cutDCAxyChi2TPC
 
   if (!dataFile)
   {

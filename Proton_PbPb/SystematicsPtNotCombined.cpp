@@ -63,7 +63,7 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
   TFile *hijingFile = TFile::Open("../HIJINGRatios.root");
   //TFile *fileEffFit=TFile::Open("out/SpectraProton_MC21l5_raw_fitEff.root");
   TFile *fG4 = TFile::Open("out/SpectraProton_MC21l5_raw_primaryInjected.root");      
-  TFile *inFileSec = TFile::Open(Form("%s/PrimaryProton_large.root", kOutDir));
+  TFile *inFileSec = TFile::Open(Form("%s/PrimaryProton_largeTOF.root", kOutDir));
   TFile *effFile = TFile::Open(Form("%s/EfficiencyProtonMC_21l5_false__.root", kOutDir));
   TFile *outFile = TFile::Open(Form("%s/%s.root", kOutDir, outFileName), "recreate");
 
@@ -282,9 +282,13 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
       double primaryRelativeError[2];
       for (int iMatt = 0; iMatt < 2; ++iMatt){ // take uncertainties directly from TFF output
         TH1D *h_sec = (TH1D*)inFileSec->Get(Form("f%sPrimFrac_%.0f_%.0f", kAntimatterMatter[iMatt], kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]));
-        double primaryError=h_sec->GetBinError(iPtBin);
-        double primary=h_sec->GetBinContent(iPtBin);
-        primaryRelativeError[iMatt]=primaryError/primary;
+        if (h_sec->GetBinCenter(iPtBin)>0.8){
+          double primaryError=h_sec->GetBinError(iPtBin);
+          double primary=h_sec->GetBinContent(iPtBin);
+          primaryRelativeError[iMatt]=primaryError/primary;
+        }
+        else 
+          primaryRelativeError[iMatt]=0;
       }
       fSystematicUncertaintyTFF.SetBinContent(iPtBin,TMath::Sqrt(primaryRelativeError[0]*primaryRelativeError[0]+primaryRelativeError[1]*primaryRelativeError[1]));
       fSystematicUncertaintyTFF.SetBinError(iPtBin,0);

@@ -52,7 +52,7 @@ std::array<TPad*,3> CreatePads(TCanvas* &cv, int i_part=0)
     rframe->GetYaxis()->SetTickLength(0.03 * sx[0] / sx[col]);
     rframe->GetYaxis()->SetTitleSize(20);
     rframe->GetYaxis()->SetTitleFont((!col) * 43);
-    rframe->GetYaxis()->SetTitleOffset(2.);
+    rframe->GetYaxis()->SetTitleOffset(1.5);
     rframe->GetYaxis()->SetNdivisions(505);
     rframe->GetYaxis()->SetDecimals(1);
     rframe->GetYaxis()->SetLabelFont(43); // Absolute font size in pixel (precision 3)
@@ -61,7 +61,7 @@ std::array<TPad*,3> CreatePads(TCanvas* &cv, int i_part=0)
     rframe->GetXaxis()->SetTickLength(0.03 * sy[0] / sy[mid]);
     rframe->GetXaxis()->SetTitleSize(bot * 20);
     rframe->GetXaxis()->SetTitleFont(43);
-    rframe->GetXaxis()->SetTitleOffset(3);
+    rframe->GetXaxis()->SetTitleOffset(1);
     rframe->GetXaxis()->SetNdivisions(510);
     rframe->GetXaxis()->SetDecimals(1);
     rframe->GetXaxis()->SetLabelFont(43); // Absolute font size in pixel (precision 3)
