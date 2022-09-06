@@ -35,7 +35,7 @@ MAX_SCORE = 1.00
 MAX_EFF = 1.00
 USE_PD = False
 DUMP_HYPERPARAMS = True
-USE_REAL_DATA = True
+USE_REAL_DATA = False
 
 PRODUCE_DATASETS = args.generate
 TRAINING = False
@@ -122,7 +122,7 @@ if TRAINING:
     for i_cent_bins in range(len(CENTRALITY_LIST_TRAINING)):
         cent_bins = CENTRALITY_LIST_TRAINING[i_cent_bins]
 
-        df_signal = uproot.open(os.path.expandvars(f"AnalysisResults_0_5.root"))['XiOmegaTree'].arrays(library="pd")
+        df_signal = uproot.open(os.path.expandvars(f"AnalysisResults_{cent_bins[0]}_{cent_bins[1]}.root"))['XiOmegaTree'].arrays(library="pd")
 
         df_background = uproot.open(os.path.expandvars(f"/data/mciacco/Omega_PbPb/AnalysisResults-data.root"))['XiOmegaTree'].arrays(library="pd")
 
@@ -324,7 +324,7 @@ if APPLICATION:
                 if USE_REAL_DATA:
                     if USE_PD:
                         #df_data = pd.read_parquet('df_test/data_dataset')
-                        df_data = uproot.open(f'/data/mciacco/Omega_PbPb/AnalysisResults-data.root')['XiOmegaTree'].arrays(library="pd")
+                        df_data = uproot.open(f'/data/mciacco/Omega_PbPb/merge_omegas/df_data_{cent_bins[0]}_{cent_bins[1]}/AnalysisResults_omega_{cent_bins[0]}_{cent_bins[1]}_{ct_bins[0]}_{ct_bins[1]}.root')['XiOmegaTree'].arrays(library="pd")
                         #df_data = df_data.append(df_data_r, ignore_index=True)
                         df_data_cent = df_data.query(
                         f'matter {split_ineq_sign} and centrality > {cent_bins[0]} and centrality < {cent_bins[1]} and ct > {ct_bins[0]} and ct < {ct_bins[1]} and mass > 1.6424500 and mass < 1.7024500 and pt > 0.5 and pt < 4.5 and tpcClV0Pi > 69 and bachBarCosPA < 0.99995 and tpcClV0Pr > 69 and tpcClBach > 69 and radius < 25 and radiusV0 < 25 and dcaV0prPV < 2.5 and dcaV0piPV < 2.5 and dcaV0PV < 2.5 and dcaBachPV < 2.5 and eta < 0.8 and eta > -0.8 and isOmega')
@@ -337,7 +337,7 @@ if APPLICATION:
                         df_data_cent.to_parquet(f'df_test/{bin}.parquet.gzip', compression='gzip')
                     else:
                         df_data = TreeHandler()
-                        df_data.get_handler_from_large_file(f"/data/mciacco/Omega_PbPb/AnalysisResults-data.root", "XiOmegaTree",
+                        df_data.get_handler_from_large_file(f"/data/mciacco/Omega_PbPb/merge_omegas/AnalysisResults_omega.root", "XiOmegaTree",
                             preselection=f'matter {split_ineq_sign} and centrality > {cent_bins[0]} and centrality < {cent_bins[1]}  and ct > {ct_bins[0]} and ct < {ct_bins[1]} and mass > 1.6424500 and mass < 1.7024500 and pt > 0.5 and pt < 4.5 and tpcClV0Pi > 69 and bachBarCosPA < 0.99995 and tpcClV0Pr > 69 and tpcClBach > 69 and radius < 25 and radiusV0 < 25 and dcaV0prPV < 2.5 and dcaV0piPV < 2.5 and dcaV0PV < 2.5 and dcaBachPV < 2.5 and eta < 0.8 and eta > -0.8 and isOmega',
                             max_workers=4, model_handler=model_hdl)
 
@@ -347,7 +347,7 @@ if APPLICATION:
                         df_data.write_df_to_parquet_files(bin,"df_test/")
                 else:
                     bin = f'{split}_{cent_bins[0]}_{cent_bins[1]}_{ct_bins[0]}_{ct_bins[1]}_mc_apply'
-                    df_data = uproot.open(f'AnalysisResults_0_5.root')['XiOmegaTree'].arrays(library="pd")
+                    df_data = uproot.open(f'AnalysisResults_{cent_bins[0]}_{cent_bins[1]}.root')['XiOmegaTree'].arrays(library="pd")
                     df_data_cent = df_data.query(f'(pdg==3334 or pdg==-3334) and isReconstructed and matter {split_ineq_sign} and ct > {ct_bins[0]} and ct < {ct_bins[1]} and mass > 1.6424500 and mass < 1.7024500 and pt > 0.5 and pt < 4.5 and isReconstructed and tpcClV0Pi > 69 and bachBarCosPA < 0.99995 and tpcClV0Pr > 69 and tpcClBach > 69 and radius < 25 and radiusV0 < 25 and dcaV0prPV < 2.5 and dcaV0piPV < 2.5 and dcaV0PV < 2.5 and dcaBachPV < 2.5 and eta < 0.8 and eta > -0.8 and isOmega')                   
                     data_y_score = model_hdl.predict(df_data_cent)
                     print(f"df_shape_0 = {df_data_cent.shape[0]}")

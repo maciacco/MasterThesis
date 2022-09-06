@@ -52,13 +52,11 @@ SPLIT_LIST = ['all']
 if SPLIT:
     SPLIT_LIST = ['antimatter', 'matter']
 
-raw_yields_file = ROOT.TFile('SignalExtraction.root')
+raw_yields_file = ROOT.TFile('SignalExtraction-mc.root')
 score_eff_dict = pickle.load(open('file_score_eff_dict','rb'))
 eff_array = np.arange(0.10, MAX_EFF, 0.01)
-presel_eff_file = ROOT.TFile('PreselEff_0_5.root')
 f = ROOT.TFile("closure_test_output.root","recreate")
 
-df_MC = ROOT.RDataFrame("XiOmegaTree","AnalysisResults_0_5.root")
 
 for split in SPLIT_LIST:
     split_ineq_sign = '> -999999999.'
@@ -71,7 +69,10 @@ for split in SPLIT_LIST:
         h = ROOT.TH1D(f"hYield_{split}",f"hYield_{split}",len(CT_BINS_CENT[i_cent_bins])-1,np.asarray(CT_BINS_CENT[i_cent_bins],dtype="float"))
         hDiff = ROOT.TH1D(f"hDiff_{split}",f"hDiff_{split}",len(CT_BINS_CENT[i_cent_bins])-1,np.asarray(CT_BINS_CENT[i_cent_bins],dtype="float"))
         cent_bins = CENTRALITY_LIST[i_cent_bins]
-        h_pres_eff = presel_eff_file.Get(f"fPreselEff_vs_ct_{split}_{cent_bins[0]}_{cent_bins[1]}")
+
+        presel_eff_file = ROOT.TFile(f'PreselEff_{cent_bins[0]}_{cent_bins[1]}.root')
+        df_MC = ROOT.RDataFrame("XiOmegaTree",f"AnalysisResults_{cent_bins[0]}_{cent_bins[1]}.root")
+        h_pres_eff = presel_eff_file.Get(f"fPreselEff_vs_ct_{split}_{cent_bins[0]}_{cent_bins[1]};2")
         for ct_bins in zip(CT_BINS_CENT[i_cent_bins][:-1], CT_BINS_CENT[i_cent_bins][1:]):
             if ct_bins[0] < 0 or ct_bins[1] > 40:
                 continue

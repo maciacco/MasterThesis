@@ -41,35 +41,22 @@ def significance_error(signal, background):
     return 1/den_prop*np.sqrt(signal*num_s_prop*num_s_prop+background*num_b_prop*num_b_prop)
 
 def expo(x):
-    return np.exp(-x / (252 * 0.029979245800)) #hyp tau taken from lifetime analysis
+    return np.exp(-x / (82 * 0.029979245800)) # Omega lifetime from pdg
 
-def expected_signal(cent_class, ct_range, eff, n_events, cent_counts, cent_edges):
-    lambda_yield_list = [2.35e-4, 2.03e-4, 6.58e-5] # TODO: update centrality-differential yields
+def expected_signal(cent_class, ct_range, eff, n_events):
+    # 0-90% production in Pb-Pb at 5.02 TeV
+    lambda_yield_list = [32.30,26.48,15.76]
+    cent_list = [[0,5],[5,10],[30,50]]
     correction = expo(ct_range[0])- expo(ct_range[1]) #selecting the correct ct bin
     correction *= eff
-    correction *= 0.639 # branching ratio
-    correction *= 2 # antimatter + matter
+    correction *= 0.678 # branching ratio Omega -> Lambda K^-
+    correction *= 0.639 # branching ratio Lambda -> p pi^-
+    correction *= 0.026950582 # Omega/Lambda ratio from SHM at T=155 MeV nad mu_B=0
     cent_end_bin = [5., 10., 50.]
     for cent_bin, lambda_yield in zip(cent_end_bin, lambda_yield_list):
         if cent_bin==cent_class[1]:
             return lambda_yield*correction*n_events
 
-    # 0-90% production in Pb-Pb at 5.02 TeV
-    lambda_yield_list_0_90 = [32.30,26.48,20.60,14.36,9.69,6.07,3.57,1.84,0.89,0.33]
-    cent_list = [[0,5],[5,10],[10,20],[20,30],[30,40],[40,50],[50,60],[60,70],[70,80],[80,90]]
-    
-    # compute yield
-    lambda_yield_0_90 = 0.
-    cent_bin_centers = (cent_edges[:-1]+cent_edges[1:])/2
-    for i_cent_bins in range(len(cent_list)):
-        # print(f"index = {i_cent_bins}")
-        cent_range_map = np.logical_and(cent_bin_centers > cent_list[i_cent_bins][0], cent_bin_centers < cent_list[i_cent_bins][1])
-        counts_cent_range = cent_counts[cent_range_map]
-        counts_cent_range_sum = np.sum(counts_cent_range)
-        lambda_yield_0_90 += counts_cent_range_sum*lambda_yield_list_0_90[i_cent_bins]
-        
-    # expected signal for 0-90% centrality
-    return correction*lambda_yield_0_90
 
 # from DmesonAnalysers/DmesonAnalysis
 def GetPromptFDYieldsAnalyticMinimisation(effPromptList, effFDList, rawYieldList, effPromptUncList, effFDUncList,

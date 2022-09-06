@@ -65,7 +65,7 @@ DUMP_HYPERPARAMS = False
 TRAINING = not args.application
 PLOT_DIR = 'plots'
 MAKE_PRESELECTION_EFFICIENCY = args.eff
-MAKE_FEATURES_PLOTS = False
+MAKE_FEATURES_PLOTS = True
 MAKE_TRAIN_TEST_PLOT = args.train
 OPTIMIZE = False
 OPTIMIZED = False
@@ -111,8 +111,6 @@ if SPLIT:
 
 if TRAINING:
 
-    df_signal = uproot.open(os.path.expandvars(f"AnalysisResults_0_5.root"))['XiOmegaTree'].arrays(library="pd")
-
     # make plot directory
     if not os.path.isdir(PLOT_DIR):
         os.mkdir(PLOT_DIR)
@@ -132,14 +130,16 @@ if TRAINING:
         for i_cent_bins in range(len(CENTRALITY_LIST)):
             cent_bins = CENTRALITY_LIST[i_cent_bins]
 
+            df_signal = uproot.open(os.path.expandvars(f"AnalysisResults_{cent_bins[0]}_{cent_bins[1]}.root"))['XiOmegaTree'].arrays(library="pd")
+
             if MAKE_PRESELECTION_EFFICIENCY and not MAKE_FEATURES_PLOTS and not MAKE_TRAIN_TEST_PLOT:
                 ##############################################################
                 # PRESELECTION EFFICIENCY
                 ##############################################################
                 # df_generated = uproot.open(os.path.expandvars(MC_SIGNAL_PATH_GEN))['LambdaTree'].arrays(library="pd")
                 
-                root_file_presel_eff = ROOT.TFile("PreselEff_0_5.root", "update")
-                df_signal_cent = df_signal.query(f'matter {split_ineq_sign} and (pdg==3334 or pdg==-3334) and mass > 1.6424500 and mass < 1.7024500 and pt > 0.5 and pt < 4.5 and isReconstructed and bachBarCosPA < 0.99995 and tpcClV0Pi > 69 and tpcClV0Pr > 69 and tpcClBach > 69 and radius < 25 and radiusV0 < 25 and dcaV0prPV < 2.5 and dcaV0piPV < 2.5 and dcaV0PV < 2.5 and dcaBachPV < 2.5 and eta < 0.8 and eta > -0.8 and isOmega and flag==1') # and (hasTOFhit or hasITSrefit)') # pt cut? (hasTOFhit or hasITSrefit) and 
+                root_file_presel_eff = ROOT.TFile(f"PreselEff_{cent_bins[0]}_{cent_bins[1]}_fineCt.root", "update")
+                df_signal_cent = df_signal.query(f'matter {split_ineq_sign} and (pdg==3334 or pdg==-3334) and mass > 1.645 and mass < 1.70 and pt > 0.5 and pt < 4.5 and isReconstructed and bachBarCosPA < 0.99995 and tpcClV0Pi > 69 and tpcClV0Pr > 69 and tpcClBach > 69 and radius < 25 and radiusV0 < 25 and dcaV0prPV < 2.5 and dcaV0piPV < 2.5 and dcaV0PV < 2.5 and dcaBachPV < 2.5 and eta < 0.8 and eta > -0.8 and isOmega and flag==1') # and (hasTOFhit or hasITSrefit)') # pt cut? (hasTOFhit or hasITSrefit) and 
                 df_generated_cent = df_signal.query(
                     f'pdg {split_ineq_sign} and ptMC > 0.5 and ptMC < 4.5 and (pdg==3334 or pdg==-3334) and flag==1') # pt cut?
                 #del df_generated
@@ -194,7 +194,7 @@ if TRAINING:
         if not os.path.isdir(f'{PLOT_DIR}/features'):
             os.mkdir(f'{PLOT_DIR}/features')
 
-        leg_labels = ['background', 'prompt']
+        leg_labels = ['background', 'signal']
         plot_distr = plot_utils.plot_distr(
             [background_tree_handler, prompt_tree_handler],
             TRAINING_COLUMNS_LIST, bins=40, labels=leg_labels, log=True, density=True, figsize=(12, 12),

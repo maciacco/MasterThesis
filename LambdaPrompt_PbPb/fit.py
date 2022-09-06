@@ -14,8 +14,8 @@ from hipe4ml import analysis_utils, plot_utils
 SPLIT = True
 MAX_EFF = 1
 
-N_BINS_INV_MASS = 200
-N_BINS_OUTPUT_SCORE = 100
+N_BINS_INV_MASS = 100
+N_BINS_OUTPUT_SCORE = 20
 SHM_XI_MINUS = [0.000305003,0.000329881,0.000356453,0.000384808,0.000415043,0.000447256,0.000481548,0.000518026,0.000556799,0.000597981,0.000641689,0.000688045,0.000737174,0.000789207,0.000844277,0.000902522,0.000964086,0.00102912,0.00109776,0.00117018,0.00124654]
 SHM_XI_ZERO = [0.000311499,0.000336799,0.000363813,0.000392631,0.00042335,0.000456068,0.000490888,0.000527915,0.00056726,0.000609038,0.000653365,0.000700363,0.000750159,0.000802882,0.000858667,0.000917653,0.000979981,0.0010458,0.00111526,0.00118852,0.00126573]
 SHM_OM = [4.5159e-05,4.94286e-05,5.40398e-05,5.9015e-05,6.43773e-05,7.0151e-05,7.63618e-05,8.30361e-05,9.02019e-05,9.78884e-05,0.000106126,0.000114946,0.000124381,0.000134467,0.000145239,0.000156733,0.000168989,0.000182047,0.000195948,0.000210736,0.000226455]
@@ -69,7 +69,6 @@ if not os.path.isdir("plots/signal_extraction_"):
 for i_cent_bins in range(len(CENTRALITY_LIST)):
 
     cent_bins = CENTRALITY_LIST[i_cent_bins]
-    df_data = uproot.open(os.path.expandvars(f"/data/mciacco/LambdaPrompt_PbPb/AnalysisResults_LHC18qr_Lambda_{cent_bins[0]}_{cent_bins[1]}.root"))['LambdaTreeBDTOut'].arrays(library="pd")
     df_mc_tot = uproot.open(os.path.expandvars(f"/data/mciacco/LambdaPrompt_PbPb/AnalysisResults_reweight_BW_{cent_bins[0]}_{cent_bins[1]}.root"))['LambdaTree'].arrays(library="pd")
     df_mc_tot_om = df_mc_tot.query("ptMC > 0.5 and ptMC < 3.5 and flag==4")
     n_gen_om = df_mc_tot_om.shape[0]
@@ -81,13 +80,14 @@ for i_cent_bins in range(len(CENTRALITY_LIST)):
     if not os.path.isdir(f"plots/signal_extraction_/{cent_bins[0]}_{cent_bins[1]}"):
         os.mkdir(f"plots/signal_extraction_/{cent_bins[0]}_{cent_bins[1]}")
     for ct_ in CT_BINS:
-        if ct_[0] < 10 or ct_[1] > 15:
+        if ct_[0] < 10 or ct_[1] > 40:
             continue
-        df_data__ = df_data.query(f"mass > 1.09 and mass < 1.15 and ct >= {ct_[0]} and ct < {ct_[1]}")
         for ct_bins in zip(CT_BINS_CENT[i_cent_bins][:-1], CT_BINS_CENT[i_cent_bins][1:]):
             if ct_bins[0] < ct_[0] or ct_bins[1] > ct_[1]:
                 continue
         
+            df_data = uproot.open(os.path.expandvars(f"/data/mciacco/LambdaPrompt_PbPb/df_data_{cent_bins[0]}_{cent_bins[1]}/AnalysisResults_lambda_{cent_bins[0]}_{cent_bins[1]}_ct_{ct_bins[0]}_{ct_bins[1]}.root"))['LambdaTreeBDTOut'].arrays(library="pd")
+            df_data__ = df_data.query(f"mass > 1.09 and mass < 1.15 and ct >= {ct_bins[0]} and ct < {ct_bins[1]}")
             h_raw_yields = [[],[]] # 0 -> antim; 1 -> m
             h_raw_yields[0] = [ROOT.TH1D("fRawYields_pol","fRawYields_pol",100,0,1),ROOT.TH1D("fRawYields_expo","fRawYields_expo",100,0,1)]
 
@@ -131,7 +131,7 @@ for i_cent_bins in range(len(CENTRALITY_LIST)):
             # del df_data_sidebands, df_mc_
 
             for bdt_score, bdt_eff in zip(score, eff_selected):
-                if bdt_score < 0.29 or bdt_score > 0.30 or bdt_score > 0.3:
+                if bdt_score < 0.2 or bdt_score > 0.30:
                     continue
                 print(f'processing {bin}: bkg cut = {bdt_score:.4f}')
 
@@ -186,11 +186,11 @@ for i_cent_bins in range(len(CENTRALITY_LIST)):
                         slope = ROOT.RooRealVar('slope','slope',-50.,50.,"#it{c}^{2}/GeV")
                         signal_pdf = ROOT.RooDSCBShape('signal','signal',inv_mass,mass,sigma,alpha_left,n_left,alpha_right,n_right)
                         #signal_pdf = ROOT.RooHistPdf("signal", "signal", ROOT.RooArgList(inv_mass), inv_mass_mc)
-                        bkg_pdf = ROOT.RooPolynomial('bkg','bkg',inv_mass,ROOT.RooArgList(par_a,par_b))
+                        bkg_pdf = ROOT.RooChebychev('bkg','bkg',inv_mass,ROOT.RooArgList(par_a,par_b))
                         if bkg_function == 'expo':
                             bkg_pdf = ROOT.RooExponential('bkg','bkg',inv_mass,slope)
                         w_signal = ROOT.RooRealVar("#it{f}_{signal}","w_signal",0.,1.)
-                        n_tot = ROOT.RooRealVar("#it{N}_{tot}","n_tot",0.,1.e8)
+                        n_tot = ROOT.RooRealVar("#it{N}_{tot}","n_tot",0.,1.e9)
                         model_mass_ = ROOT.RooAddPdf("model_mass_","model_mass_",signal_pdf,bkg_pdf,w_signal)
                         model_mass = ROOT.RooAddPdf("model_mass","model_mass",ROOT.RooArgList(model_mass_),ROOT.RooArgList(n_tot))
                         for _ in range(2):
@@ -240,7 +240,7 @@ for i_cent_bins in range(len(CENTRALITY_LIST)):
                         bdt_mc_bkg_pdf = ROOT.RooHistPdf("dbpdf", "dbpdf", ROOT.RooArgList(bdt_out), bdt_mc_bkg)
                         frame = bdt_out.frame(ROOT.RooFit.Name(f"fBDTOutPrompt_{ct_bins[0]}_{ct_bins[1]}_{bdt_eff:.2f}"))
                         frame.SetTitle(str(ct_bins[0]) + " #leq #it{c}t < " + str(ct_bins[1]) + " cm")
-                        w_non_prompt = ROOT.RooRealVar("#it{f}_{non-prompt}","w_non_prompt",0.,1.)
+                        w_non_prompt = ROOT.RooRealVar("#it{f}_{non-prompt}","w_non_prompt",0.,.5)
                         model_signal = ROOT.RooAddPdf("model_signal","model_signal",bdt_mc_non_prompt_pdf,bdt_mc_prompt_pdf,w_non_prompt)
                         model__ = ROOT.RooAddPdf("model__","model__",model_signal,bdt_mc_bkg_pdf,w_signal)
                         model = ROOT.RooAddPdf("model","model",ROOT.RooArgList(model__),ROOT.RooArgList(n_tot))
@@ -339,7 +339,7 @@ for i_cent_bins in range(len(CENTRALITY_LIST)):
                         #         model_t_col.plotOn(frame_t_col,ROOT.RooFit.Name(f'model_{t_col}'),ROOT.RooFit.LineColor(ROOT.kBlue))
                         #         model_t_col.paramOn(frame_t_col, ROOT.RooFit.Label("#chi^{2}/NDF = " + "{:.2f}".format(frame_t_col.chiSquare(f"model_{t_col}", f"{t_col}_data"))), ROOT.RooFit.Layout(0.14959,0.47130,0.860544))
 
-                        #         f = ROOT.TFile(f"fit_14_noRadius_nodcaV0tracksCut_lambda_splitCentInMC_saveHistos_{cent_bins[0]}_{cent_bins[1]}.root","update")
+                        #         f = ROOT.TFile(f"fit_{cent_bins[0]}_{cent_bins[1]}.root","update")
                         #         f.cd()
                         #         f.mkdir(f'{split}_{cent_bins[0]}_{cent_bins[1]}_{ct_bins[0]}_{ct_bins[1]}_{bkg_function}')
                         #         f.cd(f'{split}_{cent_bins[0]}_{cent_bins[1]}_{ct_bins[0]}_{ct_bins[1]}_{bkg_function}')
@@ -386,7 +386,7 @@ for i_cent_bins in range(len(CENTRALITY_LIST)):
                         h_np = bdt_mc_non_prompt.createHistogram("BDT out")
                         h_b = bdt_mc_bkg.createHistogram("BDT out")
 
-                        f = ROOT.TFile(f"fit_14_noRadius_nodcaV0tracksCut_lambda_splitCentInMC_saveHistos_{cent_bins[0]}_{cent_bins[1]}.root","update")
+                        f = ROOT.TFile(f"fit_{cent_bins[0]}_{cent_bins[1]}.root","update")
                         f.cd()
                         f.mkdir(f'{split}_{cent_bins[0]}_{cent_bins[1]}_{ct_bins[0]}_{ct_bins[1]}_{bkg_function}')
                         f.cd(f'{split}_{cent_bins[0]}_{cent_bins[1]}_{ct_bins[0]}_{ct_bins[1]}_{bkg_function}')
@@ -419,7 +419,7 @@ for i_cent_bins in range(len(CENTRALITY_LIST)):
 
                         if not os.path.isdir(f"plots/signal_extraction_/{cent_bins[0]}_{cent_bins[1]}/{ct_bins[0]}_{ct_bins[1]}"):
                             os.mkdir(f"plots/signal_extraction_/{cent_bins[0]}_{cent_bins[1]}/{ct_bins[0]}_{ct_bins[1]}")
-                        c_sim_fit.Print(f"plots/signal_extraction_/{cent_bins[0]}_{cent_bins[1]}/{ct_bins[0]}_{ct_bins[1]}/{split}_{bkg_function}_{bdt_eff:.2f}.pdf")
+                        c_sim_fit.Print(f"plots/signal_extraction_/{cent_bins[0]}_{cent_bins[1]}/{ct_bins[0]}_{ct_bins[1]}/{split}_{bkg_function}_{bdt_eff:.2f}.png")
                         c_sim_fit.Write()
 
                         f.Close()
@@ -441,7 +441,7 @@ for i_cent_bins in range(len(CENTRALITY_LIST)):
                         h_raw_yields[i_split][i_bkg_func].SetBinError(h_raw_yields[i_split][i_bkg_func].FindBin(bdt_eff+0.0001),np.sqrt(var_N)/bdt_eff)
                         print(f'************* fraction result = {w_signal.getVal()*(1-w_non_prompt.getVal())} *************')
 
-            f = ROOT.TFile(f"fit_14_noRadius_nodcaV0tracksCut_lambda_splitCentInMC_saveHistos_{cent_bins[0]}_{cent_bins[1]}.root","update")
+            f = ROOT.TFile(f"fit_{cent_bins[0]}_{cent_bins[1]}.root","update")
             for i_split, split in enumerate(SPLIT_LIST):
                 split_ineq_sign = '> -0.1'
                 if SPLIT:

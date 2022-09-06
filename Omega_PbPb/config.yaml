@@ -2,7 +2,7 @@ DATA_PATH: "/data/mciacco/LambdaPrompt_PbPb/AnalysisResults_data_TEST_LOW_BACKGR
 PSEUDODATA_PATH: "/data/mciacco/LambdaPrompt_PbPb/pseudodataFull_TEST_LOW_BACKGROUND.root"
 PSEUDODATA_BKG_PATH: "/data/mciacco/LambdaPrompt_PbPb/pseudodataBackground_TEST_LOW_BACKGROUND.root"
 BKG_PATH: "/data/mciacco/LambdaPrompt_PbPb/trainingBackground_0_5.root"
-ANALYSIS_RESULTS_PATH: "/data/mciacco/LambdaPrompt_PbPb/StrangenessRatios_summary.root"
+ANALYSIS_RESULTS_PATH: "/data/mciacco/Omega_PbPb/AnalysisResults_18.root"
 MC_SIGNAL_PATH: "/data/mciacco/LambdaPrompt_PbPb/trainingSample_reweight_BW_0_5.root"
 MC_SIGNAL_RED_PATH: "/data/mciacco/LambdaPrompt_PbPb/mc_cols_rec.root"
 MC_SIGNAL_PATH_GEN: "/data/mciacco/LambdaPrompt_PbPb/mc_cols.root"
@@ -12,10 +12,11 @@ CT_BINS: [[0,1],[1,2],[2,3],[3,4],[4,5],[5,10]] # training
 # CT_BINS_APPLY:  [[[0,0.5,1,1.5,2,2.5,3,3.5,4,4.5,5,6,7,10]]]
 # CT_BINS_CENT: [[0,0.5,1,1.5,2,2.5,3,3.5,4,4.5,5,6,7,10],[0,0.5,1,1.5,2,2.5,3,3.5,4,4.5,5,6,7,10],[0,0.5,1,1.5,2,2.5,3,3.5,4,4.5,5,6,7,10]]
 CT_BINS_APPLY:  [[[0,1,2,3,4,5,10]]]
-CT_BINS_CENT: [[0,1,2,3,4,5,10],[0,1,2,3,4,5,10],[0,1,2,3,4,5,10]]
+CT_BINS_CENT: [[0,0.5,1,1.5,2,2.5,3,3.5,4,4.5,5,6,7,10],[0,0.5,1,1.5,2,2.5,3,3.5,4,4.5,5,6,7,10],[0,0.5,1,1.5,2,2.5,3,3.5,4,4.5,5,6,7,10]]
+#CT_BINS_CENT: [[0,1,2,3,4,5,10],[0,1,2,3,4,5,10],[0,1,2,3,4,5,10]]
 PT_BINS: [0,0.5,1,1.5,2,2.5,3,3.5,4,4.5,5,5.5,6,6.5,7,7.5,8,8.5,9,9.5,10]  
-CENTRALITY_LIST_TRAINING:  [[0, 5]] #, [5,10], [30,50]] # for training
-CENTRALITY_LIST:  [[0,5]] #,[5,10],[30,50]]
+CENTRALITY_LIST_TRAINING:  [[0, 5], [5,10], [30,50]] # for training
+CENTRALITY_LIST:  [[0,5],[5,10],[30,50]]
 
 RANDOM_STATE: 42
 

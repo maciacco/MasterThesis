@@ -20,7 +20,8 @@ constexpr double avg_mult[nCent] = {1943, 1587, 1180, 786, 512, 318, 183, 96.3, 
 
 constexpr int centSplit[][2]={{0,0},{1,1},{4,5},{0,10}}; // 0-5%, 5-10%, 30-50%, 0-90%
 constexpr int nCentSplit[]={1,1,2,10}; // 0-5%, 5-10%, 30-50%, 0-90%
-constexpr int centClass = 0; // 0-5% -> 0, 5-10% -> 1, 30-50% -> 2, 0-90% -> 3
+constexpr int centClass = 2; // 0-5% -> 0, 5-10% -> 1, 30-50% -> 2, 0-90% -> 3
+const char* cent_string="30_50.root";
 
 constexpr bool reject = true;
 
@@ -133,13 +134,13 @@ double full_bw_max(TF1 *bw_array[], double max_steps = 1.e3, double max_pT = 10.
 
 const char* kInFileMCName = "/data/mciacco/Omega_PbPb/AnalysisResults-mc.root";
 const char* kInFileCentName = "/data/mciacco/LambdaPrompt_PbPb/StrangenessRatios_summary.root";
-const char* kOutFileName = "pTShapesLXiOm_0_5.root";
+const char* kOutFileName = "pTShapesLXiOm_";
 
 
 void pTShaping(const char *inFileMCName=kInFileMCName, const char *inFileCentName=kInFileCentName, const char *outFileName=kOutFileName){
   ROOT::EnableImplicitMT(4);
   TFile inFileCent(inFileCentName);
-  TFile outFile(outFileName, "recreate");
+  TFile outFile(Form("%s%s",outFileName,cent_string), "recreate");
   ROOT::RDataFrame df("XiOmegaTree",inFileMCName);
   TH1D *hCent = (TH1D*)inFileCent.Get("Centrality_selected");
   double nEv = hCent->Integral(cent[centSplit[centClass][0]]+1,cent[centSplit[centClass][1]+1]);
@@ -187,7 +188,7 @@ void pTShaping(const char *inFileMCName=kInFileMCName, const char *inFileCentNam
         bool cut = gRandom->Rndm() < (bw*normMin/hNormVal/bw_max);
         return cut;
       };
-      dff.Filter("std::abs(pdg)==3334").Filter(reweight,{cut_variable.data()}).Snapshot("XiOmegaTree","AnalysisResults_0_5.root");
+      dff.Filter("std::abs(pdg)==3334").Filter(reweight,{cut_variable.data()}).Snapshot("XiOmegaTree",Form("AnalysisResults_%s",cent_string));
     }
     else {
       auto reweight = [hTmp, normMin, bw_max, hBW](float pT){
@@ -197,7 +198,7 @@ void pTShaping(const char *inFileMCName=kInFileMCName, const char *inFileCentNam
         double weight=bw*normMin/hNormVal/bw_max;
         return weight;
       };
-      dff.Filter("std::abs(pdg)==3334").Define("weightMC",reweight,{cut_variable.data()}).Snapshot("XiOmegaTree","AnalysisResults_0_5.root");
+      dff.Filter("std::abs(pdg)==3334").Define("weightMC",reweight,{cut_variable.data()}).Snapshot("XiOmegaTree",Form("AnalysisResults_%s",cent_string));
     }
   }
 

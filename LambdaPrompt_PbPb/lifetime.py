@@ -51,12 +51,6 @@ SPLIT_LIST = ['all']
 if SPLIT:
     SPLIT_LIST = ['antimatter', 'matter']
 
-raw_yields_file = ROOT.TFile('fit_14_noRadius_nodcaV0tracksCut_lambda_splitCentInMC_saveHistos_0_5.root')
-score_eff_dict = pickle.load(open('second_round/file_score_eff_dict','rb'))
-eff_array = np.arange(0.10, MAX_EFF, 0.01)
-presel_eff_file = ROOT.TFile('PreselEff_0_5.root')
-f = ROOT.TFile("lifetime_14_noRadius_nodcaV0tracksCut_lambda_0_5_splitCentInMC__saveHistos_0_5.root","recreate")
-
 for split in SPLIT_LIST:
     split_ineq_sign = '> -0.1'
     if SPLIT:
@@ -65,8 +59,17 @@ for split in SPLIT_LIST:
             split_ineq_sign = '< 0.5'
 
     for i_cent_bins in range(len(CENTRALITY_LIST)):
-        h = ROOT.TH1D(f"h_{split}",f"h_{split}",len(CT_BINS_CENT[i_cent_bins])-1,np.asarray(CT_BINS_CENT[i_cent_bins],dtype="float"))
+        if i_cent_bins > 0:
+            continue
         cent_bins = CENTRALITY_LIST[i_cent_bins]
+
+        raw_yields_file = ROOT.TFile(f'fit_{cent_bins[0]}_{cent_bins[1]}.root')
+        score_eff_dict = pickle.load(open('second_round/file_score_eff_dict','rb'))
+        eff_array = np.arange(0.10, MAX_EFF, 0.01)
+        presel_eff_file = ROOT.TFile(f'PreselEff_{cent_bins[0]}_{cent_bins[1]}.root')
+        f = ROOT.TFile(f"lifetime_{cent_bins[0]}_{cent_bins[1]}.root","recreate")
+        h = ROOT.TH1D(f"h_{split}",f"h_{split}",len(CT_BINS_CENT[i_cent_bins])-1,np.asarray(CT_BINS_CENT[i_cent_bins],dtype="float"))
+
         h_pres_eff = presel_eff_file.Get(f"fPreselEff_vs_ct_{split}_{cent_bins[0]}_{cent_bins[1]};1")
         for ct_bins in zip(CT_BINS_CENT[i_cent_bins][:-1], CT_BINS_CENT[i_cent_bins][1:]):
             if (ct_bins[0] < 10 or ct_bins[1] > 40): # or (ct_bins[0] > 32 and ct_bins[1] < 35):
@@ -82,7 +85,7 @@ for split in SPLIT_LIST:
             raw_yield_error = h_raw.GetBinError(h_raw.FindBin(0.8))
             j = 0
             i = np.power(-1,j)*0.01*int(j/2)
-            while raw_yield < 1.e-6 and (0.8+i < 0.95) and (0.8+i > 0.85):
+            while raw_yield < 1.e-6 and (0.8+i < 0.9) and (0.8+i > 0.7):
                 i = np.power(-1,j)*0.01*int(j/2)
                 j = j + 1
                 raw_yield = h_raw.GetBinContent(h_raw.FindBin(0.8+i))
@@ -92,11 +95,11 @@ for split in SPLIT_LIST:
         h.Fit("expo","IMR+","",0,40)
         h.GetXaxis().SetTitle("#it{c}t (cm)")
         h.GetYaxis().SetTitle("d#it{N}/d(#it{c}t) (cm^{-1})")
-        #lifetime = ROOT.TLatex(1,1000,"#it{c}#tau = " + str(-1./h.GetFunction("expo").GetParameter(int(1))/speed_of_light) + " +/- "  + str(h.GetFunction("expo").GetParError(1)/h.GetFunction("expo").GetParameter(1)/h.GetFunction("expo").GetParameter(1)/speed_of_light) + " ps")
+        lifetime = ROOT.TLatex(5,1.e6,"#it{c}#tau = " + "{:.2f}".format(-1./h.GetFunction("expo").GetParameter(1)/speed_of_light) + " +/- "  + "{:.2f}".format(h.GetFunction("expo").GetParError(1)/h.GetFunction("expo").GetParameter(1)/h.GetFunction("expo").GetParameter(1)/speed_of_light) + " ps")
         f.cd()
         c = ROOT.TCanvas(f"lifetime_{split}",f"lifetime_{split}")
         h.Draw()
-        #lifetime.Draw("same")
+        lifetime.Draw("same")
         h.Write()
         c.SetLogy()
         c.Write()

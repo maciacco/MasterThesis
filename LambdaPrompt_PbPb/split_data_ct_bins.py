@@ -63,7 +63,7 @@ for i_cent_bins in range(len(CENTRALITY_LIST)):
     if not os.path.isdir(f"/data/mciacco/LambdaPrompt_PbPb/df_data_{cent_bins[0]}_{cent_bins[1]}"):
         os.mkdir(f"/data/mciacco/LambdaPrompt_PbPb/df_data_{cent_bins[0]}_{cent_bins[1]}")
 
-    df_data_ = ROOT.RDataFrame("LambdaTreeBDTOut",f"/data/mciacco/LambdaPrompt_PbPb/AnalysisResults_lambda_{cent_bins[0]}_{cent_bins[1]}.root")
+    df_data_ = ROOT.RDataFrame("LambdaTreeBDTOut",f"/data/mciacco/LambdaPrompt_PbPb/AnalysisResults_LHC18qr_Lambda_{cent_bins[0]}_{cent_bins[1]}.root")
     
     for ct_ in CT_BINS:
         if ct_[0] < 10 or ct_[1] > 40:
