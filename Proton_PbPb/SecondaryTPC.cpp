@@ -48,7 +48,8 @@ void SecondaryTPC(const char *cutSettings = "", const double DCAxyCut=0.12, cons
   gStyle->SetPadTickY(1);
   gStyle->SetOptStat(0);
   gStyle->SetOptFit(111);
-  gStyle->SetTextFont(44);
+  //gStyle->SetTextFont(44);
+  //gStyle->SetTextSize(20);
   // make signal extraction plots directory
   system(Form("mkdir %s/primary_fraction", kPlotDir));
 
@@ -138,7 +139,7 @@ void SecondaryTPC(const char *cutSettings = "", const double DCAxyCut=0.12, cons
         }
         fDCAMcProjPrim = fDCAprim->ProjectionZ(TString::Format("f%sDCAPrimaryTPC_%.0f_%.0f_%.2f_%.2f", kAntimatterMatter[iMatt], fDCAdat->GetXaxis()->GetBinLowEdge(kCentBinsProton[iCent][0]), fDCAdat->GetXaxis()->GetBinUpEdge(kCentBinsProton[iCent][1]), fDCAdat->GetYaxis()->GetBinLowEdge(pTbinsIndexMin), fDCAdat->GetYaxis()->GetBinUpEdge(pTbinsIndexMax)), kCentBinsProton[iCent][0], kCentBinsProton[iCent][1], pTbinsIndexMin, pTbinsIndexMax);
         fDCAMcProjPrim->SetTitle(projTitle);
-        fDCAMcProjSec = fDCAsec->ProjectionZ(TString::Format("f%sDCASecondaryTPC_%.0f_%.0f_%.2f_%.2f", kAntimatterMatter[iMatt], fDCAdat->GetXaxis()->GetBinLowEdge(kCentBinsProton[iCent][0]), fDCAdat->GetXaxis()->GetBinUpEdge(kCentBinsProton[iCent][1]), fDCAdat->GetYaxis()->GetBinLowEdge(pTbinsIndexMin), fDCAdat->GetYaxis()->GetBinUpEdge(pTbinsIndexMax)), kCentBinsProton[iCent][0], kCentBinsProton[iCent][1], pTbinsIndexMin, pTbinsIndexMax);
+        fDCAMcProjSec = fDCAsec->ProjectionZ(TString::Format("f%sDCASecondaryTPC_%.0f_%.0f_%.2f_%.2f", kAntimatterMatter[iMatt], fDCAdat->GetXaxis()->GetBinLowEdge(kCentBinsProton[iCent][0]), fDCAdat->GetXaxis()->GetBinUpEdge(kCentBinsProton[iCent][1]), fDCAdat->GetYaxis()->GetBinLowEdge(pTbinsIndexMin), fDCAdat->GetYaxis()->GetBinUpEdge(pTbinsIndexMax)), kCentBinsProton[3][0], kCentBinsProton[3][1], pTbinsIndexMin, pTbinsIndexMax);
         fDCAMcProjSec->SetTitle(projTitle);
         fDCAMcProjSecWD = fDCAsecWD->ProjectionZ(TString::Format("f%sDCASecondaryWeakTPC_%.0f_%.0f_%.2f_%.2f", kAntimatterMatter[iMatt], fDCAdat->GetXaxis()->GetBinLowEdge(kCentBinsProton[iCent][0]), fDCAdat->GetXaxis()->GetBinUpEdge(kCentBinsProton[iCent][1]), fDCAdat->GetYaxis()->GetBinLowEdge(pTbinsIndexMin), fDCAdat->GetYaxis()->GetBinUpEdge(pTbinsIndexMax)), kCentBinsProton[iCent][0], kCentBinsProton[iCent][1], pTbinsIndexMin, pTbinsIndexMax);
         fDCAMcProjSecWD->SetTitle(projTitle);
@@ -238,6 +239,7 @@ void SecondaryTPC(const char *cutSettings = "", const double DCAxyCut=0.12, cons
           TLatex chiSq(0.65, 1.e7, Form("#chi^{2}/NDF=%.2f", chi2));
           chiSq.SetNDC();
           chiSq.SetY(0.55);
+          chiSq.SetTextFont(44);
           chiSq.SetTextSize(22);
           chiSq.Draw("same");
           c.Write();
@@ -386,9 +388,12 @@ void SecondaryTPC(const char *cutSettings = "", const double DCAxyCut=0.12, cons
           leg.Draw("same");
           TLatex chiSq(0.65, 1.e7, Form("#chi^{2}/NDF=%.2f", chi2 / fit->GetNDF()));
           chiSq.SetNDC();
+          chiSq.SetTextFont(44);
+          chiSq.SetTextSize(22);
           chiSq.SetY(0.55);
           TLatex covStatus(-1., 0.1 * result->GetMaximum(), Form("f_{prim} = %.2f", fracMc1 /* "covStatus = %d", status->CovMatrixStatus() */));
           chiSq.SetTextSize(22);
+          covStatus.SetTextFont(44);
           covStatus.SetTextSize(22);
           chiSq.Draw("same");
           covStatus.Draw("same");
@@ -480,14 +485,14 @@ void SecondaryTPC(const char *cutSettings = "", const double DCAxyCut=0.12, cons
           fRatioDCAPrim.Write();
 
           // write histograms to file
-          fDCAdatProj->GetXaxis()->SetTitleSize(0.05);
+          //fDCAdatProj->GetXaxis()->SetTitleSize(0.05);
           //fDCAdatProj->GetYaxis()->SetRangeUser(1e3,1e9);
           fDCAdatProj->Write();
           fDCAMcProjPrim->Write();
           if (/* ptMin < noSecMaterialThreshold */ptMin < 10)
           {
             fRatioDCASec.GetXaxis()->SetTitle(kAxisTitleDCA);
-            fRatioDCASec.GetXaxis()->SetTitleSize(0.05);
+            //fRatioDCASec.GetXaxis()->SetTitleSize(0.05);
             fRatioDCASec.GetYaxis()->SetTitle("Prediction / MC");
             fRatioDCASec.GetYaxis()->SetRangeUser(0., 8.);
             fRatioDCASec.Write();
@@ -495,7 +500,7 @@ void SecondaryTPC(const char *cutSettings = "", const double DCAxyCut=0.12, cons
           }
 
           // save canvas plot
-          canv.Print(Form("%s/primary_fraction/%s_%s/cent_%.0f_%.0f_pt_%.2f_%.2f.png", kPlotDir, kAntimatterMatter[iMatt], cutSettings, kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1], ptMin, ptMax));
+          canv.Print(Form("%s/primary_fraction/%s_%s/TPCcent_%.0f_%.0f_pt_%.2f_%.2f.png", kPlotDir, kAntimatterMatter[iMatt], cutSettings, kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1], ptMin, ptMax));
         }
       } // end of loop on centrality bin
 
@@ -557,10 +562,10 @@ void SecondaryTPC(const char *cutSettings = "", const double DCAxyCut=0.12, cons
       system(Form("mkdir %s/primary_plots", kPlotDir));
       TCanvas cPrim("cPrim", "cPrim");
       cPrim.cd();
-      fPrimaryFrac.GetXaxis()->SetRangeUser(1., 2.0);
+      fPrimaryFrac.GetXaxis()->SetRangeUser(0.5, .85);
       fPrimaryFrac.GetYaxis()->SetRangeUser(0.0, 1.1);
       fPrimaryFrac.Draw("");
-      cPrim.Print(Form("%s/primary_plots/%s.png", kPlotDir, fPrimaryFrac.GetName()));
+      cPrim.Print(Form("%s/primary_plots/TPC%s.png", kPlotDir, fPrimaryFrac.GetName()));
     }
   }
   outFile->Close();

@@ -12,12 +12,12 @@ extractRatios=1
 
 fileData="AnalysisResults"
 fileMC="mc_20g7_20210929"
-signalName="SignalProtonSysTOF"
-spectraName="SpectraProtonSysTOF"
-spectraNameTPC="SpectraProtonSysTOFTPC"
-EfficiencyHe3="EfficiencyProtonSysTOF"
-PrimaryHe3="PrimaryProtonSysTOF"
-PrimaryHe3TPC="PrimaryProtonSysTOFTPC"
+signalName="SignalProtonSysTPC2"
+spectraName="SpectraProtonSysTPC2TOF"
+spectraNameTPC="SpectraProtonSysTPC2"
+EfficiencyHe3="EfficiencyProtonSysTPC2"
+PrimaryHe3="PrimaryProtonSysTPC2TOF"
+PrimaryHe3TPC="PrimaryProtonSysTPC2"
 
 # create output directories
 DIR_OUT=out
@@ -54,7 +54,7 @@ fi
 if [ $extractRatios -eq 1 ]; then
     root -b -l <<EOF
 .L SpectraTPC.cpp+
-//SpectraTPC("$cutSettings",$roiNsigma,$G3G4Prim,$argumentSignal,$sigmoidFlag,"$spectraHistNameId","$spectraNameTPC","update","AnalysisResults","$signalName","$EfficiencyHe3","$PrimaryHe3TPC")
+SpectraTPC("$cutSettings",$roiNsigma,$G3G4Prim,$argumentSignal,$sigmoidFlag,"$spectraHistNameId","$spectraNameTPC","update","AnalysisResults","$signalName","$EfficiencyHe3","$PrimaryHe3TPC")
 .q
 EOF
 fi

@@ -48,7 +48,7 @@ const bool sys_eff_error = true;
 const int used_pt_bins = 24;
 const int nTrials=10000;
 
-void SystematicsPtNotCombinedTPC(const int points = kNPoints, const bool cutVar = true, const bool binCountingVar = true, const bool expVar = true, const bool sigmoidVar = true, const char *outFileName = "SystematicsAllEPtNotCombinedTPC")
+void SystematicsPtNotCombinedTPC(const int points = kNPoints, const bool cutVar = true, const bool binCountingVar = true, const bool expVar = true, const bool sigmoidVar = true, const char *outFileName = "SystematicsAllEPtNotCombinedTPC2")
 {
 
   const int nUsedPtBins = 12;
@@ -59,7 +59,7 @@ void SystematicsPtNotCombinedTPC(const int points = kNPoints, const bool cutVar 
   TStopwatch swatch;
   swatch.Start(true);
 
-  TFile *specFile = TFile::Open(Form("%s/SpectraProtonSysTPCTOF.root", kOutDir));
+  TFile *specFile = TFile::Open(Form("%s/SpectraProtonSysTPC2.root", kOutDir));
   //TFile *fileEffFit=TFile::Open("out/SpectraProton_MC21l5_raw_fitEff.root");
   TFile *fG4 = TFile::Open("out/SpectraProton_MC21l5_raw_primaryInjected.root");      
   TFile *inFileSec = TFile::Open(Form("%s/PrimaryProtonTPC_large.root", kOutDir));
@@ -228,6 +228,7 @@ void SystematicsPtNotCombinedTPC(const int points = kNPoints, const bool cutVar 
       std::cout << fullCutSettingsSigm <<std::endl;
       TH1D *h = (TH1D *)specFile->Get(Form("%s/fRatio_%.0f_%.0f", fullCutSettingsSigm, kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]));
       for(int iPtBins=3;iPtBins<nUsedPtBins;++iPtBins){
+        if (iC==1 && h->GetXaxis()->GetBinLowEdge(iPtBins)>0.54 && h->GetXaxis()->GetBinLowEdge(iPtBins)<0.56 && iTrackCuts==13) continue; 
         double h_content = h->GetBinContent(iPtBins);
         double h_error = h->GetBinError(iPtBins);
         double h_0_content = hDefault->GetBinContent(iPtBins);
@@ -351,7 +352,7 @@ void SystematicsPtNotCombinedTPC(const int points = kNPoints, const bool cutVar 
       fSystematicUncertaintyDCAz.SetBinError(iPtBins,0);
 
       proj=fRatiosVsPtPID.ProjectionY("py",iPtBins,iPtBins);
-      if (iC==1)remove_outliers(proj,1.3);
+      //if (iC==1)remove_outliers(proj,1.3);
       if (proj->GetEntries()==0 || proj->GetMean()==0){
         fSystematicUncertaintyPID.SetBinContent(iPtBins,0);
       }
@@ -360,7 +361,7 @@ void SystematicsPtNotCombinedTPC(const int points = kNPoints, const bool cutVar 
       }fSystematicUncertaintyPID.SetBinError(iPtBins,0);
 
       proj=fRatiosVsPtTPCCls.ProjectionY("py",iPtBins,iPtBins);
-      if (iC==1)remove_outliers(proj,1.3);
+      if (iC==0&&proj->GetBinCenter(iPtBins)>0.8)remove_outliers(proj,1.3);
       if (proj->GetEntries()==0 || proj->GetMean()==0){
         fSystematicUncertaintyTPCCls.SetBinContent(iPtBins,0);
       }
@@ -370,7 +371,6 @@ void SystematicsPtNotCombinedTPC(const int points = kNPoints, const bool cutVar 
       fSystematicUncertaintyTPCCls.SetBinError(iPtBins,0);
 
       proj=fRatiosVsPtDCAxy.ProjectionY("py",iPtBins,iPtBins);
-      remove_outliers(proj,1.3);
       if (proj->GetEntries()==0 || proj->GetMean()==0){
         fSystematicUncertaintyDCAxy.SetBinContent(iPtBins,0);
       }

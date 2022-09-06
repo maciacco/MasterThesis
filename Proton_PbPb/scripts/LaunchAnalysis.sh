@@ -45,16 +45,16 @@ EOF
 
 if [ $extractRatios -eq 1 ]; then
     root -b -l <<EOF
-//.L ../utils/RooGausExp.cxx+
-//.L ../utils/RooDSCBShape.cxx+
-//.L ../utils/RooGausDExp.cxx+
-//.L SignalBinned.cpp+
+.L ../utils/RooGausExp.cxx+
+.L ../utils/RooDSCBShape.cxx+
+.L ../utils/RooGausDExp.cxx+
+.L SignalBinned.cpp+
 //.L Efficiency.cpp+
-.L Secondary.cpp+
+//.L Secondary.cpp+
 //.L Spectra.cpp+
 //.L AbsorptionError.cpp+
-//SignalBinned("$cutSettings",8,$argumentSignal,"$fileData","$signalName","recreate")
-Secondary("$cutSettings",0.12,"$fileData","$fileMC","$PrimaryHe3",false)
+SignalBinned("$cutSettings",8,$argumentSignal,"$fileData","$signalName","recreate")
+//Secondary("$cutSettings",0.12,"$fileData","$fileMC","$PrimaryHe3",false)
 //Spectra("$cutSettings",8,0,$argumentSignal,$sigmoidFlag,"$spectraHistNameId","$spectraName","recreate","AnalysisResults","$signalName","$EfficiencyHe3","$PrimaryHe3")
 //AbsorptionError("AbsErrorMCorrection","recreate","$spectraName")
 .q

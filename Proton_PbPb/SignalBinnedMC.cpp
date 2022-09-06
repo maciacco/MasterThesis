@@ -432,18 +432,19 @@ void SignalBinnedMC(const char *cutSettings = "", const double roi_nsigma = 8., 
           if (ptMin > 0.54) left_fit_range_factor = 1.2;
           nSigmaTPC.setRange("fitRange",tpcSignalProjectionAll->GetFunction("gaus")->GetParameter(1)+left_fit_range_factor*tpcSignalProjectionAll->GetFunction("gaus")->GetParameter(2),3);
           for (int i=0;i<2;++i)modelTPC.fitTo(hNSigmaTPC,RooFit::Range("fitRange"));
+          RooPlot *frameTPC = nSigmaTPC.frame(RooFit::Name(tpcSignalProjection->GetName()));
           double lowTPCrange=5;
           if (ptMin > 0.74) lowTPCrange=4.;
-          nSigmaTPC.setRange("signalRange",meanTPC.getVal()-lowTPCrange*sigmaTPC.getVal(),meanTPC.getVal()+5.*sigmaTPC.getVal());
-          RooPlot *frameTPC = nSigmaTPC.frame(RooFit::Name(tpcSignalProjection->GetName()));
-          hNSigmaTPC.plotOn(frameTPC);
+          if (iCent>0) lowTPCrange-=1.;
+          if (iCent == 0 && ptMin>0.79) lowTPCrange=2.5;
+          double tpc_range_limit = (roi_nsigma-8.)*0.5;
+          double tpc_tmp_mean=0., tpc_tmp_rms=0.;
+          nSigmaTPC.setRange("signalRange",meanTPC.getVal()-(lowTPCrange+tpc_range_limit)*sigmaTPC.getVal(),meanTPC.getVal()+(5.+tpc_range_limit)*sigmaTPC.getVal());
           modelTPC.plotOn(frameTPC,RooFit::Components("bkgTPC"),RooFit::LineColor(kGreen),RooFit::LineStyle(kDashed));
           modelTPC.plotOn(frameTPC,RooFit::Components("signalTPC"),RooFit::LineColor(kRed),RooFit::LineStyle(kDashed));
           modelTPC.plotOn(frameTPC);
           frameTPC->Write();
 
-          double tpc_range_limit = (roi_nsigma-8.)*0.5+5.;
-          double tpc_tmp_mean=0., tpc_tmp_rms=0.;
           double background=0.;
           if (ptMin > 0.49){
             background = ((RooAbsPdf *)bkgTPC.createIntegral(RooArgSet(nSigmaTPC), RooFit::NormSet(RooArgSet(nSigmaTPC)), RooFit::Range("signalRange")))->getVal();
@@ -451,7 +452,7 @@ void SignalBinnedMC(const char *cutSettings = "", const double roi_nsigma = 8., 
           }
           TCanvas c(Form("%s",tpcSignalProjection->GetName()),Form("%s",tpcSignalProjection->GetName()));
           
-          double rawYieldTPC = hNSigmaTPC.sumEntries(Form("nSigmaTPC>%f && nSigmaTPC<%f",meanTPC.getVal()-lowTPCrange*sigmaTPC.getVal(),meanTPC.getVal()+5.*sigmaTPC.getVal()));
+          double rawYieldTPC = hNSigmaTPC.sumEntries(Form("nSigmaTPC>%f && nSigmaTPC<%f",meanTPC.getVal()-(lowTPCrange+tpc_range_limit)*sigmaTPC.getVal(),meanTPC.getVal()+(5.+tpc_range_limit)*sigmaTPC.getVal()));
           if(ptMin>0.49)rawYieldTPC-=background;
           double rawYieldErrorTPC = TMath::Sqrt(rawYieldTPC);
           c.SetLogy();

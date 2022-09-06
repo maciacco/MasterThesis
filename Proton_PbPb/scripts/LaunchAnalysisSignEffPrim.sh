@@ -10,18 +10,18 @@ G3G4Prim="$6"
 extractRatios=1
 
 fileData="AnalysisResults"
-fileDataEff="AnalysisResults_LHC21l5_full_largeDCA_cutChi2" # uncomment for high pt proton analysis (this is also the MCinj file in that case)
-fileMCInj="AnalysisResults_LHC21l5_full_largeDCA_cutChi2" # uncomment for high pt proton analysis (this is also the MCinj file in that case)
-#fileDataEff="AnalysisResults_LHC21l5_lowPtProton" # uncomment for low pt proton analysis
+#fileDataEff="AnalysisResults_LHC21l5_full_largeDCA_cutChi2" # uncomment for high pt proton analysis (this is also the MCinj file in that case)
+#fileMCInj="AnalysisResults_LHC21l5_full_largeDCA_cutChi2" # uncomment for high pt proton analysis (this is also the MCinj file in that case)
+fileDataEff="AnalysisResults_LHC21l5_lowPtProton" # uncomment for low pt proton analysis
 fileMC="mc"
 fileMCInj="AnalysisResults_LHC21l5_LambdaCtMotherAndProtonsITSPID"
-signalNameEff="SignalProtonSysEffTOF"
-spectraNameEff="SpectraProtonSysEffTOF"
-signalName="SignalProtonSysTOF"
-spectraName="SpectraProtonSysTOF"
-EfficiencyHe3="EfficiencyProtonSysTOF"
-PrimaryHe3="PrimaryProtonSysTOF"
-PrimaryHe3TPC="PrimaryProtonSysTOFTPC"
+signalNameEff="SignalProtonSysEffTPC2"
+spectraNameEff="SpectraProtonSysEffTPC2"
+signalName="SignalProtonSysTPC2"
+spectraName="SpectraProtonSysTPC2"
+EfficiencyHe3="EfficiencyProtonSysTPC2"
+PrimaryHe3="PrimaryProtonSysTPC2TOF"
+PrimaryHe3TPC="PrimaryProtonSysTPC2"
 
 # create output directories
 DIR_OUT=out
@@ -64,8 +64,8 @@ EOF
 fi
 
 root -b -l <<EOF
-//.L SecondaryTPC.cpp+
-//SecondaryTPC("$cutSettings",$dcaxycut,"$fileData","$fileMC","$PrimaryHe3TPC",$G3G4Prim)
+.L SecondaryTPC.cpp+
+SecondaryTPC("$cutSettings",$dcaxycut,"$fileData","$fileMC","$PrimaryHe3TPC",$G3G4Prim)
 EOF
 
 if [ $extractRatios -eq 1 ]; then

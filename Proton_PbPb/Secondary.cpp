@@ -55,7 +55,7 @@ void Secondary(const char *cutSettings = "", const double DCAxyCut=0.12, const c
   // open files
   TFile *inFileDat = TFile::Open(Form("%s/%s_largeNsigma_cutDCAxyChi2TPC.root", kDataDir, inFileDatName));
   TFile *inFileMCInj = TFile::Open(Form("%s/%s.root", kDataDir, "AnalysisResults_LHC21l5_full_largeDCA_cutChi2"));
-  TFile *inFileMCGP = TFile::Open(Form("%s/AnalysisResults_LHC20e3_DCAChi2TPC_old2.root", kDataDir));
+  TFile *inFileMCGP = TFile::Open(Form("%s/AnalysisResults_LHC20e3_DCAChi2TPC.root", kDataDir)); //AnalysisResults_LHC20e3_DCAChi2TPC_old2
   TFile *outFile = TFile::Open(Form("%s/%s.root", kOutDir, outFileName), "recreate");
 
   for (int iMatt = 0; iMatt < 2; ++iMatt)
@@ -294,60 +294,184 @@ void Secondary(const char *cutSettings = "", const double DCAxyCut=0.12, const c
         // else if (iMatt == 0 && iCent == 2)
         //   fit->Constrain(1,0.,0.9);
 
-        if (ptMin < noSecMaterialThreshold)fit->Constrain(2, 0., .5);
-        if (iCent==0 && ptMin < noSecMaterialThreshold)fit->Constrain(2, 0., 1.);
-        fit->Constrain(1, 0., 1.0);
-        fit->Constrain(0, 0., 1.0);
-        if (iCent==0&& ptMin > noSecMaterialThreshold && iMatt==1)
-          fit->Constrain(1, 0., .99);
-        if (iCent<2&& ptMin > 2.59 && ptMin<2.61 && iMatt==1){
-          fit->Constrain(1, 0., .2);
-          fit->Constrain(0, 0., .99);
-        }
-        if (iCent==1&&iMatt==0&&ptMin>2.15&&ptMin<2.25){
-          fit->Constrain(1, 0., .3);
-          fit->Constrain(0, 0., .9);
-        }
-        if (iCent==2&&iMatt==1&&ptMin>1.29&&ptMin<1.31){
-          fit->Constrain(1, 0., .7);
-          fit->Constrain(0, 0., .9);
-          fit->Constrain(2, 0., .3);
-        }
-
-        TVirtualFitter::SetMaxIterations(MAX_ITER); 
         Int_t status=-999;
-        //ROOT::Math::MinimizerOptions::SetDefaultStrategy(0);
-        for(int I = 0; I<2; ++I)status = fit->Fit(); // perform the fit
-        if (status != 0)
-        {
-          fit = new TFractionFitter(fDCAdatProj, mc, "Q"); // initialise
-          fitter = fit->GetFitter();
-          ROOT::Math::MinimizerOptions::SetDefaultStrategy(0);
+        if ((iMatt==1&&iCent<2) ||(iMatt==1&&iCent==2&&ptMin<0.99)|| (iMatt==0&&iCent==0&&ptMin>2.09&&ptMin<2.11)||(iMatt==0&&ptMin<1.)){
+          fit->Constrain(0, 0., 1.);
+          fit->Constrain(1, 0., 0.9);
+          if (ptMin < noSecMaterialThreshold)fit->Constrain(2, 0., .5);
+          if (iCent==0 && ptMin < noSecMaterialThreshold)fit->Constrain(2, 0., 1.);
+          fit->Constrain(1, 0., 1.0);
+          fit->Constrain(0, 0., 1.0);
+          if (iCent==0&& ptMin > noSecMaterialThreshold && iMatt==1)
+            fit->Constrain(1, 0., .99);
+          if (iCent<2&& ptMin > 2.59 && ptMin<2.61 && iMatt==1){
+            fit->Constrain(1, 0., .2);
+            fit->Constrain(0, 0., .99);
+          }
+          if (iCent==1&&iMatt==0&&ptMin>2.15&&ptMin<2.25){
+            fit->Constrain(1, 0., .3);
+            fit->Constrain(0, 0., .9);
+          }
+          if (iCent==2&&iMatt==1&&ptMin>1.29&&ptMin<1.31){
+            fit->Constrain(1, 0., .7);
+            fit->Constrain(0, 0., .9);
+            fit->Constrain(2, 0., .3);
+          }
 
           TVirtualFitter::SetMaxIterations(MAX_ITER);
-
-          fit->SetRangeX(fDCAdatProj->FindBin(-fitRange), fDCAdatProj->FindBin(fitRange-0.001));
-          fitter->Config().ParSettings(0).Release();
-          fitter->Config().ParSettings(0).SetValue(0.800);
-          fitter->Config().ParSettings(0).SetLimits(0.600, 1.000);
-          fitter->Config().ParSettings(0).SetStepSize(1.e-4);
-          fitter->Config().ParSettings(1).Release();
-          fitter->Config().ParSettings(1).SetValue(0.200);
-          fitter->Config().ParSettings(1).SetLimits(0.0001, 0.400);
-          fitter->Config().ParSettings(1).SetStepSize(1.e-4);
-          if (ptMin < noSecMaterialThreshold)
+          //ROOT::Math::MinimizerOptions::SetDefaultStrategy(0);
+          for(int I = 0; I<2; ++I)status = fit->Fit(); // perform the fit
+          if (status != 0)
           {
-            fitter->Config().ParSettings(2).Release();
-            fitter->Config().ParSettings(2).SetLimits(0.00001, 0.1);
-            fitter->Config().ParSettings(2).SetStepSize(1e-4);
-            if (ptMin> 1.2 and ptMin<1.5 && iCent==2) {
-              fitter->Config().ParSettings(2).SetLimits(0.00001, 0.2);
-              fitter->Config().ParSettings(1).SetLimits(0.0001, 0.300);
+            fit = new TFractionFitter(fDCAdatProj, mc, "Q"); // initialise
+            fitter = fit->GetFitter();
+            ROOT::Math::MinimizerOptions::SetDefaultStrategy(0);
+
+            TVirtualFitter::SetMaxIterations(MAX_ITER);
+
+            fit->SetRangeX(fDCAdatProj->FindBin(-fitRange), fDCAdatProj->FindBin(fitRange-0.001));
+            fitter->Config().ParSettings(0).Release();
+            fitter->Config().ParSettings(0).SetValue(0.800);
+            fitter->Config().ParSettings(0).SetLimits(0.600, 1.000);
+            fitter->Config().ParSettings(0).SetStepSize(1.e-4);
+            fitter->Config().ParSettings(1).Release();
+            fitter->Config().ParSettings(1).SetValue(0.200);
+            fitter->Config().ParSettings(1).SetLimits(0.0001, 0.400);
+            fitter->Config().ParSettings(1).SetStepSize(1.e-4);
+            if (ptMin < noSecMaterialThreshold)
+            {
+              fitter->Config().ParSettings(2).Release();
+              fitter->Config().ParSettings(2).SetLimits(0.00001, 0.1);
+              fitter->Config().ParSettings(2).SetStepSize(1e-4);
+              if (ptMin> 1.2 and ptMin<1.5 && iCent==2) {
+                fitter->Config().ParSettings(2).SetLimits(0.00001, 0.2);
+                fitter->Config().ParSettings(1).SetLimits(0.0001, 0.300);
+              }
+            }
+            //ROOT::Math::MinimizerOptions::SetDefaultStrategy(0);
+            for(int I = 0; I<2; ++I)status = fit->Fit();
+          }
+        }
+
+        if ((iMatt==0&&ptMin>0.99) || (iMatt==1&&iCent==1&&ptMin>1.&&ptMin<1.4)||(iMatt==1&&iCent==2&&ptMin>0.99)){
+          if (ptMin < noSecMaterialThreshold)
+          { 
+            fit->Constrain(2, 0., 1.0);
+            if (iCent ==1 && ptMin>0.7 && ptMin<1.39) fit->Constrain(2,0.,0.9);
+            if (iCent ==0 && ptMin>1.04 && ptMin<1.19) fit->Constrain(2,0.,0.1);
+            if (iCent ==0 && ptMin>0.99 && ptMin<1.01) fit->Constrain(2,0.,0.9);
+          }
+          if (iMatt == 0 && iCent == 1 && ptMin > 1.4)
+            fit->Constrain(1, 0., 0.99);
+          else if (iMatt == 0 && iCent == 1 && ptMin < 1.4)
+            fit->Constrain(1, 0., 1.);
+          else if (iMatt == 0 && iCent == 0 && ptMin < 1.6)
+            fit->Constrain(0, 0., .9);
+          else if (iMatt == 0 && iCent == 0 && ptMin > 2.)
+            fit->Constrain(1, 0., 0.9);
+          else if (iMatt==1 && iCent>0){
+            fit->Constrain(0, 0., 1.0);
+            fit->Constrain(1, 0., 1.0);
+          }
+          else if (iMatt==1 && iCent == 0){
+            if (ptMin<0.99||ptMin>1.19){
+              fit->Constrain(0, 0., 0.9);
+              fit->Constrain(1, 0., 1.);
+            }
+            else{
+              fit->Constrain(1, 0., .99);
             }
           }
-          //ROOT::Math::MinimizerOptions::SetDefaultStrategy(0);
-          for(int I = 0; I<2; ++I)status = fit->Fit();
+          else if (iMatt == 0 && iCent == 2)
+            fit->Constrain(1,0.,0.9);
+
+          TVirtualFitter::SetMaxIterations(MAX_ITER);  
+          /* TVirtualFitter::SetPrecision(1e-2);  */
+          /* TFitResultPtr  */ for(int I = 0; I<2; ++I)status = fit->Fit(); // perform the fit
+          if (status != 0)
+          {
+            fit = new TFractionFitter(fDCAdatProj, mc, "Q"); // initialise
+            fitter = fit->GetFitter();
+            ROOT::Math::MinimizerOptions::SetDefaultStrategy(0);
+
+            TVirtualFitter::SetMaxIterations(MAX_ITER);
+          // TVirtualFitter::SetPrecision(0.01);
+
+            fit->SetRangeX(fDCAdatProj->FindBin(-fitRange), fDCAdatProj->FindBin(fitRange-0.001));
+            fitter->Config().ParSettings(0).SetValue(0.710);
+            fitter->Config().ParSettings(0).SetLimits(0.500, 0.990);
+            fitter->Config().ParSettings(0).Release();
+            fitter->Config().ParSettings(0).SetStepSize(1.e-3);
+            fitter->Config().ParSettings(1).SetValue(0.300);
+            fitter->Config().ParSettings(1).SetLimits(0.010, 0.400);
+            fitter->Config().ParSettings(1).Release();
+            fitter->Config().ParSettings(1).SetStepSize(1.e-3);
+            if (ptMin < noSecMaterialThreshold)
+            {
+              fitter->Config().ParSettings(2).SetValue(0.0050);
+              fitter->Config().ParSettings(2).SetLimits(0.0010, 0.0250);
+              fitter->Config().ParSettings(2).Release();
+              fitter->Config().ParSettings(2).SetStepSize(1e-5);
+            }
+            ROOT::Math::MinimizerOptions::SetDefaultStrategy(0);
+            for(int I = 0; I<2; ++I)status = fit->Fit();
+          }
         }
+
+        // if (ptMin < noSecMaterialThreshold)fit->Constrain(2, 0., .5);
+        // if (iCent==0 && ptMin < noSecMaterialThreshold)fit->Constrain(2, 0., 1.);
+        // fit->Constrain(1, 0., 1.0);
+        // fit->Constrain(0, 0., 1.0);
+        // if (iCent==0&& ptMin > noSecMaterialThreshold && iMatt==1)
+        //   fit->Constrain(1, 0., .99);
+        // if (iCent<2&& ptMin > 2.59 && ptMin<2.61 && iMatt==1){
+        //   fit->Constrain(1, 0., .2);
+        //   fit->Constrain(0, 0., .99);
+        // }
+        // if (iCent==1&&iMatt==0&&ptMin>2.15&&ptMin<2.25){
+        //   fit->Constrain(1, 0., .3);
+        //   fit->Constrain(0, 0., .9);
+        // }
+        // if (iCent==2&&iMatt==1&&ptMin>1.29&&ptMin<1.31){
+        //   fit->Constrain(1, 0., .7);
+        //   fit->Constrain(0, 0., .9);
+        //   fit->Constrain(2, 0., .3);
+        // }
+
+        // TVirtualFitter::SetMaxIterations(MAX_ITER); 
+        // Int_t status=-999;
+        // //ROOT::Math::MinimizerOptions::SetDefaultStrategy(0);
+        // for(int I = 0; I<2; ++I)status = fit->Fit(); // perform the fit
+        // if (status != 0)
+        // {
+        //   fit = new TFractionFitter(fDCAdatProj, mc, "Q"); // initialise
+        //   fitter = fit->GetFitter();
+        //   ROOT::Math::MinimizerOptions::SetDefaultStrategy(0);
+
+        //   TVirtualFitter::SetMaxIterations(MAX_ITER);
+
+        //   fit->SetRangeX(fDCAdatProj->FindBin(-fitRange), fDCAdatProj->FindBin(fitRange-0.001));
+        //   fitter->Config().ParSettings(0).Release();
+        //   fitter->Config().ParSettings(0).SetValue(0.800);
+        //   fitter->Config().ParSettings(0).SetLimits(0.600, 1.000);
+        //   fitter->Config().ParSettings(0).SetStepSize(1.e-4);
+        //   fitter->Config().ParSettings(1).Release();
+        //   fitter->Config().ParSettings(1).SetValue(0.200);
+        //   fitter->Config().ParSettings(1).SetLimits(0.0001, 0.400);
+        //   fitter->Config().ParSettings(1).SetStepSize(1.e-4);
+        //   if (ptMin < noSecMaterialThreshold)
+        //   {
+        //     fitter->Config().ParSettings(2).Release();
+        //     fitter->Config().ParSettings(2).SetLimits(0.00001, 0.1);
+        //     fitter->Config().ParSettings(2).SetStepSize(1e-4);
+        //     if (ptMin> 1.2 and ptMin<1.5 && iCent==2) {
+        //       fitter->Config().ParSettings(2).SetLimits(0.00001, 0.2);
+        //       fitter->Config().ParSettings(1).SetLimits(0.0001, 0.300);
+        //     }
+        //   }
+        //   //ROOT::Math::MinimizerOptions::SetDefaultStrategy(0);
+        //   for(int I = 0; I<2; ++I)status = fit->Fit();
+        // }
         if (status == 0)
         { // check on fit status
           TH1F *result = (TH1F *)fit->GetPlot();

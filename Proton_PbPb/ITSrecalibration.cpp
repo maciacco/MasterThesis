@@ -29,21 +29,24 @@ void ITSrecalibration(bool mc=false, bool save_fits=false){
   TTList *ls_proton=(TTList*)inFile->Get(Form("nuclei_proton_%s",ls_name[(int)mc]));
   TH3F *fNSigmaITSpTCentA=(TH3F*)ls_proton->Get(Form("f%sITSnSigma",kAntimatterMatter[0]));
   TH3F *fNSigmaITSpTCentM=(TH3F*)ls_proton->Get(Form("f%sITSnSigma",kAntimatterMatter[1]));
-  TH1F fITSCalibMean("fITSCalibMean",";#it{p}_{T} (GeV/#it{c});Mean (a.u.)",11,0.3,0.85);
-  TH1F fITSCalibSigma("fITSCalibSigma",";#it{p}_{T} (GeV/#it{c});Sigma (a.u.)",11,0.3,0.85);
-  TH1F fITSCalibMeanRoo("fCustomITSpidMu",";#it{p}_{T} (GeV/#it{c});Mean (a.u.)",11,0.3,0.85);
-  TH1F fITSCalibSigmaRoo("fCustomITSpidSigma",";#it{p}_{T} (GeV/#it{c});Sigma (a.u.)",11,0.3,0.85);
-  TH1F fITSCalibRatio("fITSCalibRatio",";#it{p}_{T} (GeV/#it{c});Ratio (a.u.)",11,0.3,0.85);
+  TH1F fITSCalibMean("fITSCalibMean",";#it{p}_{T} (GeV/#it{c});Mean (a.u.)",14,0.3,1.);
+  TH1F fITSCalibSigma("fITSCalibSigma",";#it{p}_{T} (GeV/#it{c});Sigma (a.u.)",14,0.3,1.);
+  TH1F fITSCalibMeanRoo("fCustomITSpidMu",";#it{p}_{T} (GeV/#it{c});Mean (a.u.)",14,0.3,1.);
+  TH1F fITSCalibSigmaRoo("fCustomITSpidSigma",";#it{p}_{T} (GeV/#it{c});Sigma (a.u.)",14,0.3,1.);
+  TH1F fITSCalibRatio("fITSCalibRatio",";#it{p}_{T} (GeV/#it{c});Ratio (a.u.)",14,0.3,1.);
   if (save_fits) outFile.mkdir("fits");
-  for (int iB=1;iB<12;iB++){
+  for (int iB=1;iB<15;iB++){
     TH1D* fNSigmaITSpT=fNSigmaITSpTCentA->ProjectionZ(Form("proj_%.2f_%.2f",kPtBins[iB-1],kPtBins[iB]),1,10,iB,iB);
     TH1D* fNSigmaITSpTM=fNSigmaITSpTCentM->ProjectionZ(Form("proj_%.2f_%.2f",kPtBins[iB-1],kPtBins[iB]),1,10,iB,iB);
     fNSigmaITSpT->Add(fNSigmaITSpTM);
     fNSigmaITSpT->Rebin(1);
+    double upNsigma = 4.;
     double lowNsigma = -3.8;
     if (kPtBins[iB-1]>0.39 && kPtBins[iB-1]<0.6) lowNsigma = -3.2;
-    else if (kPtBins[iB-1]>0.6) lowNsigma = -2.7;
-    RooRealVar nSigma("nSigma","nSigma",lowNsigma,4.);
+    else if (kPtBins[iB-1]>0.6 && kPtBins[iB-1]<0.89) lowNsigma = -2.7;
+    else if (kPtBins[iB-1]>0.89 && kPtBins[iB-1]<0.94) lowNsigma = -2.5;
+    else if (kPtBins[iB-1]>0.94) lowNsigma = -2.4;
+    RooRealVar nSigma("nSigma","nSigma",lowNsigma,upNsigma);
     RooDataHist data("data","data",RooArgList(nSigma),fNSigmaITSpT);
     RooPlot *xframe = nSigma.frame();
     RooRealVar mu("mu","mu",-0.5,-1.,1.);
@@ -59,6 +62,7 @@ void ITSrecalibration(bool mc=false, bool save_fits=false){
     model.plotOn(xframe,RooFit::Name("model"));
     model.plotOn(xframe,RooFit::Components("signal"),RooFit::Name("signal"),RooFit::LineColor(kRed),RooFit::LineStyle(kDashed));
     model.plotOn(xframe,RooFit::Components("bkg"),RooFit::Name("bkg"),RooFit::LineColor(kGreen),RooFit::LineStyle(kDashed));
+    model.paramOn(xframe,RooFit::Label(TString::Format("#chi^{2}/NDF = %2.2f", xframe->chiSquare("model", "data"))), RooFit::Layout(0.58812,0.911028,0.861955));
     TF1 func("func","gaus(0)+expo(3)");
     func.SetParLimits(0,0,1.e9);
     func.SetParLimits(1,-1.5,0.);
