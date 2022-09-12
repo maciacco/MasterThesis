@@ -153,4 +153,3 @@ def GetPromptFDYieldsAnalyticMinimisation(effPromptList, effFDList, rawYieldList
     dicOfMatrices = {'covMatrix':mCovSets, 'weightMatrix':mWeights, 'corrMatrix':mCorrSets}
 
     return mCorrYield, mCovariance, float(redChiSquare), dicOfMatrices
-

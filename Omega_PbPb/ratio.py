@@ -54,8 +54,8 @@ if SPLIT:
 raw_yields_file = ROOT.TFile('SignalExtraction-data.root')
 # score_eff_dict = pickle.load(open('second_round/file_score_eff_dict','rb'))
 eff_array = np.arange(0.10, MAX_EFF, 0.01)
-f = ROOT.TFile("ratio.root","recreate")
-cut_val_cent = [0.5,0.5,0.6]
+f = ROOT.TFile("ratio_sys.root","recreate")
+cut_val_cent = [0.5,0.5,0.5]
 
 # for i_cent_bins in range(len(CENTRALITY_LIST)):
 #     h = []
@@ -176,14 +176,17 @@ for i_cent_bins in range(len(CENTRALITY_LIST)):
                 bbkg = 'expo'
             split_ineq_sign = '> -0.1'
             cut_rndm_ = int(ROOT.gRandom.Rndm()*20)*0.01
+            if cent_bins[0]==30:
+                cut_rndm_ = int(ROOT.gRandom.Rndm()*30)*0.01
             for i_split, split in enumerate(SPLIT_LIST):
                 if SPLIT:
                     split_ineq_sign = '> 0.5'
                     if split == 'antimatter':
                         split_ineq_sign = '< 0.5'
                 cut_bin = f'{split}_{cent_bins[0]}_{cent_bins[1]}_{ct_bins[0]}_{ct_bins[1]}'
-                #cut_val = cut_dict[cut_bin]-0.1
                 cut_val = cut_val_cent[i_cent_bins]-0.09
+                if cent_bins[0]==30:
+                    cut_val = cut_val_cent[i_cent_bins]-0.14
                 cut_rndm = cut_rndm_ + cut_val
                 cent_bins = CENTRALITY_LIST[i_cent_bins]
                 h_pres_eff = presel_eff_file.Get(f"fPreselEff_vs_ct_{split}_{cent_bins[0]}_{cent_bins[1]};2")

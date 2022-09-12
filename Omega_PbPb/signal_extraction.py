@@ -60,7 +60,7 @@ if BKG_EXPO:
     bkg_shape = 'expo'
 
 score_eff_arrays_dict = pickle.load(open("file_score_eff_dict", "rb"))
-eff_array = np.arange(0.30, MAX_EFF, 0.01)
+eff_array = np.arange(0.2, MAX_EFF, 0.01)
 
 for split in SPLIT_LIST:
     split_ineq_sign = '> -0.1'
@@ -99,7 +99,7 @@ for split in SPLIT_LIST:
                 score_array = analysis_utils.score_from_efficiency_array(df_signal_ct["y_true"], df_signal_ct["model_output"], efficiency_selected=eff_array, keep_lower=False)
 
                 # ROOT.Math.MinimizerOptions.SetDefaultTolerance(1e-2)
-                root_file_signal_extraction = ROOT.TFile("SignalExtraction-data.root", "update")
+                root_file_signal_extraction = ROOT.TFile("SignalExtraction-data-fullEff.root", "update") # yields for measurement in SignalExtraction-data.root
                 root_file_signal_extraction.mkdir(f'{split}_{bin}_{bkg_shape}')
 
                 # raw yields histogram
@@ -109,7 +109,7 @@ for split in SPLIT_LIST:
                 h_significance = ROOT.TH1D("fSignificance", "fSignificance", 101, -0.005, 1.005)
 
                 for eff_score in zip(eff_array, score_array):
-                    if (ct_bins[0] > -0.5) and (eff_score[0] < 0.40 or eff_score[0] > 0.91):
+                    if (ct_bins[0] > -0.5) and (eff_score[0] < 0. or eff_score[0] > 1.0):
                         continue
                     formatted_eff = "{:.2f}".format(eff_score[0])
                     print(f'processing {bin}: eff = {eff_score[0]:.2f}, score = {eff_score[1]:.2f}...')
@@ -340,11 +340,11 @@ for split in SPLIT_LIST:
                                 text_bkg.Draw("same")
                                 print(
                                     f'significance = {"{:.3f}".format(significance_val)} +/- {"{:.3f}".format(significance_err)}')
-                                if not os.path.isdir('plots/signal_extraction_allEff'):
-                                    os.mkdir('plots/signal_extraction_allEff')
-                                if not os.path.isdir(f'plots/signal_extraction_allEff/{split}_{bin}_{bkg_shape}'):
-                                    os.mkdir(f'plots/signal_extraction_allEff/{split}_{bin}_{bkg_shape}')
-                                canv.Print(f'plots/signal_extraction_allEff/{split}_{bin}_{bkg_shape}/{eff_score[0]:.2f}_{bin}.png')
+                                if not os.path.isdir('plots/signal_extraction_fullEff_largeBins'):
+                                    os.mkdir('plots/signal_extraction_fullEff_largeBins')
+                                if not os.path.isdir(f'plots/signal_extraction_fullEff_largeBins/{split}_{bin}_{bkg_shape}'):
+                                    os.mkdir(f'plots/signal_extraction_fullEff_largeBins/{split}_{bin}_{bkg_shape}')
+                                canv.Print(f'plots/signal_extraction_fullEff_largeBins/{split}_{bin}_{bkg_shape}/{eff_score[0]:.2f}_{bin}.pdf')
 
                                 # plot kde and mc
                                 frame = roo_m.frame(1.65, 1.695, 100)
@@ -367,7 +367,7 @@ for split in SPLIT_LIST:
                                 leg_mc.Draw("same")
                                 cc.SetLogy(ROOT.kTRUE)
                                 cc.Write()
-                                cc.Print(f'plots/kde_signal/{split}_{bin}/{formatted_eff}_{bin}.png')
+                                cc.Print(f'plots/kde_signal/{split}_{bin}/{formatted_eff}_{bin}.pdf')
 
                 h_raw_yields.GetXaxis().SetTitle("BDT efficiency")
                 h_raw_yields.GetYaxis().SetTitle("#it{N_{raw}}")
