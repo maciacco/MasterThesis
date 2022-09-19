@@ -189,20 +189,23 @@ if TRAINING:
         background_tree_handler = TreeHandler()
         prompt_tree_handler.set_data_frame(df_prompt_ct)
         background_tree_handler.set_data_frame(df_background_ct)
-        del df_prompt_ct, df_background_ct
+        #del df_prompt_ct, df_background_ct
 
         if not os.path.isdir(f'{PLOT_DIR}/features'):
             os.mkdir(f'{PLOT_DIR}/features')
 
         leg_labels = ['background', 'signal']
-        bins = [40,40,29,40,40,29,40,40,40]
-        for i_col, col in enumerate(TRAINING_COLUMNS_LIST):   
-            plot_distr = plot_utils.plot_distr(
-                [background_tree_handler, prompt_tree_handler],
-            col, bins=bins[i_col], labels=leg_labels, log=True, density=True, figsize=(12, 12),
-            alpha=0.5, grid=False)
-            plt.savefig(f'{PLOT_DIR}/features/FeaturePlots_{col}_{bins[i_col]}.png')
-        
+        bins = [64,64,64,64,60,50,50,50,64]
+        range_feature = [(0,2.55),(0,2.55),(0,2.55),(0,2.55),(0,1.2),(0,1.),(0.95,1),(0.95,1),(-5.,5.)]
+        plt.figure(1,figsize=(12,12))
+        for i_feature, feature in enumerate(TRAINING_COLUMNS_LIST):
+            plt.subplot(3,3,i_feature+1, title=feature)
+            plt.hist(df_background_ct[feature], bins=bins[i_feature], label="background",log=True, density=True, alpha=0.5, range=range_feature[i_feature])
+            plt.hist(df_prompt_ct[feature], bins=bins[i_feature], label="signal", log=True, density=True, alpha=0.5, range=range_feature[i_feature])
+            if i_feature == (len(TRAINING_COLUMNS_LIST)-1):
+                plt.xlim(xmin=-4.5,xmax=4.5)
+                plt.legend(loc='best')
+        plt.savefig(f'{PLOT_DIR}/features/FeaturePlots.pdf')
         bkg_corr = plot_utils.plot_corr([background_tree_handler], TRAINING_COLUMNS_LIST, ['Background'])
         bkg_corr.set_size_inches(6,6)
         plt.subplots_adjust(left=0.1, bottom=0.06, right=0.99, top=0.96, hspace=0.55, wspace=0.55)
