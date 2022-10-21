@@ -51,7 +51,7 @@ void ReadTreeData(const float cutDCAz = 1.f, const int cutTPCcls = 89, const flo
     dataFrame = new RDataFrame("RTree", Form("%s/AnalysisResults_LHC18qr.root", kDataDir)); // get tree from file
   else
     dataFrame = new RDataFrame("RTree", Form("%s/mc.root", kDataDir));                                                                                                                 // get tree from mc                                                                                                            // get tree from file
-  auto trackSelect = dataFrame->Filter(Form("(%s) && (std::abs(dcaz)<%f) && (tpcPIDcls>%d) && %s", kTrackSelectionsEta, cutDCAz, cutTPCcls, trackSelectionsChi2TPC)).Define("pT", "std::abs(pt*2.f)"); // apply track selections
+  auto trackSelect = dataFrame->Filter(Form("((((centrality<30 && centrality>10)||(centrality>50))&&!(((flag&BIT(6))==64)||((flag&BIT(7))==128)))||(centrality<10||(centrality>30&&centrality<50))) && (%s) && (std::abs(dcaz)<%f) && (tpcPIDcls>%d) && %s", kTrackSelectionsEta, cutDCAz, cutTPCcls, trackSelectionsChi2TPC)).Define("pT", "std::abs(pt*2.f)"); // apply track selections
 
   dirOutFile->cd();
   // TPC counts

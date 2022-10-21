@@ -14,10 +14,10 @@ extractRatios=1
 
 fileData="AnalysisResults"
 fileMC="mc_20g7_20210929"
-signalName="SignalPionSys"
-spectraName="SpectraPionSys"
-EfficiencyHe3="EfficiencyPionSys"
-PrimaryHe3="PrimaryPionSys"
+signalName="SignalPionSys_extend"
+spectraName="SpectraPionSys_extend"
+EfficiencyHe3="EfficiencyPionSys_extend"
+PrimaryHe3="PrimaryPionSys_extend"
 
 # create output directories
 DIR_OUT=out

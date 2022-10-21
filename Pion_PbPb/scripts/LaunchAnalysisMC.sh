@@ -52,10 +52,10 @@ if [ $extractRatios -eq 1 ]; then
 .L EfficiencyNew.cpp+
 .L Efficiency.cpp+
 //.L Spectra.cpp+
-SignalBinnedMCv2("$cutSettings",1.5,11.,8.5,13.5,$argumentSignal,"$fileData","$signalName","recreate")
-SecondaryMC("$cutSettings",0.12,"$fileData","$fileMC","$PrimaryHe3")
-EfficiencyNew("$cutSettings","$fileMC","$EfficiencyHe3","$signalName","$PrimaryHe3")
-//Efficiency("$cutSettings","$fileMC","$EfficiencyHe3")
+//SignalBinnedMCv2("$cutSettings",1.5,11.,8.5,13.5,$argumentSignal,"$fileData","$signalName","recreate")
+//SecondaryMC("$cutSettings",0.12,"$fileData","$fileMC","$PrimaryHe3")
+//EfficiencyNew("$cutSettings","$fileMC","$EfficiencyHe3","$signalName","$PrimaryHe3")
+Efficiency("$cutSettings","$fileMC","$EfficiencyHe3")
 .q
 EOF
 fi

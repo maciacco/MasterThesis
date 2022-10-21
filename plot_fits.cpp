@@ -1,7 +1,7 @@
 constexpr float minpt = 0;
-constexpr float maxpt = 4;
-constexpr float miny[] = {0.66,-2.3};
-constexpr float maxy[] = {1.14,2.3};
+constexpr float maxpt = 6;
+constexpr float miny[] = {0.65,-2.3};
+constexpr float maxy[] = {1.28,2.3};
 
 constexpr double sx[2]{0.355,1.-2*sx[0]};
 constexpr double sy[2]{0.7,1.-sy[0]};
@@ -11,7 +11,7 @@ double global_y = 1.;
 double global_x = 0.;
 const char *titles[2]={"; ;Ratio", "; ;#frac{data - fit}{#sigma_{data}}"};
 
-const char *particle_ratios[] = {"#pi^{-} / #pi^{+}","#bar{p} / p","{}_{#bar{#Lambda}}^{3}#bar{H} / ^{3}_{#Lambda}H","^{3}#bar{He} / ^{3}He"};
+const char *particle_ratios[] = {"#frac{#bar{#Omega}^{+}}{#Omega^{-}}","#frac{#pi^{-}}{#pi^{+}}","#frac{#bar{p}}{p}","#frac{{}_{#bar{#Lambda}}^{3}#bar{H}}{^{3}_{#Lambda}H}","#frac{^{3}#bar{H}}{^{3}H}","#frac{^{3}#bar{He}}{^{3}He}"};
 constexpr int nRow=2;
 constexpr int nCol=3;
 
@@ -46,8 +46,8 @@ std::array<TPad*,6> CreatePads(TCanvas* &cv)
     pads[iP]->cd();
     if (row == 1)pads[iP]->SetGridy();
 
-    TH2F *rframe = new TH2F(Form("rframe%i",iP),titles[row],4,minpt,maxpt,100,miny[row],maxy[row]);
-    for (int i_part=0;i_part<4;i_part++)
+    TH2F *rframe = new TH2F(Form("rframe%i",iP),titles[row],6,minpt,maxpt,100,miny[row],maxy[row]);
+    for (int i_part=0;i_part<6;i_part++)
       rframe->GetXaxis()->SetBinLabel(i_part+1,particle_ratios[i_part]);
 
     rframe->GetYaxis()->CenterTitle();
@@ -102,7 +102,7 @@ void plot_fits() {
   l.SetLineStyle(kDashed);
   l.SetLineColor(kBlack);
 
-  TCanvas *cv = new TCanvas("cv","cv",1200,480);
+  TCanvas *cv = new TCanvas("cv","cv",1800,600);
   auto pads = CreatePads(cv);
 
   TLatex text;

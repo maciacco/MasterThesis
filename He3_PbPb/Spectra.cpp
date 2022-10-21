@@ -107,6 +107,7 @@ void Spectra(const float cutDCAz = 1.f, const int cutTPCcls = 89, const float cu
     }
 
     // compute ratios
+    int count_zeros = 0;
     int pTbinMax = 11;
     if (iCent < 2)
       pTbinMax = 13;
@@ -121,13 +122,24 @@ void Spectra(const float cutDCAz = 1.f, const int cutTPCcls = 89, const float cu
         fRatio[iCent]->SetBinContent(iPtBin, antiSpec / spec);
         fRatio[iCent]->SetBinError(iPtBin, antiSpec / spec * TMath::Sqrt(antiSpecErr * antiSpecErr / antiSpec / antiSpec + specErr * specErr / spec / spec));
       }
+      else 
+      {
+        fRatio[iCent]->SetBinContent(iPtBin, 0.);
+        fRatio[iCent]->SetBinError(iPtBin, 0.);
+        count_zeros+=1;
+      }
     }
+    int ndf = 10;
+    if (iCent == 2||iCent== 3)
+      ndf = 8;
+    if (iCent == 4)
+      ndf = 4;
     fRatio[iCent]->SetLineColor(centrality_colors[iCent]);
     fRatio[iCent]->SetMarkerColor(centrality_colors[iCent]);
     fRatio[iCent]->GetXaxis()->SetTitle(kAxisTitlePt);
     fRatio[iCent]->GetYaxis()->SetTitle(Form("Ratio %s / %s", kAntimatterMatterLabel[0], kAntimatterMatterLabel[1]));
     fRatio[iCent]->SetTitle(Form("%.0f-%.0f%%", kCentBinsLimitsHe3[iCent][0], kCentBinsLimitsHe3[iCent][1]));
-    fRatio[iCent]->Fit("pol0");
+    if (count_zeros<(ndf+1))fRatio[iCent]->Fit("pol0");
     fRatio[iCent]->Write();
 
     TCanvas cRatio("cRatio", "cRatio");
@@ -136,12 +148,14 @@ void Spectra(const float cutDCAz = 1.f, const int cutTPCcls = 89, const float cu
     fRatio[iCent]->GetXaxis()->SetRangeUser(2., 8.);
     fRatio[iCent]->GetYaxis()->SetRangeUser(0., 1.8);
     fRatio[iCent]->Draw("");
-    TLatex chi2(5.8, 1.45, Form("#chi^{2}/NDF = %.2f/%d", fRatio[iCent]->GetFunction("pol0")->GetChisquare(), fRatio[iCent]->GetFunction("pol0")->GetNDF()));
-    chi2.SetTextSize(28);
-    TLatex p0(5.8, 1.6, Form("R = %.3f #pm %.3f", fRatio[iCent]->GetFunction("pol0")->GetParameter(0), fRatio[iCent]->GetFunction("pol0")->GetParError(0)));
-    p0.SetTextSize(28);
-    chi2.Draw("same");
-    p0.Draw("same");
+    if (count_zeros<(ndf+1)){
+      TLatex chi2(5.8, 1.45, Form("#chi^{2}/NDF = %.2f/%d", fRatio[iCent]->GetFunction("pol0")->GetChisquare(), fRatio[iCent]->GetFunction("pol0")->GetNDF()));
+      chi2.SetTextSize(28);
+      TLatex p0(5.8, 1.6, Form("R = %.3f #pm %.3f", fRatio[iCent]->GetFunction("pol0")->GetParameter(0), fRatio[iCent]->GetFunction("pol0")->GetParError(0)));
+      p0.SetTextSize(28);
+      chi2.Draw("same");
+      p0.Draw("same");
+    }
     cRatio.Print(Form("%s/%s.pdf", kPlotDir, fRatio[iCent]->GetName()));
   }
   outFile.Close();

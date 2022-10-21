@@ -14,7 +14,7 @@ SPLIT = True
 N_TRIALS = 10000
 MAX_EFF = 1
 speed_of_light = 0.0299792458
-
+centrality_colors = [ROOT.kOrange+7, ROOT.kAzure+4, ROOT.kTeal+4]
 warnings.simplefilter(action='ignore', category=FutureWarning)
 ROOT.gROOT.SetBatch()
 
@@ -54,7 +54,7 @@ if SPLIT:
 raw_yields_file = ROOT.TFile('SignalExtraction-data.root')
 # score_eff_dict = pickle.load(open('second_round/file_score_eff_dict','rb'))
 eff_array = np.arange(0.10, MAX_EFF, 0.01)
-f = ROOT.TFile("ratio_sys.root","recreate")
+f = ROOT.TFile("ratio.root","recreate")
 cut_val_cent = [0.5,0.5,0.5]
 
 # for i_cent_bins in range(len(CENTRALITY_LIST)):
@@ -158,8 +158,33 @@ for i_cent_bins in range(len(CENTRALITY_LIST)):
     f.cd()
     h_ratio.Write()
 
+    # plot ratios
+    c = ROOT.TCanvas("c", "c")
+    c.SetTicks(1, 1)
+    c.cd()
+    ROOT.gStyle.SetOptStat(0)
+    ROOT.gStyle.SetOptFit(0)
+    h_ratio.GetYaxis().SetRangeUser(0.8,1.2)
+    h_ratio.GetXaxis().SetRangeUser(1,10)
+    h_ratio.SetLineColor(centrality_colors[i_cent_bins])
+    h_ratio.SetMarkerColor(centrality_colors[i_cent_bins])
+    h_ratio.Draw()
+    formatted_ratio = "{:.4f}".format(h_ratio.GetFunction("pol0").GetParameter(0))
+    formatted_ratio_error = "{:.4f}".format(h_ratio.GetFunction("pol0").GetParError(0))
+    text_x_position = 5
+    ratio_text = ROOT.TLatex(text_x_position, 1.12, f"R = {formatted_ratio} #pm {formatted_ratio_error}")
+    ratio_text.SetTextFont(44)
+    ratio_text.SetTextSize(28)
+    ratio_text.Draw("same")
+    formatted_chi2 = "{:.2f}".format(h_ratio.GetFunction("pol0").GetChisquare())
+    chi2_text = ROOT.TLatex(text_x_position, 1.15, "#chi^{2}/NDF = "+formatted_chi2+"/"+str(h_ratio.GetFunction("pol0").GetNDF()))
+    chi2_text.SetTextFont(44)
+    chi2_text.SetTextSize(28)
+    chi2_text.Draw("same")
+    c.Print(f"plots/{h_ratio.GetName()}.pdf")
 
     # systematics
+    # continue
     h_sys = ROOT.TH1D(f"h_sys",f"h_sys",400,0.95,1.05)
     i=0
     while i < N_TRIALS:
@@ -216,5 +241,29 @@ for i_cent_bins in range(len(CENTRALITY_LIST)):
         # if h_tmp_ratio.GetFunction("pol0").GetParameter(0) > 0.99 and (i%100)==0:
         #     h_tmp_ratio.Write()
         h_sys.Fill(h_tmp_ratio.GetFunction("pol0").GetParameter(0))
+
+    h_sys.GetXaxis().SetTitle("p_{0}")
+    h_sys.SetTitle(f"{cent_bins[0]}-{cent_bins[1]}%")
+    h_sys.GetXaxis().SetRangeUser(0.8, 1.2)
+    h_sys.GetYaxis().SetTitle("Entries")
+    h_sys.GetXaxis().SetTitle("R (#bar{#Omega}^{+} / #Omega^{-})")
+    h_sys.SetDrawOption("histo")
+    h_sys.SetLineWidth(2)
+    h_sys.SetFillStyle(3345)
+    h_sys.SetFillColor(ROOT.kBlue)
+    h_sys.Write()
+
+    # plot systematics distribution
+    c = ROOT.TCanvas("c", "c")
+    ROOT.gStyle.SetOptStat(110001110)
+    c.cd()
+    c.SetTicks(1, 1)
+    mean = h_sys.GetMean()
+    std_dev = h_sys.GetRMS()
+    h_sys.Rebin(2)
+    h_sys.GetXaxis().SetRangeUser(mean-5*std_dev, mean+5*std_dev)
+    h_sys.Draw("histo")
+    c.Print(f"plots/{h_sys.GetName()}_{cent_bins[0]}_{cent_bins[1]}.pdf")
+
     f.cd()
     h_sys.Write()

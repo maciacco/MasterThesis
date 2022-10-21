@@ -8,18 +8,22 @@ sigmoidFlag=0
 spectraHistNameId=""
 extractRatios=1
 
-fileData="AnalysisResults_LHC22b9_lowPT_MB"
-fileMC="AnalysisResults_LHC22b9_lowPT_MB"
+#fileData="AnalysisResults_LHC22b9_lowPT_MB"
+#fileMC="AnalysisResults_LHC22b9_lowPT_MB"
 #fileData="AnalysisResults_LHC21l5_full_largeDCA_cutChi2"
 #fileMC="AnalysisResults_LHC21l5_full_largeDCA_cutChi2"
-#fileData="AnalysisResults_LHC21l5_lowPtProton"
-#fileMC="AnalysisResults_LHC21l5_LambdaCtMotherAndProtonsITSPID"
+fileData="AnalysisResults_LHC21l5_lowPtProton_ITSrecalibrated"
+fileMC="AnalysisResults_LHC21l5_lowPtProton_ITSrecalibrated"
 # fileData="AnalysisResults-6"
 # fileMC="AnalysisResults-6"
-signalName="SignalProtonMC_22b9_lowPT_MB"
-spectraName="SpectraProtonMCMC_22b9_lowPT_MB"
-EfficiencyHe3="EfficiencyProton_lowPt_LHC22b9_2"
-PrimaryHe3="PrimaryProtonMC_22b9_lowPT_MB"
+#signalName="SignalProtonMC_22b9_lowPT_MB"
+#spectraName="SpectraProtonMCMC_22b9_lowPT_MB"
+#EfficiencyHe3="EfficiencyProton_lowPt_LHC22b9_2"
+#PrimaryHe3="PrimaryProtonMC_22b9_lowPT_MB"
+signalName="SignalProtonTOF_MC21l5_raw_primaryTPC_try"
+spectraName="SpectraProtonTOF_MC21l5_raw_primaryTPC_try"
+EfficiencyHe3="EfficiencyProtonMC_21l5_LOWPT_TESTTPC" #"EfficiencyProtonMC_21l5_LOWPT_TESTTPC_try"
+PrimaryHe3="PrimaryProtonTOF_MC21l5_raw_primaryTPC_try"
 
 # create output directories
 DIR_OUT=out
@@ -52,10 +56,10 @@ if [ $extractRatios -eq 1 ]; then
 .L EfficiencyNew.cpp+
 .L Efficiency.cpp+
 //.L Spectra.cpp+
-//SignalBinnedMC("$cutSettings",8.,$argumentSignal,"$fileData","$signalName","recreate")
-//SecondaryMC("$cutSettings",0.12,"$fileData","$fileMC","$PrimaryHe3")
-//EfficiencyNew("$cutSettings","$fileMC","$EfficiencyHe3","$signalName","$PrimaryHe3")
-Efficiency("$cutSettings","$fileMC","$EfficiencyHe3")
+SignalBinnedMC("$cutSettings",8.,$argumentSignal,"$fileData","$signalName","recreate")
+SecondaryMC("$cutSettings",0.12,"$fileData","$fileMC","$PrimaryHe3")
+EfficiencyNew("$cutSettings","$fileMC","$EfficiencyHe3","$signalName","$PrimaryHe3")
+//Efficiency("$cutSettings","$fileMC","$EfficiencyHe3")
 .q
 EOF
 fi

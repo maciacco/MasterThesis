@@ -18,7 +18,9 @@ using utils::Eff;
 using utils::EffErr;
 using namespace he3;
 
-void EfficiencySec(const float cutDCAz = 1.f, const int cutTPCcls = 89, const float cutDCAxy = 0.1f, const float cutChi2TPC = 2.5f, const char *inFileNameMC = "TreeOutMC", const char *outFileNameEff = "EfficiencyHe3SecWd", const double hyperTritonToHe3Ratio = 0.3365047128558935)
+const double hyperTritonToHe3Ratio[2] = {0.42,0.47};
+
+void EfficiencySec(const float cutDCAz = 1.f, const int cutTPCcls = 89, const float cutDCAxy = 0.1f, const float cutChi2TPC = 2.5f, const char *inFileNameMC = "TreeOutMC", const char *outFileNameEff = "EfficiencyHe3SecWd")
 {
   gStyle->SetPadTickX(1);
   gStyle->SetPadTickY(1);
@@ -48,10 +50,18 @@ void EfficiencySec(const float cutDCAz = 1.f, const int cutTPCcls = 89, const fl
 
       fTotal_Pt = (TH1D *)fTotal_Pt->Rebin(kNPtBins, fTotal_Pt->GetName(), pTbins);
       fITS_TPC_Pt = (TH1D *)fITS_TPC_Pt->Rebin(kNPtBins, fITS_TPC_Pt->GetName(), pTbins);
-      if (iCent == 2)
+      if (iCent == 2 || iCent==3)
       {
         int nPtBins = 13;
         double pTbinsNew[] = {1.f, 1.5f, 2.f, 2.5f, 3.f, 3.5f, 4.f, 4.5f, 5.f, 5.5f, 6.f, 7.f, 8.f, 10.f};
+        fTotal_Pt = (TH1D *)fTotal_Pt->Rebin(nPtBins, TString::Format("f%sTotal_Pt", kAntimatterMatter[iMatt]), pTbinsNew);
+        fITS_TPC_Pt = (TH1D *)fITS_TPC_Pt->Rebin(nPtBins, TString::Format("f%sITS_TPC_Pt", kAntimatterMatter[iMatt]), pTbinsNew);
+        fEffPt = *(TH1D *)fEffPt.Rebin(nPtBins, TString::Format("f%sEff_TPC_%.0f_%.0f", kAntimatterMatter[iMatt], kCentBinsLimitsHe3[iCent][0], kCentBinsLimitsHe3[iCent][1]), pTbinsNew);
+      }
+      if (iCent == 4)
+      {
+        int nPtBins = 7;
+        double pTbinsNew[] = {1.f, 1.5f, 2.f, 2.5f, 3.f, 3.5f, 4.f, 5.f};
         fTotal_Pt = (TH1D *)fTotal_Pt->Rebin(nPtBins, TString::Format("f%sTotal_Pt", kAntimatterMatter[iMatt]), pTbinsNew);
         fITS_TPC_Pt = (TH1D *)fITS_TPC_Pt->Rebin(nPtBins, TString::Format("f%sITS_TPC_Pt", kAntimatterMatter[iMatt]), pTbinsNew);
         fEffPt = *(TH1D *)fEffPt.Rebin(nPtBins, TString::Format("f%sEff_TPC_%.0f_%.0f", kAntimatterMatter[iMatt], kCentBinsLimitsHe3[iCent][0], kCentBinsLimitsHe3[iCent][1]), pTbinsNew);
@@ -61,7 +71,7 @@ void EfficiencySec(const float cutDCAz = 1.f, const int cutTPCcls = 89, const fl
       (iCent <2) ? nUsedPtBins = 13 : nUsedPtBins = 13;
       for (int iPtBin = 1; iPtBin < nUsedPtBins + 1; ++iPtBin)
       {
-        fEffPt.SetBinContent(iPtBin, kHyperTritonHe3BR * hyperTritonToHe3Ratio * Eff(fITS_TPC_Pt, fTotal_Pt, fEffPt.GetXaxis()->GetBinCenter(iPtBin)));
+        fEffPt.SetBinContent(iPtBin, kHyperTritonHe3BR * hyperTritonToHe3Ratio[iMatt] * Eff(fITS_TPC_Pt, fTotal_Pt, fEffPt.GetXaxis()->GetBinCenter(iPtBin)));
         fEffPt.SetBinError(iPtBin, kHyperTritonHe3BR * EffErr(&fEffPt, fTotal_Pt, fEffPt.GetXaxis()->GetBinCenter(iPtBin)));
         fEffPt.SetBinContent(iPtBin, fEffPt.GetBinContent(iPtBin)/fEff->GetBinContent(iPtBin));
         fEffPt.SetBinError(iPtBin, TMath::Sqrt(fEffPt.GetBinError(iPtBin)*fEffPt.GetBinError(iPtBin)/fEffPt.GetBinContent(iPtBin)/fEffPt.GetBinContent(iPtBin)+fEff->GetBinError(iPtBin)*fEff->GetBinError(iPtBin)/fEff->GetBinContent(iPtBin)/fEff->GetBinContent(iPtBin)));

@@ -12,16 +12,16 @@ extractRatios=1
 fileData="AnalysisResults"
 #fileDataEff="AnalysisResults_LHC21l5_full_largeDCA_cutChi2" # uncomment for high pt proton analysis (this is also the MCinj file in that case)
 #fileMCInj="AnalysisResults_LHC21l5_full_largeDCA_cutChi2" # uncomment for high pt proton analysis (this is also the MCinj file in that case)
-fileDataEff="AnalysisResults_LHC21l5_lowPtProton" # uncomment for low pt proton analysis
+fileDataEff="AnalysisResults_LHC21l5_lowPtProton_ITSrecalibrated" # uncomment for low pt proton analysis
 fileMC="mc"
-fileMCInj="AnalysisResults_LHC21l5_LambdaCtMotherAndProtonsITSPID"
-signalNameEff="SignalProtonSysEffTPC2"
-spectraNameEff="SpectraProtonSysEffTPC2"
-signalName="SignalProtonSysTPC2"
-spectraName="SpectraProtonSysTPC2"
-EfficiencyHe3="EfficiencyProtonSysTPC2"
-PrimaryHe3="PrimaryProtonSysTPC2TOF"
-PrimaryHe3TPC="PrimaryProtonSysTPC2"
+fileMCInj="AnalysisResults_LHC21l5_lowPtProton_ITSrecalibrated"
+signalNameEff="SignalProtonSysEffTPC_extend_2"
+spectraNameEff="SpectraProtonSysEffTPC_extend_2"
+signalName="SignalProtonSysTPC_extend_2"
+spectraName="SpectraProtonSysTPC_extend_2"
+EfficiencyHe3="EfficiencyProtonSysTPC_extend_2"
+PrimaryHe3="PrimaryProtonSysTPC_extend_2TOF"
+PrimaryHe3TPC="PrimaryProtonSysTPC_extend_2"
 
 # create output directories
 DIR_OUT=out

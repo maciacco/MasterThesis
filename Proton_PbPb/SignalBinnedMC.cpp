@@ -30,6 +30,7 @@
 #include <RooGenericPdf.h>
 #include <RooCBShape.h>
 #include <RooHist.h>
+#include <RooFitResult.h>
 
 #include "../utils/Utils.h"
 #include "../utils/Config.h"
@@ -389,13 +390,253 @@ void SignalBinnedMC(const char *cutSettings = "", const double roi_nsigma = 8., 
             {
               rawYield = data.sumEntries(Form("tofSignal>%f && tofSignal<%f", -0.7815 * kNSigma, 0.7815 * kNSigma)); // only for He4 in signal loss studies
             }
-            if (r->status()!=0) rawYield=0;
+            if (r->status()!=0 || r->covQual()<2.5) rawYield=0;
           }
           else
           {
             rawYield = nSignal.getVal();
             rawYieldError = nSignal.getError();
           }
+
+          // tpcSignalProjection->SetMarkerStyle(20);
+          // tpcSignalProjection->SetMarkerSize(1.);
+          // tpcSignalProjection->SetDrawOption("pe");
+          // tpcSignalProjection->SetMarkerColor(kBlack);
+          // tpcSignalProjection->GetXaxis()->SetLabelSize(0.04);
+          // tpcSignalProjection->GetXaxis()->SetTitleSize(0.04);
+          // tpcSignalProjection->GetXaxis()->SetTitle("n#sigma_{p}");
+          // tpcSignalProjection->GetYaxis()->SetTitle(Form("Entries / %.2f",tpcSignalProjection->GetBinWidth(1)));
+
+          // tpcSignalProjectionAll->GetXaxis()->SetRangeUser(-15.,-4.);
+          // double max_bkg = tpcSignalProjectionAll->GetBinCenter(tpcSignalProjectionAll->GetMaximumBin());
+          // tpcSignalProjectionAll->Fit("gaus","RLM+","",max_bkg-.2,max_bkg+.2);
+          // tpcSignalProjectionAll->GetXaxis()->SetRangeUser(-24.,24.);
+          // tpcSignalProjectionAll->Write(Form("%s_All",tpcSignalProjection->GetName()));
+
+          // tpcSignalProjectionAll->Rebin(1);
+          // tpcSignalProjection->Rebin(1);
+
+          // double left_fit_range_factor = -1.5;
+          // double left_range = -999;
+          // for (int iB=1;iB<tpcSignalProjectionAll->GetNbinsX();++iB){
+          //   if (tpcSignalProjectionAll->GetBinCenter(iB)>tpcSignalProjectionAll->GetFunction("gaus")->GetParameter(1)+left_fit_range_factor*tpcSignalProjectionAll->GetFunction("gaus")->GetParameter(2)){
+          //     left_range=tpcSignalProjectionAll->GetXaxis()->GetBinLowEdge(iB);
+          //     break;
+          //   }
+          // }
+          // RooRealVar nSigmaTPC("nSigmaTPC","n#sigma_{TPC,p}",left_range,6,"a.u.");
+          // RooDataHist hNSigmaTPC("hNSigmaTPC","hNSigmaTPC",RooArgList(nSigmaTPC),tpcSignalProjection);
+          // RooDataHist hNSigmaTPCAll("hNSigmaTPCAll","hNSigmaTPCAll",RooArgList(nSigmaTPC),tpcSignalProjectionAll);
+          // RooRealVar meanTPC("#mu","#mu",-.3,.3);
+          // RooRealVar sigmaTPC("#sigma","#sigma",0.8,1.3);
+          // RooRealVar alpha1TPC("#alpha_{1}","#alpha_{1}",-2.5,-.8);
+          // //if (ptMin>0.89)alpha1TPC.setMax(-0.8);
+          // if (ptMin < 0.56) alpha1TPC.setRange(-5.,-8.);
+          // RooRealVar alpha2TPC("#alpha_{2}","#alpha_{2}",0.2,5.);
+          // RooRealVar meanTPCBkg("#mu_{Bkg}","#mu_{Bkg}",tpcSignalProjectionAll->GetFunction("gaus")->GetParameter(1)-2.,tpcSignalProjectionAll->GetFunction("gaus")->GetParameter(1)+2.);
+          // RooRealVar sigmaTPCBkg("#sigma_{Bkg}","#sigma_{Bkg}",0.7,1.8);
+          // RooRealVar tauTPCBkg1("#tau_{Bkg,1}","#tau_{Bkg,1}",-4.,-.1);
+          // RooRealVar tauTPCBkg("#tau_{Bkg}","#tau_{Bkg}",1.,5.);
+          // RooGausDExp signalTPC("signalTPC","signalTPC",nSigmaTPC,meanTPC,sigmaTPC,alpha1TPC,alpha2TPC);
+          // RooGausExp bkgTPC("bkgTPC","bkgTPC",nSigmaTPC,meanTPCBkg,sigmaTPCBkg,tauTPCBkg);
+          // RooRealVar nSignalTPC("n_{Signal}","n_{Signal}",0.,1.e10);
+          // RooRealVar nBkgTPC("n_{Bkg}","n_{Bkg}",0.,1.e12);
+          // RooAddPdf modelTPC("modelTPC","modelTPC",RooArgList(signalTPC,bkgTPC),RooArgList(nSignalTPC,nBkgTPC));
+          // //if (ptMin > 0.44) left_fit_range_factor = -.5;
+          // double lowX = left_range;
+          // nSigmaTPC.setRange("fitRange",left_range,2.);
+          // if (ptMin<0.56){
+          //   nSigmaTPC.setRange("fitRange",-6.,2.);
+          //   lowX=-6;
+          // }
+          // for (int i=0;i<2;++i)modelTPC.fitTo(hNSigmaTPCAll,RooFit::Range("fitRange"));
+          // // meanTPC.setConstant();
+          // // sigmaTPC.setConstant();
+          // modelTPC.fitTo(hNSigmaTPC,RooFit::Range("fitRange"));
+          // auto *r=modelTPC.fitTo(hNSigmaTPC,RooFit::Range("fitRange"),RooFit::Save());
+          // nSigmaTPC.setRange("signalRange",meanTPC.getVal()-5.*sigmaTPC.getVal(),meanTPC.getVal()+5.*sigmaTPC.getVal());
+          // RooPlot *frameTPC = nSigmaTPC.frame(RooFit::Name(tpcSignalProjection->GetName()),RooFit::Title(Form("%.2f#leq #it{p}_{T}<%.2f GeV/#it{c}, %.0f-%.0f%%", ptMin, ptMax, kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1])));
+          // hNSigmaTPC.plotOn(frameTPC,RooFit::Name("nsigmaTPC"));
+          // double lowTPCrange=5;
+          // double upTPCrange=5;
+          // double tpc_range_limit = (roi_nsigma-8.);
+          // double tpc_tmp_mean=0., tpc_tmp_rms=0.;
+          // nSigmaTPC.setRange("signalRange",meanTPC.getVal()-(lowTPCrange+tpc_range_limit)*sigmaTPC.getVal(),meanTPC.getVal()+(upTPCrange+tpc_range_limit)*sigmaTPC.getVal());
+          // nSigmaTPC.setRange("plotRange",left_range,5);
+          // modelTPC.plotOn(frameTPC,RooFit::Components("bkgTPC"),RooFit::LineColor(kGreen),RooFit::LineStyle(kDashed));
+          // modelTPC.plotOn(frameTPC,RooFit::Components("signalTPC"),RooFit::LineColor(kRed),RooFit::LineStyle(kDashed));
+          // modelTPC.plotOn(frameTPC,RooFit::Name("model"));
+          // modelTPC.paramOn(frameTPC,RooFit::Parameters(RooArgSet(meanTPC,sigmaTPC)),RooFit::Label(TString::Format("#chi^{2}/NDF = %2.2f", frameTPC->chiSquare("model", "nsigmaTPC"))), RooFit::Layout(0.58812,0.811028,0.561955));
+          // //frameTPC->GetXaxis()->SetRangeUser(tpcSignalProjectionAll->GetFunction("gaus")->GetParameter(1)+left_fit_range_factor*tpcSignalProjectionAll->GetFunction("gaus")->GetParameter(2),5);
+          // frameTPC->GetXaxis()->SetRangeUser(lowX,5);
+          // frameTPC->getAttText()->SetTextFont(44);
+          // frameTPC->getAttText()->SetTextSize(18);
+          // frameTPC->getAttLine()->SetLineWidth(0);
+          // frameTPC->Write();
+
+          // double background=0.;
+          // if (ptMin > 0.49){
+          //   background = ((RooAbsPdf *)bkgTPC.createIntegral(RooArgSet(nSigmaTPC), RooFit::NormSet(RooArgSet(nSigmaTPC)), RooFit::Range("signalRange")))->getVal();
+          //   background *= nBkgTPC.getVal();
+          // }
+          // TCanvas c(Form("%s",tpcSignalProjection->GetName()),Form("%s",tpcSignalProjection->GetName()));
+          // c.cd();
+          // TPad *pad1 = new TPad("pad1", "pad1", 0.0, 0.4, 1.0, 1.0, 0);
+          // pad1->SetFillColor(0);
+          // pad1->SetFrameBorderMode(0);
+          // pad1->SetBottomMargin(0.06);
+          // pad1->SetLogy();
+          // pad1->Draw();
+          // TPad *pad2 = new TPad("pad2", "pad2", 0.0, 0.0, 1.0, 0.4, 0);
+          // pad2->SetFillColor(0);
+          // pad2->SetFrameBorderMode(0);
+          // pad2->SetFillColor(0);
+          // pad2->SetFrameBorderMode(0);
+          // pad2->SetTopMargin(0.10);
+          // pad2->SetBottomMargin(0.25);
+          // pad2->Draw();
+          // pad1->cd();
+          // tpcSignalProjection->GetXaxis()->SetRangeUser(lowX,5);
+          // double rawYieldTPC = hNSigmaTPC.sumEntries(Form("nSigmaTPC>%f && nSigmaTPC<%f",meanTPC.getVal()-(lowTPCrange+tpc_range_limit)*sigmaTPC.getVal(),meanTPC.getVal()+(5.+tpc_range_limit)*sigmaTPC.getVal()));
+          // if(ptMin>0.49)rawYieldTPC-=background;
+          // double rawYieldErrorTPC = TMath::Sqrt(rawYieldTPC);
+          // pad1->SetLogy();
+          // frameTPC->SetMinimum(1);
+          // frameTPC->SetMaximum(tpcSignalProjection->GetMaximum()*1.5);
+          // frameTPC->GetXaxis()->SetRangeUser(lowX,5);
+          // frameTPC->Draw();
+          // pad2->cd();
+          // auto xframeTPC1 = (RooPlot *)frameTPC->Clone();
+          // const double *a=tpcSignalProjection->GetXaxis()->GetXbins()->GetArray();
+          // TH1D h_diff("h_diff","h_diff",tpcSignalProjection->GetNbinsX(),a);
+          // TF1 *f_sig=signalTPC.asTF(nSigmaTPC,RooArgList(meanTPC,sigmaTPC,alpha1TPC,alpha2TPC),nSigmaTPC);
+          // auto sig_int = ((RooAbsPdf *)signalTPC.createIntegral(RooArgSet(nSigmaTPC), RooFit::NormSet(RooArgSet(nSigmaTPC)), RooFit::Range("plotRange")))->getVal();
+          // TF1 *f_bkg=bkgTPC.asTF(nSigmaTPC,RooArgList(meanTPCBkg,sigmaTPCBkg,tauTPCBkg),nSigmaTPC);
+          // auto bkg_int = ((RooAbsPdf *)bkgTPC.createIntegral(RooArgSet(nSigmaTPC), RooFit::NormSet(RooArgSet(nSigmaTPC)), RooFit::Range("plotRange")))->getVal();
+          // std::cout<<bkg_int<<std::endl;
+          // f_sig->Write();
+          // f_bkg->Write();
+          // TH1D h_f("h_f","h_f",tpcSignalProjection->GetNbinsX(),a);
+          // for (int iB=1; iB<tpcSignalProjection->GetNbinsX()+1; ++iB){
+          //   if (tpcSignalProjection->GetBinCenter(iB)>2.) continue;
+          //   double eval_sig=f_sig->Eval(tpcSignalProjection->GetBinCenter(iB));
+          //   double eval_bkg=f_bkg->Eval(tpcSignalProjection->GetBinCenter(iB));
+          //   h_diff.SetBinContent(iB,tpcSignalProjection->GetBinContent(iB)-(nSignalTPC.getVal()*eval_sig*tpcSignalProjection->GetBinWidth(1)/sig_int)-(nBkgTPC.getVal()*eval_bkg*tpcSignalProjection->GetBinWidth(1)/bkg_int));
+          //   h_diff.SetBinError(iB,tpcSignalProjection->GetBinError(iB));
+          //   h_f.SetBinContent(iB,(nSignalTPC.getVal()*eval_sig*tpcSignalProjection->GetBinWidth(1)/sig_int)+(nBkgTPC.getVal()*eval_bkg*tpcSignalProjection->GetBinWidth(1)/bkg_int));
+          // }
+          // h_diff.Divide(tpcSignalProjection);
+          // h_f.Write();
+          // for (int iB=1; iB<tpcSignalProjection->GetNbinsX()+1; ++iB){
+          //   if (tpcSignalProjection->GetBinCenter(iB)>2.) continue;
+          //   h_diff.SetBinError(iB,tpcSignalProjection->GetBinError(iB)/tpcSignalProjection->GetBinContent(iB));
+          // }
+          // h_diff.GetXaxis()->SetRangeUser(lowX,5);
+          // h_diff.SetMarkerStyle(20);
+          // h_diff.SetMarkerSize(1);
+          // h_diff.GetYaxis()->SetRangeUser(-1,1);
+          // h_diff.Draw("pe");
+          // TLine hLine(lowX,0,5,0);
+          // hLine.SetLineStyle(kDashed);
+          // hLine.Draw("same");
+          // c.Write(frameTPC->GetName());
+          // c.Print(Form("%s/signal_extraction/%s_%s_%d_%d/TPC_cent_%.0f_%.0f_pt_%.2f_%.2f.pdf", kPlotDir, kAntimatterMatter[iMatt], cutSettings, binCounting, bkg_shape, kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1], ptMin, ptMax));
+          
+          // tpcSignalProjectionAll->Rebin(1);
+          // tpcSignalProjection->Rebin(1);
+          // tpcSignalProjection->SetMarkerStyle(20);
+          // tpcSignalProjection->SetMarkerSize(1.);
+          // tpcSignalProjection->SetDrawOption("pe");
+          // tpcSignalProjection->SetMarkerColor(kBlack);
+          // tpcSignalProjection->GetXaxis()->SetLabelSize(0.04);
+          // tpcSignalProjection->GetXaxis()->SetTitleSize(0.04);
+          // tpcSignalProjection->GetXaxis()->SetTitle("n#sigma_{p}");
+          // tpcSignalProjection->GetYaxis()->SetTitle(Form("Entries / %.2f",tpcSignalProjection->GetBinWidth(1)));
+
+          // tpcSignalProjectionAll->GetXaxis()->SetRangeUser(-15.,-5.);
+          // if (ptMin>0.7)tpcSignalProjectionAll->GetXaxis()->SetRangeUser(-15.,-5.);
+          // double max_bkg = tpcSignalProjectionAll->GetBinCenter(tpcSignalProjectionAll->GetMaximumBin());
+          // tpcSignalProjectionAll->Fit("gaus","RLM+","",max_bkg-2.5,max_bkg+2.5);
+          // tpcSignalProjectionAll->GetXaxis()->SetRangeUser(-24.,24.);
+          // double left_fit_range_factor = 2.5;
+          // if (ptMin > 0.45 && ptMin<0.59) left_fit_range_factor = 5.;
+          // if (ptMin > 0.59 && ptMin<0.64) left_fit_range_factor = 4.;
+          // else if (ptMin > 0.59 && ptMin<0.84) left_fit_range_factor = 2.5;
+          // else if (ptMin > 0.84) left_fit_range_factor = -1.5;
+          // double left_range = -999;
+          // for (int iB=1;iB<tpcSignalProjectionAll->GetNbinsX();++iB){
+          //   if (tpcSignalProjectionAll->GetBinCenter(iB)>tpcSignalProjectionAll->GetFunction("gaus")->GetParameter(1)+left_fit_range_factor*tpcSignalProjectionAll->GetFunction("gaus")->GetParameter(2)){
+          //     left_range=tpcSignalProjectionAll->GetXaxis()->GetBinLowEdge(iB);
+          //     break;
+          //   }
+          // }
+          // RooRealVar nSigmaTPC("nSigmaTPC","n#sigma_{TPC,p}",left_range,24.,"a.u.");
+          // RooDataHist hNSigmaTPC("hNSigmaTPC","hNSigmaTPC",RooArgList(nSigmaTPC),tpcSignalProjection);
+          // RooDataHist hNSigmaTPCAll("hNSigmaTPCAll","hNSigmaTPCAll",RooArgList(nSigmaTPC),tpcSignalProjectionAll);
+          // RooRealVar meanTPC("#mu","#mu",-2.,2.);
+          // RooRealVar sigmaTPC("#sigma","#sigma",0.8,3.);
+          // RooRealVar alpha1TPC("#alpha_{1}","#alpha_{1}",-3.,-0.8);
+          // RooRealVar alpha2TPC("#alpha_{2}","#alpha_{2}",0.8,3.);
+          // RooRealVar meanTPCBkg("#mu_{Bkg}","#mu_{Bkg}",-20.,-6.);
+          // if (ptMin>0.7) meanTPCBkg.setMax(-5.);
+          // if (ptMin>0.8) {
+          //   meanTPCBkg.setMin(-8.);
+          //   meanTPCBkg.setMax(-3.5);
+          // }
+          // RooRealVar sigmaTPCBkg("#sigma_{Bkg}","#sigma_{Bkg}",0.5,2.);
+          // RooRealVar tauTPCBkg("#tau_{Bkg}","#tau_{Bkg}",0.5,2.5);
+          // RooRealVar tauTPCBkgExp("#tau_{Bkg}","#tau_{Bkg}",-10.,0.);
+          // RooGausDExp signalTPC("signalTPC","signalTPC",nSigmaTPC,meanTPC,sigmaTPC,alpha1TPC,alpha2TPC);
+          // RooAbsPdf *bkgTPC=nullptr;
+          // if (ptMin>0.84) bkgTPC=new RooGausExp("bkgTPC","bkgTPC",nSigmaTPC,meanTPCBkg,sigmaTPCBkg,tauTPCBkg);
+          // else bkgTPC=new RooExponential("bkgTPC","bkgTPC",nSigmaTPC,tauTPCBkgExp);
+          // RooRealVar nSignalTPC("n_{Signal}","n_{Signal}",0.,1.e9);
+          // RooRealVar nBkgTPC("n_{Bkg}","n_{Bkg}",0.,1.e9);
+          // RooAddPdf modelTPC("modelTPC","modelTPC",RooArgList(signalTPC,*bkgTPC),RooArgList(nSignalTPC,nBkgTPC));
+          // nSigmaTPC.setRange("fitRange",tpcSignalProjectionAll->GetFunction("gaus")->GetParameter(1)+left_fit_range_factor*tpcSignalProjectionAll->GetFunction("gaus")->GetParameter(2),2.);
+          // for (int i=0;i<2;++i)modelTPC.fitTo(hNSigmaTPCAll,RooFit::Range("fitRange"));
+          // for (int i=0;i<2;++i)modelTPC.fitTo(hNSigmaTPC,RooFit::Range("fitRange"));
+          // nSigmaTPC.setRange("signalRange",meanTPC.getVal()-5.*sigmaTPC.getVal(),meanTPC.getVal()+5.*sigmaTPC.getVal());
+          // RooPlot *frameTPC = nSigmaTPC.frame(RooFit::Name(tpcSignalProjection->GetName()),RooFit::Title(Form("%.2f#leq #it{p}_{T}<%.2f GeV/#it{c}, %.0f-%.0f%%", ptMin, ptMax, kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1])));
+          // hNSigmaTPC.plotOn(frameTPC,RooFit::Name("nsigmaTPC"));
+          // double lowTPCrange=3;
+          // double tpc_range_limit = (roi_nsigma-8.);
+          // double tpc_tmp_mean=0., tpc_tmp_rms=0.;
+          // nSigmaTPC.setRange("signalRange",meanTPC.getVal()-(lowTPCrange+tpc_range_limit)*sigmaTPC.getVal(),meanTPC.getVal()+(5.+tpc_range_limit)*sigmaTPC.getVal());
+          // modelTPC.plotOn(frameTPC,RooFit::Components("bkgTPC"),RooFit::LineColor(kGreen),RooFit::LineStyle(kDashed));
+          // modelTPC.plotOn(frameTPC,RooFit::Components("signalTPC"),RooFit::LineColor(kRed),RooFit::LineStyle(kDashed));
+          // modelTPC.plotOn(frameTPC,RooFit::Name("model"));
+          // modelTPC.paramOn(frameTPC,RooFit::Parameters(RooArgSet(meanTPC,sigmaTPC)),RooFit::Label(TString::Format("#chi^{2}/NDF = %2.2f", frameTPC->chiSquare("model", "nsigmaTPC"))), RooFit::Layout(0.58812,0.811028,0.561955));
+          // frameTPC->GetXaxis()->SetRangeUser(tpcSignalProjectionAll->GetFunction("gaus")->GetParameter(1)+left_fit_range_factor*tpcSignalProjectionAll->GetFunction("gaus")->GetParameter(2)+0.5,5);
+          // frameTPC->getAttText()->SetTextFont(44);
+          // frameTPC->getAttText()->SetTextSize(18);
+          // frameTPC->getAttLine()->SetLineWidth(0);
+          // frameTPC->Write();
+
+          // double background=0.;
+          // if (ptMin > 0.49){
+          //   background = ((RooAbsPdf *)bkgTPC.createIntegral(RooArgSet(nSigmaTPC), RooFit::NormSet(RooArgSet(nSigmaTPC)), RooFit::Range("signalRange")))->getVal();
+          //   background *= nBkgTPC.getVal();
+          // }
+          // TCanvas c(Form("%s",tpcSignalProjection->GetName()),Form("%s",tpcSignalProjection->GetName()));
+          // tpcSignalProjection->GetXaxis()->SetRangeUser(tpcSignalProjectionAll->GetFunction("gaus")->GetParameter(1)+left_fit_range_factor*tpcSignalProjectionAll->GetFunction("gaus")->GetParameter(2)+0.5,5);
+          // double rawYieldTPC = hNSigmaTPC.sumEntries(Form("nSigmaTPC>%f && nSigmaTPC<%f",meanTPC.getVal()-(lowTPCrange+tpc_range_limit)*sigmaTPC.getVal(),meanTPC.getVal()+(5.+tpc_range_limit)*sigmaTPC.getVal()));
+          // if(ptMin>0.49)rawYieldTPC-=background;
+          // double rawYieldErrorTPC = TMath::Sqrt(rawYieldTPC);
+          // c.SetLogy();
+          // frameTPC->SetMinimum(1);
+          // frameTPC->SetMaximum(tpcSignalProjection->GetMaximum()*1.2);
+          // frameTPC->Draw();
+          // c.Print(Form("%s/signal_extraction/%s_%s_%d_%d/TPC_cent_%.0f_%.0f_pt_%.2f_%.2f.pdf", kPlotDir, kAntimatterMatter[iMatt], cutSettings, binCounting, bkg_shape, kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1], ptMin, ptMax));
+
+          // // fill raw yield histogram
+          // fTPCrawYield.SetBinContent(fTPCrawYield.FindBin((ptMax + ptMin) / 2.), rawYieldTPC);
+          // fTPCrawYield.SetBinError(fTPCrawYield.FindBin((ptMax + ptMin) / 2.), rawYieldErrorTPC);
+          // if (ptMin>0.99 || r->covQual()<1.5){
+          //   fTPCrawYield.SetBinContent(fTPCrawYield.FindBin((ptMax + ptMin) / 2.), 0.);
+          //   fTPCrawYield.SetBinError(fTPCrawYield.FindBin((ptMax + ptMin) / 2.), 0.);
+          // }
+
 
           tpcSignalProjectionAll->Rebin(1);
           tpcSignalProjection->Rebin(1);
@@ -408,41 +649,58 @@ void SignalBinnedMC(const char *cutSettings = "", const double roi_nsigma = 8., 
           tpcSignalProjection->GetXaxis()->SetTitle("n#sigma_{p}");
           tpcSignalProjection->GetYaxis()->SetTitle(Form("Entries / %.2f",tpcSignalProjection->GetBinWidth(1)));
 
-          tpcSignalProjectionAll->GetXaxis()->SetRangeUser(-15.,-3.);
+          tpcSignalProjectionAll->GetXaxis()->SetRangeUser(-15.,-4.);
           double max_bkg = tpcSignalProjectionAll->GetBinCenter(tpcSignalProjectionAll->GetMaximumBin());
-          tpcSignalProjectionAll->Fit("gaus","RLM+","",max_bkg-2.5,max_bkg+2.5);
+          for(int i=0;i<2;i++)tpcSignalProjectionAll->Fit("gaus","RLM+","",max_bkg-2.5,max_bkg+2.5);
           tpcSignalProjectionAll->GetXaxis()->SetRangeUser(-24.,24.);
-
-
-          RooRealVar nSigmaTPC("nSigmaTPC","nSigmaTPC",-24.,24.);
+          double left_fit_range_factor = 2.5;
+          if (ptMin > 0.64 && ptMin<0.84) left_fit_range_factor = 2.;
+          else if (ptMin > 0.84) left_fit_range_factor = -1.5;
+          double left_range = -999;
+          for (int iB=1;iB<tpcSignalProjectionAll->GetNbinsX();++iB){
+            if (tpcSignalProjectionAll->GetBinCenter(iB)>(tpcSignalProjectionAll->GetFunction("gaus")->GetParameter(1)+left_fit_range_factor*tpcSignalProjectionAll->GetFunction("gaus")->GetParameter(2))){
+              left_range=tpcSignalProjectionAll->GetXaxis()->GetBinLowEdge(iB);
+              break;
+            }
+          }
+          RooRealVar nSigmaTPC("nSigmaTPC","n#sigma_{TPC,p}",left_range,24.,"a.u.");
           RooDataHist hNSigmaTPC("hNSigmaTPC","hNSigmaTPC",RooArgList(nSigmaTPC),tpcSignalProjection);
-          RooRealVar meanTPC("meanTPC","meanTPC",-2.,2.);
-          RooRealVar sigmaTPC("sigmaTPC","sigmaTPC",0.,3.);
-          RooRealVar alpha1TPC("alpha1TPC","alpha1TPC",-3.,-0.5);
-          RooRealVar alpha2TPC("alpha2TPC","alpha2TPC",0.5,3.);
-          RooRealVar meanTPCBkg("meanTPCBkg","meanTPCBkg",-20.,-4.);
-          RooRealVar sigmaTPCBkg("sigmaTPCBkg","sigmaTPCBkg",0.5,3.);
-          RooRealVar tauTPCBkg("tauTPCBkg","tauTPCBkg",0.,2.);
+          RooDataHist hNSigmaTPCAll("hNSigmaTPCAll","hNSigmaTPCAll",RooArgList(nSigmaTPC),tpcSignalProjectionAll);
+          RooRealVar meanTPC("#mu","#mu",-2.,2.);
+          RooRealVar sigmaTPC("#sigma","#sigma",0.8,3.);
+          RooRealVar alpha1TPC("#alpha_{1}","#alpha_{1}",-3.,-0.8);
+          RooRealVar alpha2TPC("#alpha_{2}","#alpha_{2}",0.8,3.);
+          RooRealVar meanTPCBkg("#mu_{Bkg}","#mu_{Bkg}",-20.,-6.);
+          if (ptMin>0.7) meanTPCBkg.setMax(-5.);
+          if (ptMin>0.8) {
+            meanTPCBkg.setMin(-8.);
+            meanTPCBkg.setMax(-3.5);
+          }
+          RooRealVar sigmaTPCBkg("#sigma_{Bkg}","#sigma_{Bkg}",0.5,2.);
+          RooRealVar tauTPCBkg("#tau_{Bkg}","#tau_{Bkg}",0.5,2.);
           RooGausDExp signalTPC("signalTPC","signalTPC",nSigmaTPC,meanTPC,sigmaTPC,alpha1TPC,alpha2TPC);
           RooGausExp bkgTPC("bkgTPC","bkgTPC",nSigmaTPC,meanTPCBkg,sigmaTPCBkg,tauTPCBkg);
-          RooRealVar nSignalTPC("nSignalTPC","nSignalTOPC",0.,1.e9);
-          RooRealVar nBkgTPC("nBkgTPC","nBkgTPC",0.,1.e8);
+          RooRealVar nSignalTPC("n_{Signal}","n_{Signal}",0.,1.e9);
+          RooRealVar nBkgTPC("n_{Bkg}","n_{Bkg}",0.,1.e9);
           RooAddPdf modelTPC("modelTPC","modelTPC",RooArgList(signalTPC,bkgTPC),RooArgList(nSignalTPC,nBkgTPC));
-          double left_fit_range_factor = 2.5;
-          if (ptMin > 0.54) left_fit_range_factor = 1.2;
-          nSigmaTPC.setRange("fitRange",tpcSignalProjectionAll->GetFunction("gaus")->GetParameter(1)+left_fit_range_factor*tpcSignalProjectionAll->GetFunction("gaus")->GetParameter(2),3);
+          nSigmaTPC.setRange("fitRange",tpcSignalProjectionAll->GetFunction("gaus")->GetParameter(1)+left_fit_range_factor*tpcSignalProjectionAll->GetFunction("gaus")->GetParameter(2),2.);
+          for (int i=0;i<2;++i)modelTPC.fitTo(hNSigmaTPCAll,RooFit::Range("fitRange"));
           for (int i=0;i<2;++i)modelTPC.fitTo(hNSigmaTPC,RooFit::Range("fitRange"));
-          RooPlot *frameTPC = nSigmaTPC.frame(RooFit::Name(tpcSignalProjection->GetName()));
-          double lowTPCrange=5;
-          if (ptMin > 0.74) lowTPCrange=4.;
-          if (iCent>0) lowTPCrange-=1.;
-          if (iCent == 0 && ptMin>0.79) lowTPCrange=2.5;
-          double tpc_range_limit = (roi_nsigma-8.)*0.5;
+          nSigmaTPC.setRange("signalRange",meanTPC.getVal()-5.*sigmaTPC.getVal(),meanTPC.getVal()+5.*sigmaTPC.getVal());
+          RooPlot *frameTPC = nSigmaTPC.frame(RooFit::Name(tpcSignalProjection->GetName()),RooFit::Title(Form("%.2f#leq #it{p}_{T}<%.2f GeV/#it{c}, %.0f-%.0f%%", ptMin, ptMax, kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1])));
+          hNSigmaTPC.plotOn(frameTPC,RooFit::Name("nsigmaTPC"));
+          double lowTPCrange=3;
+          double tpc_range_limit = (roi_nsigma-8.);
           double tpc_tmp_mean=0., tpc_tmp_rms=0.;
           nSigmaTPC.setRange("signalRange",meanTPC.getVal()-(lowTPCrange+tpc_range_limit)*sigmaTPC.getVal(),meanTPC.getVal()+(5.+tpc_range_limit)*sigmaTPC.getVal());
           modelTPC.plotOn(frameTPC,RooFit::Components("bkgTPC"),RooFit::LineColor(kGreen),RooFit::LineStyle(kDashed));
           modelTPC.plotOn(frameTPC,RooFit::Components("signalTPC"),RooFit::LineColor(kRed),RooFit::LineStyle(kDashed));
-          modelTPC.plotOn(frameTPC);
+          modelTPC.plotOn(frameTPC,RooFit::Name("model"));
+          modelTPC.paramOn(frameTPC,RooFit::Parameters(RooArgSet(meanTPC,sigmaTPC)),RooFit::Label(TString::Format("#chi^{2}/NDF = %2.2f", frameTPC->chiSquare("model", "nsigmaTPC"))), RooFit::Layout(0.58812,0.811028,0.561955));
+          frameTPC->GetXaxis()->SetRangeUser(tpcSignalProjectionAll->GetFunction("gaus")->GetParameter(1)+left_fit_range_factor*tpcSignalProjectionAll->GetFunction("gaus")->GetParameter(2)+0.5,5);
+          frameTPC->getAttText()->SetTextFont(44);
+          frameTPC->getAttText()->SetTextSize(18);
+          frameTPC->getAttLine()->SetLineWidth(0);
           frameTPC->Write();
 
           double background=0.;
@@ -451,20 +709,24 @@ void SignalBinnedMC(const char *cutSettings = "", const double roi_nsigma = 8., 
             background *= nBkgTPC.getVal();
           }
           TCanvas c(Form("%s",tpcSignalProjection->GetName()),Form("%s",tpcSignalProjection->GetName()));
-          
+          tpcSignalProjection->GetXaxis()->SetRangeUser(tpcSignalProjectionAll->GetFunction("gaus")->GetParameter(1)+left_fit_range_factor*tpcSignalProjectionAll->GetFunction("gaus")->GetParameter(2)+0.5,5);
           double rawYieldTPC = hNSigmaTPC.sumEntries(Form("nSigmaTPC>%f && nSigmaTPC<%f",meanTPC.getVal()-(lowTPCrange+tpc_range_limit)*sigmaTPC.getVal(),meanTPC.getVal()+(5.+tpc_range_limit)*sigmaTPC.getVal()));
           if(ptMin>0.49)rawYieldTPC-=background;
           double rawYieldErrorTPC = TMath::Sqrt(rawYieldTPC);
           c.SetLogy();
-          c.Print(Form("%s/signal_extraction/%s_%s_%d_%d/TPC_cent_%.0f_%.0f_pt_%.2f_%.2f.pdf", kPlotDir, kAntimatterMatter[iMatt], cutSettings, binCounting, bkg_shape, kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1], ptMin, ptMax));
+          frameTPC->SetMinimum(1);
+          frameTPC->SetMaximum(tpcSignalProjection->GetMaximum()*1.2);
+          frameTPC->Draw();
+          c.Print(Form("%s/signal_extraction/%s_%s_%d_%d/TPC_cent_%.0f_%.0f_pt_%.2f_%.2f.png", kPlotDir, kAntimatterMatter[iMatt], cutSettings, binCounting, bkg_shape, kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1], ptMin, ptMax));
 
           // fill raw yield histogram
           fTPCrawYield.SetBinContent(fTPCrawYield.FindBin((ptMax + ptMin) / 2.), rawYieldTPC);
           fTPCrawYield.SetBinError(fTPCrawYield.FindBin((ptMax + ptMin) / 2.), rawYieldErrorTPC);
-          if (ptMin>0.99){
+          if (ptMin>0.99 || r->covQual()<2.5 || r->status()!=0){
             fTPCrawYield.SetBinContent(fTPCrawYield.FindBin((ptMax + ptMin) / 2.), 0.);
             fTPCrawYield.SetBinError(fTPCrawYield.FindBin((ptMax + ptMin) / 2.), 0.);
           }
+          
 
           // fill raw yield histogram
           fTOFrawYield.SetBinContent(fTOFrawYield.FindBin((ptMax + ptMin) / 2.), rawYield);

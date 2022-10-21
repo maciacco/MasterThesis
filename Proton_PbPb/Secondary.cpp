@@ -53,9 +53,9 @@ void Secondary(const char *cutSettings = "", const double DCAxyCut=0.12, const c
   system(Form("mkdir %s/primary_fraction", kPlotDir));
 
   // open files
-  TFile *inFileDat = TFile::Open(Form("%s/%s_largeNsigma_cutDCAxyChi2TPC.root", kDataDir, inFileDatName));
+  TFile *inFileDat = TFile::Open(Form("%s/%s_largeNsigma_cutDCAxyChi2TPC.root", kDataDir, inFileDatName)); // _largeNsigma_cutDCAxyChi2TPC.root _LHC18qr_lowPtProton_ITSrecalibrated.root
   TFile *inFileMCInj = TFile::Open(Form("%s/%s.root", kDataDir, "AnalysisResults_LHC21l5_full_largeDCA_cutChi2"));
-  TFile *inFileMCGP = TFile::Open(Form("%s/AnalysisResults_LHC20e3_DCAChi2TPC.root", kDataDir)); //AnalysisResults_LHC20e3_DCAChi2TPC_old2
+  TFile *inFileMCGP = TFile::Open(Form("%s/AnalysisResults_LHC20e3_DCAChi2TPC.root", kDataDir)); //AnalysisResults_LHC20e3_DCAChi2TPC lowPtProton_ITSrecalibrated
   TFile *outFile = TFile::Open(Form("%s/%s.root", kOutDir, outFileName), "recreate");
 
   for (int iMatt = 0; iMatt < 2; ++iMatt)
@@ -95,7 +95,7 @@ void Secondary(const char *cutSettings = "", const double DCAxyCut=0.12, const c
 
     for (int iCent = 0; iCent < kNCentClasses; ++iCent)
     {
-      if (iCent == 2 && iMatt==1)noSecMaterialThreshold = 1.39f;
+      if (iCent >= 2 && iMatt==1)noSecMaterialThreshold = 1.39f;
       TH1D fPrimaryFrac(Form("f%sPrimFrac_%.0f_%.0f", kAntimatterMatter[iMatt], kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1]), Form("%.0f-%.0f%%", kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1]), kNPtBins, kPtBins);
       TH1D fPrimaryRMS(Form("f%sPrimRMS_%.0f_%.0f", kAntimatterMatter[iMatt], kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1]), Form("%.0f-%.0f%%", kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1]), kNPtBins, kPtBins);
       TH1D fSecondaryFrac(Form("f%sSecFrac_%.0f_%.0f", kAntimatterMatter[iMatt], kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1]), Form("%.0f-%.0f%%", kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1]), kNPtBins, kPtBins);
@@ -141,9 +141,9 @@ void Secondary(const char *cutSettings = "", const double DCAxyCut=0.12, const c
         }
         fDCAMcProjPrim = fDCAprim->ProjectionZ(TString::Format("f%sDCAPrimaryTOF_%.0f_%.0f_%.2f_%.2f", kAntimatterMatter[iMatt], fDCAprim->GetXaxis()->GetBinLowEdge(kCentBinsProton[iCent][0]), fDCAprim->GetXaxis()->GetBinUpEdge(kCentBinsProton[iCent][1]), fDCAprim->GetYaxis()->GetBinLowEdge(pTbinsIndexMinMC), fDCAprim->GetYaxis()->GetBinUpEdge(pTbinsIndexMaxMC)), kCentBinsProton[iCent][0], kCentBinsProton[iCent][1], pTbinsIndexMinMC, pTbinsIndexMaxMC);
         fDCAMcProjPrim->SetTitle(projTitle);
-        fDCAMcProjSec = fDCAsec->ProjectionZ(TString::Format("f%sDCASecondaryTOF_%.0f_%.0f_%.2f_%.2f", kAntimatterMatter[iMatt], fDCAprim->GetXaxis()->GetBinLowEdge(kCentBinsProton[iCent][0]), fDCAprim->GetXaxis()->GetBinUpEdge(kCentBinsProton[iCent][1]), fDCAprim->GetYaxis()->GetBinLowEdge(pTbinsIndexMinMC), fDCAprim->GetYaxis()->GetBinUpEdge(pTbinsIndexMaxMC)), kCentBinsProton[3][0], kCentBinsProton[3][1], pTbinsIndexMinMC, pTbinsIndexMaxMC);
+        fDCAMcProjSec = fDCAsec->ProjectionZ(TString::Format("f%sDCASecondaryTOF_%.0f_%.0f_%.2f_%.2f", kAntimatterMatter[iMatt], fDCAprim->GetXaxis()->GetBinLowEdge(kCentBinsProton[iCent][0]), fDCAprim->GetXaxis()->GetBinUpEdge(kCentBinsProton[iCent][1]), fDCAprim->GetYaxis()->GetBinLowEdge(pTbinsIndexMinMC), fDCAprim->GetYaxis()->GetBinUpEdge(pTbinsIndexMaxMC)), kCentBinsProton[5][0], kCentBinsProton[5][1], pTbinsIndexMinMC, pTbinsIndexMaxMC);
         fDCAMcProjSec->SetTitle(projTitle);
-        fDCAMcProjSecWD = fDCAsecWD->ProjectionZ(TString::Format("f%sDCASecondaryWeakTOF_%.0f_%.0f_%.2f_%.2f", kAntimatterMatter[iMatt], fDCAprim->GetXaxis()->GetBinLowEdge(kCentBinsProton[iCent][0]), fDCAprim->GetXaxis()->GetBinUpEdge(kCentBinsProton[iCent][1]), fDCAprim->GetYaxis()->GetBinLowEdge(pTbinsIndexMinMC), fDCAprim->GetYaxis()->GetBinUpEdge(pTbinsIndexMaxMC)), kCentBinsProton[3][0], kCentBinsProton[3][1], pTbinsIndexMinMC, pTbinsIndexMaxMC); // integrate over centrality at high pt
+        fDCAMcProjSecWD = fDCAsecWD->ProjectionZ(TString::Format("f%sDCASecondaryWeakTOF_%.0f_%.0f_%.2f_%.2f", kAntimatterMatter[iMatt], fDCAprim->GetXaxis()->GetBinLowEdge(kCentBinsProton[iCent][0]), fDCAprim->GetXaxis()->GetBinUpEdge(kCentBinsProton[iCent][1]), fDCAprim->GetYaxis()->GetBinLowEdge(pTbinsIndexMinMC), fDCAprim->GetYaxis()->GetBinUpEdge(pTbinsIndexMaxMC)), kCentBinsProton[5][0], kCentBinsProton[5][1], pTbinsIndexMinMC, pTbinsIndexMaxMC); // integrate over centrality at high pt
         fDCAMcProjSecWD->SetTitle(projTitle);
 
         // rebin
@@ -295,7 +295,8 @@ void Secondary(const char *cutSettings = "", const double DCAxyCut=0.12, const c
         //   fit->Constrain(1,0.,0.9);
 
         Int_t status=-999;
-        if ((iMatt==1&&iCent<2) ||(iMatt==1&&iCent==2&&ptMin<0.99)|| (iMatt==0&&iCent==0&&ptMin>2.09&&ptMin<2.11)||(iMatt==0&&ptMin<1.)){
+        
+        if ((iMatt==1&&iCent<2) ||(iMatt==1&&iCent>=2&&ptMin<0.99)|| (iMatt==0&&iCent==0&&ptMin>2.09&&ptMin<2.11)||(iMatt==0&&ptMin<1.)){
           fit->Constrain(0, 0., 1.);
           fit->Constrain(1, 0., 0.9);
           if (ptMin < noSecMaterialThreshold)fit->Constrain(2, 0., .5);
@@ -312,7 +313,7 @@ void Secondary(const char *cutSettings = "", const double DCAxyCut=0.12, const c
             fit->Constrain(1, 0., .3);
             fit->Constrain(0, 0., .9);
           }
-          if (iCent==2&&iMatt==1&&ptMin>1.29&&ptMin<1.31){
+          if (iCent>1&&iMatt==1&&ptMin>1.29&&ptMin<1.31){
             fit->Constrain(1, 0., .7);
             fit->Constrain(0, 0., .9);
             fit->Constrain(2, 0., .3);
@@ -343,7 +344,7 @@ void Secondary(const char *cutSettings = "", const double DCAxyCut=0.12, const c
               fitter->Config().ParSettings(2).Release();
               fitter->Config().ParSettings(2).SetLimits(0.00001, 0.1);
               fitter->Config().ParSettings(2).SetStepSize(1e-4);
-              if (ptMin> 1.2 and ptMin<1.5 && iCent==2) {
+              if (ptMin> 1.2 and ptMin<1.5 && iCent>=2) {
                 fitter->Config().ParSettings(2).SetLimits(0.00001, 0.2);
                 fitter->Config().ParSettings(1).SetLimits(0.0001, 0.300);
               }
@@ -353,7 +354,7 @@ void Secondary(const char *cutSettings = "", const double DCAxyCut=0.12, const c
           }
         }
 
-        if ((iMatt==0&&ptMin>0.99) || (iMatt==1&&iCent==1&&ptMin>1.&&ptMin<1.4)||(iMatt==1&&iCent==2&&ptMin>0.99)){
+        if ((iMatt==0&&ptMin>0.99) || (iMatt==1&&iCent==1&&ptMin>1.&&ptMin<1.4)||(iMatt==1&&iCent>=2&&ptMin>0.99)){
           if (ptMin < noSecMaterialThreshold)
           { 
             fit->Constrain(2, 0., 1.0);
@@ -417,7 +418,12 @@ void Secondary(const char *cutSettings = "", const double DCAxyCut=0.12, const c
             for(int I = 0; I<2; ++I)status = fit->Fit();
           }
         }
-
+        if ((status!=0 && iMatt==1) || (iMatt==1 && ptMin>2.19 && ptMin<2.21)){
+          fit->Constrain(0, 0., 0.99);
+          fit->Constrain(1, 0., .9);
+          ROOT::Math::MinimizerOptions::SetDefaultStrategy(0);
+          for(int I = 0; I<2; ++I)status = fit->Fit();
+        }
         // if (ptMin < noSecMaterialThreshold)fit->Constrain(2, 0., .5);
         // if (iCent==0 && ptMin < noSecMaterialThreshold)fit->Constrain(2, 0., 1.);
         // fit->Constrain(1, 0., 1.0);
@@ -635,7 +641,6 @@ void Secondary(const char *cutSettings = "", const double DCAxyCut=0.12, const c
           canv.Print(Form("%s/primary_fraction/%s_%s/cent_%.0f_%.0f_pt_%.2f_%.2f.pdf", kPlotDir, kAntimatterMatter[iMatt], cutSettings, kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1], ptMin, ptMax));
         }
       } // end of loop on centrality bin
-
 
       // primary fraction fit with fFitFunc function
       gStyle->SetStatX(0.85);

@@ -12,7 +12,7 @@
 
 const bool kVerbose = false;
 
-Color_t centrality_colors[] = {kOrange+7, kAzure+4, kTeal+4};
+Color_t centrality_colors[] = {kOrange+7, kAzure+4, kTeal+4, kCyan+1, kMagenta-3};
 
 // directories
 const char *kResDir = "./results";
@@ -23,7 +23,7 @@ const char *kPlotDir = "./plots";
 const char *kAntimatterMatter[2] = {"A", "M"};
 
 // centrality binning
-const int kNCentClasses = 3; // 2
+const int kNCentClasses = 5; // 2
 
 const char *kAxisTitleDCA = "DCA_{xy} (cm)";
 const char *kAxisTitlePt = "#it{p}_{T} (GeV/#it{c})";
@@ -58,8 +58,8 @@ namespace he3
   // centrality binning
   const int kNCentBins = 11; // total number of V0M multiplicity classes
   const double kCentBins[kNCentBins + 1] = {0.f, 5.f, 7.5f, 10.f, 20.f, 30.f, 40.f, 50.f, 60.f, 70.f, 80.f, 90.f};
-  const int kCentBinsHe3[][2] = {{1, 1}, {2, 3}, {6, 7}};             // centrality classes bin indexes in He3 analysis
-  const double kCentBinsLimitsHe3[][2] = {{0, 5}, {5, 10}, {30, 50}}; // centrality classes bin limits in He3 analysis
+  const int kCentBinsHe3[][2] = {{1, 1}, {2, 3}, {6, 7}, {4, 5}, {8, 11}};             // centrality classes bin indexes in He3 analysis
+  const double kCentBinsLimitsHe3[][2] = {{0, 5}, {5, 10}, {30, 50}, {10, 30}, {50, 90}}; // centrality classes bin limits in He3 analysis
 
   // TPC nsigma binning
   const int kNSigmaBins = 240;
@@ -183,8 +183,8 @@ namespace proton
   //double kPtBins[33]={0.8f, 0.85f, 0.9f, 0.95f, 1.00f, 1.1f, 1.2f, 1.3f, 1.4f, 1.5f, 1.6f, 1.7f, 1.8f, 1.9f, 2.00f, 2.1f, 2.2f, 2.3f, 2.4f, 2.5f, 2.6f, 2.8f, 3.00f, 3.2f, 3.4f, 3.6f, 3.8f, 4.00f, 4.2f, 4.4f, 4.6f, 4.8f, 5.00f};
 
   // centrality binning
-  const double kCentBinsLimitsProton[][2] = {{0, 5}, {5, 10}, {30, 50}, {0, 90}, {-10, 0}};
-  const int kCentBinsProton[][2] = {{1, 1}, {2, 2}, {5, 6}, {1, 10}, {1, 1}}; // centrality classes bin indexes in He3 analysis
+  const double kCentBinsLimitsProton[][2] = {{0, 5}, {5, 10}, {30, 50}, {10, 30}, {50, 90}, {0, 90}, {-10, 0}};
+  const int kCentBinsProton[][2] = {{1, 1}, {2, 2}, {5, 6}, {3, 4}, {7, 10}, {1, 10}, {1, 1}}; // centrality classes bin indexes in He3 analysis
 
   // antimatter / matter
   const char *kAntimatterMatterLabel[2] = {"#bar{p}", "p"};
@@ -216,6 +216,8 @@ namespace proton
   // systematics variations
   const int kNCutChi2TPC = 2;
   const double kCutChi2TPCVariations[] = {2.00, 2.25};
+  const int kNCutITSPID = 2;
+  const double kCutITSPIDVariations[] = {4, 2};
   const double kROIVariation[] = {7.5,8.,8.5};
   const int kNCutDCAxy = 5;
   const double kCutDCAxy[] = {0.10,0.11,0.12,0.13,0.14};
@@ -227,10 +229,10 @@ namespace proton
   const double kCutTPCClusters[] = {59., 64., 69., 74., 79.};
   const int kNTPCPidSigmas = 3;
   const double kTPCPidSigmas[] = {3.0, 3.25, 3.50};
-  const char *cutSettings[] = {"dcaz", "pid", "tpc", "dcaxy", "chisquare"};
+  const char *cutSettings[] = {"dcaz", "pid", "tpc", "dcaxy", "chisquare"};//,"its"};
   const int kNTrackCuts = 17;
-  const int trackCutIndexes[kNTrackCuts] = {0,0,1,2,3,0,1,0,1,2,3,0,1,2,3,0,1};
-  const char* trackCutSettings[kNTrackCuts] = {"","dcaz","dcaz","dcaz","dcaz","pid","pid","tpc","tpc","tpc","tpc","dcaxy","dcaxy","dcaxy","dcaxy","chisquare","chisquare"};
+  const int trackCutIndexes[kNTrackCuts] = {0,0,1,2,3,0,1,0,1,2,3,0,1,2,3,0,1};//,0,1};
+  const char* trackCutSettings[kNTrackCuts] = {"","dcaz","dcaz","dcaz","dcaz","pid","pid","tpc","tpc","tpc","tpc","dcaxy","dcaxy","dcaxy","dcaxy","chisquare","chisquare"};//,"its","its"};
 }
 
 //////////////////////////////////////////////////////////////
@@ -262,8 +264,8 @@ namespace pion
   //double kPtBins[33]={0.8f, 0.85f, 0.9f, 0.95f, 1.00f, 1.1f, 1.2f, 1.3f, 1.4f, 1.5f, 1.6f, 1.7f, 1.8f, 1.9f, 2.00f, 2.1f, 2.2f, 2.3f, 2.4f, 2.5f, 2.6f, 2.8f, 3.00f, 3.2f, 3.4f, 3.6f, 3.8f, 4.00f, 4.2f, 4.4f, 4.6f, 4.8f, 5.00f};
 
   // centrality binning
-  const double kCentBinsLimitsPion[][2] = {{0, 5}, {5, 10}, {30, 50}, {0, 90}};
-  const int kCentBinsPion[][2] = {{1, 1}, {2, 2}, {5, 6}, {1, 10}, {1,4}}; // centrality classes bin indexes in He3 analysis
+  const double kCentBinsLimitsPion[][2] = {{0, 5}, {5, 10}, {30, 50}, {10, 30}, {50, 90}, {0, 90}};
+  const int kCentBinsPion[][2] = {{1, 1}, {2, 2}, {5, 6}, {3,4}, {7, 10}, {1, 10}, {1,4}}; // centrality classes bin indexes in He3 analysis
 
   // antimatter / matter
   const char *kAntimatterMatterLabel[2] = {"#pi^{-}", "#pi^{+}"};
@@ -309,6 +311,82 @@ namespace pion
   const int kNTrackCuts = 17;
   const int trackCutIndexes[kNTrackCuts] = {0,0,1,2,3,0,1,0,1,2,3,0,1,2,3,0,1};
   const char* trackCutSettings[kNTrackCuts] = {"","dcaz","dcaz","dcaz","dcaz","pid","pid","tpc","tpc","tpc","tpc","dcaxy","dcaxy","dcaxy","dcaxy","chisquare","chisquare"};
+}
+
+
+//////////////////////////////////////////////////////////////
+// Triton analysis
+//////////////////////////////////////////////////////////////
+
+namespace triton
+{
+  // directories
+  const char *kDataDir = "../data/Triton_PbPb";
+
+  // histograms
+  const char *kTPC = "TPCcounts";
+
+  // data files
+  const int kNDataFiles = 2;
+  const char *kDataFileLabel[kNDataFiles] = {"LHC18q", "LHC18r"};
+
+  // pt binning
+  const int kNPtBins = 4; // analysis binning
+  const double kDeltaPt = 0.5f;
+  const double kLowestPt = 1.f;
+  const int kNPtBinsFine = 36; // finer pt binning
+  const double kDeltaPtFine = 0.25f;
+  const int kNPt[2] = {12, 9};
+
+  // centrality binning
+  const int kNCentBins = 11; // total number of V0M multiplicity classes
+  const double kCentBins[kNCentBins + 1] = {0.f, 5.f, 7.5f, 10.f, 20.f, 30.f, 40.f, 50.f, 60.f, 70.f, 80.f, 90.f};
+  const int kCentBinsHe3[][2] = {{1, 1}, {2, 3}, {6, 7},{1,11}};             // centrality classes bin indexes in He3 analysis
+  const double kCentBinsLimitsHe3[][2] = {{0, 5}, {5, 10}, {30, 50},{0, 90}}; // centrality classes bin limits in He3 analysis
+
+  // TPC nsigma binning
+  const int kNSigmaBins = 200;
+  const double kDeltaNSigma = 0.1f;
+  const double kLowestNSigma = -10.f;
+  const double kNSigmaMin = -10.f;
+  const double kNSigmaMax = 10.f;
+  // DCAxy binning
+  const int kNDCABins = 40;
+  const int kNDCABinsLarge = 16;
+  const int kNDCABinsLarge2 = 14;
+  const double kDCABins[kNDCABins + 1] = {-1.30, -1.20, -1.10, -1.00, -0.90, -0.80, -0.70, -0.60, -0.50, -0.40, -0.35, -0.30, -0.25, -0.20, -0.15, -0.10, -0.07, -0.05, -0.04, -0.02, 0.00, 0.02, 0.04, 0.05, 0.07, 0.10, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.50, 0.60, 0.70, 0.80, 0.90, 1.00, 1.10, 1.20, 1.30};
+  const double kDCABinsLarge[kNDCABinsLarge + 1] = {-1.30, -1.10, -0.90, -0.70, -0.50, -0.35, -0.20, -0.10, 0.00, 0.10, 0.20, 0.35, 0.50, 0.70, 0.90, 1.10, 1.30};
+  const double kDCABinsLarge2[kNDCABinsLarge2 + 1] = {-1.30, -1.10, -0.90, -0.70, -0.50, -0.30, -0.10, 0.00, 0.10, 0.30, 0.50, 0.70, 0.90, 1.10, 1.30};
+  const int kNDCABinsMedium = 22;
+  const double kDCABinsMedium[kNDCABinsMedium + 1] = {-1.30, -1.10, -0.90, -0.70, -0.50, -0.35, -0.20, -0.10, -0.07, -0.04, -0.02, 0.00, 0.02, 0.04, 0.07, 0.10, 0.20, 0.35, 0.50, 0.70, 0.90, 1.10, 1.30};
+
+  // antimatter/matter
+  const char *kAntimatterMatterLabel[2] = {"^{3}#bar{H}", "^{3}H"};
+
+  // axis labels
+  const char *kAxisTitleCent = "Centrality (%)";
+  const char *kAxisTitleNSigma = "^{3}H n#sigma_{TOF} (a.u.)";
+
+  // track selections
+  const char *kTrackSelectionsEta = "(std::abs(eta)<0.8)";
+  //const char *kTrackSelectionsDCAxy = "std::abs(dcaxy)<0.1f";
+
+  // cuts with variations (systematics computation)
+  const int kNCutChi2TPC = 2;
+  const double kCutChi2TPC[] = {2.00, 2.5};
+  const int kNCutDCAxy = 3;
+  const double kCutDCAxy[] = {0.08, 0.09, 0.1, 0.11, 0.12};
+  /* const int kNCutDCAz = 11;
+  const double kCutDCAz[] = {0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5}; */
+  /* const int kNCutTPCClusters = 31;
+  const int kCutTPCClusters[] = {74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104};
+ */
+  const int kNCutDCAz = 7;
+  const double kCutDCAz[] = {0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6};
+  const int kNCutTPCClusters = 11;
+  const int kCutTPCClusters[] = {59, 61, 63, 65, 67, 69, 71, 73, 75, 77, 79};
+
+  const int kNAnalyses = 2976;
 }
 
 #endif // CONFIGFILE_H

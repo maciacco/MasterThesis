@@ -88,7 +88,7 @@ void LaunchAnalyses(const bool analyse = false)
           std::cout << "bkg selection = " << iBkg << "; roiNsigmaROIDown = " << roi_n_sigma_down[iNsigmaROIDown] << "; roiNsigmaROIUp = " << roi_n_sigma_up[iNsigmaROIUp] << "; roiNsigmaDownMismatch = " << mismatch_n_sigma_down[iNsigmaMismatchDown] << "; roiNsigmaMismatchUp = " << mismatch_n_sigma_up[iNsigmaMismatchUp] << "; dcaxycut = " << DCAxyCut << std::endl;
           if (analyse)
           {
-            gSystem->Exec(Form("bash ~/Code/MasterThesis/Pion_PbPb/scripts/LaunchAnalysisSignEffPrim.sh %s 1 1 %f %f %f %f %f", fullCutSettings, roi_n_sigma_down[iNsigmaROIDown], roi_n_sigma_up[iNsigmaROIUp], mismatch_n_sigma_down[iNsigmaMismatchDown], mismatch_n_sigma_up[iNsigmaMismatchUp], DCAxyCut));
+            gSystem->Exec(Form("bash ~/Code/MuBFromRatios_PbPb/Pion_PbPb/scripts/LaunchAnalysisSignEffPrim.sh %s 1 1 %f %f %f %f %f", fullCutSettings, roi_n_sigma_down[iNsigmaROIDown], roi_n_sigma_up[iNsigmaROIUp], mismatch_n_sigma_down[iNsigmaMismatchDown], mismatch_n_sigma_up[iNsigmaMismatchUp], DCAxyCut));
           }
 
           for (int iSgm = 1; iSgm < 2; ++iSgm)
@@ -104,7 +104,7 @@ void LaunchAnalyses(const bool analyse = false)
 
             if (analyse)
             {
-              gSystem->Exec(Form("bash ~/Code/MasterThesis/Pion_PbPb/scripts/LaunchAnalysisSpec.sh %s 1 %d %d %s %f %f %f %f", fullCutSettings, iBkg, sigmoidFlag, spectraNameId, roi_n_sigma_down[iNsigmaROIDown], roi_n_sigma_up[iNsigmaROIUp], mismatch_n_sigma_down[iNsigmaMismatchDown], mismatch_n_sigma_up[iNsigmaMismatchUp]));
+              gSystem->Exec(Form("bash ~/Code/MuBFromRatios_PbPb/Pion_PbPb/scripts/LaunchAnalysisSpec.sh %s 1 %d %d %s %f %f %f %f", fullCutSettings, iBkg, sigmoidFlag, spectraNameId, roi_n_sigma_down[iNsigmaROIDown], roi_n_sigma_up[iNsigmaROIUp], mismatch_n_sigma_down[iNsigmaMismatchDown], mismatch_n_sigma_up[iNsigmaMismatchUp]));
             }
           }
         }

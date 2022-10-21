@@ -67,7 +67,7 @@ void EfficiencyNew(const char *cutSettings = "", const char *inFileNameMC = "mc_
       fITS_TPC_TOF_Pt = (TH1D*)inFileSignal.Get(Form("%s_%d_%d/f%sTOFrawYield_%.0f_%.0f", cutSettings, 1, 1, kAntimatterMatter[iMatt], kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1]));
       fITS_TPC_Pt = (TH1D*)inFileSignal.Get(Form("%s_%d_%d/f%sTPCrawYield_%.0f_%.0f", cutSettings, 1, 1, kAntimatterMatter[iMatt], kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1]));
       for (int iB=0;iB<fITS_TPC_Pt->GetXaxis()->GetNbins();++iB){
-        if (fITS_TPC_Pt->GetBinCenter(iB) > 0.9){
+        if (fITS_TPC_Pt->GetBinCenter(iB) > 1.){
           fITS_TPC_Pt->SetBinContent(iB,0);
           fITS_TPC_Pt->SetBinError(iB,0);
         }

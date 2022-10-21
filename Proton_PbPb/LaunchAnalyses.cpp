@@ -27,8 +27,9 @@ void LaunchAnalyses(const bool analyse = false)
   auto tmpNCutTPCClusters = kNCutTPCClusters-1;
   auto tmpNCutDCAxy = kNCutDCAxy-1;
   auto tmpNCutChi2TPC = kNCutChi2TPC;
+  auto tmpNCutITSPID = kNCutITSPID;
 
-  for (int iCutSettings = -1; iCutSettings < tmpNCutDCAz + tmpNTPCPidSigmas + tmpNCutTPCClusters + tmpNCutDCAxy + tmpNCutChi2TPC; ++iCutSettings)
+  for (int iCutSettings = -1; iCutSettings < tmpNCutDCAz + tmpNTPCPidSigmas + tmpNCutTPCClusters + tmpNCutDCAxy + tmpNCutChi2TPC + tmpNCutITSPID; ++iCutSettings)
   {
     char hname[100];
 
@@ -52,10 +53,15 @@ void LaunchAnalyses(const bool analyse = false)
         cutVariable = 3;
         cutIndex -= (tmpNCutDCAz + tmpNTPCPidSigmas + tmpNCutTPCClusters);
       }
-      else if (iCutSettings >= (tmpNCutDCAz + tmpNTPCPidSigmas + tmpNCutTPCClusters + tmpNCutDCAxy))
+      else if (iCutSettings >= (tmpNCutDCAz + tmpNTPCPidSigmas + tmpNCutTPCClusters + tmpNCutDCAxy) && iCutSettings < (tmpNCutDCAz + tmpNTPCPidSigmas + tmpNCutTPCClusters + tmpNCutDCAxy + tmpNCutChi2TPC))
       {
         cutVariable = 4;
         cutIndex -= (tmpNCutDCAz + tmpNTPCPidSigmas + tmpNCutTPCClusters + tmpNCutDCAxy);
+      }
+      else if (iCutSettings >= (tmpNCutDCAz + tmpNTPCPidSigmas + tmpNCutTPCClusters + tmpNCutDCAxy + tmpNCutChi2TPC))
+      {
+        cutVariable = 5;
+        cutIndex -= (tmpNCutDCAz + tmpNTPCPidSigmas + tmpNCutTPCClusters + tmpNCutDCAxy + tmpNCutChi2TPC);
       }
       fullCutSettings = Form("%s%d", cutSettings[cutVariable], cutIndex);
     }

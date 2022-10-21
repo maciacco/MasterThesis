@@ -53,7 +53,7 @@ void Secondary(const char *cutSettings = "", const double DCAxyCut=0.12, const c
   system(Form("mkdir %s/primary_fraction", kPlotDir));
 
   // open files
-  TFile *inFileDat = TFile::Open(Form("%s/%s_largeNsigma_cutDCAxyChi2TPC.root", kDataDir, inFileDatName));
+  TFile *inFileDat = TFile::Open(Form("%s/%s_largeNsigma_cutDCAxyChi2TPC.root", kDataDir, inFileDatName)); //_largeNsigma_cutDCAxyChi2TPC.root
   TFile *inFileMCInj = TFile::Open(Form("%s/%s.root", kDataDir, "AnalysisResults_LHC21l5_full_largeDCA_cutChi2"));
   TFile *inFileMCGP = TFile::Open(Form("%s/AnalysisResults_LHC20e3_DCAChi2TPC_old.root", kDataDir));
   TFile *outFile = TFile::Open(Form("%s/%s.root", kOutDir, outFileName), "recreate");
@@ -125,9 +125,9 @@ void Secondary(const char *cutSettings = "", const double DCAxyCut=0.12, const c
         else fPrimaryRMS.SetBinContent(iPtBin,fDCAdatProj->GetRMS());
         fDCAMcProjPrim = fDCAprim->ProjectionZ(TString::Format("f%sDCAPrimaryTOF_%.0f_%.0f_%.2f_%.2f", kAntimatterMatter[iMatt], fDCAdat->GetXaxis()->GetBinLowEdge(kCentBinsPion[iCent][0]), fDCAdat->GetXaxis()->GetBinUpEdge(kCentBinsPion[iCent][1]), fDCAdat->GetYaxis()->GetBinLowEdge(pTbinsIndexMin), fDCAdat->GetYaxis()->GetBinUpEdge(pTbinsIndexMax)), kCentBinsPion[iCent][0], kCentBinsPion[iCent][1], pTbinsIndexMin, pTbinsIndexMax);
         fDCAMcProjPrim->SetTitle(projTitle);
-        fDCAMcProjSec = fDCAsec->ProjectionZ(TString::Format("f%sDCASecondaryTOF_%.0f_%.0f_%.2f_%.2f", kAntimatterMatter[iMatt], fDCAdat->GetXaxis()->GetBinLowEdge(kCentBinsPion[iCent][0]), fDCAdat->GetXaxis()->GetBinUpEdge(kCentBinsPion[iCent][1]), fDCAdat->GetYaxis()->GetBinLowEdge(pTbinsIndexMin), fDCAdat->GetYaxis()->GetBinUpEdge(pTbinsIndexMax)), kCentBinsPion[3][0], kCentBinsPion[3][1], pTbinsIndexMin, pTbinsIndexMax);
+        fDCAMcProjSec = fDCAsec->ProjectionZ(TString::Format("f%sDCASecondaryTOF_%.0f_%.0f_%.2f_%.2f", kAntimatterMatter[iMatt], fDCAdat->GetXaxis()->GetBinLowEdge(kCentBinsPion[iCent][0]), fDCAdat->GetXaxis()->GetBinUpEdge(kCentBinsPion[iCent][1]), fDCAdat->GetYaxis()->GetBinLowEdge(pTbinsIndexMin), fDCAdat->GetYaxis()->GetBinUpEdge(pTbinsIndexMax)), kCentBinsPion[5][0], kCentBinsPion[5][1], pTbinsIndexMin, pTbinsIndexMax);
         fDCAMcProjSec->SetTitle(projTitle);
-        fDCAMcProjSecWD = fDCAsecWD->ProjectionZ(TString::Format("f%sDCASecondaryWeakTOF_%.0f_%.0f_%.2f_%.2f", kAntimatterMatter[iMatt], fDCAdat->GetXaxis()->GetBinLowEdge(kCentBinsPion[iCent][0]), fDCAdat->GetXaxis()->GetBinUpEdge(kCentBinsPion[iCent][1]), fDCAdat->GetYaxis()->GetBinLowEdge(pTbinsIndexMin), fDCAdat->GetYaxis()->GetBinUpEdge(pTbinsIndexMax)), kCentBinsPion[3][0], kCentBinsPion[3][1], pTbinsIndexMin, pTbinsIndexMax);
+        fDCAMcProjSecWD = fDCAsecWD->ProjectionZ(TString::Format("f%sDCASecondaryWeakTOF_%.0f_%.0f_%.2f_%.2f", kAntimatterMatter[iMatt], fDCAdat->GetXaxis()->GetBinLowEdge(kCentBinsPion[iCent][0]), fDCAdat->GetXaxis()->GetBinUpEdge(kCentBinsPion[iCent][1]), fDCAdat->GetYaxis()->GetBinLowEdge(pTbinsIndexMin), fDCAdat->GetYaxis()->GetBinUpEdge(pTbinsIndexMax)), kCentBinsPion[5][0], kCentBinsPion[5][1], pTbinsIndexMin, pTbinsIndexMax);
         fDCAMcProjSecWD->SetTitle(projTitle);
 
         // rebin
@@ -242,14 +242,21 @@ void Secondary(const char *cutSettings = "", const double DCAxyCut=0.12, const c
         { 
           fit->Constrain(2, 0., 0.06);
         }
-        if (iCent < 2 || (iCent==2 && iMatt==1))
+        if (iCent>2){
           fit->Constrain(1, 0., 0.9);
-        if (iMatt == 0 && iCent == 2 && (ptMin < 0.7 || ptMin > 0.89)) fit->Constrain(1, 0., 0.8);
+          if (iCent==3&&iMatt==1&&ptMin>1.34&&ptMin<1.36)fit->Constrain(0, 0., .99);
+          if (iCent==4)fit->Constrain(1, 0., .8);
+          if (iCent==4&&iMatt==1)fit->Constrain(1, 0., .9);
+          if (iCent==4&&((ptMin>1.49&&ptMin<1.51)||(ptMin>0.745&&ptMin<0.751)))fit->Constrain(1, 0., .95);
+        }
+        if (iCent < 2 || ((iCent==2||iCent==3) && iMatt==1))
+          fit->Constrain(1, 0., 0.9);
+        if (iMatt == 0 && (iCent == 2) && (ptMin < 0.7 || ptMin > 0.89)) fit->Constrain(1, 0., 0.8);
         if (iMatt == 1 && iCent==2 && ptMin>0.9 &&ptMin<0.99)
           fit->Constrain(0, 0., 0.99);
-        if (iMatt == 1 && iCent >= 1 && ptMin < 1.1)
+        if (iMatt == 1 && iCent >= 1 && iCent<4 && ptMin < 1.1)
           fit->Constrain(1, 0., 0.99);
-        else if (iCent==2 && ptMin < 0.9)
+        else if ((iCent==2) && ptMin < 0.9)
           fit->Constrain(0, 0., 1.);
 
         TVirtualFitter::SetMaxIterations(MAX_ITER);    

@@ -18,42 +18,58 @@
 using namespace proton;
 using namespace utils;
 
-const char *in_name[] = {"","low_pt_proton_mc"};
+const char *in_name[] = {"ProtonDataITS","../data/Proton_PbPb/AnalysisResults_low_pt_proton_mc"}; //../data/Proton_PbPb/AnalysisResults_
 const char *out_name[] = {"Data","Mc"};
 const char *ls_name[] = {"","mcFalse_"};
 
 void ITSrecalibration(bool mc=false, bool save_fits=false){
-  TFile *inFile=TFile::Open(Form("../data/Proton_PbPb/AnalysisResults_%s.root",in_name[(int)mc]));
+  TFile *inFile=TFile::Open(Form("%s.root",in_name[(int)mc]));
   if (!inFile) std::cout << "Input file does not exist!" << std::endl;
   TFile outFile(Form("out/ITScalib%s.root",out_name[(int)mc]),"recreate");
-  TTList *ls_proton=(TTList*)inFile->Get(Form("nuclei_proton_%s",ls_name[(int)mc]));
-  TH3F *fNSigmaITSpTCentA=(TH3F*)ls_proton->Get(Form("f%sITSnSigma",kAntimatterMatter[0]));
-  TH3F *fNSigmaITSpTCentM=(TH3F*)ls_proton->Get(Form("f%sITSnSigma",kAntimatterMatter[1]));
-  TH1F fITSCalibMean("fITSCalibMean",";#it{p}_{T} (GeV/#it{c});Mean (a.u.)",14,0.3,1.);
-  TH1F fITSCalibSigma("fITSCalibSigma",";#it{p}_{T} (GeV/#it{c});Sigma (a.u.)",14,0.3,1.);
-  TH1F fITSCalibMeanRoo("fCustomITSpidMu",";#it{p}_{T} (GeV/#it{c});Mean (a.u.)",14,0.3,1.);
-  TH1F fITSCalibSigmaRoo("fCustomITSpidSigma",";#it{p}_{T} (GeV/#it{c});Sigma (a.u.)",14,0.3,1.);
-  TH1F fITSCalibRatio("fITSCalibRatio",";#it{p}_{T} (GeV/#it{c});Ratio (a.u.)",14,0.3,1.);
+  TH3F *fNSigmaITSpTCentA=nullptr, *fNSigmaITSpTCentM=nullptr;
+  TString inFileName(in_name[(int)mc]);
+  if (mc || !inFileName.CompareTo("../data/Proton_PbPb/AnalysisResults_")) {
+    TTList *ls_proton=(TTList*)inFile->Get(Form("nuclei_proton_%s",ls_name[(int)mc]));
+    fNSigmaITSpTCentA=(TH3F*)ls_proton->Get(Form("f%sITSnSigma",kAntimatterMatter[0]));
+    fNSigmaITSpTCentM=(TH3F*)ls_proton->Get(Form("f%sITSnSigma",kAntimatterMatter[1]));
+  }
+  else {
+    fNSigmaITSpTCentA=(TH3F*)inFile->Get(Form("nuclei_proton_/f%sITSnSigma",kAntimatterMatter[0]));
+    fNSigmaITSpTCentM=(TH3F*)inFile->Get(Form("nuclei_proton_/f%sITSnSigma",kAntimatterMatter[1]));
+  }
+  TH1F fITSCalibMean("fITSCalibMean",";#it{p}_{T} (GeV/#it{c});Mean (a.u.)",18,0.3,1.2);
+  TH1F fITSCalibSigma("fITSCalibSigma",";#it{p}_{T} (GeV/#it{c});Sigma (a.u.)",18,0.3,1.2);
+  TH1F fITSCalibMeanRoo("fCustomITSpidMu",";#it{p}_{T} (GeV/#it{c});Mean (a.u.)",18,0.3,1.2);
+  TH1F fITSCalibSigmaRoo("fCustomITSpidSigma",";#it{p}_{T} (GeV/#it{c});Sigma (a.u.)",18,0.3,1.2);
+  TH1F fITSCalibRatio("fITSCalibRatio",";#it{p}_{T} (GeV/#it{c});Ratio (a.u.)",18,0.3,1.2);
   if (save_fits) outFile.mkdir("fits");
-  for (int iB=1;iB<15;iB++){
+  for (int iB=1;iB<54;iB++){
     TH1D* fNSigmaITSpT=fNSigmaITSpTCentA->ProjectionZ(Form("proj_%.2f_%.2f",kPtBins[iB-1],kPtBins[iB]),1,10,iB,iB);
     TH1D* fNSigmaITSpTM=fNSigmaITSpTCentM->ProjectionZ(Form("proj_%.2f_%.2f",kPtBins[iB-1],kPtBins[iB]),1,10,iB,iB);
     fNSigmaITSpT->Add(fNSigmaITSpTM);
     fNSigmaITSpT->Rebin(1);
+    fNSigmaITSpT->GetXaxis()->SetRangeUser(-5,-2);
+    double max = fNSigmaITSpT->GetBinCenter(fNSigmaITSpT->GetMaximumBin());
+    fNSigmaITSpT->GetXaxis()->SetRangeUser(-6,6);
     double upNsigma = 4.;
-    double lowNsigma = -3.8;
-    if (kPtBins[iB-1]>0.39 && kPtBins[iB-1]<0.6) lowNsigma = -3.2;
-    else if (kPtBins[iB-1]>0.6 && kPtBins[iB-1]<0.89) lowNsigma = -2.7;
+    double lowNsigma = max+0.8;
+    //if (kPtBins[iB-1]>0.39 && kPtBins[iB-1]<0.6) lowNsigma = -3.2;
+    /* else if (kPtBins[iB-1]>0.6 && kPtBins[iB-1]<0.89) lowNsigma = -2.7;
     else if (kPtBins[iB-1]>0.89 && kPtBins[iB-1]<0.94) lowNsigma = -2.5;
     else if (kPtBins[iB-1]>0.94) lowNsigma = -2.4;
+    if (kPtBins[iB-1]>0.99) lowNsigma = -2.; */
     RooRealVar nSigma("nSigma","nSigma",lowNsigma,upNsigma);
     RooDataHist data("data","data",RooArgList(nSigma),fNSigmaITSpT);
     RooPlot *xframe = nSigma.frame();
     RooRealVar mu("mu","mu",-0.5,-1.,1.);
     RooRealVar sig("sig","sig",0.5,0.,1.);
-    RooRealVar tau("tau","tau",0.5,0.,2.);
-    RooRealVar slope("slope","slope",-10.,10.);
+    RooRealVar tau("tau","tau",0.8,0.6,2.);
+    RooRealVar muB("muB","muB",-6.,-1.);
+    RooRealVar sigB("sigB","sigB",0.5,0.,1.);
+    RooRealVar tauB("tauB","tauB",0.5,0.,2.);
+    RooRealVar slope("slope","slope",-10,10);
     RooGausExp signal("signal","signal",nSigma,mu,sig,tau);
+    //RooGausExp bkg("bkg","bkg",nSigma,muB,sigB,tauB);
     RooExponential bkg("bkg","bkg",nSigma,slope);
     RooRealVar w("w","w",0.,1.);
     RooAddPdf model("model","model",signal,bkg,w);

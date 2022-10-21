@@ -89,7 +89,7 @@ void SystematicsXS(const char *cutSettings = "", const char *outFileName = "Syst
     double y_err_antip[]={0,fRatio[1][iMatt]->GetFunction("pol0")->GetParError(0),fRatio[2][iMatt]->GetFunction("pol0")->GetParError(0)};
     TGraphErrors gXS(3,x_XS[iMatt],y_antip,x_err_antip,y_err_antip);
     //TF1 f("f","[0]*x*x+[1]*x+1-[0]-[1]");
-    TF1 f("f","[0]*x+1-[0]");
+    TF1 f("f","1/TMath::Exp([0])*TMath::Exp([0]*x)");
     gXS.Fit("f","QR","",0.86,1.6);
     gXS.SetTitle(kAntimatterMatterLabel[iMatt]);
     gXS.SetMinimum(0);

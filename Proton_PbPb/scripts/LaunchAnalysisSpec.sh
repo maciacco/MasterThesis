@@ -12,12 +12,12 @@ extractRatios=1
 
 fileData="AnalysisResults"
 fileMC="mc_20g7_20210929"
-signalName="SignalProtonSysTPC2"
-spectraName="SpectraProtonSysTPC2TOF"
-spectraNameTPC="SpectraProtonSysTPC2"
-EfficiencyHe3="EfficiencyProtonSysTPC2"
-PrimaryHe3="PrimaryProtonSysTPC2TOF"
-PrimaryHe3TPC="PrimaryProtonSysTPC2"
+signalName="SignalProtonSysTPC_extend_2"
+spectraName="SpectraProtonSysTPC_extend_2TOF"
+spectraNameTPC="SpectraProtonSysTPC_extend_2"
+EfficiencyHe3="EfficiencyProtonSysTPC_extend_2"
+PrimaryHe3="PrimaryProtonSysTPC_extend_2TOF"
+PrimaryHe3TPC="PrimaryProtonSysTPC_extend_2"
 
 # create output directories
 DIR_OUT=out

@@ -19,8 +19,8 @@ warnings.simplefilter(action='ignore', category=FutureWarning)
 ROOT.gROOT.SetBatch()
 
 bkg_function = ['pol','expo']
-cut_var = [0.1,0.1,0.15]
-dof = [13,13,20]
+cut_var = [0.1,0.1,0.15,0.1,0.1]
+dof = [18,18,28,18,18]
 ##################################################################
 # read configuration file
 ##################################################################
@@ -52,7 +52,7 @@ SPLIT_LIST = ['all']
 if SPLIT:
     SPLIT_LIST = ['antimatter', 'matter']
 
-raw_yields_file = ROOT.TFile('SignalExtraction-data_fineCt_lowEff.root')
+raw_yields_file = ROOT.TFile('SignalExtraction-data-extend.root')
 eff_array = np.arange(0.10, MAX_EFF, 0.01)
 f = ROOT.TFile("cut_selection.root","recreate")
 for i_cent_bins in range(len(CENTRALITY_LIST)):
@@ -70,8 +70,8 @@ for i_cent_bins in range(len(CENTRALITY_LIST)):
             ref_pol1.FixParameter(0,0.)
             ref_pol1_1 = ROOT.TF1("ref_pol1_1","pol1")
             ref_pol1_1.FixParameter(0,0.)
-            h_raw.Fit("ref_pol1","R","",0.9,1.00)
-            h_raw.Fit("ref_pol1_1","R","",0.7,1)
+            h_raw.Fit("ref_pol1","R","",0.96,1.00)
+            h_raw.Fit("ref_pol1_1","R","",0.9,1)
             for cut_eff in eff_array:
                 if cut_eff<0.3:
                     continue
@@ -107,7 +107,8 @@ for i_cent_bins in range(len(CENTRALITY_LIST)):
                 l_right.Draw("same")
                 l_cent.Draw("same")
                 c.Write()
-                if (h_raw.GetFunction("pol1").GetParameter(1)-ref_pol1_1.GetParameter(1))>0 and (h_raw.GetFunction("pol1").GetParameter(1)-ref_pol1.GetParameter(1))<0:
+#                if (h_raw.GetFunction("pol1").GetParameter(1)-ref_pol1_1.GetParameter(1))>0 and (h_raw.GetFunction("pol1").GetParameter(1)-ref_pol1.GetParameter(1))<0:
+                if (np.abs(h_raw.GetFunction("pol1").GetParameter(0)/h_raw.GetFunction("pol1").GetParError(0))<8):
                     h_cut_distr.Fill(cut_eff,cut_eff)
             c = ROOT.TCanvas(f"c_{cent_bins[0]}_{cent_bins[1]}_{ct_bins[0]}_{ct_bins[1]}",f"c_{cent_bins[0]}_{cent_bins[1]}_{ct_bins[0]}_{ct_bins[1]}")
             c.cd()

@@ -14,12 +14,12 @@ extractRatios=1
 fileData="AnalysisResults"
 fileDataEff="AnalysisResults_LHC21l5_full_largeDCA_cutChi2"
 fileMC="mc"
-signalNameEff="SignalPionSysEff"
-spectraNameEff="SpectraPionSysEff"
-signalName="SignalPionSys"
-spectraName="SpectraPionSys"
-EfficiencyHe3="EfficiencyPionSys"
-PrimaryHe3="PrimaryPionSys"
+signalNameEff="SignalPionSysEff_extend"
+spectraNameEff="SpectraPionSysEff_extend"
+signalName="SignalPionSys_extend"
+spectraName="SpectraPionSys_extend"
+EfficiencyHe3="EfficiencyPionSys_extend"
+PrimaryHe3="PrimaryPionSys_extend"
 
 # create output directories
 DIR_OUT=out
@@ -66,10 +66,10 @@ if [ $extractRatios -eq 1 ]; then
 .L ../utils/RooGausExp.cxx+
 .L ../utils/RooDSCBShape.cxx+
 .L ../utils/RooGausDExp.cxx+
-.L SignalBinnedMC.cpp+
+.L SignalBinnedMCv2.cpp+
 .L EfficiencyNew.cpp+
 .L SecondaryMC.cpp+
-SignalBinnedMC("$cutSettings",$roiNsigmaMin,$roiNsigmaMax,$mismatchNsigmaMin,$mismatchNsigmaMax,$argumentSignal,"$fileDataEff","$signalNameEff","recreate")
+SignalBinnedMCv2("$cutSettings",$roiNsigmaMin,$roiNsigmaMax,$mismatchNsigmaMin,$mismatchNsigmaMax,$argumentSignal,"$fileDataEff","$signalNameEff","recreate")
 SecondaryMC("$cutSettings",$dcaxycut,"$fileDataEff","$fileDataEff","$PrimaryHe3Eff")
 EfficiencyNew("$cutSettings","$fileDataEff","$EfficiencyHe3","$signalNameEff","$PrimaryHe3Eff")//,"update")
 .q

@@ -23,7 +23,7 @@ void SpectraTPC(const char *cutSettings = "", const double roi_nsigma = 8., cons
   gStyle->SetTextFont(44);
 
   TH2F *fNevents;
-  TFile *inFileDat = TFile::Open(Form("%s/%s-48.root", kDataDir, dataFile)); // _largeNsigma_cutDCAxyChi2TPC_lowPt
+  TFile *inFileDat = TFile::Open(Form("%s/%s_largeNsigma_cutDCAxyChi2TPC.root", kDataDir, dataFile)); // _largeNsigma_cutDCAxyChi2TPC_lowPt
   TTList *fMultList = (TTList *)inFileDat->Get("nuclei_proton_");
   fNevents = (TH2F *)fMultList->Get("fNormalisationHist");
   TFile *inFileRaw = TFile::Open(Form("%s/%s.root", kOutDir, signalFile));
@@ -78,7 +78,7 @@ void SpectraTPC(const char *cutSettings = "", const double roi_nsigma = 8., cons
       TH1D *raw = (TH1D *)inFileRaw->Get(Form("%s_%d_%d_%d/f%sTPCrawYield_%.0f_%.0f", cutSettings, binCounting, bkg_shape, iNsigma, kAntimatterMatter[iMatt], kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1]));
 
       fSpectra[iMatt] = new TH1D(*raw);
-      int pTbinMax = 12;
+      int pTbinMax = 15;
       if (kVerbose) std::cout<<"entering pt loop..."<<std::endl;
       for (int iPtBin = 3; iPtBin < pTbinMax + 1; ++iPtBin)
       {
@@ -117,7 +117,7 @@ void SpectraTPC(const char *cutSettings = "", const double roi_nsigma = 8., cons
     }
 
     // compute ratios
-    int pTbinMax = 12;
+    int pTbinMax = 15;
     for (int iPtBin = 3; iPtBin < pTbinMax + 1; ++iPtBin)
     {
       double antiSpec = fSpectra[0]->GetBinContent(iPtBin);

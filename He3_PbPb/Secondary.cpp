@@ -78,13 +78,21 @@ void Secondary(const float cutDCAz = 1.f, const int cutTPCcls = 89, const double
       TH1D fSecondaryFrac(Form("f%sSecFrac_%.0f_%.0f", kAntimatterMatter[iMatt], kCentBinsLimitsHe3[iCent][0], kCentBinsLimitsHe3[iCent][1]), Form("%.0f-%.0f%%", kCentBinsLimitsHe3[iCent][0], kCentBinsLimitsHe3[iCent][1]), nPtBinsSec, pTbins);
 
       int nUsedPtBins = 13;
-      if (iCent == 2) // rebin
+      if (iCent == 2 || iCent==3)
       {
         int nPtBins = 13;
         double pTbinsNew[] = {1.f, 1.5f, 2.f, 2.5f, 3.f, 3.5f, 4.f, 4.5f, 5.f, 5.5f, 6.f, 7.f, 8.f, 10.f};
         fPrimaryFrac.SetBins(nPtBins, pTbinsNew);
         fSecondaryFrac.SetBins(nPtBins, pTbinsNew);
-        //nUsedPtBins = 10;
+        //nUsedPtBins = 9;
+      }
+      else if (iCent == 4)
+      {
+        int nPtBins = 7;
+        double pTbinsNew[] = {1.f, 1.5f, 2.f, 2.5f, 3.f, 3.5f, 4.f, 5.f};
+        fPrimaryFrac.SetBins(nPtBins, pTbinsNew);
+        fSecondaryFrac.SetBins(nPtBins, pTbinsNew);
+        //nUsedPtBins = 5;
       }
       else if (iCent < 2) // rebin
       {
@@ -113,7 +121,7 @@ void Secondary(const float cutDCAz = 1.f, const int cutTPCcls = 89, const double
         }
         else fPrimaryRMS.SetBinContent(iPtBin,fDCAdatProj->GetRMS());
 
-        if ( (iMatt == 1) && /*( (minPt < 3.45f && iCent < 2) ||  */(minPt < 2.95f /* && iCent > 1 ) */ ))
+        if ( (iMatt == 1) && (minPt < 2.95f) && iCent<4)
         {
           // project TH3 histogram
           TH1D *fDCAMcProjPrim;

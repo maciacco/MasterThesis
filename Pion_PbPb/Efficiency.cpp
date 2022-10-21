@@ -23,6 +23,11 @@ void Efficiency(const char *cutSettings = "", const char *inFileNameMC = "Analys
   TFile inFile(Form("%s/%s.root", kDataDir, inFileNameMC));
   TFile outFile(Form("%s/%s.root", kOutDir, outFileNameEff), "RECREATE");
 
+  if (outFile.GetDirectory(Form("%s_", cutSettings)))
+    return;
+  TDirectory *dirOutFile = outFile.mkdir(Form("%s_", cutSettings));
+  dirOutFile->cd();
+
   gStyle->SetOptStat(0);
 
   for (int iMatt = 0; iMatt < 2; ++iMatt)
@@ -69,7 +74,7 @@ void Efficiency(const char *cutSettings = "", const char *inFileNameMC = "Analys
       fEffPt.GetXaxis()->SetTitle("#it{p}_{T}");
       fEffPt.GetYaxis()->SetTitle("#epsilon #times A");
       fEffPt.SetOption("PE");
-      outFile.cd();
+      dirOutFile->cd();
       fEffPt.Write();
 
       // save plot image

@@ -29,7 +29,17 @@ const int nTrials=10000;
 
 bool barlow_criterion = true;
 
-void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = true, const bool binCountingVar = true, const bool expVar = true, const bool sigmoidVar = true, const char *outFileName = "SystematicsAllEPtNotCombined")
+void reject_entry(TH1D* proj, double up_threshold, double low_threshold=-999.){
+  for(int iB=1;iB<(proj->GetNbinsX()+1);++iB){
+    if (proj->GetBinContent(iB)>0 && (proj->GetBinCenter(iB)>up_threshold || proj->GetBinCenter(iB)<low_threshold)){
+      proj->SetBinContent(iB,0);
+      proj->SetBinError(iB,0);
+      std::cout<<"reject point!"<<std::endl;
+    }
+  }
+}
+
+void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = true, const bool binCountingVar = true, const bool expVar = true, const bool sigmoidVar = true, const char *outFileName = "SystematicsAllEPtNotCombined_extend")
 {
   gStyle->SetTextFont(44);
   gStyle->SetOptStat(110001110);
@@ -38,10 +48,11 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
   TStopwatch swatch;
   swatch.Start(true);
 
-  TFile *specFile = TFile::Open(Form("%s/SpectraPionSys.root", kOutDir));
+  TFile *specFile = TFile::Open(Form("%s/SpectraPionSys_extend.root", kOutDir));
+  TFile *specFile_def = TFile::Open(Form("%s/SpectraPion.root", kOutDir));
   TFile *hijingFile = TFile::Open("../HIJINGRatios.root");
   TFile *inFileSec = TFile::Open(Form("%s/PrimaryPion.root", kOutDir));
-  TFile *effFile = TFile::Open(Form("%s/EfficiencyPionMC_21l5_false_.root", kOutDir));
+  TFile *effFile = TFile::Open(Form("%s/EfficiencyPionprova.root", kOutDir));
   TFile *outFile = TFile::Open(Form("%s/%s.root", kOutDir, outFileName), "recreate");
 
   for (int iC = 0; iC < kNCentClasses; ++iC) // TODO: extend the analysis to the third centrality class as well
@@ -111,7 +122,6 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
     }
 
     TH1D *hDefault = (TH1D *)specFile->Get(Form("_1_0_1_1_1_1/fRatio_%.0f_%.0f", kCentBinsLimitsPion[iC][0], kCentBinsLimitsPion[iC][1]));
-
     // DCAz cuts
     cutVariable=0;
     bkgFlag = 1;
@@ -380,7 +390,7 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
     for(int iPtBins=7;iPtBins<used_pt_bins;++iPtBins){
       // track cuts
      TH1D *proj=fRatiosVsPtDCAz.ProjectionY("py",iPtBins,iPtBins);
-       if (proj->GetEntries()==0 || proj->GetMean()==0){
+      if (proj->GetEntries()==0 || proj->GetMean()==0){
         fSystematicUncertaintyDCAz.SetBinContent(iPtBins,0);
       }
       else
@@ -396,6 +406,7 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
       fSystematicUncertaintyPID.SetBinError(iPtBins,0);
 
       proj=fRatiosVsPtTPCCls.ProjectionY("py",iPtBins,iPtBins);
+      //reject_entry(proj,1.01,0.97);
       if (proj->GetEntries()==0 || proj->GetMean()==0){
         fSystematicUncertaintyTPCCls.SetBinContent(iPtBins,0);
       }
@@ -454,6 +465,8 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
       else
         fSystematicUncertaintyMismatchDown.SetBinContent(iPtBins,proj->GetRMS()/proj->GetMean());
       fSystematicUncertaintyMismatchDown.SetBinError(iPtBins,0);
+      if (iC==4 && iPtBins==15)
+        fSystematicUncertaintyMismatchDown.SetBinContent(iPtBins,0);
 
       // prim
       proj=fRatiosVsPtPrim.ProjectionY("py",iPtBins,iPtBins);
@@ -779,6 +792,7 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
     TH1D hRatio(Form("fRatio_%.0f_%.0f", kCentBinsLimitsPion[iC][0], kCentBinsLimitsPion[iC][1]),Form("%.0f-%.0f%%", kCentBinsLimitsPion[iC][0], kCentBinsLimitsPion[iC][1]),kNPtBins,kPtBins);
     for (int iPtBin=5;iPtBin<kNPtBins;++iPtBin){
       hRatio.SetBinContent(iPtBin,fRatioFromVariationsTot.GetBinContent(iPtBin));
+      double ptMin=hRatio.GetBinLowEdge(iPtBin);
       hRatio.SetBinError(iPtBin,hRatio.GetBinContent(iPtBin)*fSystematicUncertaintyTotal.GetBinContent(iPtBin));
     }
     hRatio.Fit("pol0","QRS","",0.7,1.6);
@@ -803,8 +817,8 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
 
     TCanvas cRatio(Form("cRatio_%.0f_%.0f", kCentBinsLimitsPion[iC][0], kCentBinsLimitsPion[iC][1]), "cRatio");
     TLegend lPionRatio(0.2,0.65,0.4,0.85);
-    TH1D *hijingPionRatio=(TH1D*)hijingFile->Get(Form("fPionRatio_%.0f_%.0f", kCentBinsLimitsPion[iC][0], kCentBinsLimitsPion[iC][1]));
-    hijingPionRatio->GetXaxis()->SetRangeUser(0.7,1.6);
+    //TH1D *hijingPionRatio=(TH1D*)hijingFile->Get(Form("fPionRatio_%.0f_%.0f", kCentBinsLimitsPion[iC][0], kCentBinsLimitsPion[iC][1]));
+    //hijingPionRatio->GetXaxis()->SetRangeUser(0.7,1.6);
     cRatio.SetTicks(1, 1);
     hRatio.SetMarkerStyle(20);
     hRatio.SetMarkerSize(0.8);
@@ -830,10 +844,10 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
     gRatioCorr.SetFillColor(centrality_colors[iC]);
     gRatioCorr.Draw("P5 same");
     hRatio.GetFunction("pol0")->Draw("same");
-    hijingPionRatio->SetMarkerStyle(0);
-    hijingPionRatio->SetMarkerSize(0);
-    hijingPionRatio->SetFillColor(kGreen+1);
-    hijingPionRatio->SetFillStyle(3154);
+    // hijingPionRatio->SetMarkerStyle(0);
+    // hijingPionRatio->SetMarkerSize(0);
+    // hijingPionRatio->SetFillColor(kGreen+1);
+    // hijingPionRatio->SetFillStyle(3154);
     //hijingPionRatio->Draw("e3same");
     lPionRatio.AddEntry(&gRatio,"Data");
     lPionRatio.AddEntry(hRatio.GetFunction("pol0"),"Fit");
@@ -868,7 +882,7 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
     fSystematicUncertaintyTotal.GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
     fSystematicUncertaintyTotal.GetYaxis()->SetTitle("Systematic Uncertainty");
     fSystematicUncertaintyTotal.SetMinimum(0.);
-    fSystematicUncertaintyTotal.GetYaxis()->SetRangeUser(0.,0.01);
+    fSystematicUncertaintyTotal.GetYaxis()->SetRangeUser(0.,0.04);
     TCanvas cSysError(fSystematicUncertaintyTotal.GetName(),fSystematicUncertaintyTotal.GetTitle());
     fSystematicUncertaintyTotal.SetLineWidth(2);
     fSystematicUncertaintyTotal.Draw("histo");
