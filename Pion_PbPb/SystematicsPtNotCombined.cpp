@@ -39,7 +39,7 @@ void reject_entry(TH1D* proj, double up_threshold, double low_threshold=-999.){
   }
 }
 
-void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = true, const bool binCountingVar = true, const bool expVar = true, const bool sigmoidVar = true, const char *outFileName = "SystematicsAllEPtNotCombined_extend")
+void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = true, const bool binCountingVar = true, const bool expVar = true, const bool sigmoidVar = true, const char *outFileName = "SystematicsAllEPtNotCombined_extend2")
 {
   gStyle->SetTextFont(44);
   gStyle->SetOptStat(110001110);
@@ -48,7 +48,7 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
   TStopwatch swatch;
   swatch.Start(true);
 
-  TFile *specFile = TFile::Open(Form("%s/SpectraPionSys_extend.root", kOutDir));
+  TFile *specFile = TFile::Open(Form("%s/SpectraPionSys_extend2.root", kOutDir));
   TFile *specFile_def = TFile::Open(Form("%s/SpectraPion.root", kOutDir));
   TFile *hijingFile = TFile::Open("../HIJINGRatios.root");
   TFile *inFileSec = TFile::Open(Form("%s/PrimaryPion.root", kOutDir));
@@ -404,6 +404,8 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
       else
         fSystematicUncertaintyPID.SetBinContent(iPtBins,proj->GetRMS()/proj->GetMean());
       fSystematicUncertaintyPID.SetBinError(iPtBins,0);
+      if (iC==4 && iPtBins==26)
+        fSystematicUncertaintyPID.SetBinContent(iPtBins,0);
 
       proj=fRatiosVsPtTPCCls.ProjectionY("py",iPtBins,iPtBins);
       //reject_entry(proj,1.01,0.97);

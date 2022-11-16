@@ -41,10 +41,14 @@
 const double extend_roi = 0;
 const bool fit_peak = false;
 
+const char* start_time[] = {"T0FillNsigma","NoT0FillNsigma","nSigma"};
+
 using namespace utils;
 using namespace proton;
 
 const double kNSigma = 3; // define interval for bin counting
+
+const char* sidebands_fit[] = {"leftSideband,rightSideband","rightSideband"};
 
 void SignalBinned(const char *cutSettings = "", const double roi_nsigma = 8., const bool binCounting = false, const int bkg_shape = 1, const char *inFileDat = "AnalysisResults", const char *outFileName = "SignalProton", const char *outFileOption = "recreate", const bool extractSignal = true, const bool binCountingNoFit = false)
 {
@@ -67,7 +71,7 @@ void SignalBinned(const char *cutSettings = "", const double roi_nsigma = 8., co
   if (outFile->GetDirectory(Form("%s_%d_%d_%d", cutSettings, binCounting, bkg_shape,iNsigma)))
     return;
   TDirectory *dirOutFile = outFile->mkdir(Form("%s_%d_%d_%d", cutSettings, binCounting, bkg_shape, iNsigma));
-  TFile *dataFile = TFile::Open(TString::Format("%s/%s_LHC18qr_lowPtProton_ITSrecalibrated.root", kDataDir, inFileDat)); // open data TFile _LHC18qr_lowPtProton_ITSrecalibrated.root _largeNsigma_cutDCAxyChi2TPC
+  TFile *dataFile = TFile::Open(TString::Format("%s/%s_kINT7_10_30_50_90.root", kDataDir, inFileDat)); // open data TFile _LHC18qr_lowPtProton_ITSrecalibrated.root _largeNsigma_cutDCAxyChi2TPC
 
   if (!dataFile)
   {
@@ -82,8 +86,8 @@ void SignalBinned(const char *cutSettings = "", const double roi_nsigma = 8., co
   // merge antimatter + matter histograms
   std::string histNameTPCA = Form("f%sTPCcounts", kAntimatterMatter[0]);
   std::string histNameTPCM = Form("f%sTPCcounts", kAntimatterMatter[1]);
-  std::string histNameA = Form("f%sTOFnSigma", kAntimatterMatter[0]);
-  std::string histNameM = Form("f%sTOFnSigma", kAntimatterMatter[1]);
+  std::string histNameA = Form("f%sTOF%s", kAntimatterMatter[0],start_time[1]);
+  std::string histNameM = Form("f%sTOF%s", kAntimatterMatter[1],start_time[1]);
   TH3F *fTPCSignalA = (TH3F *)list->Get(histNameTPCA.data());
   TH3F *fTOFSignalA = (TH3F *)list->Get(histNameA.data());
   TH3F *fTPCSignalAll_ = (TH3F *)fTPCSignalA->Clone(fTPCSignalA->GetName());
@@ -124,7 +128,8 @@ void SignalBinned(const char *cutSettings = "", const double roi_nsigma = 8., co
   { // loop on antimatter/matter
     // Get histograms from file
     std::string histNameTPC = Form("f%sTPCcounts", kAntimatterMatter[iMatt]);
-    std::string histName = Form("f%sTOFnSigma", kAntimatterMatter[iMatt]);
+    std::string histName = Form("f%sTOF%s", kAntimatterMatter[iMatt],start_time[1]);
+    std::string histNameT0Fill = Form("f%sTOF%s", kAntimatterMatter[iMatt],start_time[0]);
     TH3F *fTOFSignal1 = (TH3F *)list->Get(histName.data());
     if (!fTOFSignal1)
     {
@@ -134,6 +139,7 @@ void SignalBinned(const char *cutSettings = "", const double roi_nsigma = 8., co
 
     TH3F *fTPCSignal = (TH3F *)list->Get(histNameTPC.data());
     TH3F *fTOFSignal = (TH3F *)fTOFSignal1->Clone(fTOFSignal1->GetName());
+    TH3F *fTOFSignalT0Fill = (TH3F *)list->Get(histNameT0Fill.data());
 
     // make plot subdirectory
     system(Form("mkdir %s/signal_extraction/%s_%s_%d_%d", kPlotDir, kAntimatterMatter[iMatt], cutSettings, binCounting, bkg_shape));
@@ -154,7 +160,7 @@ void SignalBinned(const char *cutSettings = "", const double roi_nsigma = 8., co
       TH1D fAlphaR("fAlphaR", "fAlphaR", kNPtBins, kPtBins);
       int nUsedPtBins = 42; // up to 3.00 GeV/c
 
-      for (int iPtBin = 1; iPtBin < nUsedPtBins + 1; ++iPtBin)
+      for (int iPtBin = 5; iPtBin < nUsedPtBins + 1; ++iPtBin)
       { // loop on pT bins
         double ptMin = fTOFrawYield.GetXaxis()->GetBinLowEdge(iPtBin);
         double ptMax = fTOFrawYield.GetXaxis()->GetBinUpEdge(iPtBin);
@@ -170,12 +176,15 @@ void SignalBinned(const char *cutSettings = "", const double roi_nsigma = 8., co
         if (kVerbose) std::cout << "Pt bins: min=" << ptMin << "; max=" << ptMax << "; indexMin=" << pTbinsIndexMin << "; indexMax=" << pTbinsIndexMax << "; centralityBinMin=" << centBinMin << "; centralityBinMax=" << centBinMax << std::endl;
         TH1D *tpcSignalProjection = fTPCSignal->ProjectionZ(Form("f%sTPCSignal_%.0f_%.0f_%.2f_%.2f", kAntimatterMatter[iMatt], centMin, centMax, fTPCSignal->GetYaxis()->GetBinLowEdge(pTbinsIndexMin), fTPCSignal->GetYaxis()->GetBinUpEdge(pTbinsIndexMax)), centBinMin, centBinMax, pTbinsIndexMin, pTbinsIndexMax);
         TH1D *tofSignalProjection = fTOFSignal->ProjectionZ(Form("f%sTOFSignal_%.0f_%.0f_%.2f_%.2f", kAntimatterMatter[iMatt], centMin, centMax, fTOFSignal->GetYaxis()->GetBinLowEdge(pTbinsIndexMin), fTOFSignal->GetYaxis()->GetBinUpEdge(pTbinsIndexMax)), centBinMin, centBinMax, pTbinsIndexMin, pTbinsIndexMax);
-        // tofSignalProjection->Rebin(4);
+        tofSignalProjection->Rebin(2);
+        TH1D *tofSignalProjectionT0Fill = fTOFSignalT0Fill->ProjectionZ(Form("f%sTOFSignalT0Fill_%.0f_%.0f_%.2f_%.2f", kAntimatterMatter[iMatt], centMin, centMax, fTOFSignal->GetYaxis()->GetBinLowEdge(pTbinsIndexMin), fTOFSignal->GetYaxis()->GetBinUpEdge(pTbinsIndexMax)), centBinMin, centBinMax, pTbinsIndexMin, pTbinsIndexMax);
+        tofSignalProjectionT0Fill->Rebin(2);
+        tofSignalProjectionT0Fill->Write();
 
         // project histogram (antimatter + matter)
         TH1D *tpcSignalProjectionAll = fTPCSignalAll[iMatt]->ProjectionZ(Form("f%sTPCSignalAll_%.0f_%.0f_%.2f_%.2f", kAntimatterMatter[iMatt], centMin, centMax, fTPCSignalAll[iMatt]->GetYaxis()->GetBinLowEdge(pTbinsIndexMin), fTPCSignalAll[iMatt]->GetYaxis()->GetBinUpEdge(pTbinsIndexMax)), centBinMin, centBinMax, pTbinsIndexMin, pTbinsIndexMax);
         TH1D *tofSignalProjectionAll = fTOFSignalAll->ProjectionZ(Form("f%sTOFSignalAll_%.0f_%.0f_%.2f_%.2f", kAntimatterMatter[iMatt], centMin, centMax, fTOFSignalAll->GetYaxis()->GetBinLowEdge(pTbinsIndexMin), fTOFSignalAll->GetYaxis()->GetBinUpEdge(pTbinsIndexMax)), centBinMin, centBinMax, pTbinsIndexMin, pTbinsIndexMax);
-        // tofSignalProjectionAll->Rebin(1);
+        tofSignalProjectionAll->Rebin(2);
 
         // limits
         double maxNsigma=20;
@@ -217,6 +226,10 @@ void SignalBinned(const char *cutSettings = "", const double roi_nsigma = 8., co
           nSigmaLeft = -25;
           maxNsigma=25;
         }
+        if (iCent==4){
+          if (ptMin<2.29)maxNsigma=40;
+          else maxNsigma=20;
+        }
         tofSignalProjectionAll->GetXaxis()->SetRangeUser(nSigmaLeft, kTOFnSigmaMax);
         tofSignalProjection->GetXaxis()->SetRangeUser(nSigmaLeft, kTOFnSigmaMax);
 
@@ -246,6 +259,7 @@ void SignalBinned(const char *cutSettings = "", const double roi_nsigma = 8., co
 
         // roofit histogram
         RooDataHist data("data", "data", RooArgList(tofSignal), tofSignalProjection);
+        RooDataHist dataT0Fill("dataT0Fill", "dataT0Fill", RooArgList(tofSignal), tofSignalProjectionT0Fill);
 
         // roofit histogram
         RooDataHist dataAll("dataAll", "dataAll", RooArgList(tofSignal), tofSignalProjectionAll);
@@ -280,7 +294,7 @@ void SignalBinned(const char *cutSettings = "", const double roi_nsigma = 8., co
         if (bkg_shape == 1)
         { // expo
 
-          if (ptMin < 1.39 && ptMin > 0.74)
+          if ((ptMin < 1.39 && ptMin > 0.74 && iCent<4)||(ptMin<1.39 && ptMin > 0.74&&iCent==4))
           {
             if (ptMin<0.99)slope1 = new RooRealVar("#tau_{1}", "slope1", -10., 0.);
             background1 = (RooAbsPdf *)new RooExponential("background1", "background1", tofSignal, *slope1);
@@ -311,7 +325,8 @@ void SignalBinned(const char *cutSettings = "", const double roi_nsigma = 8., co
           }
           
           if (ptMin > 1.51) roi_nsigma_down=roi_nsigma-2; // default = 6sigma
-          if (ptMin > 1.99) {roi_nsigma_down=roi_nsigma-3; // default = 5sigma
+          if (ptMin > 1.99) {
+            roi_nsigma_down=roi_nsigma-3; // default = 5sigma
             roi_nsigma_up=roi_nsigma+1.;
           }
           if (ptMin > 2.49) {
@@ -323,7 +338,14 @@ void SignalBinned(const char *cutSettings = "", const double roi_nsigma = 8., co
             roi_nsigma_up=roi_nsigma+3.;
           }
           tofSignal.setRange("leftSideband", nSigmaLeft, mean_tmp - roi_nsigma_down * rms_tmp);
+          if (iCent==4&&ptMin<2.49){
+            tofSignal.setRange("leftSideband", nSigmaLeft, mean_tmp - (roi_nsigma_down+1.) * rms_tmp);
+          }
           tofSignal.setRange("rightSideband", mean_tmp + roi_nsigma_up * rms_tmp, maxNsigma);
+          if (iCent==4) {
+            if (ptMin<2.29)tofSignal.setRange("rightSideband", 20., maxNsigma);
+            else tofSignal.setRange("rightSideband", 14., maxNsigma);
+          }
           // fit TOF signal distribution
 
           if (ptMin>1.99){
@@ -333,10 +355,10 @@ void SignalBinned(const char *cutSettings = "", const double roi_nsigma = 8., co
             nBackground1->setConstant();
           }
           else {
-            for (int I=0;I<2;++I)model->fitTo(dataAll, RooFit::Range("leftSideband,rightSideband"));
+            for (int I=0;I<2;++I)model->fitTo(dataAll, RooFit::Range(sidebands_fit[(int)((iCent/4)&&((ptMin<1.39 && ptMin > 0.74)))]));
           }
-          model->fitTo(data, RooFit::Save(), RooFit::Range("leftSideband,rightSideband"));
-          r = model->fitTo(data, RooFit::Save(), RooFit::Range("leftSideband,rightSideband"));
+          model->fitTo(data, RooFit::Save(), RooFit::Range(sidebands_fit[(int)((iCent/4)&&((ptMin<1.39 && ptMin > 0.74)))]));
+          r = model->fitTo(data, RooFit::Save(), RooFit::Range(sidebands_fit[(int)((iCent/4)&&((ptMin<1.39 && ptMin > 0.74)))]));
 
           if (kVerbose) std::cout << "fit status: " << r->status() << ";" << std::endl;
           if (kVerbose) std::cout << "covariance quality: " << r->covQual() << std::endl;
@@ -360,13 +382,13 @@ void SignalBinned(const char *cutSettings = "", const double roi_nsigma = 8., co
         tofSignal.setRange("model", nSigmaLeft, maxNsigma);
         if (extractSignal)
         {
-          model->plotOn(xframe, RooFit::Name("model"), RooFit::LineColor(kBlue), RooFit::NormRange("leftSideband,rightSideband"), RooFit::Range("leftSideband,rightSideband"));
+          model->plotOn(xframe, RooFit::Name("model"), RooFit::LineColor(kBlue), RooFit::NormRange(sidebands_fit[(int)((iCent/4)&&((ptMin<1.39 && ptMin > 0.74)))]), RooFit::Range(sidebands_fit[(int)((iCent/4)&&((ptMin<1.39 && ptMin > 0.74)))]));
           model->paramOn(xframe, RooFit::Label(TString::Format("#chi^{2}/NDF = %2.2f", xframe->chiSquare("model", "dataNsigma"))), RooFit::Layout(0.58812,0.911028,0.861955));
           xframe->getAttLine()->SetLineWidth(0);
           xframe->getAttText()->SetTextFont(44);
           xframe->getAttText()->SetTextSize(16);
           xframe->remove("model",false);
-          model->plotOn(xframe, RooFit::Name("model"), RooFit::LineColor(kBlue), RooFit::NormRange("leftSideband,rightSideband"), RooFit::Range("model"));
+          model->plotOn(xframe, RooFit::Name("model"), RooFit::LineColor(kBlue), RooFit::NormRange(sidebands_fit[(int)((iCent/4)&&((ptMin<1.39 && ptMin > 0.74)))]), RooFit::Range("model"));
           xframe->GetYaxis()->SetMaxDigits(2);
 
           //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -413,17 +435,20 @@ void SignalBinned(const char *cutSettings = "", const double roi_nsigma = 8., co
           std::cout << "ptMin = " << ptMin << std::endl;
           double bkgIntegral_1 = (((RooAbsPdf *)(model->pdfList().at(0)))->createIntegral(RooArgSet(tofSignal), RooFit::NormSet(RooArgSet(tofSignal)), RooFit::Range("signalRange")))->getVal();
           double bkgIntegral_2 = 0;
-          if (!(ptMin < 1.39 && ptMin > 0.74)) bkgIntegral_2 = (((RooAbsPdf *)(model->pdfList().at(1)))->createIntegral(RooArgSet(tofSignal), RooFit::NormSet(RooArgSet(tofSignal)), RooFit::Range("signalRange")))->getVal();
+          if (((!(ptMin < 1.39 && ptMin > 0.74)) && iCent<4)!= (((ptMin>1.39 || ptMin < 0.74)&&iCent==4))) bkgIntegral_2 = (((RooAbsPdf *)(model->pdfList().at(1)))->createIntegral(RooArgSet(tofSignal), RooFit::NormSet(RooArgSet(tofSignal)), RooFit::Range("signalRange")))->getVal();
           double bkgIntegral_val = nBackground1->getVal() *bkgIntegral_1 + nBackground2->getVal() * bkgIntegral_2;
 
-          double rawYield, rawYieldError, counts;
+          double rawYield, rawYieldError, counts, countsT0Fill;
           if (binCounting)
           {
             // total counts
             counts = data.sumEntries(Form("tofSignal>%f && tofSignal<%f", mean_tmp - (roi_nsigma_down+extend_roi) * rms_tmp, mean_tmp + (roi_nsigma_up+extend_roi) * rms_tmp));
-            rawYield = counts - bkgIntegral_val; // signal=counts-error
-            if (kVerbose) std::cout << "Counts: " << counts << ", Background: "<< bkgIntegral_val << std::endl;
-            rawYieldError = TMath::Sqrt(counts); // counts=signal+bkg => correct error from poisson statistics
+            countsT0Fill = 0.;
+            if (ptMin<2.&&iCent==4)countsT0Fill=dataT0Fill.sumEntries(Form("tofSignal>%f && tofSignal<%f", mean_tmp - (4.) * rms_tmp, mean_tmp + (4.) * rms_tmp));
+            else if (ptMin<2.2&&iCent==4)countsT0Fill=dataT0Fill.sumEntries(Form("tofSignal>%f && tofSignal<%f", mean_tmp - (2.) * rms_tmp, mean_tmp + (4.) * rms_tmp));
+            rawYield = counts - bkgIntegral_val + countsT0Fill; // signal=counts-error
+            if (kVerbose) std::cout << "Counts: " << rawYield << ", Background: "<< bkgIntegral_val << std::endl;
+            rawYieldError = TMath::Sqrt(counts + countsT0Fill); // counts=signal+bkg => correct error from poisson statistics
             if (binCountingNoFit)
             {
               rawYield = data.sumEntries(Form("tofSignal>%f && tofSignal<%f", -0.7815 * kNSigma, 0.7815 * kNSigma)); // only for He4 in signal loss studies
@@ -605,7 +630,7 @@ void SignalBinned(const char *cutSettings = "", const double roi_nsigma = 8., co
           for (int i=0;i<2;++i)tpcSignalProjectionAll->Fit("gaus","RLM+","",max_bkg-2.5,max_bkg+2.5);
           tpcSignalProjectionAll->GetXaxis()->SetRangeUser(-24.,24.);
           double left_fit_range_factor = 2.5;
-          if (ptMin > 0.54 && ptMin<0.84) left_fit_range_factor = 1.8;
+          if (ptMin > 0.54 && ptMin<0.84) left_fit_range_factor = 1.3; // fits with noitspid do not converge
           else if (ptMin > 0.84) left_fit_range_factor = -1.5;
           double left_range = -999;
           for (int iB=1;iB<tpcSignalProjectionAll->GetNbinsX();++iB){
@@ -619,18 +644,19 @@ void SignalBinned(const char *cutSettings = "", const double roi_nsigma = 8., co
           RooDataHist hNSigmaTPC("hNSigmaTPC","hNSigmaTPC",RooArgList(nSigmaTPC),tpcSignalProjection);
           RooDataHist hNSigmaTPCAll("hNSigmaTPCAll","hNSigmaTPCAll",RooArgList(nSigmaTPC),tpcSignalProjectionAll);
           RooRealVar meanTPC("#mu","#mu",-2.,2.);
-          RooRealVar sigmaTPC("#sigma","#sigma",0.8,3.);
+          RooRealVar sigmaTPC("#sigma","#sigma",0.8,2.);
           RooRealVar alpha1TPC("#alpha_{1}","#alpha_{1}",-3.5,-0.8);
           RooRealVar alpha2TPC("#alpha_{2}","#alpha_{2}",0.8,3.5);
           RooRealVar meanTPCBkg("#mu_{Bkg}","#mu_{Bkg}",-20.,-6.);
           if (ptMin>0.7) meanTPCBkg.setMax(-4.);
           if (ptMin>0.71) {
+            meanTPCBkg.setMin(-10.);
             meanTPCBkg.setMax(-4.5);
             alpha1TPC.setMin(-3.);
             alpha2TPC.setMax(3.);
           }
-          if (ptMin>0.94) {
-            meanTPCBkg.setMin(-9.);
+          if (ptMin>0.89) {
+            meanTPCBkg.setMin(-7.);
             meanTPCBkg.setMax(-2.5);
             alpha1TPC.setMin(-3.);
             alpha1TPC.setMax(-1.);
@@ -665,7 +691,7 @@ void SignalBinned(const char *cutSettings = "", const double roi_nsigma = 8., co
               nBkgTPC.setVal(fitNBkgTPC[iCent][iPtBin]);
             }
             if (iMatt == 1){
-              for (int i=0;i<2;++i)auto r=modelTPC.fitTo(hNSigmaTPCAll,RooFit::Range("fitRange"));
+              for (int i=0;i<4;++i)auto r=modelTPC.fitTo(hNSigmaTPCAll,RooFit::Range("fitRange"));
               fitParameterMeanTPC[iCent][iPtBin]=meanTPC.getVal();
               fitParameterSigmaTPC[iCent][iPtBin]=sigmaTPC.getVal();
               fitParameterAlphaLTPC[iCent][iPtBin]=alpha1TPC.getVal();
@@ -888,11 +914,12 @@ void SignalBinned(const char *cutSettings = "", const double roi_nsigma = 8., co
         xframe->Draw("");
         xframe->GetXaxis()->SetLabelSize(0.06);
         xframe->GetYaxis()->SetLabelSize(0.06);
-        //xframe->GetYaxis()->SetRangeUser(-1.e4, 2.e4);
         xframe->GetYaxis()->SetTitleSize(0.07);
         xframe->GetYaxis()->SetTitleOffset(0.72);
         tofSignalProjection->GetXaxis()->SetRangeUser(-0.5, 0.5);
+        double peakMinimum = tofSignalProjection->GetBinContent(tofSignalProjection->GetMinimumBin());
         double peakMaximum = tofSignalProjection->GetBinContent(tofSignalProjection->GetMaximumBin());
+        xframe->GetYaxis()->SetRangeUser(10.,peakMaximum+1e3);
         if (kVerbose) std::cout << "peakMaximum=" << peakMaximum << std::endl;
         TLine lsx(mean_tmp - (roi_nsigma_down+extend_roi) * rms_tmp, 0, mean_tmp - (roi_nsigma_down+extend_roi) * rms_tmp, peakMaximum);
         lsx.SetLineStyle(kDashed);

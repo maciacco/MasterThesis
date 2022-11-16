@@ -2,9 +2,9 @@ import ROOT
 import numpy as np
 
 
-CENTRALITY_CLASSES = [[0,5], [5,10], [30,50]]
-centrality_colors = [ROOT.kOrange+7, ROOT.kAzure+4, ROOT.kTeal+4]
-centrality_colors_area = [ROOT.kOrange-9, ROOT.kAzure-9, ROOT.kGreen-8]
+CENTRALITY_CLASSES = [[0,5], [5,10], [30,50], [10, 30], [50,90]]
+centrality_colors = [ROOT.kRed, ROOT.kOrange-3, ROOT.kAzure+4,ROOT.kGreen+2,ROOT.kMagenta+2]
+centrality_colors_area = [ROOT.kRed, ROOT.kOrange-3, ROOT.kAzure+4,ROOT.kGreen+2,ROOT.kMagenta+2]
 
 Z_PB208 = 82
 A_PB208 = 208
@@ -51,7 +51,7 @@ cMuI = in_file.Get("cMuICent")
 
 out_file = ROOT.TFile("EllipsePlot.root","recreate")
 canv = ROOT.TCanvas("canv","canv",600,500)
-h_frame = ROOT.TH2F("h_frame"," ",1,0.,1.2,1,-0.3,.6)
+h_frame = ROOT.TH2F("h_frame"," ",1,0.,1.3,1,-0.45,.55)
 h_frame.GetXaxis().SetTitle("#mu_{#it{B}} (MeV)")
 h_frame.GetYaxis().SetTitle("#mu_{#it{Q}} (MeV)")
 h_frame.GetXaxis().SetNdivisions(10)
@@ -75,14 +75,14 @@ for i_cent, cent in enumerate(CENTRALITY_CLASSES):
     corr = corr_mat.GetBinContent(2,1)
     ellipses_corr.append(ROOT.RooEllipse(f"corrEllipse_{cent[0]}_{cent[1]}",muB,muI,muB_err_corr,muI_err_corr,corr))
     ellipses_corr[i_cent].SetLineColor(centrality_colors[i_cent])
-    ellipses_corr[i_cent].SetFillStyle(1001)
+    ellipses_corr[i_cent].SetFillStyle(3345)
     ellipses_corr[i_cent].SetFillColor(centrality_colors_area[i_cent])
-    ellipses_corr[i_cent].Draw("fsame")
+    ellipses_corr[i_cent].Draw("lfsame")
 
 ellipses_corr.append(ROOT.RooEllipse("dummy_corr",-100,-100,1,1,0))
-ellipses_corr[3].SetFillStyle(1001)
-ellipses_corr[3].SetFillColor(ROOT.kGray)
-ellipses_corr[3].SetLineColor(ROOT.kGray)
+ellipses_corr[5].SetFillStyle(3345)
+ellipses_corr[5].SetFillColor(ROOT.kBlack)
+ellipses_corr[5].SetLineColor(ROOT.kBlack)
 
 for i_cent, cent in enumerate(CENTRALITY_CLASSES):
     gMuB = cMuB.GetPrimitive("MuBCent")
@@ -105,52 +105,54 @@ for i_cent, cent in enumerate(CENTRALITY_CLASSES):
     points[i_cent].Draw("psame")
 
 ellipses.append(ROOT.RooEllipse("dummy",-100,-100,1,1,0))
-ellipses[3].SetLineColor(ROOT.kBlack)
+ellipses[5].SetLineColor(ROOT.kBlack)
 
 # plot Pb208 line
-f_Pb208 = ROOT.TF1("f_Pb208","[0]*x",0,100)
-f_Pb208.SetParameter(0,Z_PB208/A_PB208)
-f_Pb208.SetLineColor(ROOT.kRed-3)
-f_Pb208.Draw("same")
+# f_Pb208 = ROOT.TF1("f_Pb208","[0]*x",0,100)
+# f_Pb208.SetParameter(0,Z_PB208/A_PB208)
+# f_Pb208.SetLineColor(ROOT.kRed-3)
+# f_Pb208.Draw("same")
 
 # add labels
 text = ROOT.TLatex()
 text.SetTextFont(43)
 text.SetTextSize(28)
-text.DrawLatex(0.058605,0.501619 ,"ALICE")
+text.DrawLatex(0.0634404,0.454049 ,"ALICE")
 text.SetTextSize(24)
-text.DrawLatex(0.058605,0.428745,"Pb-Pb #sqrt{s_{NN}}=5.02 TeV")
+text.DrawLatex(0.0634404,0.378745 ,"Pb-Pb #sqrt{s_{NN}}=5.02 TeV")
 
 # legend
-leg = ROOT.TLegend(0.16388 ,0.528421,0.364548,0.717895)
+leg = ROOT.TLegend(0.168896,0.423158,0.240803,0.715789)
 leg.SetTextFont(43)
 leg.SetTextSize(22)
 leg.AddEntry(points[0],"0-5%","p")
 leg.AddEntry(points[1],"5-10%","p")
+leg.AddEntry(points[3],"10-30%","p")
 leg.AddEntry(points[2],"30-50%","p")
+leg.AddEntry(points[4],"50-90%","p")
 leg.Draw("same")
 
-legErr = ROOT.TLegend(0.153846,0.151579,0.381271,0.269474)
+legErr = ROOT.TLegend(0.153846,0.151579,0.342809,0.265263)
 legErr.SetNColumns(1)
 legErr.SetTextFont(43)
 legErr.SetTextSize(22)
-legErr.AddEntry(ellipses[3],"Uncorr. uncert.", "f")
-legErr.AddEntry(ellipses_corr[3],"Corr. uncert.", "f")
+legErr.AddEntry(ellipses[5],"Uncorr. uncert.", "f")
+legErr.AddEntry(ellipses_corr[5],"Corr. uncert.", "f")
 legErr.Draw("same")
 
-chi2 = chi2_2d(in_file)
-print(f"Chi2 = {chi2}")
+# chi2 = chi2_2d(in_file)
+# print(f"Chi2 = {chi2}")
 
-canv.cd()
-legLine = ROOT.TLegend(0.622274,0.151579,0.911371,0.271579)
-legLine.SetNColumns(1)
-legLine.SetTextFont(43)
-legLine.SetTextSize(22)
-legLine.AddEntry(f_Pb208,"#frac{#mu_{#it{Q}}}{#mu_{#it{B}}} = #frac{Z}{A}({}^{208}Pb)","l")
-legLine.Draw("same")
+# canv.cd()
+# legLine = ROOT.TLegend(0.637124,0.176842,0.924749,0.231579)
+# legLine.SetNColumns(1)
+# legLine.SetTextFont(43)
+# legLine.SetTextSize(22)
+# legLine.AddEntry(f_Pb208,"#frac{#mu_{#it{Q}}}{#mu_{#it{B}}} = #frac{Z}{A}({}^{208}Pb)","l")
+# legLine.Draw("same")
 
-format_chi2 = "{:.1f}".format(chi2)
-text.DrawLatex(0.737978,0.501619,"#chi^{2}_{TLS}/ndf = "+format_chi2+"/3")
+#format_chi2 = "{:.1f}".format(chi2)
+#text.DrawLatex(0.737978,0.501619,"#chi^{2}_{TLS}/ndf = "+format_chi2+"/3")
 
 out_file.cd()
 canv.Write()

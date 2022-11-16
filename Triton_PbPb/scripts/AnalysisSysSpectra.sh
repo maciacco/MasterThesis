@@ -33,6 +33,6 @@ argumentSignal="$binCountingFlag,$expFlag"
 
 root -b -l <<EOF
 .L Spectra.cpp+
-Spectra($argumentCuts,$argumentSignal,$sigmoidFlag,"$spectraHistNameId","SpectraHe3Syst","update","AnalysisResults_LHC18qr","SignalHe3Sys")
+Spectra($argumentCuts,$argumentSignal,$sigmoidFlag,"$spectraHistNameId","SpectraHe3Syst_extend","update","AnalysisResults_LHC18qr","SignalHe3Sys_extend")
 .q
 EOF

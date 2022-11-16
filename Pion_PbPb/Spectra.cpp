@@ -104,6 +104,7 @@ void Spectra(const char *cutSettings = "", const double roi_nsigma_down = 1.5, c
         double rawYield = raw->GetBinContent(iPtBin);
         double rawYieldError = raw->GetBinError(iPtBin);
         double efficiency = eff->GetBinContent(eff->FindBin(raw->GetBinCenter(iPtBin)));
+        double efficiencyError = eff->GetBinError(eff->FindBin(raw->GetBinCenter(iPtBin)));
         double primary = 0.;
         if (sigmoidCorrection) {
           primary = sec->GetBinContent(iPtBin);
@@ -117,7 +118,8 @@ void Spectra(const char *cutSettings = "", const double roi_nsigma_down = 1.5, c
         }
         else {
           fSpectra[iMatt]->SetBinContent(iPtBin, primary*rawYield/efficiency );
-          fSpectra[iMatt]->SetBinError(iPtBin, primary*rawYieldError/efficiency);
+          //fSpectra[iMatt]->SetBinError(iPtBin, primary*rawYieldError/efficiency);
+          fSpectra[iMatt]->SetBinError(iPtBin, sqrt(2)*primary*rawYield*efficiencyError/efficiency/efficiency);
         }
         if (kVerbose) std::cout<<"eff="<<efficiency<<"; raw="<<rawYield<<"; rawError="<<rawYieldError<<"; primary="<<primary<<std::endl;
       }

@@ -246,7 +246,7 @@ void Secondary(const char *cutSettings = "", const double DCAxyCut=0.12, const c
           fit->Constrain(1, 0., 0.9);
           if (iCent==3&&iMatt==1&&ptMin>1.34&&ptMin<1.36)fit->Constrain(0, 0., .99);
           if (iCent==4)fit->Constrain(1, 0., .8);
-          if (iCent==4&&iMatt==1)fit->Constrain(1, 0., .9);
+          if (iCent==4&&iMatt==1&&ptMin>0.74)fit->Constrain(1, 0., .9);
           if (iCent==4&&((ptMin>1.49&&ptMin<1.51)||(ptMin>0.745&&ptMin<0.751)))fit->Constrain(1, 0., .95);
         }
         if (iCent < 2 || ((iCent==2||iCent==3) && iMatt==1))

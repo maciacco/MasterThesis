@@ -37,7 +37,7 @@ double tCorrectionPt(int iMatt, double pt){
   return 1.03887*TMath::Power(pt, -0.00675656);
 }
 
-void Systematics(const int points = kNPoints, const bool cutVar = true, const bool binCountingVar = true, const bool expVar = true, const bool sigmoidVar = false, const char *outFileName = "SystematicsAll")
+void Systematics(const int points = kNPoints, const bool cutVar = true, const bool binCountingVar = true, const bool expVar = true, const bool sigmoidVar = false, const char *outFileName = "SystematicsAll_extend")
 {
   gStyle->SetOptStat(110001110);
   gStyle->SetStatX(0.85);
@@ -45,7 +45,11 @@ void Systematics(const int points = kNPoints, const bool cutVar = true, const bo
   TStopwatch swatch;
   swatch.Start(true);
 
-  TFile *specFile = TFile::Open(Form("%s/SpectraHe3Syst.root", kOutDir));
+  TFile *specFile = TFile::Open(Form("%s/SpectraHe3Syst_extend.root", kOutDir));
+  if (!specFile) {
+    std::cout<<"NO INPUT FILE"<<std::endl;
+    return;
+  }
   TFile *outFile = TFile::Open(Form("%s/%s.root", kOutDir, outFileName), "recreate");
   TDirectory *cdHist = outFile->mkdir("hist");
 
@@ -55,7 +59,7 @@ void Systematics(const int points = kNPoints, const bool cutVar = true, const bo
     TH1D fFitPar(Form("fFitPar_%.0f_%.0f", kCentBinsLimitsHe3[iC][0], kCentBinsLimitsHe3[iC][1]), Form("%.0f-%.0f%%", kCentBinsLimitsHe3[iC][0], kCentBinsLimitsHe3[iC][1]), 2000, 0.5, 1.5);
     TH1D fProb(Form("fProb_%.0f_%.0f", kCentBinsLimitsHe3[iC][0], kCentBinsLimitsHe3[iC][1]), Form("%.0f-%.0f%%", kCentBinsLimitsHe3[iC][0], kCentBinsLimitsHe3[iC][1]), 1000., 0., 1.);
 
-    double pTbins[kNPtBins + 1] = {1.4f,1.6f,2.f,2.4f,3.f};
+    double pTbins[] = {1.4f,1.6f,2.f,2.4f,3.f};
 
     TH1D fRatio("fRatio", "fRatio", kNPtBins, pTbins);
     int nUsedPtBins = 4;
@@ -108,7 +112,9 @@ void Systematics(const int points = kNPoints, const bool cutVar = true, const bo
         std::cout<<"hname="<<hname<<std::endl;
         TH1D *h = (TH1D *)specFile->Get(Form("%s/fRatio_%.0f_%.0f", hname, kCentBinsLimitsHe3[iC][0], kCentBinsLimitsHe3[iC][1]));
         if (!h) continue;
-        double correction = he3CorrectionPt(true,fRatio.GetBinCenter(iPtBin))/he3CorrectionPt(false,fRatio.GetBinCenter(iPtBin))*tCorrectionPt(false,fRatio.GetBinCenter(iPtBin))*tCorrectionPt(true,fRatio.GetBinCenter(iPtBin));
+        double correction = 1;
+        //he3CorrectionPt(true,fRatio.GetBinCenter(iPtBin))/he3CorrectionPt(false,fRatio.GetBinCenter(iPtBin))*tCorrectionPt(false,fRatio.GetBinCenter(iPtBin))*tCorrectionPt(true,fRatio.GetBinCenter(iPtBin));
+        //if (iC==0&&iPtBin==2&&h->GetBinContent(iPtBin)>1.1)continue;
         fRatio.SetBinContent(iPtBin, h->GetBinContent(iPtBin)*correction);
         fRatio.SetBinError(iPtBin, h->GetBinError(iPtBin)*correction);
       }
@@ -117,15 +123,15 @@ void Systematics(const int points = kNPoints, const bool cutVar = true, const bo
       auto fit = fRatio.Fit(&fitFunc, "QS");
 
       int ndf = 2;
-      if (fit->Status() == 0 && fit->Prob()>0.025 && fit->Prob()<0.975 && fit->Ndf() == ndf) //fit->Prob()>0.9 &&
+      if (fit->Status() == 0 && fit->Prob()>0.1 && fit->Prob()<0.5 && fit->Ndf() == ndf) //fit->Prob()>0.9 &&
       { // check chi2
-        //if (fitFunc.GetParameter(0)<1.08) continue;
+        ++iP;
+        //if (fitFunc.GetParameter(0)>1.16) continue;
         fFitPar.Fill(fitFunc.GetParameter(0));
         fProb.Fill(fitFunc.GetProb());
         cdFits->cd();
-        // fRatio.Write();
+        fRatio.Write();
         fRatio.Reset();
-        ++iP;
       }
     }
 
@@ -133,7 +139,7 @@ void Systematics(const int points = kNPoints, const bool cutVar = true, const bo
     fFitPar.GetYaxis()->SetTitle("Entries");
     fFitPar.GetXaxis()->SetTitle("R (^{3}#bar{H}/^{3}H)");
     fFitPar.SetDrawOption("histo");
-    fFitPar.Rebin(8);
+    fFitPar.Rebin(16);
     fFitPar.SetFillStyle(3345);
     fFitPar.SetLineWidth(2);
     fFitPar.SetLineColor(kBlue);
@@ -142,7 +148,7 @@ void Systematics(const int points = kNPoints, const bool cutVar = true, const bo
 
     TCanvas cFitPar("cFitPar", "cFitPar");
     cFitPar.cd();
-    if (iC<2)fFitPar.Rebin(2);
+    fFitPar.Rebin(2);
     cFitPar.SetTicks(1, 1);
     fFitPar.GetXaxis()->SetRangeUser(fFitPar.GetMean()-5*fFitPar.GetRMS(),fFitPar.GetMean()+5*fFitPar.GetRMS());
     fFitPar.Draw("");

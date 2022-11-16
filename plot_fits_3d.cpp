@@ -185,7 +185,7 @@ void plot_fits_3d() {
     h3D[iP]->SetMarkerColor(colors[iP]);
     h3D[iP]->SetLineColor(colors[iP]);
     h3D[iP]->GetXaxis()->SetRangeUser(-0.5,9.5);
-    h3D[iP]->GetYaxis()->SetRangeUser(-1.05,2.05);
+    h3D[iP]->GetYaxis()->SetRangeUser(-0.5,6.5);
     h3D[iP]->GetZaxis()->SetRangeUser(0.67,1.13);
     h3D[iP]->GetZaxis()->SetNdivisions(3);
     h3D[iP]->GetYaxis()->SetNdivisions(5);

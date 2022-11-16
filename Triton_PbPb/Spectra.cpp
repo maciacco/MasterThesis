@@ -51,8 +51,8 @@ void Spectra(const float cutDCAz = 1.f, const int cutTPCcls = 89, const float cu
   TH1D *fRatio[kNCentClasses];
   for (int iCent = 0; iCent < kNCentClasses; ++iCent)
   {
-    double pt[]={1.6,2.,2.4,3};
-    fRatio[iCent] = new TH1D(Form("%1.1f_%d_%1.2f_%1.2f_%d_%d/fATOFrawYield_%.0f_%.0f", cutDCAz, cutTPCcls, cutDCAxy, cutChi2TPC, binCounting, bkg_shape, kCentBinsLimitsHe3[iCent][0], kCentBinsLimitsHe3[iCent][1]),";#it{p}_{T} (GeV/#it{c}); Ratio {}^{3}#bar{H} / ^{3}H",3,pt);
+    double pt[]={1.4f,1.6f,2.f,2.4f,3.f};
+    fRatio[iCent] = new TH1D(Form("%1.1f_%d_%1.2f_%1.2f_%d_%d/fATOFrawYield_%.0f_%.0f", cutDCAz, cutTPCcls, cutDCAxy, cutChi2TPC, binCounting, bkg_shape, kCentBinsLimitsHe3[iCent][0], kCentBinsLimitsHe3[iCent][1]),";#it{p}_{T} (GeV/#it{c}); Ratio {}^{3}#bar{H} / ^{3}H",4,pt);
     fRatio[iCent]->Reset();
     fRatio[iCent]->SetName(Form("fRatio_%.0f_%.0f", kCentBinsLimitsHe3[iCent][0], kCentBinsLimitsHe3[iCent][1]));
     fRatio[iCent]->SetTitle("");
@@ -125,8 +125,8 @@ void Spectra(const float cutDCAz = 1.f, const int cutTPCcls = 89, const float cu
       double specErr = fSpectra[1]->GetBinError(iPtBin);
       if (spec > 1.e-7 && antiSpec > 1.e-7)
       {
-        fRatio[iCent]->SetBinContent(iPtBin-1, antiSpec / spec);
-        fRatio[iCent]->SetBinError(iPtBin-1, antiSpec / spec * TMath::Sqrt(antiSpecErr * antiSpecErr / antiSpec / antiSpec + specErr * specErr / spec / spec));
+        fRatio[iCent]->SetBinContent(iPtBin, antiSpec / spec);
+        fRatio[iCent]->SetBinError(iPtBin, antiSpec / spec * TMath::Sqrt(antiSpecErr * antiSpecErr / antiSpec / antiSpec + specErr * specErr / spec / spec));
       }
     }
     fRatio[iCent]->SetLineColor(centrality_colors[iCent]);

@@ -22,8 +22,9 @@ void MaterialBudget(){
           else f[iSp][iProd]=new TFile(Form("%s_PbPb/out/Efficiency%s_LowPt_LHC22b9_%d.root",species[iSp],species[iSp],iProd+1));
           if (!f[iSp][iProd]) continue;
           TString detector("TOF");
-          TString directory("");
-          if (iSp>1) {
+          TString directory("_/");
+          if (iSp>0&&iSp<4&&iSp!=1) directory=Form("");
+          if (iSp>1&&iSp<4) {
             detector=Form("TPC");
             directory=Form("");
           }

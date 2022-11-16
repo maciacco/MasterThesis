@@ -13,11 +13,11 @@ extractRatios=1
 
 treeData="TreeOutData_kINT7"
 # treeMC="TreeOutMC_XSPlus"
-treeMC="TreeOutMC"
+treeMC="TreeOutMC_LHC22b9_1"
 signalName="SignalHe3_kINT7"
 spectraName="SpectraHe3_kINT7"
 # EfficiencyHe3="EfficiencyHe3_XSPlus"
-EfficiencyHe3="EfficiencyHe3_kINT7"
+EfficiencyHe3="EfficiencyHe3_LHC22b9_3"
 EfficiencyHe3SecWD="EfficiencyHe3SecWD_kINT7"
 PrimaryHe3="PrimaryHe3_kINT7"
 
@@ -51,14 +51,14 @@ argumentSignal="$binCountingFlag,$expFlag"
 
 if [ $readTree -eq 1 ]; then
     root -b -l <<EOF
-.L ReadTreeData.cpp+
+//.L ReadTreeData.cpp+
 .L ReadTreeMC.cpp+
 
 // ReadTreeData($argumentCuts,"TreeOutData_NoPID","recreate","true") // no PID
 // ReadTreeData($argumentCuts,"TreeOutData_He3PID","recreate","trackingPID==7") // kHe3
 // ReadTreeData($argumentCuts,"TreeOutData_AlphaPID","recreate","trackingPID==8") // kHe4
-ReadTreeData($argumentCuts,0.1,2.5,"$treeData","recreate","( ( (std::abs(pt)<2.5f) && (trackingPID==7) ) || !(std::abs(pt)<2.5f) )")
-//ReadTreeMC($argumentCuts,0.1,2.5,"$treeMC","recreate","( ( (std::abs(pt)<2.5f) && (trackingPID==7) ) || !(std::abs(pt)<2.5f) )")
+//ReadTreeData($argumentCuts,0.1,2.5,"$treeData","recreate","( ( (std::abs(pt)<2.5f) && (trackingPID==7) ) || !(std::abs(pt)<2.5f) )")
+ReadTreeMC($argumentCuts,0.1,2.5,"$treeMC","recreate","( ( (std::abs(pt)<2.5f) && (trackingPID==7) ) || !(std::abs(pt)<2.5f) )")
 EOF
 fi
 
@@ -87,11 +87,11 @@ if [ $extractRatios -eq 1 ]; then
 // SignalUnbinned($argumentCuts,$argumentSignal,"TreeOutData_NoPID","SignalHe3_NoPID","recreate",true,false)
 // SignalUnbinned($argumentCuts,$argumentSignal,"TreeOutData_He3PID","SignalHe3_He3PID","recreate",true,false)
 // SignalUnbinned($argumentCuts,$argumentSignal,"TreeOutData_AlphaPID","SignalHe3_AlphaPID","recreate",true,true)
-SignalUnbinned($argumentCuts,0.1f,2.5,$argumentSignal,"$treeData","$signalName","recreate")
+//SignalUnbinned($argumentCuts,0.1f,2.5,$argumentSignal,"$treeData","$signalName","recreate")
 Efficiency($argumentCuts,0.1f,2.5,"$treeMC","$EfficiencyHe3")
-EfficiencySec($argumentCuts,0.1f,2.5,"$treeMC","$EfficiencyHe3SecWD")
-Secondary($argumentCuts,0.1f,2.5,"$treeData","$treeMC","$EfficiencyHe3SecWD","$PrimaryHe3")
-Spectra($argumentCuts,0.1f,2.5,$argumentSignal,$sigmoidFlag,"$spectraHistNameId","$spectraName","recreate","AnalysisResults","$signalName","$EfficiencyHe3","$PrimaryHe3")
+//EfficiencySec($argumentCuts,0.1f,2.5,"$treeMC","$EfficiencyHe3SecWD")
+//Secondary($argumentCuts,0.1f,2.5,"$treeData","$treeMC","$EfficiencyHe3SecWD","$PrimaryHe3")
+//Spectra($argumentCuts,0.1f,2.5,$argumentSignal,$sigmoidFlag,"$spectraHistNameId","$spectraName","recreate","AnalysisResults","$signalName","$EfficiencyHe3","$PrimaryHe3")
 // SignalLoss()
 //AbsorptionError("AbsError","recreate","$spectraName")
 .q

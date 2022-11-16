@@ -9,15 +9,16 @@ path_hyp = './Hypertriton_PbPb'
 path_proton = './Proton_PbPb/out'
 path_pion = './Pion_PbPb/out'
 path_omega = './Omega_PbPb'
-centrality_classes = [[0, 5], [5, 10], [30, 50]]
-centrality_colors = [ROOT.kOrange+7, ROOT.kAzure+4, ROOT.kTeal+4]
+centrality_classes = [[0, 5], [5, 10], [30, 50], [10, 30], [50,90]]
+centrality_colors = [ROOT.kOrange+7, ROOT.kAzure+4, ROOT.kTeal+4, ROOT.kCyan+1, ROOT.kMagenta-3]
 particle_ratios = ["#bar{#Omega}^{+} / #Omega^{-}","#pi^{-} / #pi^{+}","#bar{p} / p","{}_{#bar{#Lambda}}^{3}#bar{H} / ^{3}_{#Lambda}H","^{3}#bar{H} / ^{3}H","^{3}#bar{He} / ^{3}He"]
-n_part = [383.4,331.2,109]
-n_part_err = [17.8,19.6,26.6]
+n_part = [383.4,331.2,109,180,50]
+n_part_err = [17.8,19.6,26.6,20,40]
 
 apply_scaling_radius = False
 
 TLATEX_TEXT_SIZE = 28
+CENT_LIMIT_NUCLEI = 4
 
 ROOT.gStyle.SetPadTickY(1)
 ROOT.gStyle.SetPadTickX(1)
@@ -44,47 +45,55 @@ for i_cent, cent in enumerate(centrality_classes):
         # get histograms
         file_material_budget = ROOT.TFile.Open("MaterialBudgetUncertainty.root")
         file_material_budget_hyp = ROOT.TFile.Open("MaterialBudgetUncertaintyHyp.root")
-        file_he3 = ROOT.TFile.Open(path_he3 + '/SpectraHe3.root')
+        file_he3 = ROOT.TFile.Open(path_he3 + '/SpectraHe3_kINT7.root')
         file_triton = ROOT.TFile.Open(path_triton + '/SpectraHe3.root')
         file_hyp = ROOT.TFile.Open(path_hyp + '/Ratio.root')
-        file_proton = ROOT.TFile.Open(path_proton + '/SystematicsAllEPtNotCombinedTOFTEST.root')
-        file_pion = ROOT.TFile.Open(path_pion + '/SystematicsAllEPtNotCombined.root')
-        file_omega = ROOT.TFile.Open(path_omega + '/ratio_sys.root')
-        file_he3_syst = ROOT.TFile.Open(path_he3 + '/SystematicsAll.root')
-        file_triton_syst = ROOT.TFile.Open(path_triton + '/SystematicsAll.root')
+        file_proton = ROOT.TFile.Open(path_proton + '/out_tof_extend_4_old/SystematicsAllEPtNotCombinedTOF_extend_4.root')
+        file_pion = ROOT.TFile.Open(path_pion + '/SystematicsAllEPtNotCombined_extend2.root')
+        file_omega = ROOT.TFile.Open(path_omega + '/ratio_cutCompetingMass-3.root')
+        file_he3_syst = ROOT.TFile.Open(path_he3 + '/SystematicsAll_extend2.root')
+        file_triton_syst = ROOT.TFile.Open(path_triton + '/SystematicsAll_extend.root')
         file_he3_syst_eff_prim = ROOT.TFile.Open(path_he3 + '/SystematicsEfficiencyPrimary.root')
-        file_hyp_syst = ROOT.TFile.Open(path_hyp + '/Systematics.root')
-        file_he3_scaling = ROOT.TFile.Open('He3_PbPb/MaterialRadiusCheck.root')
-        file_proton_scaling = ROOT.TFile.Open('Proton_PbPb/MaterialRadiusCheck.root')
-        file_pion_scaling = ROOT.TFile.Open('Pion_PbPb/MaterialRadiusCheck.root')
+        file_hyp_syst = ROOT.TFile.Open(path_hyp + '/SystematicsRatio.root')
+        # file_he3_scaling = ROOT.TFile.Open('He3_PbPb/MaterialRadiusCheck.root')
+        # file_proton_scaling = ROOT.TFile.Open('Proton_PbPb/MaterialRadiusCheck.root')
+        # file_pion_scaling = ROOT.TFile.Open('Pion_PbPb/MaterialRadiusCheck.root')
         file_out.cd()
         ratio_he3 = file_he3.Get(f'1.0_89_0.1_2.5_1_1_1/fRatio_{cent[0]}_{cent[1]}')
-        ratio_triton = file_triton.Get(f'1.0_69_0.1_2.5_1_1_1/fRatio_{cent[0]}_{cent[1]}')
-        ratio_hyp = file_hyp.Get(f'fRatio_{cent[0]}_{cent[1]}')
         ratio_proton = file_proton.Get(f'fRatio_{cent[0]}_{cent[1]}')
         ratio_pion = file_pion.Get(f'fRatio_{cent[0]}_{cent[1]}')
         ratio_omega = file_omega.Get(f'h_ratio_{cent[0]}_{cent[1]}')
-        ratio_he3_distribution = file_he3_syst.Get(f'hist/fFitPar_{cent[0]}_{cent[1]}')
-        ratio_he3_distribution_eff_prim = file_he3_syst_eff_prim.Get(f'fRatioDistribution_{cent[0]}_{cent[1]}')
+        ratio_triton = ROOT.TH1D()
+        ratio_hyp = ROOT.TH1D()
+        ratio_triton_distribution = ROOT.TH1D()
+        ratio_hyp_distribution = ROOT.TH1D()
+        if i_cent < CENT_LIMIT_NUCLEI:
+            ratio_hyp = file_hyp.Get(f'fRatio_{cent[0]}_{cent[1]}')
+        ratio_triton = file_triton.Get(f'1.0_69_0.1_2.5_1_1_1/fRatio_{cent[0]}_{cent[1]}')
         ratio_triton_distribution = file_triton_syst.Get(f'hist/fFitPar_{cent[0]}_{cent[1]}')
         ratio_hyp_distribution = file_hyp_syst.Get(f'fParameterDistribution_{cent[0]}_{cent[1]}')
+        ratio_he3_distribution = file_he3_syst.Get(f'hist/fFitPar_{cent[0]}_{cent[1]}')
+        ratio_he3_distribution_eff_prim = file_he3_syst_eff_prim.Get(f'fRatioDistribution_{cent[0]}_{cent[1]}')
         ratio_proton_pt_correlated = file_proton.Get(f'fRatioDistributionTrials_{cent[0]}_{cent[1]}')
         ratio_pion_pt_correlated = file_pion.Get(f'fRatioDistributionTrials_{cent[0]}_{cent[1]}')
-        ratio_omega_distribution = file_omega.Get(f'h_sys;{i_cent+1}')
+        ratio_omega_distribution = file_omega.Get(f'h_sys;{1+2*i_cent}')
 
         # apply material budget variation
-        f_material_budget_he3 = file_material_budget.Get(f"fMHe3EffRatio{sign}_{cent[0]}_{cent[1]}")
-        f_material_budget_antihe3 = file_material_budget.Get(f"fAHe3EffRatio{sign}_{cent[0]}_{cent[1]}")
-        f_material_budget_triton = file_material_budget.Get(f"fMTritonEffRatio{sign}_{cent[0]}_{cent[1]}")
-        f_material_budget_antitriton = file_material_budget.Get(f"fATritonEffRatio{sign}_{cent[0]}_{cent[1]}")
-        f_material_budget_hyp = file_material_budget_hyp.Get(f"{cent[0]}_{cent[1]}/BGBW/fCorrection_matter_{cent[0]}_{cent[1]}_BGBW")
-        f_material_budget_antihyp = file_material_budget_hyp.Get(f"{cent[0]}_{cent[1]}/BGBW/fCorrection_antimatter_{cent[0]}_{cent[1]}_BGBW")
-        f_material_budget_proton = file_material_budget.Get(f"fMProtonEffRatio{sign}_{cent[0]}_{cent[1]}")
-        f_material_budget_antiproton = file_material_budget.Get(f"fAProtonEffRatio{sign}_{cent[0]}_{cent[1]}")
-        f_material_budget_proton_lowPT = file_material_budget.Get(f"fMProtonLowPTEffRatio{sign}_{cent[0]}_{cent[1]}")
-        f_material_budget_antiproton_lowPT = file_material_budget.Get(f"fAProtonLowPTEffRatio{sign}_{cent[0]}_{cent[1]}")
-        f_material_budget_pion = file_material_budget.Get(f"fMPionEffRatio{sign}_{cent[0]}_{cent[1]}")
-        f_material_budget_antipion = file_material_budget.Get(f"fAPionEffRatio{sign}_{cent[0]}_{cent[1]}")
+        f_material_budget_he3 = file_material_budget.Get(f"fMHe3EffRatio{sign}_0_5")
+        f_material_budget_antihe3 = file_material_budget.Get(f"fAHe3EffRatio{sign}_0_5")
+        f_material_budget_proton = file_material_budget.Get(f"fMProtonEffRatio{sign}_0_5")
+        f_material_budget_antiproton = file_material_budget.Get(f"fAProtonEffRatio{sign}_0_5")
+        f_material_budget_proton_lowPT = file_material_budget.Get(f"fMProtonLowPTEffRatio{sign}_0_5")
+        f_material_budget_antiproton_lowPT = file_material_budget.Get(f"fAProtonLowPTEffRatio{sign}_0_5")
+        f_material_budget_pion = file_material_budget.Get(f"fMPionEffRatio{sign}_0_5")
+        f_material_budget_antipion = file_material_budget.Get(f"fAPionEffRatio{sign}_0_5")
+        f_material_budget_hyp = ROOT.TH1D()
+        f_material_budget_antihyp = ROOT.TH1D()
+        f_material_budget_triton = file_material_budget.Get(f"fMTritonEffRatio{sign}_0_5")
+        f_material_budget_antitriton = file_material_budget.Get(f"fATritonEffRatio{sign}_0_5")
+        if i_cent < CENT_LIMIT_NUCLEI:
+            f_material_budget_hyp = file_material_budget_hyp.Get(f"{cent[0]}_{cent[1]}/BGBW/fCorrection_matter_{cent[0]}_{cent[1]}_BGBW")
+            f_material_budget_antihyp = file_material_budget_hyp.Get(f"{cent[0]}_{cent[1]}/BGBW/fCorrection_antimatter_{cent[0]}_{cent[1]}_BGBW")
         
         # he3
         if sign!= "STD":
@@ -114,26 +123,28 @@ for i_cent, cent in enumerate(centrality_classes):
         ratio_triton.Fit("pol0","QR","",1.6,3.)
         ratio_triton.Write()
 
-        # hyp
-        # if sign!= "STD":
-        #     for i_bins in range(1,ratio_hyp.GetNbinsX()+1):
-        #         tmp_bin_ct = ratio_hyp.GetBinCenter(i_bins)
-        #         eff_ratio_mat_hyp = f_material_budget_hyp.GetBinContent(f_material_budget_hyp.FindBin(tmp_bin_ct))
-        #         eff_ratio_mat_antihyp = f_material_budget_antihyp.GetBinContent(f_material_budget_hyp.FindBin(tmp_bin_ct))
-        #         tmp_bin_content = ratio_hyp.GetBinContent(i_bins)
-        #         ratio_hyp.SetBinContent(i_bins,tmp_bin_content*(eff_ratio_mat_hyp/eff_ratio_mat_antihyp))
-        ratio_hyp.Fit("pol0","QR","",0.,35.)
-        ratio_hyp.Write()
+        if i_cent < CENT_LIMIT_NUCLEI:
+            # hyp
+            # if sign!= "STD":
+            #     for i_bins in range(1,ratio_hyp.GetNbinsX()+1):
+            #         tmp_bin_ct = ratio_hyp.GetBinCenter(i_bins)
+            #         eff_ratio_mat_hyp = f_material_budget_hyp.GetBinContent(f_material_budget_hyp.FindBin(tmp_bin_ct))
+            #         eff_ratio_mat_antihyp = f_material_budget_antihyp.GetBinContent(f_material_budget_hyp.FindBin(tmp_bin_ct))
+            #         tmp_bin_content = ratio_hyp.GetBinContent(i_bins)
+            #         ratio_hyp.SetBinContent(i_bins,tmp_bin_content*(eff_ratio_mat_hyp/eff_ratio_mat_antihyp))
+            ratio_hyp.Fit("pol0","QR","",0.,35.)
+            ratio_hyp.Write()
 
         # proton
         if sign!= "STD":
-            for i_bins in range(1,ratio_proton.GetNbinsX()+1):
+            for i_bins in range(5,ratio_proton.GetNbinsX()+1):
                 tmp_bin_pt = ratio_proton.GetBinCenter(i_bins)
                 eff_ratio_mat_proton = f_material_budget_proton.GetBinContent(i_bins)
                 eff_ratio_mat_antiproton = f_material_budget_antiproton.GetBinContent(i_bins)
                 if eff_ratio_mat_antiproton < 1.e-6 or eff_ratio_mat_proton < 1.e-6:
                     continue
                 tmp_bin_content = ratio_proton.GetBinContent(i_bins)
+                print(f"eff_ratio_mat_proton = {eff_ratio_mat_proton}, eff_ratio_mat_antiproton = {eff_ratio_mat_antitriton}")
                 if tmp_bin_pt<0.81:
                     eff_ratio_mat_proton = f_material_budget_proton_lowPT.GetBinContent(i_bins)
                     eff_ratio_mat_antiproton = f_material_budget_antiproton_lowPT.GetBinContent(i_bins)
@@ -160,21 +171,25 @@ for i_cent, cent in enumerate(centrality_classes):
 
         # get fit functions
         fit_he3 = ratio_he3.GetFunction("pol0")
-        fit_triton = ratio_triton.GetFunction("pol0")
-        fit_hyp = ratio_hyp.GetFunction("pol0")
         fit_proton = ratio_proton.GetFunction("pol0")
         fit_pion = ratio_pion.GetFunction("pol0")
         fit_omega = ratio_omega.GetFunction("pol0")
+        fit_triton = ratio_triton.GetFunction("pol0")
+        fit_hyp = ROOT.TF1()
+        if i_cent < CENT_LIMIT_NUCLEI:
+            fit_hyp = ratio_hyp.GetFunction("pol0")
 
         # get ratios and errors
         ratio_he3 = fit_he3.GetParameter(0)
         ratio_he3_err = fit_he3.GetParError(0)/ratio_he3
 
+        ratio_triton_err = 0.
+        ratio_hyp_err = 0.
         ratio_triton = fit_triton.GetParameter(0)
         ratio_triton_err = fit_triton.GetParError(0)/ratio_triton
-
-        ratio_hyp = fit_hyp.GetParameter(0)
-        ratio_hyp_err = fit_hyp.GetParError(0)/ratio_hyp
+        if i_cent < CENT_LIMIT_NUCLEI:
+            ratio_hyp = fit_hyp.GetParameter(0)
+            ratio_hyp_err = fit_hyp.GetParError(0)/ratio_hyp
         
         ratio_proton = fit_proton.GetParameter(0)
         ratio_proton_err = 0#fit_proton.GetParError(0)
@@ -187,70 +202,137 @@ for i_cent, cent in enumerate(centrality_classes):
 
         # systematic error
         syst_he3 = ratio_he3_distribution.GetRMS()/ratio_he3
-        syst_triton = ratio_triton_distribution.GetRMS()/ratio_triton
         syst_he3_eff_prim = ratio_he3_distribution_eff_prim.GetRMS()/ratio_he3
-        syst_hyp = ratio_hyp_distribution.GetRMS()/ratio_hyp
         syst_omega = ratio_omega_distribution.GetRMS()
+        syst_triton = 0.
+        syst_hyp = 0.
+        syst_triton = ratio_triton_distribution.GetRMS()/ratio_triton
+        if i_cent < CENT_LIMIT_NUCLEI:
+            syst_hyp = ratio_hyp_distribution.GetRMS()/ratio_hyp
 
-        if apply_scaling_radius:
-            a_scaling = file_he3_scaling.Get(f"GraphA")
-            m_scaling = file_he3_scaling.Get(f"GraphM")
-            a_scaling_val = a_scaling.GetFunction("pol0").GetParameter(0)
-            m_scaling_val = m_scaling.GetFunction("pol0").GetParameter(0)
-            ratio_he3 = ratio_he3*(1+m_scaling_val-a_scaling_val)
-            ratio_hyp = ratio_hyp*(1+m_scaling_val-a_scaling_val)
-            a_scaling = file_proton_scaling.Get(f"GraphA")
-            m_scaling = file_proton_scaling.Get(f"GraphM")
-            a_scaling_val = a_scaling.GetFunction("pol0").GetParameter(0)
-            m_scaling_val = m_scaling.GetFunction("pol0").GetParameter(0)
-            ratio_proton = ratio_proton*(1+m_scaling_val-a_scaling_val)
-            a_scaling = file_pion_scaling.Get(f"GraphA")
-            m_scaling = file_pion_scaling.Get(f"GraphM")
-            a_scaling_val = a_scaling.GetFunction("pol0").GetParameter(0)
-            m_scaling_val = m_scaling.GetFunction("pol0").GetParameter(0)
-            ratio_pion = ratio_pion*(1+m_scaling_val-a_scaling_val)
+        # if apply_scaling_radius:
+            # a_scaling = file_he3_scaling.Get(f"GraphA")
+            # m_scaling = file_he3_scaling.Get(f"GraphM")
+            # a_scaling_val = a_scaling.GetFunction("pol0").GetParameter(0)
+            # m_scaling_val = m_scaling.GetFunction("pol0").GetParameter(0)
+            # ratio_he3 = ratio_he3*(1+m_scaling_val-a_scaling_val)
+            # ratio_hyp = 0.
+            # if i_cent < CENT_LIMIT_NUCLEI:
+            #     ratio_hyp = ratio_hyp*(1+m_scaling_val-a_scaling_val)
+            # a_scaling = file_proton_scaling.Get(f"GraphA")
+            # m_scaling = file_proton_scaling.Get(f"GraphM")
+            # a_scaling_val = a_scaling.GetFunction("pol0").GetParameter(0)
+            # m_scaling_val = m_scaling.GetFunction("pol0").GetParameter(0)
+            # ratio_proton = ratio_proton*(1+m_scaling_val-a_scaling_val)
+            # a_scaling = file_pion_scaling.Get(f"GraphA")
+            # m_scaling = file_pion_scaling.Get(f"GraphM")
+            # a_scaling_val = a_scaling.GetFunction("pol0").GetParameter(0)
+            # m_scaling_val = m_scaling.GetFunction("pol0").GetParameter(0)
+            # ratio_pion = ratio_pion*(1+m_scaling_val-a_scaling_val)
 
         ratio_he3_err = ratio_he3_err*ratio_he3
         ratio_triton_err = ratio_triton_err*ratio_triton
-        ratio_hyp_err = ratio_hyp_err*ratio_hyp
+        if i_cent < CENT_LIMIT_NUCLEI:
+            ratio_hyp_err = ratio_hyp_err*ratio_hyp
 
+        correlated_err_muB = 0.
+        correlated_err_muI = 0.
+        if sign=="STD":
+            # correlated syst
+            syst_he3 = syst_he3*ratio_he3
+            syst_he3_eff_prim = syst_he3_eff_prim*ratio_he3
+            syst_he3_abs = np.sqrt(0.00905074*0.00905074+0.00487767*0.00487767)*ratio_he3 # from absorption cross section variation
+            syst_he3 = np.sqrt(syst_he3_abs*syst_he3_abs)
+            syst_triton = syst_triton*ratio_triton
+            syst_triton_abs = np.sqrt(0.107459*0.107459+0.0177524*0.0177524)*ratio_triton # from absorption cross section variation
+            syst_triton = np.sqrt(syst_triton_abs*syst_triton_abs)
+            if i_cent < CENT_LIMIT_NUCLEI:
+                syst_hyp = syst_hyp*ratio_hyp
+                syst_hyp_abs = np.sqrt(0.00905074*0.00905074+0.00487767*0.00487767)*ratio_hyp # from absorption cross section variation
+                syst_hyp = np.sqrt(syst_hyp_abs*syst_hyp_abs)
+            syst_proton = fit_proton.GetParError(0)
+            syst_pion = fit_pion.GetParError(0)
+            syst_proton_pt_correlated = ratio_proton_pt_correlated.GetRMS()
+            syst_proton_abs = np.sqrt(0.00129523*0.00129523+0.000173974*0.000173974)*ratio_proton # from absorption cross section variation
+            syst_proton = np.sqrt(syst_proton_abs*syst_proton_abs+syst_proton_pt_correlated*syst_proton_pt_correlated)
+            syst_pion_pt_correlated = ratio_pion_pt_correlated.GetRMS()
+            syst_pion = np.sqrt(syst_pion_pt_correlated*syst_pion_pt_correlated)
+
+            # final plot
+            stat_proton = ratio_proton_err
+            stat_pion = ratio_pion_err
+            stat_he3 = ratio_he3_err
+            stat_hyp = 0.
+            stat_triton = 0.
+            stat_triton = ratio_triton_err
+            if i_cent < CENT_LIMIT_NUCLEI:
+                stat_hyp = ratio_hyp_err
+            ratios_vs_b = ROOT.TH2D(f'fRatio_vs_b_{cent[0]}_{cent[1]}', ';#it{B}+#it{S}/3;#it{Q}-#it{S}/3;Antimatter / Matter', 10, -0.5, 9.5, 7, -0.5, 6.5)
+            ratios_vs_b.SetBinContent(10, 7, ratio_he3)
+            ratios_vs_b.SetBinError(10, 7, np.sqrt(syst_he3*syst_he3+stat_he3*stat_he3))
+            ratios_vs_b.SetBinContent(4, 4, ratio_proton)
+            ratios_vs_b.SetBinError(4, 4, np.sqrt(syst_proton*syst_proton+stat_proton*stat_proton))
+            ratios_vs_b.SetBinContent(1, 4, ratio_pion)
+            ratios_vs_b.SetBinError(1, 4, np.sqrt(syst_pion*syst_pion+stat_pion*stat_pion))
+            ratios_vs_b.SetBinContent(1, 1, ratio_omega)
+            ratios_vs_b.SetBinError(1, 1, np.sqrt(syst_omega*syst_omega+ratio_omega_err*ratio_omega_err))
+            ratios_vs_b.SetBinContent(10, 4, ratio_triton)
+            ratios_vs_b.SetBinError(10, 4, np.sqrt(syst_triton*syst_triton+stat_triton*stat_triton))
+            if i_cent < CENT_LIMIT_NUCLEI:
+                ratios_vs_b.SetBinContent(9, 5, ratio_hyp)
+                ratios_vs_b.SetBinError(9, 5, np.sqrt(syst_hyp*syst_hyp+stat_hyp*stat_hyp))
+
+            # fit to data (exponential)
+            fit_expo = ROOT.TF2(f"fit_expo_{cent[0]}_{cent[1]}", "TMath::Exp(-2./3.*[0]*x-2./3.*[1]*y)", -0.5, 9.5,0.5,6.5,"")
+            r = ratios_vs_b.Fit(f"fit_expo_{cent[0]}_{cent[1]}","SN")
+            fit_parameter_error_0 = fit_expo.GetParError(0)
+            fit_parameter_error_1 = fit_expo.GetParError(1)
+            correlated_err_muB = fit_parameter_error_0*156.2
+            correlated_err_muI = fit_parameter_error_1*156.2
+        
+        # uncorrelated sys
         syst_he3 = syst_he3*ratio_he3
         syst_he3_eff_prim = syst_he3_eff_prim*ratio_he3
         syst_he3_abs = np.sqrt(0.00905074*0.00905074+0.00487767*0.00487767)*ratio_he3 # from absorption cross section variation
-        syst_he3 = np.sqrt(syst_he3*syst_he3+syst_he3_abs*syst_he3_abs+syst_he3_eff_prim*syst_he3_eff_prim)
+        syst_he3 = np.sqrt(syst_he3*syst_he3+syst_he3_eff_prim*syst_he3_eff_prim)
         syst_triton = syst_triton*ratio_triton
         syst_triton_abs = np.sqrt(0.107459*0.107459+0.0177524*0.0177524)*ratio_triton # from absorption cross section variation
-        syst_triton = np.sqrt(syst_triton*syst_triton+syst_triton_abs*syst_triton_abs)
-        syst_hyp = syst_hyp*ratio_hyp
-        syst_hyp_abs = np.sqrt(0.00905074*0.00905074+0.00487767*0.00487767)*ratio_hyp # from absorption cross section variation
-        syst_hyp = np.sqrt(syst_hyp*syst_hyp+syst_hyp_abs*syst_hyp_abs)
+        syst_triton = np.sqrt(syst_triton*syst_triton)
+        if i_cent < CENT_LIMIT_NUCLEI:
+            syst_hyp = syst_hyp*ratio_hyp
+            syst_hyp_abs = np.sqrt(0.00905074*0.00905074+0.00487767*0.00487767)*ratio_hyp # from absorption cross section variation
+            syst_hyp = np.sqrt(syst_hyp*syst_hyp)
         syst_proton = fit_proton.GetParError(0)
         syst_pion = fit_pion.GetParError(0)
         syst_proton_pt_correlated = ratio_proton_pt_correlated.GetRMS()
         syst_proton_abs = np.sqrt(0.00129523*0.00129523+0.000173974*0.000173974)*ratio_proton # from absorption cross section variation
-        syst_proton = np.sqrt(syst_proton*syst_proton+syst_proton_pt_correlated*syst_proton_pt_correlated+syst_proton_abs*syst_proton_abs)
+        syst_proton = np.sqrt(syst_proton*syst_proton)
         syst_pion_pt_correlated = ratio_pion_pt_correlated.GetRMS()
-        syst_pion = np.sqrt(syst_pion*syst_pion+syst_pion_pt_correlated*syst_pion_pt_correlated)
+        syst_pion = np.sqrt(syst_pion*syst_pion)
 
         # final plot
         stat_proton = ratio_proton_err
         stat_pion = ratio_pion_err
-        stat_hyp = ratio_hyp_err
         stat_he3 = ratio_he3_err
+        stat_hyp = 0.
+        stat_triton = 0.
         stat_triton = ratio_triton_err
-        ratios_vs_b = ROOT.TH2D(f'fRatio_vs_b_{cent[0]}_{cent[1]}', ';#it{B}+#it{S}/3;#it{Q};Antimatter / Matter', 10, -0.5, 9.5, 31, -1.05, 2.05)
-        ratios_vs_b.SetBinContent(10, 31, ratio_he3)
-        ratios_vs_b.SetBinError(10, 31, np.sqrt(syst_he3*syst_he3+stat_he3*stat_he3))
-        ratios_vs_b.SetBinContent(10, 21, ratio_triton)
-        ratios_vs_b.SetBinError(10, 21, np.sqrt(syst_triton*syst_triton+stat_triton*stat_triton))
-        ratios_vs_b.SetBinContent(9, 21, ratio_hyp)
-        ratios_vs_b.SetBinError(9, 21, np.sqrt(syst_hyp*syst_hyp+stat_hyp*stat_hyp))
-        ratios_vs_b.SetBinContent(4, 21, ratio_proton)
-        ratios_vs_b.SetBinError(4, 21, np.sqrt(syst_proton*syst_proton+stat_proton*stat_proton))
-        # ratios_vs_b.SetBinContent(1, 21, ratio_pion)
-        # ratios_vs_b.SetBinError(1, 21, np.sqrt(syst_pion*syst_pion+stat_pion*stat_pion))
+        if i_cent < CENT_LIMIT_NUCLEI:
+            stat_hyp = ratio_hyp_err
+        ratios_vs_b = ROOT.TH2D(f'fRatio_vs_b_{cent[0]}_{cent[1]}', ';#it{B}+#it{S}/3;#it{Q}-#it{S}/3;Antimatter / Matter', 10, -0.5, 9.5, 7, -0.5, 6.5)
+        ratios_vs_b.SetBinContent(10, 7, ratio_he3)
+        ratios_vs_b.SetBinError(10, 7, np.sqrt(syst_he3*syst_he3+stat_he3*stat_he3))
+        ratios_vs_b.SetBinContent(4, 4, ratio_proton)
+        ratios_vs_b.SetBinError(4, 4, np.sqrt(syst_proton*syst_proton+stat_proton*stat_proton))
+        ratios_vs_b.SetBinContent(1, 4, ratio_pion)
+        ratios_vs_b.SetBinError(1, 4, np.sqrt(syst_pion*syst_pion+stat_pion*stat_pion))
         ratios_vs_b.SetBinContent(1, 1, ratio_omega)
         ratios_vs_b.SetBinError(1, 1, np.sqrt(syst_omega*syst_omega+ratio_omega_err*ratio_omega_err))
+        ratios_vs_b.SetBinContent(10, 4, ratio_triton)
+        ratios_vs_b.SetBinError(10, 4, np.sqrt(syst_triton*syst_triton+stat_triton*stat_triton))
+        if i_cent < CENT_LIMIT_NUCLEI:
+            ratios_vs_b.SetBinContent(9, 5, ratio_hyp)
+            ratios_vs_b.SetBinError(9, 5, np.sqrt(syst_hyp*syst_hyp+stat_hyp*stat_hyp))
 
         # set labels
         a = ratios_vs_b.GetXaxis()
@@ -261,8 +343,16 @@ for i_cent, cent in enumerate(centrality_classes):
         a.SetBinLabel(10, '3')
         a.SetLabelSize(0.062)
 
+        aa = ratios_vs_b.GetYaxis()
+        aa.SetBit(ROOT.TAxis.kLabelsHori)
+        aa.SetBinLabel(1, '0')
+        aa.SetBinLabel(4, '1')
+        aa.SetBinLabel(7, '2')
+        aa.SetBinLabel(10, '3')
+        aa.SetLabelSize(0.062)
+
         # fit to data (exponential)
-        fit_expo = ROOT.TF2(f"fit_expo_{cent[0]}_{cent[1]}", "TMath::Exp(-2./3.*[0]*x-2.*[1]*y)", -0.5, 9.5,-1.05,2.05,"")
+        fit_expo = ROOT.TF2(f"fit_expo_{cent[0]}_{cent[1]}", "TMath::Exp(-2./3.*[0]*x-2./3.*[1]*y)", -0.5, 9.5,-0.5,6.5,"")
         r = ratios_vs_b.Fit(f"fit_expo_{cent[0]}_{cent[1]}","SN")
         
         # chi2 and fit parameter
@@ -313,7 +403,9 @@ for i_cent, cent in enumerate(centrality_classes):
 
         # save plots
         error_mb = 0.5*(np.abs(results_muB[0]-results_muB[1]))
+        error_mb = np.sqrt(error_mb*error_mb+correlated_err_muB*correlated_err_muB)
         error_mi = 0.5*(np.abs(results_muI[0]-results_muI[1]))
+        error_mi = np.sqrt(error_mi*error_mi+correlated_err_muI*correlated_err_muI)
         print(f"* * * * * * E R R O R * * * * * *")
         print(f"MB Error = {error_mb}")
         print(f"* * * * * * * * * * * * * * * * *")
@@ -414,27 +506,27 @@ for i_cent, cent in enumerate(centrality_classes):
             if i_part == 0:
                 ratio = ratio_omega
                 ratio_err = np.sqrt(syst_omega*syst_omega+ratio_omega_err*ratio_omega_err)
-                fit = fit_expo.Eval(0,-1)
+                fit = fit_expo.Eval(0,0)
             if i_part == 1:
                 ratio = ratio_pion
                 ratio_err = np.sqrt(syst_pion*syst_pion+stat_pion*stat_pion)
-                fit = fit_expo.Eval(0,1)
+                fit = fit_expo.Eval(0,3)
             if i_part == 2:
                 ratio = ratio_proton
                 ratio_err = np.sqrt(syst_proton*syst_proton+stat_proton*stat_proton)
-                fit = fit_expo.Eval(3,1)
-            if i_part == 3:
+                fit = fit_expo.Eval(3,3)
+            if i_part == 3 and i_cent < CENT_LIMIT_NUCLEI:
                 ratio = ratio_hyp
                 ratio_err = np.sqrt(syst_hyp*syst_hyp+stat_hyp*stat_hyp)
-                fit = fit_expo.Eval(8,1)
+                fit = fit_expo.Eval(8,4)
             if i_part == 4:
                 ratio = ratio_triton
                 ratio_err = np.sqrt(syst_triton*syst_triton+stat_triton*stat_triton)
-                fit = fit_expo.Eval(9,1)
+                fit = fit_expo.Eval(9,3)
             if i_part == 5:
                 ratio = ratio_he3
                 ratio_err = np.sqrt(syst_he3*syst_he3+stat_he3*stat_he3)
-                fit = fit_expo.Eval(9,2)
+                fit = fit_expo.Eval(9,6)
             hRatiosParticle.SetBinContent(i_part+1,ratio)
             hRatiosParticle.SetBinError(i_part+1,ratio_err)
             hRatiosParticleFit.SetBinContent(i_part+1,fit)
@@ -448,12 +540,12 @@ for i_cent, cent in enumerate(centrality_classes):
         for i_part in range(0,6):
             gRatiosParticle.SetPointError(i_part,0,hRatiosParticle.GetBinError(i_part+1))
             gRatiosParticleFit.SetPointError(i_part,0.3,0)
-        hijing_predictions = file_hijing.Get(f"fRatios_{cent[0]}_{cent[1]}")
-        gHijingPredictions = ROOT.TGraphErrors()
-        gHijingPredictions.AddPoint(gRatiosParticle.GetPointX(0),hijing_predictions.GetBinContent(1,21)) # pion
-        gHijingPredictions.SetPointError(0,0.25,hijing_predictions.GetBinError(1,21)) # pion
-        gHijingPredictions.AddPoint(gRatiosParticle.GetPointX(1),hijing_predictions.GetBinContent(4,16)) # proton
-        gHijingPredictions.SetPointError(1,0.25,hijing_predictions.GetBinError(4,16)) # pion
+        # hijing_predictions = file_hijing.Get(f"fRatios_{cent[0]}_{cent[1]}")
+        # gHijingPredictions = ROOT.TGraphErrors()
+        # gHijingPredictions.AddPoint(gRatiosParticle.GetPointX(0),hijing_predictions.GetBinContent(1,21)) # pion
+        # gHijingPredictions.SetPointError(0,0.25,hijing_predictions.GetBinError(1,21)) # pion
+        # gHijingPredictions.AddPoint(gRatiosParticle.GetPointX(1),hijing_predictions.GetBinContent(4,16)) # proton
+        # gHijingPredictions.SetPointError(1,0.25,hijing_predictions.GetBinError(4,16)) # pion
 
         # data to fit ratio
         for i_ticks in range(6):
@@ -461,35 +553,36 @@ for i_cent, cent in enumerate(centrality_classes):
         for i_part in range(0,6):
             hNSigmaRatioFitParticle.GetXaxis().SetBinLabel(i_part+1,particle_ratios[i_part])
             hNSigmaRatioFitParticle.GetXaxis().SetLabelSize(0.2)
-            ratio = 1
-            ratio_err = 0
-            fit = 1
+            ratio = -999.
+            ratio_err = -999.
+            fit = -999.
             if i_part == 0:
                 ratio = ratio_omega
                 ratio_err = np.sqrt(syst_omega*syst_omega+ratio_omega_err*ratio_omega_err)
-                fit = fit_expo.Eval(0,-1)
+                fit = fit_expo.Eval(0,0)
             if i_part == 1:
                 ratio = ratio_pion
                 ratio_err = np.sqrt(syst_pion*syst_pion+stat_pion*stat_pion)
-                fit = fit_expo.Eval(0,1)
+                fit = fit_expo.Eval(0,3)
             if i_part == 2:
                 ratio = ratio_proton
                 ratio_err = np.sqrt(syst_proton*syst_proton+stat_proton*stat_proton)
-                fit = fit_expo.Eval(3,1)
-            if i_part == 3:
+                fit = fit_expo.Eval(3,3)
+            if i_part == 3 and i_cent < CENT_LIMIT_NUCLEI:
                 ratio = ratio_hyp
                 ratio_err = np.sqrt(syst_hyp*syst_hyp+stat_hyp*stat_hyp)
-                fit = fit_expo.Eval(8,1)
+                fit = fit_expo.Eval(8,4)
             if i_part == 4:
                 ratio = ratio_triton
                 ratio_err = np.sqrt(syst_triton*syst_triton+stat_triton*stat_triton)
-                fit = fit_expo.Eval(9,1)
+                fit = fit_expo.Eval(9,3)
             if i_part == 5:
                 ratio = ratio_he3
                 ratio_err = np.sqrt(syst_he3*syst_he3+stat_he3*stat_he3)
-                fit = fit_expo.Eval(9,2)
-            hNSigmaRatioFitParticle.SetBinContent(i_part+1,(ratio-fit)/ratio_err)
-            hNSigmaRatioFitParticle.SetBinError(i_part+1,0)
+                fit = fit_expo.Eval(9,6)
+            if ratio > 0:
+                hNSigmaRatioFitParticle.SetBinContent(i_part+1,(ratio-fit)/ratio_err)
+                hNSigmaRatioFitParticle.SetBinError(i_part+1,0)
         hNSigmaRatioFitParticle.SetLineColor(centrality_colors[i_cent])
         hNSigmaRatioFitParticle.SetMarkerColor(centrality_colors[i_cent])
         hNSigmaRatioFitParticle.SetTitle("")
@@ -503,9 +596,9 @@ for i_cent, cent in enumerate(centrality_classes):
         hNSigmaRatioFitParticle.GetYaxis().SetTitle("pull")#"#frac{data - fit}{#sigma_{data}}")
         hNSigmaRatioFitParticle.GetYaxis().CenterTitle()
         hNSigmaRatioFitParticle.GetYaxis().SetRangeUser(-2.3,2.3)
-        gHijingNsigma = ROOT.TGraphErrors(gHijingPredictions)
-        gHijingNsigma.SetPointY(0,(gHijingNsigma.GetPointY(0)-fit_expo.Eval(0,1))/np.sqrt(syst_pion*syst_pion+stat_pion*stat_pion))
-        gHijingNsigma.SetPointY(1,(gHijingNsigma.GetPointY(1)-fit_expo.Eval(3,0.5))/np.sqrt(syst_proton*syst_proton+stat_proton*stat_proton))
+        # gHijingNsigma = ROOT.TGraphErrors(gHijingPredictions)
+        # gHijingNsigma.SetPointY(0,(gHijingNsigma.GetPointY(0)-fit_expo.Eval(0,1))/np.sqrt(syst_pion*syst_pion+stat_pion*stat_pion))
+        # gHijingNsigma.SetPointY(1,(gHijingNsigma.GetPointY(1)-fit_expo.Eval(3,0.5))/np.sqrt(syst_proton*syst_proton+stat_proton*stat_proton))
         hLineZero = ROOT.TLine(0.,0.,5.,0.)
         hLineZero.SetLineColor(ROOT.kBlack)
         hLineZero.SetLineStyle(ROOT.kDashed)
@@ -553,8 +646,8 @@ for i_cent, cent in enumerate(centrality_classes):
         gRatiosParticleFit.SetMarkerSize(0)
         gRatiosParticleFit.SetLineWidth(2)
         gRatiosParticleFit.SetLineColor(ROOT.kBlack)
-        gHijingPredictions.SetLineColor(ROOT.kGreen+1)
-        gHijingPredictions.SetLineWidth(2)
+        # gHijingPredictions.SetLineColor(ROOT.kGreen+1)
+        # gHijingPredictions.SetLineWidth(2)
         gRatiosParticleFit.Draw("e same")
         # gHijingPredictions.Draw("pe same")
         gRatiosParticle.Draw("pe same")
@@ -592,8 +685,8 @@ for i_cent, cent in enumerate(centrality_classes):
         hLineOneNeg.Draw("same")
         hLineTwoPos.Draw("same")
         hLineTwoNeg.Draw("same")
-        gHijingNsigma.SetLineColor(ROOT.kGreen+1)
-        gHijingNsigma.SetLineWidth(2)
+        # gHijingNsigma.SetLineColor(ROOT.kGreen+1)
+        # gHijingNsigma.SetLineWidth(2)
         hNSigmaRatioFitParticle.Draw("psame")
         # gHijingNsigma.Draw("pe same")
         cRatiosParticle.Write()

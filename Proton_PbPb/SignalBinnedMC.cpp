@@ -90,6 +90,8 @@ void SignalBinnedMC(const char *cutSettings = "", const double roi_nsigma = 8., 
   TH3F *fTOFSignalAll = (TH3F *)fTOFSignalA->Clone(fTOFSignalA->GetName());
   TH3F *fTPCSignalM = (TH3F *)list_mcFalse->Get(histNameTPCM.data());
   TH3F *fTOFSignalM = (TH3F *)list_mcFalse->Get(histNameM.data());
+  fTPCSignalAll->Add(fTPCSignalM);
+  fTOFSignalAll->Add(fTOFSignalM);
 
   /////////////////////////////////////////////////////////////////////////////////////
   // FIT PROTON PEAK - SAVE PARAMETERS
@@ -176,22 +178,22 @@ void SignalBinnedMC(const char *cutSettings = "", const double roi_nsigma = 8., 
           };
           if (ptMin > 1.64)
           {
-            nSigmaLeft = -15.;
+            nSigmaLeft = -16.;
             nSigmaRight = -10.;
           };
           if (ptMin > 1.89)
           {
-            nSigmaLeft = -13.;
+            nSigmaLeft = -15.;
             nSigmaRight = -5.;
           };
           if (ptMin > 2.09)
           {
-            nSigmaLeft = -13.;
+            nSigmaLeft = -14.;
             nSigmaRight = -5.;
           };
           if (ptMin > 2.19)
           {
-            nSigmaLeft = -11.;
+            nSigmaLeft = -12.;
             nSigmaRight = -5.;
           };
           if (ptMin > 2.49)
@@ -208,7 +210,8 @@ void SignalBinnedMC(const char *cutSettings = "", const double roi_nsigma = 8., 
           nSigmaRight = nSigmaLeft + 3.;
           if (kVerbose) std::cout << "nSigmaLeft = " << nSigmaLeft << std::endl;
         }
-        double minNsigma = 15., maxNsigma = 20.;
+        double minNsigma = 15., maxNsigma = 25.;
+        if (iCent==4||iCent==2) {maxNsigma = 30;}
 
         // DEFINE SIGNAL REGION
         TF1 signalRegionFit("signalRegionFit", "gaus", -20., 20.);
@@ -289,7 +292,7 @@ void SignalBinnedMC(const char *cutSettings = "", const double roi_nsigma = 8., 
         if (extractSignal)
         {
           roi_nsigma_down = roi_nsigma;
-          roi_nsigma_up = roi_nsigma;
+          roi_nsigma_up = roi_nsigma+1;
           if (ptMin > 1.51) roi_nsigma_down=roi_nsigma-2.5; // default = 6sigma
           if (ptMin > 1.99) {roi_nsigma_down=roi_nsigma-3.5; // default = 5sigma
             roi_nsigma_up=roi_nsigma+1.;
@@ -298,6 +301,7 @@ void SignalBinnedMC(const char *cutSettings = "", const double roi_nsigma = 8., 
             roi_nsigma_down=roi_nsigma-4.; // default = 4sigma
             roi_nsigma_up=roi_nsigma+2;
           }
+          if (iCent==4||iCent==2) roi_nsigma_up = 16;
           tofSignal.setRange("leftSideband", nSigmaLeft, mean_tmp - roi_nsigma_down * rms_tmp);
           tofSignal.setRange("rightSideband", mean_tmp + roi_nsigma_up * rms_tmp, maxNsigma);
           
@@ -390,7 +394,7 @@ void SignalBinnedMC(const char *cutSettings = "", const double roi_nsigma = 8., 
             {
               rawYield = data.sumEntries(Form("tofSignal>%f && tofSignal<%f", -0.7815 * kNSigma, 0.7815 * kNSigma)); // only for He4 in signal loss studies
             }
-            if (r->status()!=0 || r->covQual()<2.5) rawYield=0;
+            if (r->status()!=0 || r->covQual()<1.5) rawYield=0;
           }
           else
           {

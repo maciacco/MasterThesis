@@ -14,12 +14,12 @@ extractRatios=1
 fileData="AnalysisResults"
 fileDataEff="AnalysisResults_LHC21l5_full_largeDCA_cutChi2"
 fileMC="mc"
-signalNameEff="SignalPionSysEff_extend"
-spectraNameEff="SpectraPionSysEff_extend"
-signalName="SignalPionSys_extend"
-spectraName="SpectraPionSys_extend"
-EfficiencyHe3="EfficiencyPionSys_extend"
-PrimaryHe3="PrimaryPionSys_extend"
+signalNameEff="SignalPionSysEff_extend3"
+spectraNameEff="SpectraPionSysEff_extend3"
+signalName="SignalPionSys_extend3"
+spectraName="SpectraPionSys_extend3"
+EfficiencyHe3="EfficiencyPionSys_extend3"
+PrimaryHe3="PrimaryPionSys_extend3"
 
 # create output directories
 DIR_OUT=out

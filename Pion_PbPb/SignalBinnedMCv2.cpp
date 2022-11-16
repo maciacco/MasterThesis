@@ -83,6 +83,7 @@ void SignalBinnedMCv2(const char *cutSettings = "", const double roi_min_limit_i
   TH3F *fTOFSignalA = (TH3F *)list_21l5->Get(histNameA.data());
   TH3F *fTOFSignalAll = (TH3F *)fTOFSignalA->Clone(fTOFSignalA->GetName());
   TH3F *fTOFSignalM = (TH3F *)list_21l5->Get(histNameM.data());
+  fTOFSignalAll->Add(fTOFSignalM);
 
   for (int iMatt = 1; iMatt > -1; --iMatt)
   { // loop on antimatter/matter
@@ -116,7 +117,7 @@ void SignalBinnedMCv2(const char *cutSettings = "", const double roi_min_limit_i
       int nUsedPtBins = 27; // up to 2.00 GeV/c
       //int nUsedPtBins = 39;
 
-      for (int iPtBin = 7; iPtBin < nUsedPtBins + 1; ++iPtBin)
+      for (int iPtBin = 7; iPtBin < nUsedPtBins + 1 -1; ++iPtBin)
       { // loop on pT bins
         double ptMin = fTOFrawYield.GetXaxis()->GetBinLowEdge(iPtBin);
         double ptMax = fTOFrawYield.GetXaxis()->GetBinUpEdge(iPtBin);
@@ -170,26 +171,53 @@ void SignalBinnedMCv2(const char *cutSettings = "", const double roi_min_limit_i
         // signalRegionFitK.SetParLimits(2, 0.8, 3.);
         signalRegionFitK.SetLineColor(kBlue);
         tofSignalProjectionAll->GetXaxis()->SetRangeUser(5., 50.);
-        if (ptMin > 1.54)tofSignalProjectionAll->GetXaxis()->SetRangeUser(5., 15.);
+        if (ptMin > 1.2)tofSignalProjectionAll->GetXaxis()->SetRangeUser(5., 15.);
         double maximum_signal_K = tofSignalProjectionAll->GetBinCenter(tofSignalProjectionAll->GetMaximumBin());
         tofSignalProjectionAll->Fit("signalRegionFitK", "QRL+", "", maximum_signal_K - 1., maximum_signal_K + 1.);
         tofSignalProjectionAll->Fit("signalRegionFitK", "QRL+", "", signalRegionFitK.GetParameter(1) - 2., signalRegionFitK.GetParameter(1) + 2.);
         double mean_tmp_K = signalRegionFitK.GetParameter(1);
         double rms_tmp_K = signalRegionFitK.GetParameter(2);
         double mismatch_left_limit = mean_tmp_K+(mismatch_min_limit_input+2.)*rms_tmp_K;
-        double mismatch_right_limit = mean_tmp_K+(mismatch_max_limit_input+3.)*rms_tmp_K;
+        double mismatch_right_limit = mean_tmp_K+(mismatch_max_limit_input+4.)*rms_tmp_K;
+        if (iCent==4&&ptMin>1.29){
+          mismatch_left_limit = mean_tmp_K+(mismatch_min_limit_input+3.)*rms_tmp_K;
+          mismatch_right_limit = mean_tmp_K+(mismatch_max_limit_input+3.)*rms_tmp_K;
+        }
+        else if (iCent==2 || (iCent==4&&ptMin>0.89)){
+          mismatch_left_limit = mean_tmp_K+(mismatch_min_limit_input+7.)*rms_tmp_K;
+          if (iCent==4)mismatch_left_limit = mean_tmp_K+(mismatch_min_limit_input+6.)*rms_tmp_K;
+          mismatch_right_limit = mean_tmp_K+(mismatch_max_limit_input+6.)*rms_tmp_K;
+        }
+        else if (iCent==4&&ptMin>0.79&&ptMin<0.89){
+          mismatch_left_limit = mean_tmp_K+(mismatch_min_limit_input+4.)*rms_tmp_K;
+          mismatch_right_limit = mean_tmp_K+(mismatch_max_limit_input+6.)*rms_tmp_K;
+        }
+        if (ptMin>1.39){
+          mismatch_right_limit = mean_tmp_K+(mismatch_max_limit_input+1)*rms_tmp_K;
+          if (iCent==4 && ptMin>1.49){
+            mismatch_left_limit = 17;
+            mismatch_right_limit = 21;
+          }
+          else if (iCent==4){
+            mismatch_left_limit = 19;
+            mismatch_right_limit = 24;
+          }
+        }
+        if (mismatch_left_limit>50) mismatch_left_limit = 43.;
+        if (mismatch_right_limit>50) mismatch_right_limit = 50.;
+        std::cout<<"pT = "<<ptMin<<"mismatch range (right to K) = "<<mismatch_left_limit<<" - "<<mismatch_right_limit<<std::endl;
         tofSignalProjectionAll->GetXaxis()->SetRangeUser(-20., 20.);
 
         // roofit data
-        double maxNsigma=17.;
-        if (ptMin>0.89){
+        double maxNsigma=20.;
+        if ((ptMin>0.89&&iCent<4)||(ptMin>0.79&&iCent==4)){
           maxNsigma=mean_tmp_K-1.*rms_tmp_K;
         }
         RooRealVar tofSignal("tofSignal", "n#sigma_{p}", nSigmaLeft, maxNsigma, "a.u.");
         RooRealVar *tofSignal_full=new RooRealVar("tofSignal_full", "n#sigma_{p}full_", nSigmaLeft, 20., "a.u.");
-        if (ptMin>0.89)tofSignal_full=new RooRealVar("tofSignal_full", "n#sigma_{p}full_", nSigmaLeft, mismatch_right_limit, "a.u.");
+        if ((ptMin>0.89&&iCent<4)||(ptMin>0.79&&iCent==4))tofSignal_full=new RooRealVar("tofSignal_full", "n#sigma_{p}full_", nSigmaLeft, mismatch_right_limit, "a.u.");
         RooRealVar *tofSignal_full_all=new RooRealVar("tofSignal_full_all", "n#sigma_{p}full_all_", nSigmaLeft, 20., "a.u.");
-        if (ptMin>0.89)tofSignal_full_all=new RooRealVar("tofSignal_full_all", "n#sigma_{p}full_all_", nSigmaLeft, mismatch_right_limit, "a.u.");
+        if ((ptMin>0.89&&iCent<4)||(ptMin>0.79&&iCent==4))tofSignal_full_all=new RooRealVar("tofSignal_full_all", "n#sigma_{p}full_all_", nSigmaLeft, mismatch_right_limit, "a.u.");
         
         // roofit histogram
         RooDataHist data("data", "data", RooArgList(tofSignal), tofSignalProjection);
@@ -217,13 +245,13 @@ void SignalBinnedMCv2(const char *cutSettings = "", const double roi_min_limit_i
         RooFitResult *r;
 
         slope1 = new RooRealVar("#tau_{1}", "slope1", -0.1, -.7, 0.);
-        nBackground1 = new RooRealVar("#it{N}_{Bkg,1}", "nBackground1", 0.,1.);
-        if (bkg_shape == 1 && ptMin < 0.89)
+        nBackground1 = new RooRealVar("#it{N}_{Bkg,1}", "nBackground1", 0.,10.);
+        if (bkg_shape == 1 && ((iCent<4&&ptMin < 0.89)||(iCent==4&&ptMin<0.79)))
         { // expo
           background1 = (RooAbsPdf *)new RooExponential("background1", "background1", tofSignal, *slope1);
           modelAll = (RooAbsPdf*)new RooExponential("modelAll", "modelAll", tofSignal, *slope1);
         }
-        else if (bkg_shape == 1 && ptMin > 0.89)
+        else if (bkg_shape == 1 && !((iCent<4&&ptMin < 0.89)||(iCent==4&&ptMin<0.79)))
         { // double expo with fixed mismatch
           slope1 = new RooRealVar("#tau_{1}", "slope1", -0.1, -.7, 0.);
           slope2 = new RooRealVar("#tau_{2}", "slope2", 0., 10.);
@@ -240,12 +268,15 @@ void SignalBinnedMCv2(const char *cutSettings = "", const double roi_min_limit_i
 
         int covQ = -999;
         double intersectionBinCenter=-20.;
-        intersectionBinCenter=mean_tmp-roi_min_limit_input*rms_tmp;
+        intersectionBinCenter=mean_tmp-(roi_min_limit_input+1.)*rms_tmp;
+        // if (ptMin>0.9)intersectionBinCenter=mean_tmp-(roi_min_limit_input+0.5)*rms_tmp;
+        // if (ptMin>1.09)intersectionBinCenter=mean_tmp-(roi_min_limit_input)*rms_tmp;
+        // if (ptMin>1.29)intersectionBinCenter=mean_tmp-(roi_min_limit_input-0.5)*rms_tmp;
         double signalRightLimit=roi_max_limit;
         if (extractSignal)
         {
 
-          if (ptMin < 0.89){
+          if (((iCent<4&&ptMin < 0.89)||(iCent==4&&ptMin<0.79))){
             tofSignal.setRange("rightSideband", signalRightLimit, maxNsigma);
             
             modelAll->fitTo(dataAll, RooFit::Range("rightSideband"));
@@ -254,7 +285,7 @@ void SignalBinnedMCv2(const char *cutSettings = "", const double roi_min_limit_i
             slope1->setConstant();
             nBackground1->setConstant();
 
-            if (bkg_shape == 1 && ptMin < 0.89)
+            if (bkg_shape == 1 && ((iCent<4&&ptMin < 0.89)||(iCent==4&&ptMin<0.79)))
             { // expo
               nBackground2 = new RooRealVar("#it{N}_{Bkg}", "nBackground2", 0., 1.e9);
               model = new RooAddPdf("model", "model", RooArgList(*modelAll), RooArgList(*nBackground2));
@@ -296,7 +327,6 @@ void SignalBinnedMCv2(const char *cutSettings = "", const double roi_min_limit_i
           int iB=1;
           int binShiftIndex=tofSignalProjection->FindBin(leftSignalLimit);
           if (kVerbose) std::cout << "intersection bin center = " << intersectionBinCenter << std::endl;
-          tofSignal.setRange("signalRange", intersectionBinCenter, signalRightLimit);
 
           if (kVerbose) std::cout << "fit status: " << r->status() << ";" << std::endl;
           if (kVerbose) std::cout << "covariance quality: " << r->covQual() << std::endl;
@@ -315,7 +345,7 @@ void SignalBinnedMCv2(const char *cutSettings = "", const double roi_min_limit_i
         tofSignal.setRange("model", nSigmaLeft, maxNsigma);
         if (extractSignal)
         {
-          if (ptMin < 0.89)
+          if (((iCent<4&&ptMin < 0.89)||(iCent==4&&ptMin<0.79)))
             model->plotOn(xframe, RooFit::Name("model"), RooFit::LineColor(kBlue), RooFit::NormRange("rightSideband"), RooFit::Range("rightSideband"));
           else
             model->plotOn(xframe, RooFit::Name("model"), RooFit::LineColor(kBlue), RooFit::NormRange("rightSideband"), RooFit::Range("rightSideband"));
@@ -324,7 +354,7 @@ void SignalBinnedMCv2(const char *cutSettings = "", const double roi_min_limit_i
           xframe->getAttText()->SetTextFont(44);
           xframe->getAttText()->SetTextSize(16);
           xframe->remove("model",false);
-          if (ptMin < 0.89)
+          if (((iCent<4&&ptMin < 0.89)||(iCent==4&&ptMin<0.79)))
             model->plotOn(xframe, RooFit::Name("model"), RooFit::LineColor(kBlue), RooFit::NormRange("rightSideband"), RooFit::Range("model"));
           else{
             modelMismatch->plotOn(xframe_full, RooFit::Name("model"), RooFit::LineColor(kBlue), RooFit::NormRange("rightSidebandK"), RooFit::Range("full"));
@@ -332,11 +362,27 @@ void SignalBinnedMCv2(const char *cutSettings = "", const double roi_min_limit_i
           }
           xframe->GetYaxis()->SetMaxDigits(2);
 
+
+          auto xframe1 = (RooPlot *)xframe->Clone();
+          RooHist *hresid = xframe1->residHist();
+          int binGtZero = -1.;
+          int ibin=1;
+          while(binGtZero<0){
+            if (hresid->GetPointY(ibin)>0.){
+              binGtZero=ibin;
+            }
+            else ibin++;
+          }
+          std::cout<<"============>>>>>> bin gt zero = "<<binGtZero<<std::endl;
+          if (intersectionBinCenter<hresid->GetPointX(binGtZero)) intersectionBinCenter = hresid->GetPointX(binGtZero);
+          tofSignal.setRange("signalRange", intersectionBinCenter, signalRightLimit);
+
+
           // background integral
           double bkgIntegral = 0;
           double bkgIntegral_1 = 0;
           double bkgIntegral_val = 0;
-          if (ptMin < 0.89){
+          if (((iCent<4&&ptMin < 0.89)||(iCent==4&&ptMin<0.79))){
             bkgIntegral = ((RooAbsPdf *)model->createIntegral(RooArgSet(tofSignal), RooFit::NormSet(RooArgSet(tofSignal)), RooFit::Range("signalRange")))->getVal();
             bkgIntegral_val = (nBackground2->getVal()) * bkgIntegral;
           }

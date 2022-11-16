@@ -54,8 +54,8 @@ void SecondaryTPC(const char *cutSettings = "", const double DCAxyCut=0.12, cons
   system(Form("mkdir %s/primary_fraction", kPlotDir));
 
   // open files
-  TFile *inFileDat = TFile::Open(Form("%s/%s_LHC18qr_lowPtProton_ITSrecalibrated.root", kDataDir, inFileDatName)); // _LHC18qr_lowPtProton_ITSrecalibrated.root _largeNsigma_cutDCAxyChi2TPC_lowPt
-  TFile *inFileMCInj = TFile::Open(Form("%s/%s.root", kDataDir, "AnalysisResults_LHC21l5_LambdaCtMotherAndProtonsITSPID"/* inFileMCName */));
+  TFile *inFileDat = TFile::Open(Form("%s/%s_kINT7_10_30_50_90.root", kDataDir, inFileDatName)); // _LHC18qr_lowPtProton_ITSrecalibrated.root _largeNsigma_cutDCAxyChi2TPC_lowPt
+  TFile *inFileMCInj = TFile::Open(Form("%s/%s.root", kDataDir, "AnalysisResults_LHC21l5_lowPtProton_ITSrecalibrated"/* inFileMCName */));
   TFile *inFileMCGP = TFile::Open(Form("%s/AnalysisResults_LHC20e3_lowPtProton_ITSrecalibrated.root", kDataDir));
   TFile *outFile = TFile::Open(Form("%s/%s.root", kOutDir, outFileName), "recreate");
 
@@ -297,11 +297,11 @@ void SecondaryTPC(const char *cutSettings = "", const double DCAxyCut=0.12, cons
         // else if (iMatt == 0 && iCent == 2)
         //   fit->Constrain(1,0.,0.9);
 
-        if (ptMin < noSecMaterialThreshold)fit->Constrain(2, 0., 1.0);
+        if (ptMin < noSecMaterialThreshold)fit->Constrain(2, 0., .8);
         fit->Constrain(1, 0., 1.0);
         fit->Constrain(0, 0., 1.0);
-        if (iMatt==0 && iCent > 0 && ptMin > 0.65 && ptMin < 0.9)
-          fit->Constrain(1,0.,0.7);
+        if (iMatt==1 && iCent > -1 && ptMin > 0.65 && ptMin < 0.99 && iCent!= 2)
+          fit->Constrain(1,0.,0.99);
 
 
         //TVirtualFitter::SetMaxIterations(MAX_ITER); 

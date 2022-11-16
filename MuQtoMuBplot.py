@@ -1,12 +1,12 @@
 import ROOT
 import numpy as np
 
-n_part = [383.4,331.2,109]
-n_part_err = [17.8,19.6,26.6]
+n_part = [383.4,331.2,109,180,50]
+n_part_err = [17.8,19.6,26.6,20,40]
 
-CENTRALITY_CLASSES = [[0,5], [5,10], [30,50]]
-centrality_colors = [ROOT.kOrange+7, ROOT.kAzure+4, ROOT.kTeal+4]
-centrality_colors_area = [ROOT.kOrange-9, ROOT.kAzure-9, ROOT.kGreen-8]
+CENTRALITY_CLASSES = [[0,5], [5,10], [30,50], [10,30], [50,90]]
+centrality_colors = [ROOT.kRed, ROOT.kOrange-3, ROOT.kAzure+4,ROOT.kGreen+2,ROOT.kMagenta+2]
+centrality_colors_area = [ROOT.kRed, ROOT.kOrange-3, ROOT.kAzure+4,ROOT.kGreen+2,ROOT.kMagenta+2]
 
 Z_PB208 = 82
 A_PB208 = 208
@@ -23,7 +23,7 @@ cMuI = in_file.Get("cMuICent")
 
 out_file = ROOT.TFile("MuQtoMuBplot.root","recreate")
 canv = ROOT.TCanvas("canv","canv",600,500)
-h_frame = ROOT.TH2F("h_frame"," ",1,0.,450,1,-0.3,.7)
+h_frame = ROOT.TH2F("h_frame"," ",1,0.,450,1,-0.7,.7)
 h_frame.GetXaxis().SetNdivisions(10)
 h_frame.GetYaxis().SetNdivisions(10)
 

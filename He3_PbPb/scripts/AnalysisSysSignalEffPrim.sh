@@ -36,7 +36,7 @@ root -b -l <<EOF
 .L Efficiency.cpp+
 .L EfficiencySec.cpp+
 .L Secondary.cpp+
-SignalUnbinned($argumentCuts,$argumentSignal,"TreeOutDataSys","SignalHe3Sys","update")
+SignalUnbinned($argumentCuts,$argumentSignal,"TreeOutDataSys","SignalHe3Sys_extend2","update")
 Efficiency($argumentCuts,"TreeOutMCSys")
 EfficiencySec($argumentCuts,"TreeOutMCSys")
 Secondary($argumentCuts,"TreeOutDataSys","TreeOutMCSys")

@@ -32,11 +32,11 @@ argumentCuts="$cutDCAz,$cutTPCcls,$cutDCAxy,$cutChi2TPC"
 argumentSignal="$binCountingFlag,$expFlag"
 
 root -b -l <<EOF
-//.L SignalUnbinned.cpp+
+.L SignalUnbinned.cpp+
 .L Efficiency.cpp+
 //.L EfficiencySec.cpp+
 .L Secondary.cpp+
-//SignalUnbinned($argumentCuts,$argumentSignal,"TreeOutDataSys","SignalHe3Sys","update")
+SignalUnbinned($argumentCuts,$argumentSignal,"TreeOutDataSys","SignalHe3Sys_extend","update")
 Efficiency($argumentCuts,"TreeOutMCSys")
 //EfficiencySec($argumentCuts,"TreeOutMCSys")
 Secondary($argumentCuts,"TreeOutDataSys","TreeOutMCSys")

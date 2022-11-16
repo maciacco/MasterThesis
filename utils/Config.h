@@ -58,8 +58,8 @@ namespace he3
   // centrality binning
   const int kNCentBins = 11; // total number of V0M multiplicity classes
   const double kCentBins[kNCentBins + 1] = {0.f, 5.f, 7.5f, 10.f, 20.f, 30.f, 40.f, 50.f, 60.f, 70.f, 80.f, 90.f};
-  const int kCentBinsHe3[][2] = {{1, 1}, {2, 3}, {6, 7}, {4, 5}, {8, 11}};             // centrality classes bin indexes in He3 analysis
-  const double kCentBinsLimitsHe3[][2] = {{0, 5}, {5, 10}, {30, 50}, {10, 30}, {50, 90}}; // centrality classes bin limits in He3 analysis
+  const int kCentBinsHe3[][2] = {{1, 1}, {2, 3}, {6, 7}, {4, 5}, {8, 11}, {1,11}};             // centrality classes bin indexes in He3 analysis
+  const double kCentBinsLimitsHe3[][2] = {{0, 5}, {5, 10}, {30, 50}, {10, 30}, {50, 90}, {0,90}}; // centrality classes bin limits in He3 analysis
 
   // TPC nsigma binning
   const int kNSigmaBins = 240;
@@ -229,10 +229,10 @@ namespace proton
   const double kCutTPCClusters[] = {59., 64., 69., 74., 79.};
   const int kNTPCPidSigmas = 3;
   const double kTPCPidSigmas[] = {3.0, 3.25, 3.50};
-  const char *cutSettings[] = {"dcaz", "pid", "tpc", "dcaxy", "chisquare"};//,"its"};
-  const int kNTrackCuts = 17;
-  const int trackCutIndexes[kNTrackCuts] = {0,0,1,2,3,0,1,0,1,2,3,0,1,2,3,0,1};//,0,1};
-  const char* trackCutSettings[kNTrackCuts] = {"","dcaz","dcaz","dcaz","dcaz","pid","pid","tpc","tpc","tpc","tpc","dcaxy","dcaxy","dcaxy","dcaxy","chisquare","chisquare"};//,"its","its"};
+  const char *cutSettings[] = {"dcaz", "pid", "tpc", "dcaxy", "chisquare","its"};
+  const int kNTrackCuts = 19;
+  const int trackCutIndexes[kNTrackCuts] = {0,0,1,2,3,0,1,0,1,2,3,0,1,2,3,0,1,0,1};
+  const char* trackCutSettings[kNTrackCuts] = {"","dcaz","dcaz","dcaz","dcaz","pid","pid","tpc","tpc","tpc","tpc","dcaxy","dcaxy","dcaxy","dcaxy","chisquare","chisquare","its","its"};
 }
 
 //////////////////////////////////////////////////////////////
@@ -341,8 +341,8 @@ namespace triton
   // centrality binning
   const int kNCentBins = 11; // total number of V0M multiplicity classes
   const double kCentBins[kNCentBins + 1] = {0.f, 5.f, 7.5f, 10.f, 20.f, 30.f, 40.f, 50.f, 60.f, 70.f, 80.f, 90.f};
-  const int kCentBinsHe3[][2] = {{1, 1}, {2, 3}, {6, 7},{1,11}};             // centrality classes bin indexes in He3 analysis
-  const double kCentBinsLimitsHe3[][2] = {{0, 5}, {5, 10}, {30, 50},{0, 90}}; // centrality classes bin limits in He3 analysis
+  const int kCentBinsHe3[][2] = {{1, 1}, {2, 3}, {6, 7}, {4, 5}, {8, 11}, {1,11}};             // centrality classes bin indexes in He3 analysis
+  const double kCentBinsLimitsHe3[][2] = {{0, 5}, {5, 10}, {30, 50}, {10, 30}, {50, 90},{0, 90}}; // centrality classes bin limits in He3 analysis
 
   // TPC nsigma binning
   const int kNSigmaBins = 200;

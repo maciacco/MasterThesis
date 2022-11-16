@@ -52,10 +52,10 @@ void Secondary(const char *cutSettings = "", const double DCAxyCut=0.12, const c
   // make signal extraction plots directory
   system(Form("mkdir %s/primary_fraction", kPlotDir));
 
-  // open files
+  // open files _kINT7_10_30_50_90
   TFile *inFileDat = TFile::Open(Form("%s/%s_largeNsigma_cutDCAxyChi2TPC.root", kDataDir, inFileDatName)); // _largeNsigma_cutDCAxyChi2TPC.root _LHC18qr_lowPtProton_ITSrecalibrated.root
   TFile *inFileMCInj = TFile::Open(Form("%s/%s.root", kDataDir, "AnalysisResults_LHC21l5_full_largeDCA_cutChi2"));
-  TFile *inFileMCGP = TFile::Open(Form("%s/AnalysisResults_LHC20e3_DCAChi2TPC.root", kDataDir)); //AnalysisResults_LHC20e3_DCAChi2TPC lowPtProton_ITSrecalibrated
+  TFile *inFileMCGP = TFile::Open(Form("%s/AnalysisResults_LHC20e3_DCAChi2TPC.root", kDataDir)); //AnalysisResults_LHC20e3_DCAChi2TPC lowPtProton_ITSrecalibrated _DCAChi2TPC
   TFile *outFile = TFile::Open(Form("%s/%s.root", kOutDir, outFileName), "recreate");
 
   for (int iMatt = 0; iMatt < 2; ++iMatt)
@@ -478,7 +478,15 @@ void Secondary(const char *cutSettings = "", const double DCAxyCut=0.12, const c
         //   //ROOT::Math::MinimizerOptions::SetDefaultStrategy(0);
         //   for(int I = 0; I<2; ++I)status = fit->Fit();
         // }
-        if (status == 0)
+        if (status!=0){
+          fit->Constrain(1, 0., 1.);
+          for(int I = 0; I<2; ++I)status = fit->Fit();
+        }
+        if (status!=0){
+          fit->Constrain(0., 0., 1.);
+          for(int I = 0; I<2; ++I)status = fit->Fit();
+        }
+        if (status == 0 || status==4)
         { // check on fit status
           TH1F *result = (TH1F *)fit->GetPlot();
           TH1F *mc1 = (TH1F *)fit->GetMCPrediction(0);

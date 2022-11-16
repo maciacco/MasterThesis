@@ -2,36 +2,37 @@
 
 constexpr float minpt[] = {0.66, 0.4, 0., 1.6, 0.5, 1.5};
 constexpr float maxpt[] = {1.64, 3.1, 37., 8.4, 10.5, 3.1};
-constexpr float miny[] = {0.965, 0.94, 0.3, 0.55, 0.84, 0.55};
-constexpr float maxy[] = {1.035, 1.06, 1.7, 1.45, 1.16, 1.45};
+constexpr float miny[] = {0.95, 0.94, 0., 0., 0.7, 0.};
+constexpr float maxy[] = {1.05, 1.06, 2., 2., 1.3, 2.};
 const char *histoTitles[] = {";#it{p}_{T} (GeV/#it{c});#pi^{-}/#pi^{+};", ";#it{p}_{T} (GeV/#it{c});#bar{p}/p;", ";#it{ct} (cm);{}^{3}_{#bar{#Lambda}}#bar{H}/^{3}_{#Lambda}H;", ";#it{p}_{T} (GeV/#it{c});^{3}#bar{He}/^{3}He;", ";#it{ct} (cm);#bar{#Omega}^{+}/#Omega^{-};", ";#it{p}_{T} (GeV/#it{c});{}^{3}#bar{H}/^{3}H;"};
-const char *inputFiles[] = {"Pion_PbPb/out/SystematicsAllEPtNotCombined.root", "Proton_PbPb/out/SystematicsAllEPtNotCombinedTOFTEST.root", "Hypertriton_PbPb/Ratio.root", "He3_PbPb/out/SpectraHe3.root", "Omega_PbPb/ratio.root", "Triton_PbPb/out/SpectraHe3.root"};
+const char *inputFiles[] = {"Pion_PbPb/out/SystematicsAllEPtNotCombined_extend2.root", "Proton_PbPb/out/SystematicsAllEPtNotCombinedTOF_extend_4.root", "Hypertriton_PbPb/Ratio.root", "He3_PbPb/out/SpectraHe3_kINT7.root", "Omega_PbPb/ratio_cutCompetingMass-3.root", "Triton_PbPb/out/SpectraHe3.root"};
 const char *outputFiles[] = {"pion","proton","hyp","he3","omega","triton"};
-const char *inputFilesSys[] = {"", "", "Hypertriton_PbPb/Systematics.root", "He3_PbPb/out/SystematicsAll.root", "Omega_PbPb/ratio.root", "Triton_PbPb/out/SystematicsAll.root"};
-const char *inputHistoSys[] = {"", "", "fParameterDistribution_%s", "hist/fFitPar_%s", "h_sys;%d", "hist/fFitPar_%s"};
+const char *outputFormat[] = {"ratio\tstat\tuncorr_sys\tcorr_sys","ratio\tstat\tuncorr_sys\tcorr_sys","ratio\tstat\tuncorr_sys\tcorr_sys","ratio\tstat\tuncorr_sys\tcorr_sys","ratio\tstat\tuncorr_sys","ratio\tstat\tuncorr_sys\tcorr_sys"};
+const char *inputFilesSys[] = {"", "", "Hypertriton_PbPb/SystematicsRatio.root", "He3_PbPb/out/SystematicsAll_extend2.root", "Omega_PbPb/ratio_cutCompetingMass-3.root", "Triton_PbPb/out/SystematicsAll_extend.root"};
+const char *inputHistoSys[] = {"fRatioDistributionTrials_%s", "fRatioDistributionTrials_%s", "fParameterDistribution_%s", "hist/fFitPar_%s", "h_sys;%d", "hist/fFitPar_%s"};
 const char *inputFilesSysMC[] = {"", "", "", "He3_PbPb/out/SystematicsEfficiencyPrimary.root", "", ""};
 const double xsec_err_sq[] = {0., 0.00129523*0.00129523+0.000173974*0.000173974, 0.00905074*0.00905074+0.00487767*0.00487767, 0.00905074*0.00905074+0.00487767*0.00487767, 0, 0.107459*0.107459+0.0177524*0.0177524};
 const char *dir[] = {"", "", "", "1.0_89_0.1_2.5_1_1_1/", "", "1.0_69_0.1_2.5_1_1_1/"};
 const int n_part = 6;
 const bool draw_text = true;
 
-std::array<TPad*,3> CreatePads(TCanvas* &cv, int i_part=0)
+std::array<TPad*,5> CreatePads(TCanvas* &cv, int i_part=0)
 {
   if (!cv) cv = new TCanvas;
-  std::array<TPad*,3> pads{nullptr};
+  std::array<TPad*,5> pads{nullptr};
 
   constexpr double sx[2]{1,1.-sx[0]};
-  constexpr double sy[2]{0.365, 0.27};
+  constexpr double sy[2]{0.245, 0.17};
   constexpr double fx = 0.9;
-  constexpr double fy = 0.3;
+  constexpr double fy = 0.17;
 
   double global_y = 1.;
-  for (int iP = 0; iP < 3; ++iP) {
+  for (int iP = 0; iP < 5; ++iP) {
     const int col = 0;
     const int row = iP;
 
     const int top = (row == 0);
-    const int bot = row == 2;
+    const int bot = row == 4;
     const int mid = !(top || bot);
 
     std::cout << sx[0] * col << "\t" << global_y - sy[mid] << "\t" << sx[0] + col * (1. - sx[0]) << "\t" << global_y << std::endl;
@@ -72,13 +73,16 @@ std::array<TPad*,3> CreatePads(TCanvas* &cv, int i_part=0)
   return pads;
 }
 
-Color_t colors[]={kOrange+7, kAzure+4, kTeal+4};
+Color_t colors[]={kRed, kOrange-3, kAzure+4,kGreen+2,kMagenta+2};
 double x_limits[][2]={{0.7,1.6},{0.5, 3.},{2., 35.},{2., 8.},{1.,10.},{1.6, 3.}};
 double x_limits_30_50[][2]={{0.7,1.6},{.5, 3.},{2., 14.},{2., 7.},{1.,10.},{1.6, 3.}};
 double material_ratio_instance[] = {5,4,3,1,-10,2};
-const char *format_fit_results[] = {"R=%.3f #pm0.000 (stat.) #pm%.3f (syst.) #pm%.3f (mat.)","R=%.3f #pm0.000 (stat.) #pm%.3f (syst.) #pm%.3f (mat.)","R=%.2f #pm%.2f (stat.) #pm%.2f (syst.) #pm%.2f (mat.)","R=%.2f #pm%.2f (stat.) #pm%.2f (syst.) #pm%.2f (mat.)","R=%.3f #pm%.3f (stat.+ eff.) #pm%.3f (syst.) #pm%.3f (mat.)","R=%.2f #pm%.2f (stat.) #pm%.2f (syst.) #pm%.2f (mat.)"};
+const char *format_fit_results[] = {"R=%.4f #pm0.0000 (stat.) #pm%.4f (uncorr.) #pm%.4f (corr.)","R=%.3f #pm0.000 (stat.) #pm%.3f (uncorr.) #pm%.3f (corr.)","R=%.2f #pm%.2f (stat.) #pm%.2f (uncorr.) #pm%.2f (corr.)","R=%.2f #pm%.2f (stat.) #pm%.2f (uncorr.) #pm%.2f (corr.)","R=%.3f #pm%.3f (stat.+ eff.) #pm%.3f (syst.)","R=%.2f #pm%.2f (stat.) #pm%.2f (uncorr.) #pm%.2f (corr.)"};
+const char *format_out_results[] = {"%s\t%.12f\t0.000000000000\t%.12f\t%.12f","%s\t%.12f\t0.000000000000\t%.12f\t%.12f","%s\t%.12f\t%.12f\t%.12f\t%.12f","%s\t%.12f\t%.12f\t%.12f\t%.12f","%s\t%.12f\t%.12f\t%.12f","%s\t%.12f\t%.12f\t%.12f\t%.12f"};
 
 void newratios() {
+  std::ofstream out_ratios_file;
+  out_ratios_file.open("run2_ratios.dat");
   gStyle->SetOptStat(0);
   const float leftmargin = 0.16;
   const float rigthmargin = 0.04;
@@ -90,7 +94,9 @@ void newratios() {
   const float titleYoffset = 2.3;
 
   for (int i_part =0; i_part<n_part; ++i_part){
-    TCanvas *cv = new TCanvas("cv","cv",480,800);
+    out_ratios_file << outputFiles[i_part] << std::endl;
+    out_ratios_file << outputFormat[i_part] << std::endl;
+    TCanvas *cv = new TCanvas("cv","cv",480,900);
     auto pads = CreatePads(cv, i_part);
 
     TLatex text;
@@ -108,17 +114,21 @@ void newratios() {
     text.SetTextSize(18);
     text.DrawLatex(mean_x+0.08*half_width_x,mean_y+0.55*half_width_y,"Pb-Pb #sqrt{#it{s}_{NN}} = 5.02 TeV");
 
-    const string labels[3]{"0-5%","5-10%","30-50%"};
-    const string names[3]{"0_5","5_10","30_50"};
+    const string labels[5]{"0-5%","5-10%","30-50%","10-30%","50-90%"};
+    const string names[5]{"0_5","5_10","30_50","10_30","50_90"};
     TFile input(inputFiles[i_part]);
     TFile input_material("FinalPlot3D.root");
     TFile input_sys(inputFilesSys[i_part]);
     TFile input_sys_MC(inputFilesSysMC[i_part]);
-    TGraphErrors *g[3],*gSys[3];
-    TH1D* h[3];
-    TF1 *f[3];
-    for (int iP = 0; iP < 3; ++iP) {
-      pads[iP]->cd();
+    TGraphErrors *g[5],*gSys[5];
+    TH1D* h[5];
+    TF1 *f[5];
+    for (int iPP = 0; iPP < 5; ++iPP) {
+      int iP = iPP;
+      if (i_part==2&&iPP==4)continue;
+      if (iPP==2)iP=3;
+      if (iPP==3)iP=2;
+      pads[iPP]->cd();
       text.SetTextSize(18);
       text.DrawText(mean_x-0.89*half_width_x,mean_y+0.75*half_width_y,labels[iP].data());
       if (i_part!=4) h[iP] = (TH1D*)input.Get(Form("%sfRatio_%s",dir[i_part],names[iP].data()));
@@ -133,32 +143,38 @@ void newratios() {
       double material_error=0;
       if (i_part!=4){
         for (int iMat=0;iMat<3;++iMat){
-          auto hMaterial=(TH1D*)input_material.Get(Form("fRatio_%s;%.0f",names[iP].data(),iMat*5+material_ratio_instance[i_part]));
+          auto hMaterial=(TH1D*)input_material.Get(Form("fRatio_%s;%.0f",names[iP].data(),iMat*(5-(int)(iP>3))+(material_ratio_instance[i_part])-((int)(iP>3 && i_part<2))));
           ratio_mat[iMat] = hMaterial->GetFunction("pol0")->GetParameter(0);
         }
         material_error = std::abs(ratio_mat[1]-ratio_mat[0])*0.5;
       }
+      
       int iPoint{0};
       while (iPoint<g[iP]->GetN()){
         double x=g[iP]->GetPointX(iPoint);
-        if ( ((x<x_limits[i_part][0]||x>x_limits[i_part][1])&&iP<2) || ((x<x_limits_30_50[i_part][0]||x>x_limits_30_50[i_part][1])&&iP==2) ){
+        if ( ((x<x_limits[i_part][0]||x>x_limits[i_part][1])&&((iP!=2&&i_part!=3)||((iP!=2&&iP!=3&&i_part==3)))) || ((x<x_limits_30_50[i_part][0]||x>x_limits_30_50[i_part][1])&&((iP==2&&i_part!=3)||((iP>=2&&iP<=3&&i_part==3))||((iP>=2&&iP<=3&&i_part==2)))) ){
           g[iP]->RemovePoint(iPoint);
         }
         else ++iPoint;
       }
+      g[iP]->SetLineColor(colors[iP]);
+      g[iP]->SetMarkerColor(colors[iP]);
+
       double sys_tot = 0.;
       if (i_part>1){
         TH1D *sys=nullptr;
         if (i_part!=4){
           sys=(TH1D*)input_sys.Get(Form(inputHistoSys[i_part],names[iP].data()));
         }
-        else sys=(TH1D*)input_sys.Get(Form(inputHistoSys[i_part],iP*2-1));
+        else sys=(TH1D*)input_sys.Get(Form(inputHistoSys[i_part],(iP*2)+1));
         double sysMC_val = 0;
         if (i_part==3) {
           TH1D *sys_MC=(TH1D*)input_sys_MC.Get(Form("fRatioDistribution_%s",names[iP].data()));
           sysMC_val=sys_MC->GetRMS();
         }
         gSys[iP]=new TGraphErrors(*g[iP]);
+        gSys[iP]->SetLineColor(colors[iP]);
+        gSys[iP]->SetMarkerColor(colors[iP]);
         sys_tot = TMath::Sqrt(sys->GetRMS()*sys->GetRMS()+sysMC_val*sysMC_val);
         for (int iPoint=0;iPoint<g[iP]->GetN();++iPoint){
           gSys[iP]->SetPointError(iPoint,h[iP]->GetBinWidth(h[iP]->FindBin(g[iP]->GetPointX(iPoint)))*0.5,sys_tot);
@@ -176,13 +192,30 @@ void newratios() {
       i_part<2 ? g[iP]->Draw("pe5same") : g[iP]->Draw("pesame");
       if (i_part>1) gSys[iP]->Draw("pe5same");
       text.SetTextSize(15);
-      double sys_err = sqrt(h[iP]->GetFunction("pol0")->GetParameter(0)*h[iP]->GetFunction("pol0")->GetParameter(0)*(xsec_err_sq[i_part])+(1-i_part/2)*h[iP]->GetFunction("pol0")->GetParError(0)*h[iP]->GetFunction("pol0")->GetParError(0)+(i_part/2)*sys_tot*sys_tot);
+      double sys_err = sqrt((double)(i_part<2)*h[iP]->GetFunction("pol0")->GetParError(0)*h[iP]->GetFunction("pol0")->GetParError(0)+(double)(i_part>1)*sys_tot*sys_tot);
+      if (i_part<2){
+        TH1D* sys=(TH1D*)input.Get(Form(inputHistoSys[i_part],names[iP].data()));
+        sys_tot = TMath::Sqrt(sys->GetRMS()*sys->GetRMS());
+      }
+      //else sys_tot = 0.;
+      material_error = sqrt(material_error*material_error+h[iP]->GetFunction("pol0")->GetParameter(0)*h[iP]->GetFunction("pol0")->GetParameter(0)*(xsec_err_sq[i_part])+(double)(i_part<2)*sys_tot*sys_tot);
       if (draw_text) {
-        if (i_part<2)text.DrawLatex(mean_x-0.91*half_width_x,mean_y-0.8*half_width_y,Form(format_fit_results[i_part],h[iP]->GetFunction("pol0")->GetParameter(0),sys_err,material_error));
-        else if (i_part==4)text.DrawLatex(mean_x-0.91*half_width_x,mean_y-0.8*half_width_y,Form(format_fit_results[i_part],h[iP]->GetFunction("pol0")->GetParameter(0),h[iP]->GetFunction("pol0")->GetParError(0),sys_tot,material_error));
-        else text.DrawLatex(mean_x-0.91*half_width_x,mean_y-0.8*half_width_y,Form(format_fit_results[i_part],h[iP]->GetFunction("pol0")->GetParameter(0),h[iP]->GetFunction("pol0")->GetParError(0),sys_err,material_error));
+        if (i_part<2){
+          text.DrawLatex(mean_x-0.91*half_width_x,mean_y-0.8*half_width_y,Form(format_fit_results[i_part],h[iP]->GetFunction("pol0")->GetParameter(0),sys_err,material_error));
+          out_ratios_file <<Form(format_out_results[i_part],labels[iP].data(),h[iP]->GetFunction("pol0")->GetParameter(0),sys_err,material_error)<< std::endl;
+        }
+        else if (i_part==4){
+          text.DrawLatex(mean_x-0.91*half_width_x,mean_y-0.8*half_width_y,Form(format_fit_results[i_part],h[iP]->GetFunction("pol0")->GetParameter(0),h[iP]->GetFunction("pol0")->GetParError(0),sys_tot));
+          out_ratios_file <<Form(format_out_results[i_part],labels[iP].data(),h[iP]->GetFunction("pol0")->GetParameter(0),h[iP]->GetFunction("pol0")->GetParError(0),sys_tot)<< std::endl;
+        }
+        else {
+          text.DrawLatex(mean_x-0.91*half_width_x,mean_y-0.8*half_width_y,Form(format_fit_results[i_part],h[iP]->GetFunction("pol0")->GetParameter(0),h[iP]->GetFunction("pol0")->GetParError(0),sys_err,material_error));
+          out_ratios_file <<Form(format_out_results[i_part],labels[iP].data(),h[iP]->GetFunction("pol0")->GetParameter(0),h[iP]->GetFunction("pol0")->GetParError(0),sys_err,material_error)<< std::endl;
+        }
       }
     }
-    cv->SaveAs(Form("RatioRun2_%s.eps",outputFiles[i_part]));
+    cv->SaveAs(Form("RatioRun2_%s.pdf",outputFiles[i_part]));
+    out_ratios_file << "\n" << std::endl;
   }
+  out_ratios_file.close();
 }

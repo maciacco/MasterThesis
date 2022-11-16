@@ -32,8 +32,8 @@ void Systematics(const int points = kNPoints, const bool cutVar = true, const bo
   TStopwatch swatch;
   swatch.Start(true);
 
-  TFile *specFile = TFile::Open(Form("%s/SpectraHe3Syst.root", kOutDir));
-  TFile *outFile = TFile::Open(Form("%s/%s_extend.root", kOutDir, outFileName), "recreate");
+  TFile *specFile = TFile::Open(Form("%s/SpectraHe3Syst_extend2.root", kOutDir));
+  TFile *outFile = TFile::Open(Form("%s/%s_extend2.root", kOutDir, outFileName), "recreate");
   TDirectory *cdHist = outFile->mkdir("hist");
 
   for (int iC = 0; iC < kNCentClasses; ++iC)
@@ -108,6 +108,10 @@ void Systematics(const int points = kNPoints, const bool cutVar = true, const bo
 
         // std::cout<<"hname="<<hname<<std::endl;
         TH1D *h = (TH1D *)specFile->Get(Form("%s/fRatio_%.0f_%.0f", hname, kCentBinsLimitsHe3[iC][0], kCentBinsLimitsHe3[iC][1]));
+        if (!h) continue;
+        if ((h->GetBinError(iPtBin)/h->GetBinContent(iPtBin))<0.02) {
+          continue;
+        }
         fRatio.SetBinContent(iPtBin, h->GetBinContent(iPtBin));
         fRatio.SetBinError(iPtBin, h->GetBinError(iPtBin));
         if (h->GetBinContent(iPtBin)<1.e-7) n_zero+=1;
