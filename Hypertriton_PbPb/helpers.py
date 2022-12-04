@@ -44,19 +44,20 @@ def expo(x):
     return np.exp(-x / (252 * 0.029979245800)) #hyp tau taken from lifetime analysis
 
 def expected_signal(cent_class, ct_range, eff, n_events):
-    he3_yield_list = [2.35e-4, 2.03e-4, 6.58e-5]
+    efficiency = float(eff)
+    he3_yield_list = [1.9986466e-4, 1.6916176e-4, 4.8585404e-5, 1.2515018e-4]
     correction = 0.4  # he3/hyp ratio (Very optimistic, considering it constant with centrality)
     correction *= 0.25 # 2-body Branching ratio
     correction *= expo(ct_range[0])- expo(ct_range[1]) #selecting the correct ct bin
-    correction *= eff
-    cent_end_bin = [5., 10., 50.]
+    correction *= efficiency
+    cent_end_bin = [5., 10., 50., 30.]
     for cent_bin, he3_yield in zip(cent_end_bin, he3_yield_list):
         if cent_bin==cent_class[1]:
-            return he3_yield*correction*n_events
+            return int(np.round(he3_yield*correction*n_events))
 
     # expected signal for 0-90% centrality
     he3_yield_0_90 = 2.74e4
-    return correction*he3_yield_0_90
+    return int(np.round(correction*he3_yield_0_90))
 
 def he3_correction_pt(iMatt, pt):
     if iMatt == 1:

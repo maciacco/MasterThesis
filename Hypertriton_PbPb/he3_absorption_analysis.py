@@ -19,8 +19,8 @@ with open(os.path.expandvars(config), 'r') as stream:
     except yaml.YAMLError as exc:
         print(exc)
 
-CT_BINS_CENT = params['CT_BINS_CENT']
-CENTRALITY_LIST = params['CENTRALITY_LIST']
+CT_BINS_CENT = params['CT_BINS_CENT_1']
+CENTRALITY_LIST = params['CENTRALITY_LIST_1']
 ##################################################################
 
 if not os.path.isdir(f'plots/absorption_correction'):
@@ -30,9 +30,9 @@ split_list = ['antimatter', 'matter']
 cent_bins_MB = [[0, 10], [10, 40], [40, 90]]
 
 # mc input file
-mc_file = './AnalysisResults.root'
+mc_file = '/data/mciacco/Hypertriton_PbPb/AnalysisResults.root'
 outfile = ROOT.TFile("He3_abs.root", "recreate")
-centfile = ROOT.TFile("AnalysisResults_18.root")
+centfile = ROOT.TFile("/data/mciacco/Hypertriton_PbPb/AnalysisResults_18.root")
 
 # get event centrality distribution
 cent_dist = centfile.Get("Centrality_selected")
@@ -50,11 +50,11 @@ func_names = ["BGBW", "Boltzmann", "Mt-exp", "Pt-exp", "LevyTsallis"]
 func_names_MB = ["BlastWave", "Boltzmann", "LevyTsallis", "Mt-exp"]
 
 # functions input files
-input_func_file = ROOT.TFile("Anti_fits.root")
-input_func_file_MB = ROOT.TFile("BlastWaveFits.root")
+input_func_file = ROOT.TFile("/data/mciacco/Hypertriton_PbPb/Anti_fits.root")
+input_func_file_MB = ROOT.TFile("/data/mciacco/Hypertriton_PbPb/BlastWaveFits.root")
 
 # get functions and maxima from file
-cent_index = [1, 2, 4]
+cent_index = [1, 2, 4, 3]
 for i_cent in range(len(CENTRALITY_LIST)-2):
     for i_fun in range(n_fun[i_cent]):
         func[i_cent].append(input_func_file.Get(
@@ -82,7 +82,7 @@ h_gen_pt = [[] for _ in range(cent_len)]
 h_rec_radius = [[] for _ in range(cent_len)]
 h_rec_ct = [[] for _ in range(cent_len)]
 h_rec_pt = [[] for _ in range(cent_len)]
-for i_cent in range(cent_len):
+for i_cent in range(cent_len-1):
     for i_fun in range(n_fun[i_cent]):
         ct_bins = np.asarray(CT_BINS_CENT[i_cent], dtype="float")
         cent_bins = CENTRALITY_LIST[i_cent]
@@ -138,7 +138,7 @@ for he3 in zip(np_he3['pt'], np_he3['pdg'], np_he3['absCt'], np_he3['eta']):
     absCt = he3[2]
 
     # analysis in centrality classes
-    for i_cent in range(len(CENTRALITY_LIST)-1):
+    for i_cent in range(len(CENTRALITY_LIST)-2):
         for i_fun in range(n_fun[i_cent]):
             # rejection sampling to reweight pt
             if ROOT.gRandom.Rndm()*func_max[i_cent][i_fun] > func[i_cent][i_fun].Eval(he3[0]):
@@ -196,7 +196,7 @@ for he3 in zip(np_he3['pt'], np_he3['pdg'], np_he3['absCt'], np_he3['eta']):
             h_rec_pt[4][i_fun][i_matt].Fill(he3[0])
 
 # write histograms and compute efficiency
-for i_cent in range(cent_len):
+for i_cent in range(cent_len-1):
     cent_bins = CENTRALITY_LIST[i_cent]
     outfile.mkdir(f"{cent_bins[0]}_{cent_bins[1]}")
     outfile.cd(f"{cent_bins[0]}_{cent_bins[1]}")

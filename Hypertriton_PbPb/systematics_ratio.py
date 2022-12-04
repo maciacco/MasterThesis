@@ -47,10 +47,10 @@ signal_extraction_file = ROOT.TFile.Open('SignalExtraction.root')
 signal_extraction_keys = uproot.open('SignalExtraction.root').keys()
 
 abs_correction_file = ROOT.TFile.Open('He3_abs.root')
-eff_correction_file = ROOT.TFile.Open('EffAbsCorrection.root')
+eff_correction_file = ROOT.TFile.Open('EffAbsCorrection_1.root')
 systematics_file = ROOT.TFile.Open('SystematicsRatio.root', 'recreate')
 
-for i_cent_bins in range(len(CENTRALITY_LIST)-2):
+for i_cent_bins in range(len(CENTRALITY_LIST)):
     cent_bins = CENTRALITY_LIST[i_cent_bins]
 
     h_parameter_distribution = ROOT.TH1D(f'fParameterDistribution_{cent_bins[0]}_{cent_bins[1]}', f'{cent_bins[0]}-{cent_bins[1]}%', 200, 0, 2)
@@ -156,15 +156,22 @@ for i_cent_bins in range(len(CENTRALITY_LIST)-2):
         res = h_ratio.Fit(fit_function, 'SQ')
         systematics_file.cd(f'{cent_bins[0]}_{cent_bins[1]}')
 
-        if fit_function.GetProb() > 0.025 and fit_function.GetProb() < 0.975 and res.Status() == 0 and res.Ndf() > 1:
-            # h_ratio.Write()
-            h_parameter_distribution.Fill(fit_function.GetParameter(0))
-            h_prob_distribution.Fill(res.Prob())
-            i_trial += 1
+        prob_lim = 1
+        ndf_lim = 1
+        if cent_bins[0]==10:
+            prob_lim = 1
+            ndf_lim = 0
+        if fit_function.GetProb() > 0.05 and fit_function.GetProb() < prob_lim and res.Status() == 0 and res.Ndf() > ndf_lim:
+            if (cent_bins[0] == 10 and fit_function.GetChisquare() < 0.6) or (cent_bins[0]!=10):
+                # h_ratio.Write()
+                h_parameter_distribution.Fill(fit_function.GetParameter(0))
+                h_prob_distribution.Fill(res.Prob())
+                i_trial += 1
         del h_corrected_yields
         del h_ratio
 
     systematics_file.cd()
+    h_parameter_distribution.Rebin(2)
     h_parameter_distribution.GetXaxis().SetTitle("p_{0}")
     h_parameter_distribution.GetXaxis().SetRangeUser(0.4, 1.4)
     h_parameter_distribution.GetYaxis().SetTitle("Entries")
@@ -181,8 +188,8 @@ for i_cent_bins in range(len(CENTRALITY_LIST)-2):
     # plot systematics distribution
     c = ROOT.TCanvas("c", "c")
     ROOT.gStyle.SetOptStat(110001110)
-    ROOT.gStyle.SetStatX(0.85);
-    ROOT.gStyle.SetStatY(0.85);
+    ROOT.gStyle.SetStatX(0.85)
+    ROOT.gStyle.SetStatY(0.85)
     c.cd()
     c.SetTicks(1, 1)
     mean = h_parameter_distribution.GetMean()

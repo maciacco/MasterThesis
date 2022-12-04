@@ -14,7 +14,7 @@ SPLIT = True
 N_TRIALS = 10000
 MAX_EFF = 1
 speed_of_light = 0.0299792458
-centrality_colors = [ROOT.kOrange+7, ROOT.kAzure+4, ROOT.kTeal+4]
+centrality_colors = [ROOT.kOrange+7, ROOT.kAzure+4, ROOT.kTeal+4, ROOT.kCyan+1, ROOT.kMagenta-3]
 warnings.simplefilter(action='ignore', category=FutureWarning)
 ROOT.gROOT.SetBatch()
 
@@ -51,11 +51,11 @@ SPLIT_LIST = ['all']
 if SPLIT:
     SPLIT_LIST = ['antimatter', 'matter']
 
-raw_yields_file = ROOT.TFile('SignalExtraction-data.root')
+raw_yields_file = ROOT.TFile('SignalExtraction-data-extend-3.root')
 # score_eff_dict = pickle.load(open('second_round/file_score_eff_dict','rb'))
 eff_array = np.arange(0.10, MAX_EFF, 0.01)
-f = ROOT.TFile("ratio.root","recreate")
-cut_val_cent = [0.5,0.5,0.5]
+f = ROOT.TFile("ratio_cutCompetingMass-3.root","recreate")
+cut_val_cent = [0.5,0.5,0.5,0.5,0.5]
 
 # for i_cent_bins in range(len(CENTRALITY_LIST)):
 #     h = []
@@ -140,15 +140,16 @@ for i_cent_bins in range(len(CENTRALITY_LIST)):
             raw_yield_error = h_raw[i_split].GetBinError(h_raw[i_split].FindBin(cut_val))/cut_val
             j = 0
             i = np.power(-1,j)*0.01*int(j/2)
-            while (raw_yield < 1.e-6 or raw_yield_error/raw_yield > 0.03) and (cut_val+i < (cut_val+0.05)) and (cut_val+i > (cut_val-0.05)):
+            while (raw_yield < 1.e-6 or (raw_yield_error/raw_yield > 0.03 and i_cent_bins<4)) and (cut_val+i < (cut_val+0.05)) and (cut_val+i > (cut_val-0.05)):
                 i = np.power(-1,j)*0.01*int(j/2)
                 j = j + 1
                 raw_yield = h_raw[i_split].GetBinContent(h_raw[i_split].FindBin(cut_val+i))/(cut_val+i)
                 raw_yield_error = h_raw[i_split].GetBinError(h_raw[i_split].FindBin(cut_val+i))/(cut_val+i)
+                print(f'check other eff... (i_split={i_split}, i={i})')
             if raw_yield < 1.e-6:
                 continue
             h[i_split].SetBinContent(h[i_split].FindBin(0.5*(ct_bins[0]+ct_bins[1])),raw_yield/delta_t/h_pres_eff[i_split].GetBinContent(h[i_split].FindBin(0.5*(ct_bins[0]+ct_bins[1]))))
-            h[i_split].SetBinError(h[i_split].FindBin(0.5*(ct_bins[0]+ct_bins[1])),np.sqrt((h_raw[i_split].GetBinError(h_raw[i_split].FindBin(cut_val+i)))**2/((h_raw[i_split].GetBinContent(h_raw[i_split].FindBin(cut_val+i)))**2)+(h_pres_eff[i_split].GetBinError(h[i_split].FindBin(0.5*(ct_bins[0]+ct_bins[1]))))**2/((h_pres_eff[i_split].GetBinContent(h[i_split].FindBin(0.5*(ct_bins[0]+ct_bins[1]))))**2))*raw_yield/delta_t/h_pres_eff[i_split].GetBinContent(h[i_split].FindBin(0.5*(ct_bins[0]+ct_bins[1]))))
+            h[i_split].SetBinError(h[i_split].FindBin(0.5*(ct_bins[0]+ct_bins[1])),np.sqrt(((h_raw[i_split].GetBinError(h_raw[i_split].FindBin(cut_val+i)))**2)/((h_raw[i_split].GetBinContent(h_raw[i_split].FindBin(cut_val+i)))**2)+2*((h_pres_eff[i_split].GetBinError(h[i_split].FindBin(0.5*(ct_bins[0]+ct_bins[1]))))**2)/((h_pres_eff[i_split].GetBinContent(h[i_split].FindBin(0.5*(ct_bins[0]+ct_bins[1]))))**2))*raw_yield/delta_t/h_pres_eff[i_split].GetBinContent(h[i_split].FindBin(0.5*(ct_bins[0]+ct_bins[1]))))
 
     h_ratio = ROOT.TH1D(f"h_ratio_{cent_bins[0]}_{cent_bins[1]}",f"h_ratio_{cent_bins[0]}_{cent_bins[1]}",len(CT_BINS_CENT[i_cent_bins])-1,np.asarray(CT_BINS_CENT[i_cent_bins],dtype="float"))
     h_ratio.GetXaxis().SetTitle("#it{c}t (cm)")
@@ -201,7 +202,7 @@ for i_cent_bins in range(len(CENTRALITY_LIST)):
                 bbkg = 'expo'
             split_ineq_sign = '> -0.1'
             cut_rndm_ = int(ROOT.gRandom.Rndm()*20)*0.01
-            if cent_bins[0]==30:
+            if cent_bins[0]>9:
                 cut_rndm_ = int(ROOT.gRandom.Rndm()*30)*0.01
             for i_split, split in enumerate(SPLIT_LIST):
                 if SPLIT:
@@ -225,7 +226,7 @@ for i_cent_bins in range(len(CENTRALITY_LIST)):
                 if h_tmp[i_split].GetBinContent(h_tmp[i_split].FindBin(0.5*(ct_bins[0]+ct_bins[1])))<1.e-6:
                     zero_entries[i_split]=zero_entries[i_split]+1
                     continue
-                h_tmp[i_split].SetBinError(h_tmp[i_split].FindBin(0.5*(ct_bins[0]+ct_bins[1])),np.sqrt((h_raw.GetBinError(h_raw.FindBin(cut_rndm+0.0001)))**2/((h_raw.GetBinContent(h_raw.FindBin(cut_rndm+0.0001)))**2)+(h_pres_eff.GetBinError(h_tmp[i_split].FindBin(0.5*(ct_bins[0]+ct_bins[1]))))**2/((h_pres_eff.GetBinContent(h_tmp[i_split].FindBin(0.5*(ct_bins[0]+ct_bins[1]))))**2))*h_raw.GetBinContent(h_raw.FindBin(cut_rndm+0.0001))/h_raw.GetXaxis().GetBinLowEdge(h_raw.FindBin(cut_rndm+0.0001))/h_pres_eff.GetBinContent(h_tmp[i_split].FindBin(0.5*(ct_bins[0]+ct_bins[1]))))
+                h_tmp[i_split].SetBinError(h_tmp[i_split].FindBin(0.5*(ct_bins[0]+ct_bins[1])),np.sqrt((h_raw.GetBinError(h_raw.FindBin(cut_rndm+0.0001)))**2/((h_raw.GetBinContent(h_raw.FindBin(cut_rndm+0.0001)))**2)+2*(h_pres_eff.GetBinError(h_tmp[i_split].FindBin(0.5*(ct_bins[0]+ct_bins[1]))))**2/((h_pres_eff.GetBinContent(h_tmp[i_split].FindBin(0.5*(ct_bins[0]+ct_bins[1]))))**2))*h_raw.GetBinContent(h_raw.FindBin(cut_rndm+0.0001))/h_raw.GetXaxis().GetBinLowEdge(h_raw.FindBin(cut_rndm+0.0001))/h_pres_eff.GetBinContent(h_tmp[i_split].FindBin(0.5*(ct_bins[0]+ct_bins[1]))))
                 
         print(f'zero_entries = {zero_entries}')
         if zero_entries[0] ==11 or zero_entries[1]>0:

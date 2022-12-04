@@ -65,7 +65,7 @@ DUMP_HYPERPARAMS = False
 TRAINING = not args.application
 PLOT_DIR = 'plots'
 MAKE_PRESELECTION_EFFICIENCY = args.eff
-MAKE_FEATURES_PLOTS = True
+MAKE_FEATURES_PLOTS = False
 MAKE_TRAIN_TEST_PLOT = args.train
 OPTIMIZE = False
 OPTIMIZED = False
@@ -138,8 +138,8 @@ if TRAINING:
                 ##############################################################
                 # df_generated = uproot.open(os.path.expandvars(MC_SIGNAL_PATH_GEN))['LambdaTree'].arrays(library="pd")
                 
-                root_file_presel_eff = ROOT.TFile(f"PreselEff_{cent_bins[0]}_{cent_bins[1]}_fineCt_plots.root", "update")
-                df_signal_cent = df_signal.query(f'matter {split_ineq_sign} and (pdg==3334 or pdg==-3334) and mass > 1.645 and mass < 1.70 and pt > 0.5 and pt < 4.5 and isReconstructed and bachBarCosPA < 0.99995 and tpcClV0Pi > 69 and tpcClV0Pr > 69 and tpcClBach > 69 and radius < 25 and radiusV0 < 25 and dcaV0prPV < 2.5 and dcaV0piPV < 2.5 and dcaV0PV < 2.5 and dcaBachPV < 2.5 and eta < 0.8 and eta > -0.8 and isOmega and flag==1') # and (hasTOFhit or hasITSrefit)') # pt cut? (hasTOFhit or hasITSrefit) and 
+                root_file_presel_eff = ROOT.TFile(f"PreselEff_{cent_bins[0]}_{cent_bins[1]}_fineCt.root", "update")
+                df_signal_cent = df_signal.query(f'competingMass > 0.01 and matter {split_ineq_sign} and (pdg==3334 or pdg==-3334) and mass > 1.645 and mass < 1.70 and pt > 0.5 and pt < 4.5 and isReconstructed and bachBarCosPA < 0.99995 and tpcClV0Pi > 69 and tpcClV0Pr > 69 and tpcClBach > 69 and radius < 25 and radiusV0 < 25 and dcaV0prPV < 2.5 and dcaV0piPV < 2.5 and dcaV0PV < 2.5 and dcaBachPV < 2.5  and eta < 0.8 and eta > -0.8 and isOmega and flag==1') # and (hasTOFhit or hasITSrefit)') # pt cut? (hasTOFhit or hasITSrefit) and  and radius < 25 and radiusV0 < 25 and dcaV0prPV < 2.5 and dcaV0piPV < 2.5 and dcaV0PV < 2.5 and dcaBachPV < 2.5
                 df_generated_cent = df_signal.query(
                     f'pdg {split_ineq_sign} and ptMC > 0.5 and ptMC < 4.5 and (pdg==3334 or pdg==-3334) and flag==1') # pt cut?
                 #del df_generated

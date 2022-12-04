@@ -63,7 +63,7 @@ for split in SPLIT_LIST:
             df_signal = pd.read_parquet(f'df/mc_{bin}')
 
             # ROOT.Math.MinimizerOptions.SetDefaultTolerance(1e-2)
-            root_file_signal_extraction = ROOT.TFile("SignalExtraction.root", "update")
+            root_file_signal_extraction = ROOT.TFile("SignalExtraction_1.root", "update")
             root_file_signal_extraction.mkdir(f'{bin}_{bkg_shape}')
 
             # raw yileds histogram
@@ -94,19 +94,21 @@ for split in SPLIT_LIST:
                 roo_n_signal = ROOT.RooRealVar('N_{signal}', 'Nsignal', 0., 1.e3)
                 delta_mass = ROOT.RooRealVar("#deltam", 'deltaM', -0.004, 0.004, 'GeV/c^{2}')
                 shifted_mass = ROOT.RooAddition("mPrime", "m + #Deltam", ROOT.RooArgList(roo_m, delta_mass))
-                roo_signal = ROOT.RooKeysPdf("signal", "signal", shifted_mass, roo_m,
+                roo_signal = ROOT.RooKeysPdf("signal_", "signal_", shifted_mass, roo_m,
                                              roo_mc_signal, ROOT.RooKeysPdf.NoMirror, 2)
                 roo_signal_plot = ROOT.RooKeysPdf(roo_signal)
 
                 # background
                 roo_n_background = ROOT.RooRealVar('N_{bkg}', 'Nbackground', 0., 1.e4)
-                roo_slope = ROOT.RooRealVar('slope', 'slope', -20., 20.)
+                roo_slope = ROOT.RooRealVar('slope', 'slope', -100., 100.)
+                roo_a = ROOT.RooRealVar('a', 'a', -1., 1.)
+                roo_b = ROOT.RooRealVar('b', 'b', -100., 100.)
                 roo_bkg = ROOT.RooRealVar()
 
                 if not BKG_EXPO:
-                    roo_bkg = ROOT.RooPolynomial('background', 'background', roo_m, ROOT.RooArgList(roo_slope))
+                    roo_bkg = ROOT.RooChebychev('background_', 'background_', roo_m, ROOT.RooArgList(roo_a))
                 else:
-                    roo_bkg = ROOT.RooExponential('background', 'background', roo_m, roo_slope)
+                    roo_bkg = ROOT.RooExponential('background_', 'background_', roo_m, roo_slope)
 
                 # model
                 roo_model = ROOT.RooAddPdf(
@@ -117,7 +119,8 @@ for split in SPLIT_LIST:
                 ROOT.RooMsgService.instance().setGlobalKillBelow(ROOT.RooFit.ERROR)
                 ROOT.RooMsgService.instance().setSilentMode(ROOT.kTRUE)
                 ROOT.gErrorIgnoreLevel = ROOT.kError
-                r = roo_model.fitTo(roo_data, ROOT.RooFit.Save(), ROOT.RooFit.Extended(ROOT.kTRUE))
+                for i in range(2):
+                    r = roo_model.fitTo(roo_data, ROOT.RooFit.Save(), ROOT.RooFit.Extended(ROOT.kTRUE))
 
                 print(f'fit status: {r.status()}')
                 if r.status() == 0 and delta_mass.getError() > 1.e-6:
@@ -131,16 +134,16 @@ for split in SPLIT_LIST:
                     xframe.SetName(f'fInvMass_{formatted_eff}')
                     roo_data.plotOn(xframe, ROOT.RooFit.Name('data'))
                     roo_model.plotOn(
-                        xframe, ROOT.RooFit.Components('background'),
+                        xframe, ROOT.RooFit.Components('background_'),
                         ROOT.RooFit.Name('background'),
                         ROOT.RooFit.LineStyle(ROOT.kDashed),
                         ROOT.RooFit.LineColor(ROOT.kGreen))
-                    roo_model.plotOn(xframe, ROOT.RooFit.Components('signal'), ROOT.RooFit.Name('signal'),
+                    roo_model.plotOn(xframe, ROOT.RooFit.Components('signal_'), ROOT.RooFit.Name('signal'),
                                      ROOT.RooFit.LineStyle(ROOT.kDashed), ROOT.RooFit.LineColor(ROOT.kRed))
                     roo_model.plotOn(xframe, ROOT.RooFit.Name('model'), ROOT.RooFit.LineColor(ROOT.kBlue))
 
                     formatted_chi2 = "{:.2f}".format(xframe.chiSquare('model', 'data'))
-                    roo_model.paramOn(xframe, ROOT.RooFit.Label(
+                    roo_model.paramOn(xframe, ROOT.RooFit.Parameters(ROOT.RooArgSet(roo_n_signal,delta_mass,roo_n_background)),ROOT.RooFit.Label(
                         '#chi^{2}/NDF = '+formatted_chi2),
                         ROOT.RooFit.Layout(0.55, 0.85, 0.88))
                     xframe.getAttText().SetTextFont(44)
@@ -163,8 +166,7 @@ for split in SPLIT_LIST:
                         m_set = ROOT.RooArgSet(roo_m)
                         normSet = ROOT.RooFit.NormSet(m_set)
                         roo_m.setRange(
-                            'signalRange', mass_val - 3 * roo_sigma_mc.getVal(),
-                            mass_val + 3 * roo_sigma_mc.getVal())
+                            'signalRange', 2.98, 3.005)
                         signal_int = (roo_model.pdfList().at(0).createIntegral(
                             m_set, normSet, ROOT.RooFit.Range("signalRange"))).getVal()
                         print(f'signal integral = {signal_int}')

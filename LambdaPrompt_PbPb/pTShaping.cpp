@@ -19,9 +19,9 @@ constexpr double T_kin[nCent] = {0.090, 0.091, 0.094, 0.097, 0.101, 0.108, 0.115
 constexpr double n[nCent] = {0.735, 0.736, 0.739, 0.771, 0.828, 0.908, 1.052, 1.262, 1.678, 2.423};
 constexpr double avg_mult[nCent] = {1943, 1587, 1180, 786, 512, 318, 183, 96.3, 44.9, 17.5};
 
-constexpr int centSplit[][2]={{0,0},{1,1},{4,5},{0,10}}; // 0-5%, 5-10%, 30-50%, 0-90%
+constexpr int centSplit[][2]={{0,0},{1,1},{4,5},{0,9}}; // 0-5%, 5-10%, 30-50%, 0-90%
 constexpr int nCentSplit[]={1,1,2,10}; // 0-5%, 5-10%, 30-50%, 0-90%
-constexpr int centClass = 0; // 0-5% -> 0, 5-10% -> 1, 30-50% -> 2, 0-90% -> 3
+constexpr int centClass = 3; // 0-5% -> 0, 5-10% -> 1, 30-50% -> 2, 0-90% -> 3
 
 constexpr bool reject = true;
 
@@ -54,9 +54,9 @@ double full_bw_max(TF1 *bw_array[], double max_steps = 1.e3, double max_pT = 10.
   return h.GetMaximum();
 }
 
-const char* kInFileMCName = "../data/LambdaPrompt_PbPb/AnalysisResults_LHC21l5_LambdaCtMotherAndProtonsITSPID.root";
-const char* kInFileCentName = "../data/LambdaPrompt_PbPb/StrangenessRatios_summary.root";
-const char* kOutFileName = "pTShapesLXiOm_0_5.root";
+const char* kInFileMCName = "/data/mciacco/LambdaPrompt_PbPb/AnalysisResults_LHC21l5_LambdaCtMotherAndProtonsITSPID.root";
+const char* kInFileCentName = "/data/mciacco/LambdaPrompt_PbPb/StrangenessRatios_summary.root";
+const char* kOutFileName = "pTShapesLXiOm_0_90.root";
 
 
 void pTShaping(const char *inFileMCName=kInFileMCName, const char *inFileCentName=kInFileCentName, const char *outFileName=kOutFileName){
@@ -125,7 +125,7 @@ void pTShaping(const char *inFileMCName=kInFileMCName, const char *inFileCentNam
       dff.Filter(Form("(flag & BIT(%d))==%d",iPart,int_pow_part)).Define("weightMC",reweight,{cut_variable.data()}).Snapshot("LambdaTree",Form("AnalysisResults_%d.root",iPart));
     }
   }
-  gSystem->Exec("alihadd AnalysisResults_reweight_BW_0_5.root AnalysisResults_0.root AnalysisResults_1.root AnalysisResults_2.root");
+  gSystem->Exec("alihadd AnalysisResults_reweight_BW_90.root AnalysisResults_0.root AnalysisResults_1.root AnalysisResults_2.root");
   gSystem->Exec("rm AnalysisResults_0.root AnalysisResults_1.root AnalysisResults_2.root");
   outFile.Close();
 }

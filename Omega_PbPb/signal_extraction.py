@@ -15,7 +15,7 @@ from hipe4ml import analysis_utils, plot_utils
 
 SPLIT = True
 use_crystalball = True
-MAX_EFF = 1.00
+MAX_EFF = 1.
 mass_PDG = 1.115683 # GeV/c^2
 
 ROOT.gInterpreter.ProcessLine("#include \"../utils/RooDSCBShape.h\"")
@@ -60,7 +60,7 @@ if BKG_EXPO:
     bkg_shape = 'expo'
 
 score_eff_arrays_dict = pickle.load(open("file_score_eff_dict", "rb"))
-eff_array = np.arange(0.2, MAX_EFF, 0.01)
+eff_array = np.arange(0.1, MAX_EFF, 0.01)
 
 for split in SPLIT_LIST:
     split_ineq_sign = '> -0.1'
@@ -79,11 +79,12 @@ for split in SPLIT_LIST:
 
             bin_df = f'{cent_bins[0]}_{cent_bins[1]}_{ct_[0]}_{ct_[1]}'
             print(f"bin_df = {bin_df}")
-            df_data = pd.read_parquet(f'df_test/all_{bin_df}_data_apply.parquet.gzip')
+            reweight_string = ['','','',"_reweight","_reweight"]
+            df_data = pd.read_parquet(f'df_test{reweight_string[i_cent_bins]}/all_{bin_df}_data_apply.parquet.gzip')
             if USE_TEST_OUTPUT:
                 df_signal = pd.read_parquet(f'df_test/test_data_{bin_df}_predict.parquet.gzip')
             else:
-                ct_bins_df_index = int(ct_bins[0]/5 -1)
+                ct_bins_df_index = int(ct_[0]/5 -1)
         
             for ct_bins in zip(CT_BINS_CENT[i_cent_bins][:-1], CT_BINS_CENT[i_cent_bins][1:]):
                 if (ct_bins[0] < (ct_[0]-0.01)) or (ct_bins[1] > (ct_[1]+0.01)) or ct_bins[0]<1.:
@@ -99,7 +100,7 @@ for split in SPLIT_LIST:
                 score_array = analysis_utils.score_from_efficiency_array(df_signal_ct["y_true"], df_signal_ct["model_output"], efficiency_selected=eff_array, keep_lower=False)
 
                 # ROOT.Math.MinimizerOptions.SetDefaultTolerance(1e-2)
-                root_file_signal_extraction = ROOT.TFile("SignalExtraction-data-fullEff.root", "update") # yields for measurement in SignalExtraction-data.root
+                root_file_signal_extraction = ROOT.TFile("SignalExtraction-data-extend-3-try.root", "update") # yields for measurement in SignalExtraction-data.root
                 root_file_signal_extraction.mkdir(f'{split}_{bin}_{bkg_shape}')
 
                 # raw yields histogram
@@ -109,7 +110,7 @@ for split in SPLIT_LIST:
                 h_significance = ROOT.TH1D("fSignificance", "fSignificance", 101, -0.005, 1.005)
 
                 for eff_score in zip(eff_array, score_array):
-                    if (ct_bins[0] > -0.5) and (eff_score[0] < 0. or eff_score[0] > 1.0):
+                    if (ct_bins[0] > -0.5) and (eff_score[0] < .3 or eff_score[0] > .7):
                         continue
                     formatted_eff = "{:.2f}".format(eff_score[0])
                     print(f'processing {bin}: eff = {eff_score[0]:.2f}, score = {eff_score[1]:.2f}...')
@@ -123,11 +124,11 @@ for split in SPLIT_LIST:
                         df_signal_sel = df_signal_ct
 
                     # get invariant mass distribution (data and mc)
-                    roo_m = ROOT.RooRealVar("m", "#it{M} (#Lambda + K^{-})", 1.65, 1.695, "GeV/#it{c}^{2}")
+                    roo_m = ROOT.RooRealVar("m", "#it{M} (#Lambda + K^{-})", 1.655, 1.69, "GeV/#it{c}^{2}")
                     roo_data_unbinned_all = ndarray2roo(np.array(df_data_sel_all['mass']), roo_m)
                     roo_data_unbinned = ndarray2roo(np.array(df_data_sel['mass']), roo_m)
                     roo_mc_signal = ndarray2roo(np.array(df_signal_sel['mass']), roo_m)
-                    roo_m.setBins(90)
+                    roo_m.setBins(70)
                     roo_data_all = ROOT.RooDataHist('data','data',ROOT.RooArgSet(roo_m),roo_data_unbinned_all)
                     roo_data = ROOT.RooDataHist('data','data',ROOT.RooArgSet(roo_m),roo_data_unbinned)
                     roo_mc_signal = ROOT.RooDataHist('data','data',ROOT.RooArgSet(roo_m),roo_mc_signal)
@@ -142,10 +143,10 @@ for split in SPLIT_LIST:
                     mass_mc = ROOT.RooRealVar('mass_','mass_',1.67,1.68)
                     sigma_left_mc = ROOT.RooRealVar('sigma','sigma',0.0014,0.003)
                     sigma_right_mc = ROOT.RooRealVar('sigma_right','sigma_right',0.001,0.005)
-                    alpha_left_mc = ROOT.RooRealVar('alpha_left','alpha_left',1.,2.)
-                    alpha_right_mc = ROOT.RooRealVar('alpha_right','alpha_right',1.,2.)
-                    n_left_mc = ROOT.RooRealVar('n_left','n_left',10.,30.)
-                    n_right_mc = ROOT.RooRealVar('n_right','n_right',10.,30.)
+                    alpha_left_mc = ROOT.RooRealVar('alpha_left','alpha_left',0.,5.)
+                    alpha_right_mc = ROOT.RooRealVar('alpha_right','alpha_right',0.,5.)
+                    n_left_mc = ROOT.RooRealVar('n_left','n_left',1.,30.)
+                    n_right_mc = ROOT.RooRealVar('n_right','n_right',1.,30.)
                     roo_signal_mc = ROOT.RooDSCBShape('signal_','signal_',roo_m,mass_mc,sigma_left_mc,alpha_left_mc,n_left_mc,alpha_right_mc,n_right_mc) 
                     roo_signal_plot = ROOT.RooDSCBShape(roo_signal_mc)
                     roo_m.setRange("signal_range",1.672,1.674)
@@ -179,7 +180,7 @@ for split in SPLIT_LIST:
                     roo_bkg = ROOT.RooRealVar()
 
                     if not BKG_EXPO:
-                        roo_bkg = ROOT.RooChebychev('background', 'background', roo_m, ROOT.RooArgList(roo_a, roo_b))
+                        roo_bkg = ROOT.RooPolynomial('background', 'background', roo_m, ROOT.RooArgList(roo_a))
                     else:
                         roo_bkg = ROOT.RooExponential('background', 'background', roo_m, roo_slope)
 
@@ -192,8 +193,8 @@ for split in SPLIT_LIST:
                     ROOT.RooMsgService.instance().setGlobalKillBelow(ROOT.RooFit.ERROR)
                     ROOT.RooMsgService.instance().setSilentMode(ROOT.kTRUE)
                     ROOT.gErrorIgnoreLevel = ROOT.kError
-                    roo_m.setRange("left",1.65,1.66)
-                    roo_m.setRange("right",1.685,1.695)
+                    roo_m.setRange("left",1.655,1.66)
+                    roo_m.setRange("right",1.685,1.69)
                     for _ in range(2):
                         roo_bkg.fitTo(roo_data_all, ROOT.RooFit.Save(),ROOT.RooFit.Range("left,right"))
                     # # roo_a.setConstant()
@@ -223,10 +224,11 @@ for split in SPLIT_LIST:
                     #roo_a.setConstant(False)
                     #roo_b.setConstant(False)
                     # roo_c.setConstant(False)
-                    alpha_left_mc.setConstant()
-                    alpha_right_mc.setConstant()
-                    n_left_mc.setConstant()
-                    n_right_mc.setConstant()
+                    # if (i_cent_bins==0 or i_cent_bins==4):
+                    #     alpha_left_mc.setConstant()
+                    #     alpha_right_mc.setConstant()
+                    #     n_left_mc.setConstant()
+                    #     n_right_mc.setConstant()
                     #sigma_left_mc.setConstant()
                     # sigma_right_mc.setConstant()
                     #sigma_right_mc.setConstant()
@@ -236,8 +238,8 @@ for split in SPLIT_LIST:
                     if r.covQual() > 2: # and delta_mass.getError() > 1.e-6:
 
                         # plot
-                        nBins = 90
-                        xframe = roo_m.frame(1.65, 1.695, nBins)
+                        nBins = 70
+                        xframe = roo_m.frame(1.655, 1.69, nBins)
                         xframe.SetTitle(
                             str(ct_bins[0]) + '#leq #it{c}t<' + str(ct_bins[1]) + ' cm, ' + str(cent_bins[0]) + '-' +
                             str(cent_bins[1]) + '%, BDT efficiency = ' + str(formatted_eff))
@@ -253,7 +255,7 @@ for split in SPLIT_LIST:
                         roo_model.plotOn(xframe, ROOT.RooFit.Name('model'), ROOT.RooFit.LineColor(ROOT.kBlue))
 
                         formatted_chi2 = "{:.2f}".format(xframe.chiSquare('model', 'data'))
-                        roo_model.paramOn(xframe, ROOT.RooFit.Label(
+                        roo_model.paramOn(xframe, ROOT.RooFit.Parameters(ROOT.RooArgSet(roo_m,sigma_left_mc,roo_n_signal,roo_n_background,roo_a)),ROOT.RooFit.Label(
                             '#chi^{2}/NDF = '+formatted_chi2),
                             ROOT.RooFit.Layout(0.60, 0.85, 0.88))
                         xframe.getAttText().SetTextFont(44)
@@ -318,19 +320,19 @@ for split in SPLIT_LIST:
                                 canv = ROOT.TCanvas()
                                 canv.cd()
                                 text_mass = ROOT.TLatex(
-                                    1.65, 0.74 * xframe.GetMaximum(),
+                                    1.657, 0.74 * xframe.GetMaximum(),
                                     "#it{m}_{#Lambda} = " + "{:.6f}".format(mass_val) + " GeV/#it{c^{2}}")
                                 text_mass.SetTextFont(44)
                                 text_mass.SetTextSize(20)
-                                text_signif = ROOT.TLatex(1.65, 0.91 * xframe.GetMaximum(),
+                                text_signif = ROOT.TLatex(1.657, 0.91 * xframe.GetMaximum(),
                                                         "S/#sqrt{S+B} (3#sigma) = " + "{:.3f}".format(significance_val) + " #pm " +
                                                         "{:.3f}".format(significance_err))
                                 text_signif.SetTextFont(44)
                                 text_signif.SetTextSize(20)
-                                text_sig = ROOT.TLatex(1.65, 0.84 * xframe.GetMaximum(), "S (3#sigma) = " + "{:.1f}".format(sig) + " #pm " + "{:.1f}".format(signal_int*roo_n_signal.getError()))
+                                text_sig = ROOT.TLatex(1.657, 0.84 * xframe.GetMaximum(), "S (3#sigma) = " + "{:.1f}".format(sig) + " #pm " + "{:.1f}".format(signal_int*roo_n_signal.getError()))
                                 text_sig.SetTextFont(44)
                                 text_sig.SetTextSize(20)
-                                text_bkg = ROOT.TLatex(1.65, 0.77 * xframe.GetMaximum(), "B (3#sigma) = " + "{:.1f}".format(bkg) + " #pm" + "{:.1f}".format(bkg_int*roo_n_background.getError()))
+                                text_bkg = ROOT.TLatex(1.657, 0.77 * xframe.GetMaximum(), "B (3#sigma) = " + "{:.1f}".format(bkg) + " #pm" + "{:.1f}".format(bkg_int*roo_n_background.getError()))
                                 text_bkg.SetTextFont(44)
                                 text_bkg.SetTextSize(20)
                                 xframe.Draw("")
@@ -340,14 +342,14 @@ for split in SPLIT_LIST:
                                 text_bkg.Draw("same")
                                 print(
                                     f'significance = {"{:.3f}".format(significance_val)} +/- {"{:.3f}".format(significance_err)}')
-                                if not os.path.isdir('plots/signal_extraction_fullEff_largeBins'):
-                                    os.mkdir('plots/signal_extraction_fullEff_largeBins')
-                                if not os.path.isdir(f'plots/signal_extraction_fullEff_largeBins/{split}_{bin}_{bkg_shape}'):
-                                    os.mkdir(f'plots/signal_extraction_fullEff_largeBins/{split}_{bin}_{bkg_shape}')
-                                canv.Print(f'plots/signal_extraction_fullEff_largeBins/{split}_{bin}_{bkg_shape}/{eff_score[0]:.2f}_{bin}.pdf')
+                                if not os.path.isdir('plots/signal_extraction_extend'):
+                                    os.mkdir('plots/signal_extraction_extend')
+                                if not os.path.isdir(f'plots/signal_extraction_extend/{split}_{bin}_{bkg_shape}'):
+                                    os.mkdir(f'plots/signal_extraction_extend/{split}_{bin}_{bkg_shape}')
+                                canv.Print(f'plots/signal_extraction_extend/{split}_{bin}_{bkg_shape}/{eff_score[0]:.2f}_{bin}.pdf')
 
                                 # plot kde and mc
-                                frame = roo_m.frame(1.65, 1.695, 100)
+                                frame = roo_m.frame(1.655, 1.69, 100)
                                 frame.SetTitle(str(cent_bins[0])+"-"+str(cent_bins[1])+"%, "+str(ct_bins[0])+"#leq #it{c}t<"+str(ct_bins[1])+" cm, BDT efficiency = "+str(formatted_eff))
                                 roo_mc_signal.plotOn(frame)
                                 roo_signal_plot.plotOn(frame, ROOT.RooFit.Name("DSCB"))

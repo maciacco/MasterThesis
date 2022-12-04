@@ -58,7 +58,7 @@ cent_counts, cent_edges = analysis_results_file['Centrality_selected;1'].to_nump
 cent_bin_centers = (cent_edges[:-1]+cent_edges[1:])/2
 
 abs_correction_file = ROOT.TFile.Open('He3_abs.root')
-eff_correction_file = ROOT.TFile.Open('EffAbsCorrection.root')
+eff_correction_file = ROOT.TFile.Open('EffAbsCorrection_1.root')
 ratio_file = ROOT.TFile.Open('Ratio.root', 'recreate')
 
 for i_cent_bins in range(len(CENTRALITY_LIST)):
@@ -89,13 +89,16 @@ for i_cent_bins in range(len(CENTRALITY_LIST)):
         # list of corrected yields
         ct_bins_tmp = [0]
         ct_bins_tmp += CT_BINS_CENT[i_cent_bins]
-        if cent_bins[0]==30:
+        if cent_bins[0]==30 or cent_bins[0]==50:
             ct_bins_tmp = [0, 2, 4, 7, 14, 35]
+        if cent_bins[0]==10:
+            ct_bins_tmp = [0, 2, 7, 14, 35]
         #if cent_bins[1] == 90:
-        #    ct_bin_tmp = CT_BINS_CENT[i_cent_bins]
+        #    ct_bin_tmp = CT_BINS_CENT[i_cent_bins]s
         bins = np.array(ct_bins_tmp, dtype=float)
         # print(bins)
         h_corrected_yields[i_split] = ROOT.TH1D(
+
             f'fYields_{split}_{cent_bins[0]}_{cent_bins[1]}', f'{split}, {cent_bins[0]}-{cent_bins[1]}%', len(bins)-1, bins)
 
         for ct_bins in zip(CT_BINS_CENT[i_cent_bins][:-1], CT_BINS_CENT[i_cent_bins][1:]):
@@ -157,7 +160,7 @@ for i_cent_bins in range(len(CENTRALITY_LIST)):
 
         # fit with exponential pdf
         fit_function_expo = ROOT.TF1("expo", "expo", 2, 35)
-        if cent_bins[0] == 30:
+        if cent_bins[0] == 30 or cent_bins[0]==50:
             fit_function_expo = ROOT.TF1("expo", "expo", 2, 14)
         elif cent_bins[1] == 90:
             fit_function_expo = ROOT.TF1("expo", "expo", 0, 35)
@@ -213,7 +216,7 @@ for i_cent_bins in range(len(CENTRALITY_LIST)):
     h_ratio.GetXaxis().SetRangeUser(0., 35.)
     h_ratio.SetMarkerStyle(20)
     h_ratio.SetMarkerSize(0.8)
-    h_ratio.Fit("pol0")
+    h_ratio.Fit("pol0","R","",2,35)
     h_ratio.Write()
 
     # plot ratios

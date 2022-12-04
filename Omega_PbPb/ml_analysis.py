@@ -33,9 +33,9 @@ args = parser.parse_args()
 SPLIT = args.split
 MAX_SCORE = 1.00
 MAX_EFF = 1.00
-USE_PD = False
+USE_PD = True
 DUMP_HYPERPARAMS = True
-USE_REAL_DATA = False
+USE_REAL_DATA = True
 
 PRODUCE_DATASETS = args.generate
 TRAINING = False
@@ -56,7 +56,7 @@ TRAIN = args.dotraining
 COMPUTE_SCORES_FROM_EFF = args.computescoreff
 TRAINING = args.train and (COMPUTE_SCORES_FROM_EFF or TRAIN)
 MERGE_CENTRALITY = args.mergecentrality
-CREATE_TRAIN_TEST = True
+CREATE_TRAIN_TEST = False
 
 # application
 APPLICATION = args.application
@@ -139,8 +139,8 @@ if TRAINING:
 
                 train_test_data = [pd.DataFrame(), pd.DataFrame(), pd.DataFrame(), pd.DataFrame()]
                 if CREATE_TRAIN_TEST and (COMPUTE_SCORES_FROM_EFF or TRAIN):
-                    df_prompt_ct = df_signal.query(f'(pdg==3334 or pdg==-3334) and ct > {ct_bins[0]} and ct < {ct_bins[1]} and mass > 1.6424500 and mass < 1.7024500 and pt > 0.5 and pt < 4.5 and isReconstructed and tpcClV0Pi > 69 and bachBarCosPA < 0.99995 and tpcClV0Pr > 69 and tpcClBach > 69 and radius < 25 and radiusV0 < 25 and dcaV0prPV < 2.5 and dcaV0piPV < 2.5 and dcaV0PV < 2.5 and dcaBachPV < 2.5 and eta < 0.8 and eta > -0.8 and isOmega')
-                    df_background_ct = df_background.query(f'centrality > {cent_bins[0]} and centrality < {cent_bins[1]} and ct > {ct_bins[0]} and ct < {ct_bins[1]} and (mass < 1.660 or mass > 1.685) and mass > 1.6424500 and mass < 1.7024500 and pt > 0.5 and pt < 4.5 and tpcClV0Pi > 69 and bachBarCosPA < 0.99995 and tpcClV0Pr > 69 and tpcClBach > 69 and radius < 25 and radiusV0 < 25 and dcaV0prPV < 2.5 and dcaV0piPV < 2.5 and dcaV0PV < 2.5 and dcaBachPV < 2.5 and eta < 0.8 and eta > -0.8 and isOmega')
+                    df_prompt_ct = df_signal.query(f'competingMass > 0.01 and (pdg==3334 or pdg==-3334) and ct > {ct_bins[0]} and ct < {ct_bins[1]} and mass > 1.6424500 and mass < 1.7024500 and pt > 0.5 and pt < 4.5 and isReconstructed and tpcClV0Pi > 69 and bachBarCosPA < 0.99995 and tpcClV0Pr > 69 and tpcClBach > 69 and radius < 25 and radiusV0 < 25 and dcaV0prPV < 2.5 and dcaV0piPV < 2.5 and dcaV0PV < 2.5 and dcaBachPV < 2.5 and eta < 0.8 and eta > -0.8 and isOmega and flag==1')
+                    df_background_ct = df_background.query(f'competingMass > 0.01 and centrality > {cent_bins[0]} and centrality < {cent_bins[1]} and ct > {ct_bins[0]} and ct < {ct_bins[1]} and (mass < 1.660 or mass > 1.685) and mass > 1.6424500 and mass < 1.7024500 and pt > 0.5 and pt < 4.5 and tpcClV0Pi > 69 and bachBarCosPA < 0.99995 and tpcClV0Pr > 69 and tpcClBach > 69 and radius < 25 and radiusV0 < 25 and dcaV0prPV < 2.5 and dcaV0piPV < 2.5 and dcaV0PV < 2.5 and dcaBachPV < 2.5 and eta < 0.8 and eta > -0.8 and isOmega')
 
                     n_background = df_background_ct.shape[0]
                     n_prompt = df_prompt_ct.shape[0]
@@ -323,22 +323,23 @@ if APPLICATION:
                 eff_array = np.arange(0.10, MAX_EFF, 0.01)
                 if USE_REAL_DATA:
                     if USE_PD:
+                        reweight_string = ['','','','_reweight','_reweight']
                         #df_data = pd.read_parquet('df_test/data_dataset')
-                        df_data = uproot.open(f'/data/mciacco/Omega_PbPb/merge_omegas/df_data_{cent_bins[0]}_{cent_bins[1]}/AnalysisResults_omega_{cent_bins[0]}_{cent_bins[1]}_{ct_bins[0]}_{ct_bins[1]}.root')['XiOmegaTree'].arrays(library="pd")
+                        df_data = uproot.open(f'/data/mciacco/Omega_PbPb/merge_omegas/df_data_{cent_bins[0]}_{cent_bins[1]}{reweight_string[i_cent_bins]}/AnalysisResults_omega_{cent_bins[0]}_{cent_bins[1]}_{ct_bins[0]}_{ct_bins[1]}{reweight_string[i_cent_bins]}.root')['XiOmegaTree'].arrays(library="pd")
                         #df_data = df_data.append(df_data_r, ignore_index=True)
                         df_data_cent = df_data.query(
-                        f'matter {split_ineq_sign} and centrality > {cent_bins[0]} and centrality < {cent_bins[1]} and ct > {ct_bins[0]} and ct < {ct_bins[1]} and mass > 1.6424500 and mass < 1.7024500 and pt > 0.5 and pt < 4.5 and tpcClV0Pi > 69 and bachBarCosPA < 0.99995 and tpcClV0Pr > 69 and tpcClBach > 69 and radius < 25 and radiusV0 < 25 and dcaV0prPV < 2.5 and dcaV0piPV < 2.5 and dcaV0PV < 2.5 and dcaBachPV < 2.5 and eta < 0.8 and eta > -0.8 and isOmega')
+                        f'competingMass > 0.01 and matter {split_ineq_sign} and centrality > {cent_bins[0]} and centrality < {cent_bins[1]} and ct > {ct_bins[0]} and ct < {ct_bins[1]} and mass > 1.6424500 and mass < 1.7024500 and pt > 0.5 and pt < 4.5 and tpcClV0Pi > 69 and bachBarCosPA < 0.99995 and tpcClV0Pr > 69 and tpcClBach > 69 and radius < 25 and radiusV0 < 25 and dcaV0prPV < 2.5 and dcaV0piPV < 2.5 and dcaV0PV < 2.5 and dcaBachPV < 2.5 and eta < 0.8 and eta > -0.8 and isOmega')
                         del df_data
 
                         data_y_score = model_hdl.predict(df_data_cent)
                         df_data_cent.loc[:,'model_output'] = data_y_score
 
                         # df_data_cent = df_data_cent.query(f'model_output > {score_eff_arrays_dict[bin][len(eff_array)-1]}')
-                        df_data_cent.to_parquet(f'df_test/{bin}.parquet.gzip', compression='gzip')
+                        df_data_cent.to_parquet(f'df_test{reweight_string[i_cent_bins]}/{bin}.parquet.gzip', compression='gzip')
                     else:
                         df_data = TreeHandler()
                         df_data.get_handler_from_large_file(f"/data/mciacco/Omega_PbPb/merge_omegas/AnalysisResults_omega.root", "XiOmegaTree",
-                            preselection=f'matter {split_ineq_sign} and centrality > {cent_bins[0]} and centrality < {cent_bins[1]}  and ct > {ct_bins[0]} and ct < {ct_bins[1]} and mass > 1.6424500 and mass < 1.7024500 and pt > 0.5 and pt < 4.5 and tpcClV0Pi > 69 and bachBarCosPA < 0.99995 and tpcClV0Pr > 69 and tpcClBach > 69 and radius < 25 and radiusV0 < 25 and dcaV0prPV < 2.5 and dcaV0piPV < 2.5 and dcaV0PV < 2.5 and dcaBachPV < 2.5 and eta < 0.8 and eta > -0.8 and isOmega',
+                            preselection=f'competingMass > 0.01 and matter {split_ineq_sign} and centrality > {cent_bins[0]} and centrality < {cent_bins[1]}  and ct > {ct_bins[0]} and ct < {ct_bins[1]} and mass > 1.6424500 and mass < 1.7024500 and pt > 0.5 and pt < 4.5 and tpcClV0Pi > 69 and bachBarCosPA < 0.99995 and tpcClV0Pr > 69 and tpcClBach > 69 and radius < 25 and radiusV0 < 25 and dcaV0prPV < 2.5 and dcaV0piPV < 2.5 and dcaV0PV < 2.5 and dcaBachPV < 2.5 and eta < 0.8 and eta > -0.8 and isOmega',
                             max_workers=4, model_handler=model_hdl)
 
 
@@ -348,7 +349,7 @@ if APPLICATION:
                 else:
                     bin = f'{split}_{cent_bins[0]}_{cent_bins[1]}_{ct_bins[0]}_{ct_bins[1]}_mc_apply'
                     df_data = uproot.open(f'AnalysisResults_{cent_bins[0]}_{cent_bins[1]}.root')['XiOmegaTree'].arrays(library="pd")
-                    df_data_cent = df_data.query(f'(pdg==3334 or pdg==-3334) and isReconstructed and matter {split_ineq_sign} and ct > {ct_bins[0]} and ct < {ct_bins[1]} and mass > 1.6424500 and mass < 1.7024500 and pt > 0.5 and pt < 4.5 and isReconstructed and tpcClV0Pi > 69 and bachBarCosPA < 0.99995 and tpcClV0Pr > 69 and tpcClBach > 69 and radius < 25 and radiusV0 < 25 and dcaV0prPV < 2.5 and dcaV0piPV < 2.5 and dcaV0PV < 2.5 and dcaBachPV < 2.5 and eta < 0.8 and eta > -0.8 and isOmega')                   
+                    df_data_cent = df_data.query(f'flag==1 and competingMass > 0.01 and (pdg==3334 or pdg==-3334) and isReconstructed and matter {split_ineq_sign} and ct > {ct_bins[0]} and ct < {ct_bins[1]} and mass > 1.6424500 and mass < 1.7024500 and pt > 0.5 and pt < 4.5 and isReconstructed and tpcClV0Pi > 69 and bachBarCosPA < 0.99995 and tpcClV0Pr > 69 and tpcClBach > 69 and radius < 25 and radiusV0 < 25 and dcaV0prPV < 2.5 and dcaV0piPV < 2.5 and dcaV0PV < 2.5 and dcaBachPV < 2.5 and eta < 0.8 and eta > -0.8 and isOmega')                   
                     data_y_score = model_hdl.predict(df_data_cent)
                     print(f"df_shape_0 = {df_data_cent.shape[0]}")
                     df_data_cent.loc[:,'model_output'] = data_y_score.tolist()[:]

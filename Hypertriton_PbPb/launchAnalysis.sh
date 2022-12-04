@@ -2,7 +2,7 @@
 python3 plot_efficiencies_correlations.py -m -s -eff
 
 # plot feature distributions and correlations
-python3 plot_efficiencies_correlations.py -s -m
+#python3 plot_efficiencies_correlations.py -s -m
 
 # train/test models and compute scores
 python3 ml_analysis.py -m -s -t -c
@@ -35,7 +35,7 @@ python3 ratio.py
 python3 systematics_ratio.py
 
 # systematics (absorption)
-python3 systematics_absorption.py
+#python3 systematics_absorption.py
 
 # systematics (cpt)
 #python3 systematics_cpt.py

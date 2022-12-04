@@ -18,10 +18,10 @@ constexpr double T_kin[nCent] = {0.090, 0.091, 0.094, 0.097, 0.101, 0.108, 0.115
 constexpr double n[nCent] = {0.735, 0.736, 0.739, 0.771, 0.828, 0.908, 1.052, 1.262, 1.678, 2.423};
 constexpr double avg_mult[nCent] = {1943, 1587, 1180, 786, 512, 318, 183, 96.3, 44.9, 17.5};
 
-constexpr int centSplit[][2]={{0,0},{1,1},{4,5},{0,10}}; // 0-5%, 5-10%, 30-50%, 0-90%
-constexpr int nCentSplit[]={1,1,2,10}; // 0-5%, 5-10%, 30-50%, 0-90%
-constexpr int centClass = 2; // 0-5% -> 0, 5-10% -> 1, 30-50% -> 2, 0-90% -> 3
-const char* cent_string="30_50.root";
+constexpr int centSplit[][2]={{0,0},{1,1},{4,5},{2,3},{6,9},{0,10}}; // 0-5%, 5-10%, 30-50%, 0-90%
+constexpr int nCentSplit[]={1,1,2,2,3,10}; // 0-5%, 5-10%, 30-50%, 0-90%
+constexpr int centClass = 4; // 0-5% -> 0, 5-10% -> 1, 30-50% -> 2, 0-90% -> 3
+const char* cent_string="50_90.root";
 
 constexpr bool reject = true;
 

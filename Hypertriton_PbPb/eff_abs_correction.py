@@ -3,7 +3,7 @@ import os
 import numpy as np
 import ROOT
 import yaml
-from helpers import he3_correction_pt
+#from helpers import he3_correction_pt
 
 # def he3_uncertainty_pt(iMatt, pt):
 #     fit_c_proton = 0.868419
@@ -13,9 +13,9 @@ from helpers import he3_correction_pt
 #     return 0.02088*ROOT.TMath.Power(pt,-0.48766)
 
 def he3_correction_pt(i_matt, pt):
-   if i_matt == 0:
+    if i_matt == 0:
        return 1.034*ROOT.TMath.Power(pt,-0.007623)
-   return 1.01*ROOT.TMath.Power(pt,-0.000002392)
+    return 1.01*ROOT.TMath.Power(pt,-0.000002392)
     
 def he3_uncertainty_pt(i_matt, pt):
     if i_matt == 0:
@@ -36,8 +36,8 @@ with open(os.path.expandvars(config), 'r') as stream:
     except yaml.YAMLError as exc:
         print(exc)
 
-CT_BINS_CENT = params['CT_BINS_CENT']
-CENTRALITY_LIST = params['CENTRALITY_LIST']
+CT_BINS_CENT = params['CT_BINS_CENT_1']
+CENTRALITY_LIST = params['CENTRALITY_LIST_1']
 ##################################################################
 
 if not os.path.isdir(f'plots/efficiency_correction'):
@@ -47,9 +47,9 @@ split_list = ['antimatter', 'matter']
 cent_bins_MB = [[0, 10], [10, 40], [40, 90]]
 
 # mc input file
-mc_file = './AnalysisResults.root'
-outfile = ROOT.TFile("EffAbsCorrection.root", "recreate")
-centfile = ROOT.TFile("../data/Hypertriton_PbPb/AnalysisResults_18.root")
+mc_file = '/data/mciacco/Hypertriton_PbPb/AnalysisResults.root'
+outfile = ROOT.TFile("EffAbsCorrection_1.root", "recreate")
+centfile = ROOT.TFile("/data/mciacco/Hypertriton_PbPb/AnalysisResults_18.root")
 
 # get event centrality distribution
 cent_dist = centfile.Get("Centrality_selected")
@@ -57,9 +57,9 @@ cent_dist_max = cent_dist.GetMaximum()
 
 # functions
 n_fun = [1, 1, 1, 1, 1]  # [5, 5, 5, 4, 4]
-func = [[] for _ in range(len(CENTRALITY_LIST)-1)]
+func = [[] for _ in range(len(CENTRALITY_LIST)-2)]
 funcMB = [[] for _ in range(3)]
-func_max = [[] for _ in range(len(CENTRALITY_LIST)-1)]
+func_max = [[] for _ in range(len(CENTRALITY_LIST)-2)]
 func_max_MB = [[] for _ in range(3)]
 
 # functions names
@@ -67,11 +67,11 @@ func_names = ["BGBW", "Boltzmann", "Mt-exp", "Pt-exp", "LevyTsallis"]
 func_names_MB = ["BlastWave", "Boltzmann", "LevyTsallis", "Mt-exp"]
 
 # functions input files
-input_func_file = ROOT.TFile("Anti_fits.root")
-input_func_file_MB = ROOT.TFile("BlastWaveFits.root")
+input_func_file = ROOT.TFile("/data/mciacco/Hypertriton_PbPb/Anti_fits.root")
+input_func_file_MB = ROOT.TFile("/data/mciacco/Hypertriton_PbPb/BlastWaveFits.root")
 
 # get functions and maxima from file
-cent_index = [1, 2, 4]
+cent_index = [1, 2, 4, 3]
 for i_cent in range(len(CENTRALITY_LIST)-2):
     for i_fun in range(n_fun[i_cent]):
         func[i_cent].append(input_func_file.Get(
@@ -84,13 +84,13 @@ for i_cent in range(3):
         func_max_MB[i_cent].append(funcMB[i_cent][i_fun].GetMaximum())
 
 # 0-10%
-i_cent = 0
-for i_fun in range(n_fun[-2]):
-    func[3].append(input_func_file_MB.Get(f"{func_names_MB[i_fun]}/{func_names_MB[i_fun]}{i_cent}"))
-    func_max[3].append(funcMB[i_cent][i_fun].GetMaximum())
+# i_cent = 0
+# for i_fun in range(n_fun[-2]):
+#     func[3].append(input_func_file_MB.Get(f"{func_names_MB[i_fun]}/{func_names_MB[i_fun]}{i_cent}"))
+#     func_max[3].append(funcMB[i_cent][i_fun].GetMaximum())
 
 # book histograms
-cent_len = len(CENTRALITY_LIST)
+cent_len = len(CENTRALITY_LIST)-1
 h_eff_correction_ct = [[] for _ in range(cent_len)]
 h_eff_correction_pt = [[] for _ in range(cent_len)] # check consistency
 h_eff_correction_ct_syst = [[] for _ in range(cent_len)]
@@ -169,9 +169,10 @@ while trial < N_TRIALS:
     for i_matt in [0, 1]:
 
         # analysis in centrality classes
-        for i_cent in range(len(CENTRALITY_LIST)-1):
+        for i_cent in range(len(CENTRALITY_LIST)-2):
             for i_fun in range(n_fun[i_cent]):
-                
+                if (trial%10000)==0:
+                    print(trial)
                 # sample pt in [2, 10] GeV/c
                 pt = func[i_cent][i_fun].GetRandom(2, 10)
 

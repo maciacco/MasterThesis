@@ -123,8 +123,8 @@ if TRAINING:
 
     for ct_bins in CT_BINS:
 
-        df_signal_ct = df_signal.query(f'ct > {ct_bins[0]} and ct < {ct_bins[1]} and pt > 2 and pt < 10')
-        df_background_ct = df_background.query(f'ct > {ct_bins[0]} and ct < {ct_bins[1]} and pt > 2 and pt < 10')
+        df_signal_ct = df_signal.query(f'ct > {ct_bins[0]} and ct < {ct_bins[1]} and pt > 2 and pt < 10 and PiProngPvDCAXY < 20. and He3ProngPvDCAXY < 5 and He3ProngPvDCA < 10. and PiProngPvDCA < 40.')
+        df_background_ct = df_background.query(f'ct > {ct_bins[0]} and ct < {ct_bins[1]} and pt > 2 and pt < 10 and PiProngPvDCAXY < 20. and He3ProngPvDCAXY < 5 and He3ProngPvDCA < 10. and PiProngPvDCA < 40.')
 
         # define tree handlers
         signal_tree_handler = TreeHandler()
@@ -157,7 +157,7 @@ if TRAINING:
                 # features plot
                 leg_labels = ['background', 'signal']
 
-                model_clf = xgb.XGBClassifier(use_label_encoder=False, n_jobs=4)
+                model_clf = xgb.XGBClassifier(use_label_encoder=False,  tree_method="gpu_hist", gpu_id=0) #,n_jobs=4)
                 model_hdl = ModelHandler(model_clf, TRAINING_COLUMNS_LIST)
                 model_hdl.set_model_params(HYPERPARAMS)
 
@@ -211,8 +211,8 @@ if TRAINING:
                                                       logscale=True, density=True, labels=leg_labels)
                     plt.savefig(f'{PLOT_DIR}/train_test_out/{bin}_out.pdf')
 
-                    plot_utils.plot_feature_imp(train_test_data_cent[0], train_test_data_cent[1], model_hdl)
-                    plt.savefig(f'{PLOT_DIR}/train_test_out/feature_imp_training_{bin}.pdf')
+                    #plot_utils.plot_feature_imp(train_test_data_cent[0], train_test_data_cent[1], model_hdl)
+                    #plt.savefig(f'{PLOT_DIR}/train_test_out/feature_imp_training_{bin}.pdf')
                     plot_utils.plot_roc_train_test(
                         train_test_data_cent[3],
                         test_y_score, train_test_data_cent[1],
@@ -268,7 +268,7 @@ if APPLICATION:
             for ct_bins in zip(CT_BINS_CENT[i_cent_bins][:-1], CT_BINS_CENT[i_cent_bins][1:]):
                 bin = f'{split}_{cent_bins[0]}_{cent_bins[1]}_{ct_bins[0]}_{ct_bins[1]}'
                 df_data_cent = df_data.query(
-                    f'Matter {split_ineq_sign} and centrality > {cent_bins[0]} and centrality < {cent_bins[1]} and pt > 2 and pt < 10 and ct > {ct_bins[0]} and ct < {ct_bins[1]}')
+                    f'Matter {split_ineq_sign} and centrality > {cent_bins[0]} and centrality < {cent_bins[1]} and pt > 2 and pt < 10 and ct > {ct_bins[0]} and ct < {ct_bins[1]} and PiProngPvDCAXY < 20. and He3ProngPvDCAXY < 5 and He3ProngPvDCA < 10. and PiProngPvDCA < 40.')
 
                 model_hdl = ModelHandler()
                 bin_model = bin
