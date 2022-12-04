@@ -117,9 +117,9 @@ void Spectra(const char *cutSettings = "", const double roi_nsigma_down = 1.5, c
           fSpectra[iMatt]->SetBinError(iPtBin, 0);
         }
         else {
-          fSpectra[iMatt]->SetBinContent(iPtBin, primary*rawYield/efficiency );
+          fSpectra[iMatt]->SetBinContent(iPtBin, /* primary* *//* rawYield */efficiency );
           //fSpectra[iMatt]->SetBinError(iPtBin, primary*rawYieldError/efficiency);
-          fSpectra[iMatt]->SetBinError(iPtBin, sqrt(2)*primary*rawYield*efficiencyError/efficiency/efficiency);
+          fSpectra[iMatt]->SetBinError(iPtBin, /* primary* */efficiencyError/* /efficiency */);
         }
         if (kVerbose) std::cout<<"eff="<<efficiency<<"; raw="<<rawYield<<"; rawError="<<rawYieldError<<"; primary="<<primary<<std::endl;
       }

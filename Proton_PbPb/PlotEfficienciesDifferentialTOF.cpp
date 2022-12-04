@@ -14,9 +14,9 @@
 #include "../utils/Config.h"
 
 using utils::TTList;
-using namespace pion;
+using namespace proton;
 
-void PlotEfficienciesDifferential(const char *cutSettings="", const char *outFileName = "EfficiencyPlotsDifferential", const char *histoNameDir = "", const char *outFileOption = "recreate", const char *inFile = "EfficiencyPionprova")
+void PlotEfficienciesDifferentialTOF(const char *cutSettings="", const char *outFileName = "EfficiencyPlotsDifferential", const char *histoNameDir = "", const char *outFileOption = "recreate", const char *inFile = "EfficiencyProtonMC_21l5_LOWPT_TESTTOF")
 {
   gStyle->SetOptStat(0000000000000);
 
@@ -48,21 +48,21 @@ void PlotEfficienciesDifferential(const char *cutSettings="", const char *outFil
     // efficiency comparison to MB
     TCanvas cEffCompare(Form("cEffCompare_%s", kAntimatterMatter[iMatt]), Form("cEffCompare_%s", kAntimatterMatterLabel[iMatt]));
     cEffCompare.SetTicks(1, 1);
-    TLegend lEffCompare(0.483709,0.49913 ,0.794486,0.789565);
+    TLegend lEffCompare(0.483709, 0.568421, 0.854637, 0.833333);
     lEffCompare.SetHeader(Form("%s, ITS + TPC + TOF",kAntimatterMatterLabel[iMatt]));
     lEffCompare.SetTextSize(0.035);
     lEffCompare.SetBorderSize(0);
 
     TH1D *fEff[kNCentClasses];
-    TH1D *fEffMB = (TH1D *)inFileEff->Get(Form("_/f%sEff_TOF_0_90", kAntimatterMatter[iMatt]));
+    TH1D *fEffMB = (TH1D *)inFileEff->Get(Form("_/f%sEff_TPC_0_90", kAntimatterMatter[iMatt]));
     for (int iCent_ = 0; iCent_ < kNCentClasses; ++iCent_)
     {
       int iCent = iCent_;
       if (iCent_==2||iCent_==3) iCent = iCent+pow(-1,iCent);
-      fEff[iCent] = (TH1D *)inFileEff->Get(Form("_/f%sEff_TOF_%.0f_%.0f", kAntimatterMatter[iMatt], kCentBinsLimitsPion[iCent][0], kCentBinsLimitsPion[iCent][1]));
+      fEff[iCent] = (TH1D *)inFileEff->Get(Form("_/f%sEff_TOF_%.0f_%.0f", kAntimatterMatter[iMatt], kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1]));
       fEff[iCent]->SetTitle("");
       fEff[iCent]->GetYaxis()->SetRangeUser(0., 1.1);
-      fEff[iCent]->GetXaxis()->SetRangeUser(0.7, 1.6);
+      fEff[iCent]->GetXaxis()->SetRangeUser(1., 3.);
       fEff[iCent]->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
       fEff[iCent]->GetYaxis()->SetTitle("#epsilon #times A");
       fEff[iCent]->SetMarkerStyle(24);
@@ -74,32 +74,32 @@ void PlotEfficienciesDifferential(const char *cutSettings="", const char *outFil
         fEff[iCent]->Draw("pe");
       else
         fEff[iCent]->Draw("pesame");
-      lEff.AddEntry(fEff[iCent], Form("%0.f - %0.f %%", kCentBinsLimitsPion[iCent][0], kCentBinsLimitsPion[iCent][1]));
+      lEff.AddEntry(fEff[iCent], Form("%0.f - %0.f %%", kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1]));
 
       // compare with MB
       cEffCompare.cd();
       TH1D *hTemp = (TH1D*)fEff[iCent]->Clone();
       hTemp->Divide(fEffMB);
-      hTemp->GetYaxis()->SetRangeUser(0.7, 1.3);
+      hTemp->GetYaxis()->SetRangeUser(1., 3.);
       if (iCent == 0)
         hTemp->Draw("pe");
       else
         hTemp->Draw("pesame");
       hTemp->GetYaxis()->SetTitle("Efficiency ratio to MB");
       //hTemp->SetTitle("LHC16h7_nucleiInjected_LHC15o");
-      lEffCompare.AddEntry(hTemp, Form("%0.f - %0.f %%", kCentBinsLimitsPion[iCent][0], kCentBinsLimitsPion[iCent][1]));
+      lEffCompare.AddEntry(hTemp, Form("%0.f - %0.f %%", kCentBinsLimitsProton[iCent][0], kCentBinsLimitsProton[iCent][1]));
     }
     
     cEff.cd();
     lEff.SetTextSize(0.05);
     lEff.Draw("same");
     cEff.Write();
-    cEff.Print(Form("%s/efficiency_plots/%s.pdf", kPlotDir, cEff.GetName()));
+    cEff.Print(Form("%s/efficiency_plots/%s_TOF.pdf", kPlotDir, cEff.GetName()));
 
     cEffCompare.cd();
     lEffCompare.Draw("same");
     cEffCompare.Write();
-    cEffCompare.Print(Form("%s/efficiency_plots/%s.pdf", kPlotDir, cEffCompare.GetName()));
+    cEffCompare.Print(Form("%s/efficiency_plots/%s_TOF.pdf", kPlotDir, cEffCompare.GetName()));
   }
 
   outFile.Close();

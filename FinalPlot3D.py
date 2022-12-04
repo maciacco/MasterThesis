@@ -256,7 +256,8 @@ for i_cent, cent in enumerate(centrality_classes):
             syst_proton_abs = np.sqrt(0.00129523*0.00129523+0.000173974*0.000173974)*ratio_proton # from absorption cross section variation
             syst_proton = np.sqrt(syst_proton_abs*syst_proton_abs+syst_proton_pt_correlated*syst_proton_pt_correlated)
             syst_pion_pt_correlated = ratio_pion_pt_correlated.GetRMS()
-            syst_pion = np.sqrt(syst_pion_pt_correlated*syst_pion_pt_correlated)
+            syst_pion_abs = 0.0073795806*ratio_pion
+            syst_pion = np.sqrt(syst_pion_pt_correlated*syst_pion_pt_correlated+syst_pion_abs*syst_pion_abs)
 
             # final plot
             stat_proton = ratio_proton_err
@@ -269,18 +270,16 @@ for i_cent, cent in enumerate(centrality_classes):
                 stat_hyp = ratio_hyp_err
             ratios_vs_b = ROOT.TH2D(f'fRatio_vs_b_{cent[0]}_{cent[1]}', ';#it{B}+#it{S}/3;#it{Q}-#it{S}/3;Antimatter / Matter', 10, -0.5, 9.5, 7, -0.5, 6.5)
             ratios_vs_b.SetBinContent(10, 7, ratio_he3)
-            ratios_vs_b.SetBinError(10, 7, np.sqrt(syst_he3*syst_he3+stat_he3*stat_he3))
+            ratios_vs_b.SetBinError(10, 7, np.sqrt(syst_he3*syst_he3))
             ratios_vs_b.SetBinContent(4, 4, ratio_proton)
-            ratios_vs_b.SetBinError(4, 4, np.sqrt(syst_proton*syst_proton+stat_proton*stat_proton))
+            ratios_vs_b.SetBinError(4, 4, np.sqrt(syst_proton*syst_proton))
             ratios_vs_b.SetBinContent(1, 4, ratio_pion)
-            ratios_vs_b.SetBinError(1, 4, np.sqrt(syst_pion*syst_pion+stat_pion*stat_pion))
-            ratios_vs_b.SetBinContent(1, 1, ratio_omega)
-            ratios_vs_b.SetBinError(1, 1, np.sqrt(syst_omega*syst_omega+ratio_omega_err*ratio_omega_err))
+            ratios_vs_b.SetBinError(1, 4, np.sqrt(syst_pion*syst_pion))
             ratios_vs_b.SetBinContent(10, 4, ratio_triton)
-            ratios_vs_b.SetBinError(10, 4, np.sqrt(syst_triton*syst_triton+stat_triton*stat_triton))
+            ratios_vs_b.SetBinError(10, 4, np.sqrt(syst_triton*syst_triton))
             if i_cent < CENT_LIMIT_NUCLEI:
                 ratios_vs_b.SetBinContent(9, 5, ratio_hyp)
-                ratios_vs_b.SetBinError(9, 5, np.sqrt(syst_hyp*syst_hyp+stat_hyp*stat_hyp))
+                ratios_vs_b.SetBinError(9, 5, np.sqrt(syst_hyp*syst_hyp))
 
             # fit to data (exponential)
             fit_expo = ROOT.TF2(f"fit_expo_{cent[0]}_{cent[1]}", "TMath::Exp(-2./3.*[0]*x-2./3.*[1]*y)", -0.5, 9.5,0.5,6.5,"")
@@ -314,8 +313,7 @@ for i_cent, cent in enumerate(centrality_classes):
         stat_proton = ratio_proton_err
         stat_pion = ratio_pion_err
         stat_he3 = ratio_he3_err
-        stat_hyp = 0.
-        stat_triton = 0.
+        stat_hyp = 0
         stat_triton = ratio_triton_err
         if i_cent < CENT_LIMIT_NUCLEI:
             stat_hyp = ratio_hyp_err

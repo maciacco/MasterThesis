@@ -73,14 +73,14 @@ void EfficiencySec(const float cutDCAz = 1.f, const int cutTPCcls = 89, const fl
       {
         fEffPt.SetBinContent(iPtBin, kHyperTritonHe3BR * hyperTritonToHe3Ratio[iMatt] * Eff(fITS_TPC_Pt, fTotal_Pt, fEffPt.GetXaxis()->GetBinCenter(iPtBin)));
         fEffPt.SetBinError(iPtBin, kHyperTritonHe3BR * EffErr(&fEffPt, fTotal_Pt, fEffPt.GetXaxis()->GetBinCenter(iPtBin)));
-        fEffPt.SetBinContent(iPtBin, fEffPt.GetBinContent(iPtBin)/fEff->GetBinContent(iPtBin));
+        fEffPt.SetBinContent(iPtBin, fEffPt.GetBinContent(iPtBin)/fEff->GetBinContent(iPtBin)/(fEffPt.GetBinContent(iPtBin)/fEff->GetBinContent(iPtBin)+1));
         fEffPt.SetBinError(iPtBin, TMath::Sqrt(fEffPt.GetBinError(iPtBin)*fEffPt.GetBinError(iPtBin)/fEffPt.GetBinContent(iPtBin)/fEffPt.GetBinContent(iPtBin)+fEff->GetBinError(iPtBin)*fEff->GetBinError(iPtBin)/fEff->GetBinContent(iPtBin)/fEff->GetBinContent(iPtBin)));
       }
       fEffPt.SetMarkerStyle(20);
       fEffPt.SetMarkerSize(0.8);
       fEffPt.GetXaxis()->SetTitle(kAxisTitlePt);
       fEffPt.GetXaxis()->SetRangeUser(2., 8.);
-      fEffPt.GetYaxis()->SetRangeUser(0., 0.05);
+      fEffPt.GetYaxis()->SetRangeUser(0., 0.09);
       fEffPt.GetYaxis()->SetTitle("#it{f}_{#it{wd}}");
       fEffPt.SetTitle(Form("%.0f-%.0f%%", kCentBinsLimitsHe3[iCent][0], kCentBinsLimitsHe3[iCent][1]));
       fEffPt.SetOption("PE");

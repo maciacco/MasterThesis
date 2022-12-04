@@ -11,7 +11,7 @@ const char *outputFormat[] = {"ratio\tstat\tuncorr_sys\tcorr_sys","ratio\tstat\t
 const char *inputFilesSys[] = {"", "", "Hypertriton_PbPb/SystematicsRatio.root", "He3_PbPb/out/SystematicsAll_extend2.root", "Omega_PbPb/ratio_cutCompetingMass-3.root", "Triton_PbPb/out/SystematicsAll_extend.root"};
 const char *inputHistoSys[] = {"fRatioDistributionTrials_%s", "fRatioDistributionTrials_%s", "fParameterDistribution_%s", "hist/fFitPar_%s", "h_sys;%d", "hist/fFitPar_%s"};
 const char *inputFilesSysMC[] = {"", "", "", "He3_PbPb/out/SystematicsEfficiencyPrimary.root", "", ""};
-const double xsec_err_sq[] = {0., 0.00129523*0.00129523+0.000173974*0.000173974, 0.00905074*0.00905074+0.00487767*0.00487767, 0.00905074*0.00905074+0.00487767*0.00487767, 0, 0.107459*0.107459+0.0177524*0.0177524};
+const double xsec_err_sq[] = {0.0073795806*0.0073795806, 0.00129523*0.00129523+0.000173974*0.000173974, 0.00905074*0.00905074+0.00487767*0.00487767, 0.00905074*0.00905074+0.00487767*0.00487767, 0, 0.107459*0.107459+0.0177524*0.0177524};
 const char *dir[] = {"", "", "", "1.0_89_0.1_2.5_1_1_1/", "", "1.0_69_0.1_2.5_1_1_1/"};
 const int n_part = 6;
 const bool draw_text = true;
@@ -77,7 +77,7 @@ Color_t colors[]={kRed, kOrange-3, kAzure+4,kGreen+2,kMagenta+2};
 double x_limits[][2]={{0.7,1.6},{0.5, 3.},{2., 35.},{2., 8.},{1.,10.},{1.6, 3.}};
 double x_limits_30_50[][2]={{0.7,1.6},{.5, 3.},{2., 14.},{2., 7.},{1.,10.},{1.6, 3.}};
 double material_ratio_instance[] = {5,4,3,1,-10,2};
-const char *format_fit_results[] = {"R=%.4f #pm0.0000 (stat.) #pm%.4f (uncorr.) #pm%.4f (corr.)","R=%.3f #pm0.000 (stat.) #pm%.3f (uncorr.) #pm%.3f (corr.)","R=%.2f #pm%.2f (stat.) #pm%.2f (uncorr.) #pm%.2f (corr.)","R=%.2f #pm%.2f (stat.) #pm%.2f (uncorr.) #pm%.2f (corr.)","R=%.3f #pm%.3f (stat.+ eff.) #pm%.3f (syst.)","R=%.2f #pm%.2f (stat.) #pm%.2f (uncorr.) #pm%.2f (corr.)"};
+const char *format_fit_results[] = {"R=%.3f #pm0.000 (stat.) #pm%.3f (uncorr.) #pm%.3f (corr.)","R=%.3f #pm0.000 (stat.) #pm%.3f (uncorr.) #pm%.3f (corr.)","R=%.2f #pm%.2f (stat.) #pm%.2f (uncorr.) #pm%.2f (corr.)","R=%.2f #pm%.2f (stat.) #pm%.2f (uncorr.) #pm%.2f (corr.)","R=%.3f #pm%.3f (stat.+ eff.) #pm%.3f (syst.)","R=%.2f #pm%.2f (stat.) #pm%.2f (uncorr.) #pm%.2f (corr.)"};
 const char *format_out_results[] = {"%s\t%.12f\t0.000000000000\t%.12f\t%.12f","%s\t%.12f\t0.000000000000\t%.12f\t%.12f","%s\t%.12f\t%.12f\t%.12f\t%.12f","%s\t%.12f\t%.12f\t%.12f\t%.12f","%s\t%.12f\t%.12f\t%.12f","%s\t%.12f\t%.12f\t%.12f\t%.12f"};
 
 void newratios() {
@@ -107,12 +107,12 @@ void newratios() {
     double half_width_y = 0.5*(maxy[i_part]-miny[i_part]);
     double mean_x = 0.5*(minpt[i_part]+maxpt[i_part]);
     double half_width_x = 0.5*(maxpt[i_part]-minpt[i_part]);
-    text.DrawText(mean_x+0.08*half_width_x,mean_y+0.75*half_width_y,"ALICE");
+    //text.DrawText(mean_x+0.08*half_width_x,mean_y+0.7*half_width_y,"ALICE Internal");
 
     pads[0]->cd();
     text.SetTextFont(43);
     text.SetTextSize(18);
-    text.DrawLatex(mean_x+0.08*half_width_x,mean_y+0.55*half_width_y,"Pb-Pb #sqrt{#it{s}_{NN}} = 5.02 TeV");
+    //text.DrawLatex(mean_x+0.08*half_width_x,mean_y+0.45*half_width_y,"Pb-Pb #sqrt{#it{s}_{NN}} = 5.02 TeV");
 
     const string labels[5]{"0-5%","5-10%","30-50%","10-30%","50-90%"};
     const string names[5]{"0_5","5_10","30_50","10_30","50_90"};
@@ -130,7 +130,7 @@ void newratios() {
       if (iPP==3)iP=2;
       pads[iPP]->cd();
       text.SetTextSize(18);
-      text.DrawText(mean_x-0.89*half_width_x,mean_y+0.75*half_width_y,labels[iP].data());
+      text.DrawText(mean_x-0.89*half_width_x,mean_y+0.7*half_width_y,labels[iP].data());
       if (i_part!=4) h[iP] = (TH1D*)input.Get(Form("%sfRatio_%s",dir[i_part],names[iP].data()));
       else h[iP] = (TH1D*)input.Get(Form("%sh_ratio_%s",dir[i_part],names[iP].data()));
       g[iP]=new TGraphErrors(h[iP]);
@@ -212,6 +212,7 @@ void newratios() {
           text.DrawLatex(mean_x-0.91*half_width_x,mean_y-0.8*half_width_y,Form(format_fit_results[i_part],h[iP]->GetFunction("pol0")->GetParameter(0),h[iP]->GetFunction("pol0")->GetParError(0),sys_err,material_error));
           out_ratios_file <<Form(format_out_results[i_part],labels[iP].data(),h[iP]->GetFunction("pol0")->GetParameter(0),h[iP]->GetFunction("pol0")->GetParError(0),sys_err,material_error)<< std::endl;
         }
+        text.DrawLatex(mean_x-0.5*half_width_x,mean_y+0.7*half_width_y,Form("#chi^{2}/ndf=%.2f/%d",h[iP]->GetFunction("pol0")->GetChisquare(),h[iP]->GetFunction("pol0")->GetNDF()));
       }
     }
     cv->SaveAs(Form("RatioRun2_%s.pdf",outputFiles[i_part]));

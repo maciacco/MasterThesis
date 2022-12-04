@@ -33,6 +33,8 @@ void Secondary(const float cutDCAz = 1.f, const int cutTPCcls = 89, const double
   gStyle->SetPadTickX(1);
   gStyle->SetPadTickY(1);
   gStyle->SetTextFont(44);
+  gStyle->SetTitleFont(4);
+  gStyle->SetTitleFontSize(5);
   // make signal extraction plots directory
   system(Form("mkdir %s/primary_fraction", kPlotDir));
 
@@ -240,6 +242,8 @@ void Secondary(const float cutDCAz = 1.f, const int cutTPCcls = 89, const double
             // draw on canvas
             double chi2 = fit->GetChisquare();
             gStyle->SetOptStat(0);
+            fDCAdatProj->SetTitle(" ");
+            fDCAdatProj->SetTitleSize(0);
             fDCAdatProj->Scale(1, "width");
             result->Scale(1, "width");
             fDCAdatProj->GetYaxis()->SetRangeUser(1., 1.e5);

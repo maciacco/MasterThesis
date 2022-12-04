@@ -884,7 +884,7 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
     fSystematicUncertaintyTotal.GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
     fSystematicUncertaintyTotal.GetYaxis()->SetTitle("Systematic Uncertainty");
     fSystematicUncertaintyTotal.SetMinimum(0.);
-    fSystematicUncertaintyTotal.GetYaxis()->SetRangeUser(0.,0.04);
+    fSystematicUncertaintyTotal.GetYaxis()->SetRangeUser(0.,0.02);
     TCanvas cSysError(fSystematicUncertaintyTotal.GetName(),fSystematicUncertaintyTotal.GetTitle());
     fSystematicUncertaintyTotal.SetLineWidth(2);
     fSystematicUncertaintyTotal.Draw("histo");

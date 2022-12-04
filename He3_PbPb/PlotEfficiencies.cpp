@@ -34,7 +34,7 @@ void PlotEfficiencies(const float cutDCAz = 1.f, const int cutTPCcls = 89, const
 
   outFile.mkdir(histoNameDir);
 
-  Color_t colors[3] = {kRed, kBlue, kGreen + 2};
+  Color_t colors[5] = {kRed, kOrange-3, kAzure+4, kGreen+2, kMagenta+2};
 
   for (int iMatt = 0; iMatt < 2; iMatt++)
   {
@@ -45,8 +45,10 @@ void PlotEfficiencies(const float cutDCAz = 1.f, const int cutTPCcls = 89, const
     lEff.SetTextSize(0.035);
     lEff.SetBorderSize(0);
     TH1D *fEff[kNCentClasses];
-    for (int iCent = 0; iCent < kNCentClasses; ++iCent)
+    for (int iCent_ = 0; iCent_ < kNCentClasses; ++iCent_)
     {
+      int iCent = iCent_;
+      if (iCent_==2||iCent_==3) iCent = iCent+pow(-1,iCent);
       fEff[iCent] = (TH1D *)inFileEff->Get(Form("f%sEff_TPC_%.0f_%.0f", kAntimatterMatter[iMatt], kCentBinsLimitsHe3[iCent][0], kCentBinsLimitsHe3[iCent][1]));
       fEff[iCent]->SetTitle("");
       fEff[iCent]->GetYaxis()->SetRangeUser(0., 1.1);

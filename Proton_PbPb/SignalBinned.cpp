@@ -114,6 +114,8 @@ void SignalBinned(const char *cutSettings = "", const double roi_nsigma = 8., co
   /////////////////////////////////////////////////////////////////////////////////////
   double fitParameterMeanTPC[kNCentClasses][kNPtBins];
   double fitParameterSigmaTPC[kNCentClasses][kNPtBins];
+  double fitParameterMeanTPCError[kNCentClasses][kNPtBins];
+  double fitParameterSigmaTPCError[kNCentClasses][kNPtBins];
   double fitParameterAlphaLTPC[kNCentClasses][kNPtBins];
   double fitParameterAlphaRTPC[kNCentClasses][kNPtBins];
   double fitParameterMeanTPCBkg[kNCentClasses][kNPtBins];
@@ -676,8 +678,10 @@ void SignalBinned(const char *cutSettings = "", const double roi_nsigma = 8., co
           if (ptMin<0.96){
             if (iMatt == 0){
               meanTPC.setVal(fitParameterMeanTPC[iCent][iPtBin]);
-              meanTPC.setConstant(true);
               sigmaTPC.setVal(fitParameterSigmaTPC[iCent][iPtBin]);
+              meanTPC.setError(fitParameterMeanTPCError[iCent][iPtBin]);
+              meanTPC.setConstant(true);
+              sigmaTPC.setError(fitParameterSigmaTPCError[iCent][iPtBin]);
               sigmaTPC.setConstant(true);
               alpha1TPC.setVal(fitParameterAlphaLTPC[iCent][iPtBin]);
               alpha1TPC.setConstant(true);
@@ -694,6 +698,8 @@ void SignalBinned(const char *cutSettings = "", const double roi_nsigma = 8., co
               for (int i=0;i<4;++i)auto r=modelTPC.fitTo(hNSigmaTPCAll,RooFit::Range("fitRange"));
               fitParameterMeanTPC[iCent][iPtBin]=meanTPC.getVal();
               fitParameterSigmaTPC[iCent][iPtBin]=sigmaTPC.getVal();
+              fitParameterMeanTPCError[iCent][iPtBin]=meanTPC.getError();
+              fitParameterSigmaTPCError[iCent][iPtBin]=sigmaTPC.getError();
               fitParameterAlphaLTPC[iCent][iPtBin]=alpha1TPC.getVal();
               fitParameterAlphaRTPC[iCent][iPtBin]=alpha2TPC.getVal();
               fitParameterMeanTPCBkg[iCent][iPtBin]=meanTPCBkg.getVal();
@@ -731,6 +737,8 @@ void SignalBinned(const char *cutSettings = "", const double roi_nsigma = 8., co
           tpc_range_limit = (roi_nsigma-8.);
           tpc_tmp_mean=0.;
           tpc_tmp_rms=0.;
+          meanTPC.setConstant(false);
+          sigmaTPC.setConstant(false);
           nSigmaTPC.setRange("signalRange",meanTPC.getVal()-(lowTPCrange+tpc_range_limit)*sigmaTPC.getVal(),meanTPC.getVal()+(5.+tpc_range_limit)*sigmaTPC.getVal());
           modelTPC.plotOn(frameTPC,RooFit::Components("bkgTPC"),RooFit::LineColor(kGreen),RooFit::LineStyle(kDashed));
           modelTPC.plotOn(frameTPC,RooFit::Components("signalTPC"),RooFit::LineColor(kRed),RooFit::LineStyle(kDashed));

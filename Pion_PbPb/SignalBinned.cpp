@@ -186,6 +186,7 @@ void SignalBinned(const char *cutSettings = "", const double roi_min_limit_input
         double mismatch_left_limit = mean_tmp_K+(mismatch_min_limit_input)*rms_tmp_K;
         double mismatch_right_limit = mean_tmp_K+(mismatch_max_limit_input)*rms_tmp_K;
         if (mismatch_left_limit>50) mismatch_left_limit = 43.;
+        if (mismatch_left_limit>50 && iCent==4) mismatch_left_limit = 42.;
         if (mismatch_right_limit>50) mismatch_right_limit = 50.;
         tofSignalProjectionAll->GetXaxis()->SetRangeUser(-20., 20.);
 
@@ -461,7 +462,13 @@ void SignalBinned(const char *cutSettings = "", const double roi_min_limit_input
         xframe->GetXaxis()->SetLabelSize(0.06);
         xframe->GetYaxis()->SetLabelSize(0.06);
         xframe->GetXaxis()->SetRangeUser(intersectionHistogramFit,maxNsigma);
-        xframe->GetYaxis()->SetRangeUser(1,1e8);
+        tofSignalProjection->GetXaxis()->SetRangeUser(1,maxNsigma);
+        int min_bin = tofSignalProjection->GetMinimumBin();
+        double min = tofSignalProjection->GetBinContent(min_bin);
+        tofSignalProjection->GetXaxis()->SetRangeUser(-2,2);
+        int max_bin = tofSignalProjection->GetMaximumBin();
+        double max = tofSignalProjection->GetBinContent(max_bin);
+        xframe->GetYaxis()->SetRangeUser(min-0.8*min,max+0.8*max);
         xframe->GetYaxis()->SetTitleSize(0.07);
         xframe->GetYaxis()->SetTitleOffset(0.72);
         tofSignalProjection->GetXaxis()->SetRangeUser(-0.5, 0.5);

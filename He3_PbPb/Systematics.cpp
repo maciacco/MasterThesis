@@ -142,6 +142,7 @@ void Systematics(const int points = kNPoints, const bool cutVar = true, const bo
     fFitPar.GetXaxis()->SetTitle("R (^{3}#bar{He}/^{3}He)");
     fFitPar.SetDrawOption("histo");
     fFitPar.Rebin(8);
+    if (iC==4) fFitPar.Rebin(4);
     fFitPar.SetFillStyle(3345);
     fFitPar.SetLineWidth(2);
     fFitPar.SetLineColor(kBlue);
