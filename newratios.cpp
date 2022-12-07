@@ -2,8 +2,8 @@
 
 constexpr float minpt[] = {0.66, 0.4, 0., 1.6, 0.5, 1.5};
 constexpr float maxpt[] = {1.64, 3.1, 37., 8.4, 10.5, 3.1};
-constexpr float miny[] = {0.95, 0.94, 0., 0., 0.7, 0.};
-constexpr float maxy[] = {1.05, 1.06, 2., 2., 1.3, 2.};
+constexpr float miny[] = {0.95, 0.94, -0.2, -0.2, 0.7, -0.2};
+constexpr float maxy[] = {1.05, 1.06, 2.2, 2.2, 1.3, 2.2};
 const char *histoTitles[] = {";#it{p}_{T} (GeV/#it{c});#pi^{-}/#pi^{+};", ";#it{p}_{T} (GeV/#it{c});#bar{p}/p;", ";#it{ct} (cm);{}^{3}_{#bar{#Lambda}}#bar{H}/^{3}_{#Lambda}H;", ";#it{p}_{T} (GeV/#it{c});^{3}#bar{He}/^{3}He;", ";#it{ct} (cm);#bar{#Omega}^{+}/#Omega^{-};", ";#it{p}_{T} (GeV/#it{c});{}^{3}#bar{H}/^{3}H;"};
 const char *inputFiles[] = {"Pion_PbPb/out/SystematicsAllEPtNotCombined_extend2.root", "Proton_PbPb/out/SystematicsAllEPtNotCombinedTOF_extend_4.root", "Hypertriton_PbPb/Ratio.root", "He3_PbPb/out/SpectraHe3_kINT7.root", "Omega_PbPb/ratio_cutCompetingMass-3.root", "Triton_PbPb/out/SpectraHe3.root"};
 const char *outputFiles[] = {"pion","proton","hyp","he3","omega","triton"};
@@ -22,7 +22,7 @@ std::array<TPad*,5> CreatePads(TCanvas* &cv, int i_part=0)
   std::array<TPad*,5> pads{nullptr};
 
   constexpr double sx[2]{1,1.-sx[0]};
-  constexpr double sy[2]{0.245, 0.17};
+  constexpr double sy[2]{0.23, 0.18};
   constexpr double fx = 0.9;
   constexpr double fy = 0.17;
 
@@ -107,12 +107,12 @@ void newratios() {
     double half_width_y = 0.5*(maxy[i_part]-miny[i_part]);
     double mean_x = 0.5*(minpt[i_part]+maxpt[i_part]);
     double half_width_x = 0.5*(maxpt[i_part]-minpt[i_part]);
-    //text.DrawText(mean_x+0.08*half_width_x,mean_y+0.7*half_width_y,"ALICE Internal");
+    text.DrawText(mean_x+0.68*half_width_x,mean_y+0.7*half_width_y,"ALICE");
 
     pads[0]->cd();
     text.SetTextFont(43);
     text.SetTextSize(18);
-    //text.DrawLatex(mean_x+0.08*half_width_x,mean_y+0.45*half_width_y,"Pb-Pb #sqrt{#it{s}_{NN}} = 5.02 TeV");
+    text.DrawLatex(mean_x+0.08*half_width_x,mean_y+0.45*half_width_y,"Pb-Pb #sqrt{#it{s}_{NN}} = 5.02 TeV");
 
     const string labels[5]{"0-5%","5-10%","30-50%","10-30%","50-90%"};
     const string names[5]{"0_5","5_10","30_50","10_30","50_90"};

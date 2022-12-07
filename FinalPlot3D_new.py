@@ -13,10 +13,10 @@ centrality_classes = [[0, 5], [5, 10], [30, 50], [10, 30], [50,90]]
 centrality_colors = [ROOT.kRed, ROOT.kOrange-3,ROOT.kAzure+4,ROOT.kGreen+2, ROOT.kMagenta+2]
 particle_ratios = ["#bar{#Omega}^{+} / #Omega^{-}","#pi^{-} / #pi^{+}","#bar{p} / p","{}_{#bar{#Lambda}}^{3}#bar{H} / ^{3}_{#Lambda}H","^{3}#bar{H} / ^{3}H","^{3}#bar{He} / ^{3}He"]
 n_part = [2.5,7.5,40,20,70]
-n_part_err = [.5,.5,.5,.5,.5]
+n_part_err = [1.,1.,1.,1.,1.]
 
-fixmuQ = True
-nopions = True
+fixmuQ = False
+nopions = False
 
 chi2 = [1.0596,4.77823,3.71918,3.40207,1.77357]
 chi2_fixmuQ = [10.7356,12.7981,10.4624,7.41971,5.14968]
@@ -109,7 +109,7 @@ def muBmuQ(fixmuQ,nopions,i_cent):
         muB_err = fit_r[i_cent*3][1]
         muB_corr = np.abs(fit_r[(i_cent)*3+1][0]-fit_r[(i_cent)*3+2][0])*0.5
         muQ = -muB/50.
-        muQ_err = 0
+        muQ_err = muB_err/50.
         muQ_corr = 0
     return [muB,muB_err,muB_corr,muQ,muQ_err,muQ_corr]
 
@@ -124,7 +124,7 @@ ROOT.gStyle.SetOptStat(0)
 ROOT.gStyle.SetOptFit(0)
 ROOT.gStyle.SetTextFont(44)
 
-file_out = ROOT.TFile.Open('FinalPlot3D_new_fixmuQ_nopions.root', 'recreate')
+file_out = ROOT.TFile.Open('FinalPlot3D_new.root', 'recreate')
 if apply_scaling_radius:
     file_out = ROOT.TFile.Open('FinalPlot3D_LHC22b9.root', 'recreate')
 file_hijing = ROOT.TFile.Open('HIJINGRatios.root')
@@ -292,7 +292,6 @@ for i_cent, cent in enumerate(centrality_classes):
     aa.SetBinLabel(1, '0')
     aa.SetBinLabel(4, '1')
     aa.SetBinLabel(7, '2')
-    aa.SetBinLabel(10, '3')
     aa.SetLabelSize(0.062)
 
     # chi2 text
@@ -399,6 +398,7 @@ for i_cent, cent in enumerate(centrality_classes):
         hRatiosParticleFit.SetBinContent(i_part+1,fit)
         hRatiosParticleFit.SetBinError(i_part+1,0)
         print(f"fit = {fit}")
+    hRatiosParticle.GetYaxis().SetNdivisions(10)
     hRatiosParticle.GetYaxis().SetRangeUser(0.67,1.18)
     gRatiosParticle = ROOT.TGraphErrors(hRatiosParticle)
     gRatiosParticle.SetName(f"gRatiosParticle_{cent[0]}_{cent[1]}")
@@ -483,7 +483,7 @@ for i_cent, cent in enumerate(centrality_classes):
     # hNSigmaRatioFitParticle.SetLineWidth(1)
     hNSigmaRatioFitParticle.GetYaxis().SetTitle("pull")#"#frac{data - fit}{#sigma_{data}}")
     hNSigmaRatioFitParticle.GetYaxis().CenterTitle()
-    hNSigmaRatioFitParticle.GetYaxis().SetRangeUser(-4.3,4.3)
+    hNSigmaRatioFitParticle.GetYaxis().SetRangeUser(-4.7,4.7)
     # gHijingNsigma = ROOT.TGraphErrors(gHijingPredictions)
     # gHijingNsigma.SetPointY(0,(gHijingNsigma.GetPointY(0)-fit_expo.Eval(0,1))/np.sqrt(syst_pion*syst_pion+stat_pion*stat_pion))
     # gHijingNsigma.SetPointY(1,(gHijingNsigma.GetPointY(1)-fit_expo.Eval(3,0.5))/np.sqrt(syst_proton*syst_proton+stat_proton*stat_proton))
@@ -559,9 +559,13 @@ for i_cent, cent in enumerate(centrality_classes):
 
     muBmuQ_list = muBmuQ(fixmuQ,nopions,i_cent)
     text_mu_b = ROOT.TLatex(1,0,"#mu_{B}="+"{:.2f}".format(muBmuQ_list[0])+"#pm"+"{:.2f}".format(muBmuQ_list[1])+"(uncorr.)#pm"+"{:.2f}".format(muBmuQ_list[2])+"(corr.) MeV")
+    text_mu_b.SetName("mu_b")
     text_mu_q = ROOT.TLatex(1.2,0,"#mu_{Q}="+"{:.2f}".format(muBmuQ_list[3])+"#pm"+"{:.2f}".format(muBmuQ_list[4])+"(uncorr.)#pm"+"{:.2f}".format(muBmuQ_list[5])+"(corr.) MeV")
     if fixmuQ:
         text_mu_q = ROOT.TLatex(1.2,0,"#mu_{Q}="+"{:.2f}".format(muBmuQ_list[3])+" MeV")
+    text_mu_q.SetName("mu_q")
+    text_chi2.SetName("chi2")
+    text_centrality.SetName("centrality")
     # leg_ratios_particle.AddEntry(gHijingPredictions,"HIJING")
     text_mu_b.SetTextFont(43)
     text_mu_q.SetTextFont(43)
@@ -619,8 +623,9 @@ gMuBCentCorrUnc.SetName("gMuBCentCorrUnc")
 
 legMuBCent = ROOT.TLegend(0.18,0.15,0.60,0.28)
 gPublishedResult = ROOT.TGraphErrors()
+gPublishedResult.SetName("NaturePoint")
 gPublishedResult.AddPoint(5,0.7)
-gPublishedResult.SetPointError(0,10,3.8)
+gPublishedResult.SetPointError(0,5,3.8)
 gPublishedResult.SetMarkerStyle(0)
 gPublishedResult.SetMarkerSize(0)
 gPublishedResult.SetLineWidth(0)
@@ -680,6 +685,7 @@ gMuBCent.Draw("ape")
 
 cQ = ROOT.TCanvas("cMuQuncorr","cMuQuncorr")
 cQ.cd()
+gMuQCent.SetName("MuQCent")
 gMuQCent.SetMarkerStyle(20)
 gMuQCent.SetMarkerSize(1.2)
 gMuQCent.SetMarkerColor(ROOT.kRed)

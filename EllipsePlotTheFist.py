@@ -158,9 +158,11 @@ ellipses[5].SetLineColor(ROOT.kBlack)
 text = ROOT.TLatex()
 text.SetTextFont(43)
 text.SetTextSize(32)
-text.DrawLatex(1.20355,1.19636,"ALICE")
+text.DrawLatex(1.20355,1.25,"ALICE")
 text.SetTextSize(28)
 text.DrawLatex(0.740964,0.947157,"Pb-Pb #sqrt{s_{NN}}=5.02 TeV")
+#text.SetTextSize(28)
+#text.DrawLatex(1.19,0.69795400,"|y| < 0.5")
 
 # legend
 leg = ROOT.TLegend(0.152174,0.292969,0.307692,0.515625)
