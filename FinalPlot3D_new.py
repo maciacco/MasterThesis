@@ -15,63 +15,176 @@ particle_ratios = ["#bar{#Omega}^{+} / #Omega^{-}","#pi^{-} / #pi^{+}","#bar{p} 
 n_part = [2.5,7.5,40,20,70]
 n_part_err = [1.,1.,1.,1.,1.]
 
-fixmuQ = False
-nopions = False
+fixmuQ = True
+nopions = True
 
-chi2 = [1.0596,4.77823,3.71918,3.40207,1.77357]
-chi2_fixmuQ = [10.7356,12.7981,10.4624,7.41971,5.14968]
-chi2_fixmuQ_nopions = [0.695672,4.0161,3.03759,2.90952,1.26367]
+# chi2 = [1.0596,4.77823,3.71918,3.40207,1.77357]
+# chi2_fixmuQ = [10.7356,12.7981,10.4624,7.41971,5.14968]
+# chi2_fixmuQ_nopions = [0.695672,4.0161,3.03759,2.90952,1.26367]
+chi2 = []
+chi2_fixmuQ = []
+chi2_fixmuQ_nopions = []
 
 ndf = [4,4,4,4,3]
 
 fit_res = []
 fit_res_fixMuQ = []
 fit_res_fixMuQ_nopions = []
-fit_res.append([0.712761, 0.363998, 0.159984, 0.123506, -0.791179]) # chi2 = 1.0596
-fit_res_fixMuQ.append([1.09433, 0.100112]) # chi2 = 10.7356
-fit_res_fixMuQ_nopions.append([1.09939, 0.100178]) # chi2 = 0.695672
-fit_res.append([0.251577, 1.2497, 0.161502, 0.123836, -0.793272]) # chi2 = 5.16327
-fit_res_fixMuQ.append([1.5397, 0.099934]) # chi2 = 112.439
-fit_res_fixMuQ_nopions.append([1.55914, 0.100142]) # chi2 = 2.02058
-fit_res.append([1.17425, -0.527279, 0.158317, 0.123128, -0.788817]) # chi2 = 0.993692
-fit_res_fixMuQ.append([0.649667, 0.100177]) # chi2 = 18.9234
-fit_res_fixMuQ_nopions.append([0.63977, 0.100189]) # chi2 = 1.45573
-fit_res.append([0.724201, 0.299973, 0.150082, 0.111395, -0.761083]) # chi2 = 4.77823
-fit_res_fixMuQ.append([1.03859, 0.0995633]) # chi2 = 12.7981
-fit_res_fixMuQ_nopions.append([1.04418, 0.0996003]) # chi2 = 4.0161
-fit_res.append([0.272802, 1.18598, 0.151581, 0.111655, -0.763454]) # chi2 = 6.79138
-fit_res_fixMuQ.append([1.49239, 0.0993922]) # chi2 = 125.647
-fit_res_fixMuQ_nopions.append([1.51469, 0.0995805]) # chi2 = 2.74022
-fit_res.append([1.17451, -0.591067, 0.1488, 0.111232, -0.759169]) # chi2 = 7.52173
-fit_res_fixMuQ.append([0.585884, 0.0996545]) # chi2 = 34.8721
-fit_res_fixMuQ_nopions.append([0.576677, 0.0987702]) # chi2 = 5
-fit_res.append([0.856205, -0.32537, 0.138354, 0.120137, -0.893478]) # chi2 = 3.71918
-fit_res_fixMuQ.append([0.524201, 0.0638392]) # chi2 = 10.4624
-fit_res_fixMuQ_nopions.append([0.521517, 0.0638321]) # chi2 = 3.03759
-fit_res.append([0.413393, 0.57488, 0.139981, 0.120985, -0.89536]) # chi2 = 2.23355
-fit_res_fixMuQ.append([1.01924, 0.0638172]) # chi2 = 25.7678
-fit_res_fixMuQ_nopions.append([1.02183, 0.0638299]) # chi2 = 1.56665
-fit_res.append([1.29588, -1.22711, 0.136053, 0.118802, -0.89064]) # chi2 = 9
-fit_res_fixMuQ.append([0.0283267, 0.0639664]) # chi2 = 115.876
-fit_res_fixMuQ_nopions.append([0.0233433, 0.0636091]) # chi2 = 5
-fit_res.append([0.828826, 0.140898, 0.09488, 0.0734115, -0.800945]) # chi2 = 3.40207
-fit_res_fixMuQ.append([0.984819, 0.0582182]) # chi2 = 7.41971
-fit_res_fixMuQ_nopions.append([0.986853, 0.0582288]) # chi2 = 2.90952
-fit_res.append([0.333476, 1.04138, 0.0957711, 0.0736439, -0.803095]) # chi2 = 7.02403
-fit_res_fixMuQ.append([1.4233, 0.0581529]) # chi2 = 217.522
-fit_res_fixMuQ_nopions.append([1.43719, 0.0581324]) # chi2 = 5
-fit_res.append([1.3209, -0.762161, 0.0938943, 0.0731459, -0.798547]) # chi2 = 2.33157
-fit_res_fixMuQ.append([0.549657, 0.0582763]) # chi2 = 109.282
-fit_res_fixMuQ_nopions.append([0.535755, 0.0582398]) # chi2 = 1.03048
-fit_res.append([0.79105, -0.343202, 0.205461, 0.179966, -0.903472]) # chi2 = 1.77357
-fit_res_fixMuQ.append([0.437958, 0.0904812]) # chi2 = 5.14968
-fit_res_fixMuQ_nopions.append([0.435647, 0.0904559]) # chi2 = 1.26367
-fit_res.append([0.302007, 0.565742, 0.208151, 0.181488, -0.905428]) # chi2 = 0.440131
-fit_res_fixMuQ.append([0.898153, 0.090461]) # chi2 = 10.3317
-fit_res_fixMuQ_nopions.append([0.900612, 0.0904335]) # chi2 = 0.292144
-fit_res.append([1.27559, -1.25227, 0.203589, 0.179062, -0.902132]) # chi2 = 4.05683
-fit_res_fixMuQ.append([-0.0238193, 0.0906695]) # chi2 = 52.7022
-fit_res_fixMuQ_nopions.append([-0.0300183, 0.0904955]) # chi2 = 2.92666
+
+fit_res.append([0.708006, 0.368355, 0.160412, 0.123792, -0.792493])
+chi2.append(0.962495)
+fit_res_fixMuQ.append([1.09442, 0.100108])
+chi2_fixmuQ.append(10.7233)
+fit_res_fixMuQ_nopions.append([1.0995, 0.100145])
+chi2_fixmuQ_nopions.append(0.60714)
+fit_res.append([0.239212, 1.25969, 0.161754, 0.124116, -0.794516])
+chi2.append(3.90689)
+fit_res_fixMuQ.append([1.53987, 0.0999371])
+chi2_fixmuQ.append(112.435)
+fit_res_fixMuQ_nopions.append([1.55907, 0.100116])
+chi2_fixmuQ_nopions.append(1.94999)
+fit_res.append([1.17473, -0.526276, 0.158512, 0.123263, -0.789586])
+chi2.append(1.1251)
+fit_res_fixMuQ.append([0.649775, 0.100175])
+chi2_fixmuQ.append(18.9201)
+fit_res_fixMuQ_nopions.append([0.640038, 0.10016])
+chi2_fixmuQ_nopions.append(1.38545)
+fit_res.append([0.566466, 0.733513, 0.161216, 0.124064, -0.793823])
+chi2.append(0.833115)
+fit_res_fixMuQ.append([1.32886, 0.100055])
+chi2_fixmuQ.append(38.1696)
+fit_res_fixMuQ_nopions.append([1.33895, 0.100139])
+chi2_fixmuQ_nopions.append(0.187315)
+fit_res.append([0.849185, 0.00272185, 0.159554, 0.123501, -0.79107])
+chi2.append(1.29216)
+fit_res_fixMuQ.append([0.859691, 0.100126])
+chi2_fixmuQ.append(1.29994)
+fit_res_fixMuQ_nopions.append([0.860066, 0.100146])
+chi2_fixmuQ_nopions.append(1.26343)
+
+fit_res.append([0.716453, 0.307134, 0.150533, 0.111776, -0.763182])
+chi2.append(4.39531)
+fit_res_fixMuQ.append([1.0387, 0.099562])
+chi2_fixmuQ.append(12.7941)
+fit_res_fixMuQ_nopions.append([1.04439, 0.0995929])
+chi2_fixmuQ_nopions.append(3.99529)
+fit_res.append([0.255142, 1.20029, 0.151855, 0.112048, -0.76545])
+chi2.append(4.78801)
+fit_res_fixMuQ.append([1.49255, 0.099395])
+chi2_fixmuQ.append(125.642)
+fit_res_fixMuQ_nopions.append([1.51484, 0.0995692])
+chi2_fixmuQ_nopions.append(2.69494)
+fit_res.append([1.17545, -0.589442, 0.14894, 0.111434, -0.76047])
+chi2.append(7.56329)
+fit_res_fixMuQ.append([0.585999, 0.099653])
+chi2_fixmuQ.append(34.873)
+fit_res_fixMuQ_nopions.append([0.576592, 0.0987852])
+chi2_fixmuQ_nopions.append(5)
+fit_res.append([0.575151, 0.672392, 0.151215, 0.111964, -0.764459])
+chi2.append(4.84168)
+fit_res_fixMuQ.append([1.27266, 0.0995114])
+chi2_fixmuQ.append(43.4741)
+fit_res_fixMuQ_nopions.append([1.28465, 0.0995833])
+chi2_fixmuQ_nopions.append(4.09971)
+fit_res.append([0.857477, -0.0586904, 0.149788, 0.111565, -0.761784])
+chi2.append(4.12635)
+fit_res_fixMuQ.append([0.80487, 0.0995784])
+chi2_fixmuQ.append(4.23564)
+fit_res_fixMuQ_nopions.append([0.804083, 0.0996017])
+chi2_fixmuQ_nopions.append(4.10866)
+
+fit_res.append([0.857839, -0.325634, 0.138105, 0.119763, -0.893128])
+chi2.append(3.47322)
+fit_res_fixMuQ.append([0.524393, 0.0638413])
+chi2_fixmuQ.append(10.5192)
+fit_res_fixMuQ_nopions.append([0.521816, 0.0638337])
+chi2_fixmuQ_nopions.append(3.1146)
+fit_res.append([0.414803, 0.573214, 0.139981, 0.120769, -0.895342])
+chi2.append(2.02227)
+fit_res_fixMuQ.append([1.01937, 0.0638168])
+chi2_fixmuQ.append(25.7632)
+fit_res_fixMuQ_nopions.append([1.02206, 0.0638276])
+chi2_fixmuQ_nopions.append(1.5424)
+fit_res.append([1.29707, -1.22584, 0.135825, 0.118479, -0.89032])
+chi2.append(9)
+fit_res_fixMuQ.append([0.0285132, 0.0639634])
+chi2_fixmuQ.append(115.891)
+fit_res_fixMuQ_nopions.append([0.022766, 0.0636249])
+chi2_fixmuQ_nopions.append(5)
+fit_res.append([0.810884, -0.203695, 0.138361, 0.119904, -0.893444])
+chi2.append(3.18565)
+fit_res_fixMuQ.append([0.604379, 0.0638352])
+chi2_fixmuQ.append(5.77991)
+fit_res_fixMuQ_nopions.append([0.602757, 0.0638383])
+chi2_fixmuQ_nopions.append(2.97751)
+fit_res.append([0.90485, -0.44765, 0.137778, 0.119566, -0.892716])
+chi2.append(3.66621)
+fit_res_fixMuQ.append([0.444308, 0.0638519])
+chi2_fixmuQ.append(17.433)
+fit_res_fixMuQ_nopions.append([0.440695, 0.0638423])
+chi2_fixmuQ_nopions.append(3.38683)
+
+fit_res.append([0.829428, 0.141044, 0.0948749, 0.0733367, -0.801046])
+chi2.append(2.96954)
+fit_res_fixMuQ.append([0.985061, 0.0582218])
+chi2_fixmuQ.append(7.46993)
+fit_res_fixMuQ_nopions.append([0.987111, 0.0582322])
+chi2_fixmuQ_nopions.append(2.95776)
+fit_res.append([0.333241, 1.04078, 0.0958088, 0.0735831, -0.803324])
+chi2.append(6.33835)
+fit_res_fixMuQ.append([1.42343, 0.058154])
+chi2_fixmuQ.append(217.516)
+fit_res_fixMuQ_nopions.append([1.43765, 0.0581413])
+chi2_fixmuQ_nopions.append(5)
+fit_res.append([1.32183, -0.761355, 0.0937961, 0.0730418, -0.798378])
+chi2.append(2.06972)
+fit_res_fixMuQ.append([0.549768, 0.0582754])
+chi2_fixmuQ.append(109.286)
+fit_res_fixMuQ_nopions.append([0.536124, 0.0582323])
+chi2_fixmuQ_nopions.append(0.99841)
+fit_res.append([0.734428, 0.385186, 0.0952013, 0.0734494, -0.801931])
+chi2.append(2.53909)
+fit_res_fixMuQ.append([1.14445, 0.0582122])
+chi2_fixmuQ.append(32.8953)
+fit_res_fixMuQ_nopions.append([1.14956, 0.0582286])
+chi2_fixmuQ_nopions.append(2.74959)
+fit_res.append([0.924239, -0.103301, 0.0945198, 0.073207, -0.800065])
+chi2.append(3.34867)
+fit_res_fixMuQ.append([0.826315, 0.058229])
+chi2_fixmuQ.append(4.88989)
+fit_res_fixMuQ_nopions.append([0.82472, 0.0582401])
+chi2_fixmuQ_nopions.append(3.27125)
+
+fit_res.append([0.793914, -0.34432, 0.204878, 0.179192, -0.90296])
+chi2.append(1.61171)
+fit_res_fixMuQ.append([0.437895, 0.0904968])
+chi2_fixmuQ.append(5.20226)
+fit_res_fixMuQ_nopions.append([0.435359, 0.0904916])
+chi2_fixmuQ_nopions.append(1.3741)
+fit_res.append([0.307313, 0.560639, 0.207649, 0.180695, -0.90497])
+chi2.append(0.239696)
+fit_res_fixMuQ.append([0.898222, 0.0904673])
+chi2_fixmuQ.append(10.3544)
+fit_res_fixMuQ_nopions.append([0.900629, 0.0904704])
+chi2_fixmuQ_nopions.append(0.423425)
+fit_res.append([1.27693, -1.25102, 0.203126, 0.178464, -0.90174])
+chi2.append(4.03199)
+fit_res_fixMuQ.append([-0.0236317, 0.0906651])
+chi2_fixmuQ.append(52.7105)
+fit_res_fixMuQ_nopions.append([-0.030415, 0.090523])
+chi2_fixmuQ_nopions.append(2.98998)
+fit_res.append([0.746567, -0.222153, 0.20541, 0.179533, -0.903379])
+chi2.append(1.55846)
+fit_res_fixMuQ.append([0.518375, 0.090482])
+chi2_fixmuQ.append(2.93424)
+fit_res_fixMuQ_nopions.append([0.516817, 0.0904774])
+chi2_fixmuQ_nopions.append(1.31862)
+fit_res.append([0.841117, -0.466472, 0.204543, 0.179011, -0.902705])
+chi2.append(1.74637)
+fit_res_fixMuQ.append([0.357365, 0.0905119])
+chi2_fixmuQ.append(8.41588)
+fit_res_fixMuQ_nopions.append([0.353942, 0.0904871])
+chi2_fixmuQ_nopions.append(1.35242)
 
 fit_val=[[0.997025,0.986166,0.963691,0.968228,0.968138,0.995232],
 [0.997547,0.986858,0.964858,0.968599,0.968861,0.995346],
@@ -92,26 +205,38 @@ fit_val_fixmuQ_nopions=[[1.00022,0.98641,0.95902,0.958678,0.961488,0.994257],
 [1.00009,0.994593,0.983556,0.983417,-1,0.99772]]
 
 def muBmuQ(fixmuQ,nopions,i_cent):
+    muQ = 0
+    muB = 0
+    muB_err = 0
+    muQ_err = 0
+    muQ_corr = 0
+    muB_corr = 0
+    muB_polarity = 0
+    muQ_polarity = 0
     fit_r = fit_res
     if fixmuQ:
         fit_r = fit_res_fixMuQ
         if nopions:
             fit_r = fit_res_fixMuQ_nopions
     if not fixmuQ and not nopions:
-        muB = fit_r[i_cent*3][0]
-        muB_err = fit_r[i_cent*3][2]
-        muB_corr = np.abs(fit_r[(i_cent)*3+1][0]-fit_r[(i_cent)*3+2][0])*0.5
-        muQ = fit_r[i_cent*3][1]
-        muQ_err = fit_r[i_cent*3][3]
-        muQ_corr = np.abs(fit_r[(i_cent)*3+1][1]-fit_r[(i_cent)*3+2][1])*0.5
+        muB = fit_r[i_cent*5][0]
+        muB_err = fit_r[i_cent*5][2]
+        muB_corr = np.abs(fit_r[(i_cent)*5+1][0]-fit_r[(i_cent)*5+2][0])*0.5
+        muB_polarity = np.abs(fit_r[(i_cent)*5+3][0]-fit_r[(i_cent)*5+4][0])*0.5
+        muQ = fit_r[i_cent*5][1]
+        muQ_err = fit_r[i_cent*5][3]
+        muQ_corr = np.abs(fit_r[(i_cent)*5+1][1]-fit_r[(i_cent)*5+2][1])*0.5
+        muQ_polarity = np.abs(fit_r[(i_cent)*5+3][1]-fit_r[(i_cent)*5+4][1])*0.5
     else:
-        muB = fit_r[i_cent*3][0]
-        muB_err = fit_r[i_cent*3][1]
-        muB_corr = np.abs(fit_r[(i_cent)*3+1][0]-fit_r[(i_cent)*3+2][0])*0.5
+        muB = fit_r[i_cent*5][0]
+        muB_err = fit_r[i_cent*5][1]
+        muB_corr = np.abs(fit_r[(i_cent)*5+1][0]-fit_r[(i_cent)*5+2][0])*0.5
+        muB_polarity = np.abs(fit_r[(i_cent)*5+3][0]-fit_r[(i_cent)*5+4][0])*0.5
         muQ = -muB/50.
         muQ_err = muB_err/50.
         muQ_corr = 0
-    return [muB,muB_err,muB_corr,muQ,muQ_err,muQ_corr]
+        muQ_polarity = 0
+    return [muB,muB_err,muB_corr,muQ,muQ_err,muQ_corr,muB_polarity,muQ_polarity]
 
 apply_scaling_radius = False
 
@@ -124,7 +249,7 @@ ROOT.gStyle.SetOptStat(0)
 ROOT.gStyle.SetOptFit(0)
 ROOT.gStyle.SetTextFont(44)
 
-file_out = ROOT.TFile.Open('FinalPlot3D_new.root', 'recreate')
+file_out = ROOT.TFile.Open('FinalPlot3D_new_fixmuQ_nopions.root', 'recreate')
 if apply_scaling_radius:
     file_out = ROOT.TFile.Open('FinalPlot3D_LHC22b9.root', 'recreate')
 file_hijing = ROOT.TFile.Open('HIJINGRatios.root')
@@ -133,8 +258,10 @@ hMuBCentFrame = ROOT.TH1D("frame",";Centrality (%);#mu_{#it{B}} (MeV)",1,0,90)
 hMuQCentFrame = ROOT.TH1D("frame",";#LT#it{N}_{part}#GT;#mu_{#it{Q}} (MeV)",1,0,450)
 gMuBCent = ROOT.TGraphErrors()
 gMuBCentCorrUnc = ROOT.TGraphErrors()
+gMuBCentPolarityUnc = ROOT.TGraphErrors()
 gMuQCent = ROOT.TGraphErrors()
 gMuQCentCorrUnc = ROOT.TGraphErrors()
+gMuQCentPolarityUnc = ROOT.TGraphErrors()
 
 for i_cent, cent in enumerate(centrality_classes):
     fixmuQ_nopions = ''
@@ -295,11 +422,11 @@ for i_cent, cent in enumerate(centrality_classes):
     aa.SetLabelSize(0.062)
 
     # chi2 text
-    formatted_chi2 = "{:.2f}".format(chi2[i_cent])
+    formatted_chi2 = "{:.2f}".format(chi2[i_cent*5])
     if fixmuQ:
-        formatted_chi2 = "{:.2f}".format(chi2_fixmuQ[i_cent])
+        formatted_chi2 = "{:.2f}".format(chi2_fixmuQ[i_cent*5])
         if nopions:
-            formatted_chi2 = "{:.2f}".format(chi2_fixmuQ_nopions[i_cent])
+            formatted_chi2 = "{:.2f}".format(chi2_fixmuQ_nopions[i_cent*5])
     dof = ndf[i_cent]
     if fixmuQ and not nopions:
         dof = ndf[i_cent] + 1
@@ -612,14 +739,19 @@ for i_cent, cent in enumerate(centrality_classes):
     gMuBCent.SetPointError(gMuBCent.GetN()-1,n_part_err[i_cent],muBmuQ_list[1])
     gMuBCentCorrUnc.AddPoint(n_part[i_cent],muBmuQ_list[0])
     gMuBCentCorrUnc.SetPointError(gMuBCent.GetN()-1,.5,muBmuQ_list[2])
+    gMuBCentPolarityUnc.AddPoint(n_part[i_cent],muBmuQ_list[0])
+    gMuBCentPolarityUnc.SetPointError(gMuBCent.GetN()-1,.5,muBmuQ_list[6])
     gMuQCent.AddPoint(n_part[i_cent],muBmuQ_list[3])
     gMuQCent.SetPointError(gMuBCent.GetN()-1,0.,muBmuQ_list[4])
     gMuQCentCorrUnc.AddPoint(n_part[i_cent],muBmuQ_list[3])
-    gMuQCentCorrUnc.SetPointError(gMuQCent.GetN()-1,10,muBmuQ_list[5])
+    gMuQCentCorrUnc.SetPointError(gMuQCent.GetN()-1,.5,muBmuQ_list[5])
+    gMuQCentPolarityUnc.AddPoint(n_part[i_cent],muBmuQ_list[3])
+    gMuQCentPolarityUnc.SetPointError(gMuQCent.GetN()-1,.5,muBmuQ_list[7])
     # print(f'mu_I_error = {mu_I_error}')
 
 gMuBCent.SetName("MuBCent")
 gMuBCentCorrUnc.SetName("gMuBCentCorrUnc")
+gMuBCentPolarityUnc.SetName("gMuBCentPolarityUnc")
 
 legMuBCent = ROOT.TLegend(0.18,0.15,0.60,0.28)
 gPublishedResult = ROOT.TGraphErrors()
@@ -662,6 +794,7 @@ hMuBCentFrame.GetXaxis().SetDecimals()
 hMuBCentFrame.Draw("axis")
 gPublishedResult.Draw("pe5same")
 gMuBCentCorrUnc.Draw("pe5same")
+gMuBCentPolarityUnc.Draw("pesame")
 gMuBCent.Draw("pe5same")
 legMuBCent.SetNColumns(2)
 legMuBCent.SetTextFont(43)
@@ -686,6 +819,8 @@ gMuBCent.Draw("ape")
 cQ = ROOT.TCanvas("cMuQuncorr","cMuQuncorr")
 cQ.cd()
 gMuQCent.SetName("MuQCent")
+gMuQCentCorrUnc.SetName("MuQCentCorrUnc")
+gMuQCentPolarityUnc.SetName("MuQCentPolarity")
 gMuQCent.SetMarkerStyle(20)
 gMuQCent.SetMarkerSize(1.2)
 gMuQCent.SetMarkerColor(ROOT.kRed)
@@ -695,7 +830,9 @@ gMuQCent.SetFillStyle(0)
 gMuQCent.Fit("pol0")
 gMuQCent.GetYaxis().SetTitle("#mu_{Q} (MeV)")
 gMuQCent.GetXaxis().SetTitle("Centrality (%)")
-gMuQCent.Draw("ape")
+gMuQCentPolarityUnc.Draw("ape5")
+gMuQCentCorrUnc.Draw("pesame")
+gMuQCent.Draw("pesame")
 
 cB.Write()
 cQ.Write()

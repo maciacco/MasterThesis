@@ -75,7 +75,7 @@ void SignalBinned(const char *cutSettings = "", const double roi_min_limit_input
   if (outFile->GetDirectory(Form("%s_%d_%d_%d_%d_%d_%d", cutSettings, binCounting, bkg_shape,iNsigmaDown,iNsigmaUp,iNsigmaMismatchDown,iNsigmaMismatchUp)))
     return;
   TDirectory *dirOutFile = outFile->mkdir(Form("%s_%d_%d_%d_%d_%d_%d", cutSettings, binCounting, bkg_shape, iNsigmaDown, iNsigmaUp,iNsigmaMismatchDown,iNsigmaMismatchUp));
-  TFile *dataFile = TFile::Open(TString::Format("%s/%s_largensigma_cutDCAxyChi2TPC.root", kDataDir, inFileDat)); // open data TFile _largensigma_cutDCAxyChi2TPC.root _LHC21l5_full_largeDCA_cutChi2.root
+  TFile *dataFile = TFile::Open(TString::Format("%s/../../../../Downloads/%s-27.root", kDataDir, inFileDat)); // open data TFile _largensigma_cutDCAxyChi2TPC.root _LHC21l5_full_largeDCA_cutChi2.root
 
   if (!dataFile)
   {
@@ -303,6 +303,7 @@ void SignalBinned(const char *cutSettings = "", const double roi_min_limit_input
 
             // K sideband
             tofSignal_full->setRange("rightSidebandK", mismatch_left_limit, mismatch_right_limit);
+            tofSignal_full->setRange("leftSidebandK", 15, 17);
 
             // full range
             tofSignal_full->setRange("full", nSigmaLeft,mismatch_right_limit);
@@ -313,6 +314,9 @@ void SignalBinned(const char *cutSettings = "", const double roi_min_limit_input
             for (int I=0;I<2;++I)modelMismatch->fitTo(data_full_all, RooFit::Save(), RooFit::Range("rightSidebandK"));
             slope1->setConstant();
             for (int I=0;I<2;++I)r =modelMismatch->fitTo(data_full, RooFit::Save(), RooFit::Range("rightSidebandK"));
+            if (ptMin>0.79&&ptMin<0.84){
+              for (int I=0;I<2;++I)r =modelMismatch->fitTo(data_full, RooFit::Save(), RooFit::Range("leftSidebandK,rightSidebandK"));
+            }
             if ((ptMin>0.79&&ptMin<0.89&&iCent==4))std::cout<<"!"<<std::endl;
             double mismatch_integral_=((RooAbsPdf *)modelMismatch->createIntegral(RooArgSet(*tofSignal_full), RooFit::NormSet(RooArgSet(*tofSignal_full)), RooFit::Range("full")))->getVal();
             double mismatch_integral_small=((RooAbsPdf *)modelMismatch->createIntegral(RooArgSet(*tofSignal_full), RooFit::NormSet(RooArgSet(*tofSignal_full)), RooFit::Range("small")))->getVal();

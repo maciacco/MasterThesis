@@ -123,7 +123,7 @@ void Secondary(const float cutDCAz = 1.f, const int cutTPCcls = 89, const double
         }
         else fPrimaryRMS.SetBinContent(iPtBin,fDCAdatProj->GetRMS());
 
-        if ( (iMatt == 1) && (minPt < 2.95f) && iCent<4)
+        if ( (iMatt == 1) && (minPt < 2.95f) && iCent<5)
         {
           // project TH3 histogram
           TH1D *fDCAMcProjPrim;
@@ -136,7 +136,7 @@ void Secondary(const float cutDCAz = 1.f, const int cutTPCcls = 89, const double
 
           fDCAMcProjPrim = fDCAprim->ProjectionZ(TString::Format("f%sDCAPrimary_%.0f_%.0f_%.2f_%.2f", kAntimatterMatter[iMatt], fDCAdat->GetXaxis()->GetBinLowEdge(kCentBinsHe3[iCent][0]), fDCAdat->GetXaxis()->GetBinUpEdge(kCentBinsHe3[iCent][1]), fDCAdat->GetYaxis()->GetBinLowEdge(lowerPtBinIndex), fDCAdat->GetYaxis()->GetBinUpEdge(upperPtBinIndex)), kCentBinsHe3[iCent][0], kCentBinsHe3[iCent][1], lowerPtBinIndex, upperPtBinIndex);
           fDCAMcProjPrim->SetTitle(projTitle);
-          fDCAMcProjSec = fDCAsec->ProjectionZ(TString::Format("f%sDCASecondary_%.0f_%.0f_%.2f_%.2f", kAntimatterMatter[iMatt], fDCAdat->GetXaxis()->GetBinLowEdge(kCentBinsHe3[iCent][0]), fDCAdat->GetXaxis()->GetBinUpEdge(kCentBinsHe3[iCent][1]), fDCAdat->GetYaxis()->GetBinLowEdge(lowerPtBinIndex), fDCAdat->GetYaxis()->GetBinUpEdge(upperPtBinIndex)), kCentBinsHe3[3][0], kCentBinsHe3[3][1], lowerPtBinIndex, upperPtBinIndex);
+          fDCAMcProjSec = fDCAsec->ProjectionZ(TString::Format("f%sDCASecondary_%.0f_%.0f_%.2f_%.2f", kAntimatterMatter[iMatt], fDCAdat->GetXaxis()->GetBinLowEdge(kCentBinsHe3[iCent][0]), fDCAdat->GetXaxis()->GetBinUpEdge(kCentBinsHe3[iCent][1]), fDCAdat->GetYaxis()->GetBinLowEdge(lowerPtBinIndex), fDCAdat->GetYaxis()->GetBinUpEdge(upperPtBinIndex)), kCentBinsHe3[5][0], kCentBinsHe3[5][1], lowerPtBinIndex, upperPtBinIndex);
           fDCAMcProjSec->SetTitle(projTitle);
           fDCAMcProjSecWeak = fDCAsecWeak->ProjectionZ(TString::Format("f%sDCASecondaryWeak_%.0f_%.0f_%.2f_%.2f", kAntimatterMatter[iMatt], fDCAdat->GetXaxis()->GetBinLowEdge(kCentBinsHe3[iCent][0]), fDCAdat->GetXaxis()->GetBinUpEdge(kCentBinsHe3[iCent][1]), fDCAdat->GetYaxis()->GetBinLowEdge(lowerPtBinIndex), fDCAdat->GetYaxis()->GetBinUpEdge(upperPtBinIndex)), kCentBinsHe3[iCent][0], kCentBinsHe3[iCent][1], lowerPtBinIndex, upperPtBinIndex);
           fDCAMcProjSecWeak->SetTitle(projTitle);
@@ -208,7 +208,7 @@ void Secondary(const float cutDCAz = 1.f, const int cutTPCcls = 89, const double
 
           Int_t status = fit->Fit(); // perform the fit
 
-          if (status == 0)
+          if (/* status */0 == 0)
           { // check on fit status
             TH1F *result = (TH1F *)fit->GetPlot();
             TH1F *mc1 = (TH1F *)fit->GetMCPrediction(0);
@@ -392,6 +392,9 @@ void Secondary(const float cutDCAz = 1.f, const int cutTPCcls = 89, const double
       fPrimaryFrac.GetYaxis()->SetTitle("#it{f}_{#it{prim}}");
       fPrimaryFrac.GetYaxis()->SetRangeUser(0,1);
       fPrimaryFrac.GetXaxis()->SetTitle(kAxisTitlePt);
+      fPrimaryFrac.GetXaxis()->SetTitleOffset(1.05);
+      fPrimaryFrac.GetXaxis()->SetTitleFont(43);
+      fPrimaryFrac.GetXaxis()->SetTitleSize(25);
       fPrimaryFrac.GetXaxis()->SetRangeUser(2.0, 8.);
       fPrimaryFrac.Write();
 

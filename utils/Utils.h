@@ -203,6 +203,7 @@ namespace utils
   {
     Double_t num = hist_num->GetBinContent(hist_num->GetXaxis()->FindBin(bin_cent));
     Double_t den = hist_den->GetBinContent(hist_den->GetXaxis()->FindBin(bin_cent));
+    if (den<1.e-6) return 0.;
     return num / den;
   }
 
@@ -211,6 +212,7 @@ namespace utils
     Double_t gen = hist_gen->GetBinContent(hist_gen->GetXaxis()->FindBin(bin_cent));
     Double_t eff = hist_eff->GetBinContent(hist_eff->GetXaxis()->FindBin(bin_cent));
     Double_t q = 1.00000000000 - eff;
+    if (gen < 1.e-6) return 0.;
     return TMath::Sqrt(gen * eff * q) / gen;
   }
 

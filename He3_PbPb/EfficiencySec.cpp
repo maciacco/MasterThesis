@@ -69,6 +69,7 @@ void EfficiencySec(const float cutDCAz = 1.f, const int cutTPCcls = 89, const fl
 
       int nUsedPtBins = 0;
       (iCent <2) ? nUsedPtBins = 13 : nUsedPtBins = 13;
+      if (iCent == 4) nUsedPtBins = 7;
       for (int iPtBin = 1; iPtBin < nUsedPtBins + 1; ++iPtBin)
       {
         fEffPt.SetBinContent(iPtBin, kHyperTritonHe3BR * hyperTritonToHe3Ratio[iMatt] * Eff(fITS_TPC_Pt, fTotal_Pt, fEffPt.GetXaxis()->GetBinCenter(iPtBin)));

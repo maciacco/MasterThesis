@@ -90,7 +90,7 @@ if [ $extractRatios -eq 1 ]; then
 //SignalUnbinned($argumentCuts,0.1f,2.5,$argumentSignal,"$treeData","$signalName","recreate")
 //Efficiency($argumentCuts,0.1f,2.5,"$treeMC","$EfficiencyHe3")
 EfficiencySec($argumentCuts,0.1f,2.5,"$treeMC","$EfficiencyHe3SecWD")
-//Secondary($argumentCuts,0.1f,2.5,"$treeData","$treeMC","$EfficiencyHe3SecWD","$PrimaryHe3")
+Secondary($argumentCuts,0.1f,2.5,"$treeData","$treeMC","$EfficiencyHe3SecWD","$PrimaryHe3")
 //Spectra($argumentCuts,0.1f,2.5,$argumentSignal,$sigmoidFlag,"$spectraHistNameId","$spectraName","recreate","AnalysisResults","$signalName","$EfficiencyHe3","$PrimaryHe3")
 // SignalLoss()
 //AbsorptionError("AbsError","recreate","$spectraName")

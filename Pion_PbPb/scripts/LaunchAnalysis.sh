@@ -9,11 +9,12 @@ spectraHistNameId=""
 extractRatios=1
 
 fileData="AnalysisResults"
-fileMC="AnalysisResults_LHC21l5_full_largeDCA_cutChi2"
-signalName="SignalPion"
-spectraName="SpectraPion_efficiency"
-EfficiencyHe3="EfficiencyPionprova"
-PrimaryHe3="PrimaryPion"
+#fileMC="AnalysisResults_LHC21l5_full_largeDCA_cutChi2"
+fileMC="../../../../Downloads/AnalysisResults_LHC21l5_pion_r"
+signalName="SignalPion_r"
+spectraName="SpectraPion_r"
+EfficiencyHe3="EfficiencyPionprova_r"
+PrimaryHe3="PrimaryPion_r"
 
 # create output directories
 DIR_OUT=out
@@ -46,8 +47,8 @@ if [ $extractRatios -eq 1 ]; then
 .L Secondary.cpp+
 .L Spectra.cpp+
 .L AbsorptionError.cpp+
-//SignalBinned("$cutSettings",1.5,11.,8.5,13.5,$argumentSignal,"$fileData","$signalName","recreate")
-//Secondary("$cutSettings",0.12,"$fileData","$fileMC","$PrimaryHe3")//,true)
+SignalBinned("$cutSettings",1.5,11.,8.5,13.5,$argumentSignal,"$fileData","$signalName","recreate")
+Secondary("$cutSettings",0.12,"$fileData","$fileMC","$PrimaryHe3")//,true)
 Spectra("$cutSettings",1.5,11.,8.5,13.5,$argumentSignal,$sigmoidFlag,"$spectraHistNameId","$spectraName","recreate","AnalysisResults","$signalName","$EfficiencyHe3","$PrimaryHe3")//,true)
 //AbsorptionError("AbsErrorMCorrection","recreate","$spectraName")
 .q

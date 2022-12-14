@@ -10,18 +10,21 @@ extractRatios=1
 
 #fileData="../AnalysisResults_LHC22b9_3"
 #fileMC="../AnalysisResults_LHC22b9_3"
-fileData="AnalysisResults_LHC21l5_full_largeDCA_cutChi2"
-fileMC="AnalysisResults_LHC21l5_full_largeDCA_cutChi2"
+#fileData="AnalysisResults_LHC21l5_full_largeDCA_cutChi2"
+#fileMC="AnalysisResults_LHC21l5_full_largeDCA_cutChi2"
+fileData="../../../../Downloads/AnalysisResults_LHC21l5_pion_r"
+fileMC="../../../../Downloads/AnalysisResults_LHC21l5_pion_r"
+
 #fileData="AnalysisResults_LHC20e3_tryGP_efficiency"
 #fileMC="AnalysisResults_LHC20e3_tryGP_efficiency"
 # fileData="../../data/AnalysisResults_LHC22b9_3"
 # fileMC="../../data/AnalysisResults_LHC22b9_3"
 # fileData="LHC20e3a"
 # fileMC="LHC20e3a"
-signalName="SignalPionMC_21l5_false_prova_fineCentrality"
-spectraName="SpectraPionMC_21l5_falseprova_fineCentrality"
-EfficiencyHe3="EfficiencyPionprova"
-PrimaryHe3="PrimaryPionMC_21l5_falseprova_fineCentrality"
+signalName="SignalPionMC_21l5_false_prova_r"
+spectraName="SpectraPionMC_21l5_falseprova_r"
+EfficiencyHe3="EfficiencyPionprova_r"
+PrimaryHe3="PrimaryPionMC_21l5_falseprova_r"
 
 # create output directories
 DIR_OUT=out
