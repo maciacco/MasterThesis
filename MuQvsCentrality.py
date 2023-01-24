@@ -13,7 +13,7 @@ def InvertPoints(g,a,b):
     g.SetPointError(b,buffer[1],buffer[3])
     return
 
-def chi2(par,g,gCorr,gB):
+def chi2(par,g,gCorr,gB,print_cov=False):
     val = []
     uncorr = []
     corr = []
@@ -22,23 +22,22 @@ def chi2(par,g,gCorr,gB):
     par_vec = []
     for i_c in range(5):
         val.append(g.GetPointY(i_c))
-        uncorr.append(g.GetErrorY(i_c))
-        corr.append(gCorr.GetErrorY(i_c))
-        polarity.append(gB.GetErrorY(i_c))
+        uncorr.append(np.abs(g.GetErrorY(i_c)))
+        corr.append(np.abs(gCorr.GetErrorY(i_c)))
+        polarity.append(np.abs(gB.GetErrorY(i_c)))
         par_vec.append(par)
     polarity_min = min(polarity)
+    corr_min = min(corr)
+    if print_cov:
+        #print(corr)
+        pass
     for i in range(5):
-        cov_m.append([polarity_min**2 + corr[i]**2 for _ in range(5)])
+        cov_m.append([(polarity_min**2 + corr[i]**2) for _ in range(5)])
         for j in range(5):
             if j == i:
                 continue
-            cov = 0.
-            for trial in range(1000):
-                shift = ROOT.gRandom.Gaus(0,1)
-                cov = cov + np.sqrt(polarity[i]**2+corr[i]**2)*(polarity[j]**2+corr[j]**2)*(shift**2)
-            cov = cov*0.001
-            cov_m[i][j] = cov
-        cov_m[i][i] = uncorr[i]*2 + polarity[i]**2 + corr[i]**2
+            cov_m[i][j] = corr[i]*corr[j] + polarity[i]*polarity[j]
+        cov_m[i][i] = uncorr[i]**2 + corr[i]**2 + polarity[i]**2
     cov_m = np.array(cov_m)
     val = np.array(val)
     par_vec = np.array(par_vec)
@@ -47,7 +46,8 @@ def chi2(par,g,gCorr,gB):
     diff_val_par_T = np.matrix.transpose(diff_val_par)
     tmp = np.matmul(cov_m_inv,diff_val_par)
     chisq = np.matmul(diff_val_par_T,tmp)
-    #print(cov_m)
+    if print_cov:
+        print(cov_m)
     return chisq
 
 staggering = False
@@ -61,10 +61,13 @@ cvs = [f.Get("cMuQuncorr") for f in file]
 g = [c.FindObject("MuQCent") for c in cvs]
 gB = cvs[0].FindObject("MuQCentPolarity")
 gCorr = cvs[0].FindObject("MuQCentCorrUnc")
+gCorrPlot = ROOT.TGraphErrors(gCorr)
 
 c = ROOT.TCanvas()
 c.cd()
-frame = ROOT.TH2D("frame",";Centrality (%);#mu_{#it{Q}} (MeV)",1,0,90,1,-1,.8)
+c.SetRightMargin(0.02)
+c.SetTopMargin(0.03)
+frame = ROOT.TH2D("frame",";Centrality (%);#mu_{#it{Q}} (MeV)",1,0,90,1,-2.,1.8)
 frame.Draw()
 #gCorr[0].Draw("samepe5")
 for p in range(g[1].GetN()):
@@ -72,12 +75,21 @@ for p in range(g[1].GetN()):
         g[1].SetPointX(p,g[1].GetPointX(p)+2)
     for gg in g:
         gg.SetPointError(p,0.,gg.GetErrorY(p))
+        gg.SetLineWidth(2)
+        gg.SetMarkerSize(1.5)
+        gCorr.SetPointError(p,0.,gCorr.GetErrorY(p))
+    gCorrPlot.SetPointError(p,0.,np.sqrt(gCorrPlot.GetErrorY(p)**2+gB.GetErrorY(p)**2))
 InvertPoints(g[0],2,3)
 InvertPoints(g[1],2,3)
+InvertPoints(gCorr,2,3)
 InvertPoints(gB,2,3)
-gB.SetLineColor(ROOT.kRed)
-gB.SetFillColor(ROOT.kRed-10)
-gB.Draw("e3")
+InvertPoints(gCorrPlot,2,3)
+gCorrPlot.SetFillColor(ROOT.kRed)
+gCorrPlot.SetFillStyle(3354)
+gCorrPlot.Draw("e3")
+# gB.SetLineColor(ROOT.kRed)
+# gB.SetFillColor(ROOT.kRed-10)
+# gB.Draw("e3same")
 g[0].Draw("pesame")
 g[0].GetFunction("pol0").Delete()
 g[1].SetLineColor(ROOT.kBlue)
@@ -86,7 +98,7 @@ g[1].SetMarkerColor(ROOT.kBlue)
 g[1].Draw("e3same")
 g[1].GetFunction("pol0").Delete()
 
-# print(f"chisq = {chi2(0,g[0],gCorr,gB)}")
+print(f"chisq = {chi2(0.1,g[0],gCorr,gB,True)}")
 
 cc = ROOT.TCanvas()
 cc.cd()
@@ -95,7 +107,7 @@ for i_p in range(300):
     h.SetBinContent(i_p+1,chi2(-1.5+i_p*0.01,g[0],gCorr,gB))
 
 c.cd()
-l = ROOT.TLegend(0.256892,0.151304,0.442356,0.257391)
+l = ROOT.TLegend(0.26817,0.175652,0.452381,0.295217)
 l.SetTextFont(44)
 l.SetTextSize(22)
 l.AddEntry(g[0],"Thermal-FIST, #it{T}_{ch}=155 MeV, #mu_{#it{S}} constrained","pe")
@@ -105,11 +117,11 @@ l.Draw("same")
 t = ROOT.TLatex()
 t.SetTextFont(44)
 t.SetTextSize(40)
-t.DrawLatex(30.7419,0.573244,"ALICE")
+t.DrawLatex(40.,1.3,"ALICE")
 t.SetTextSize(35)
-t.DrawLatex(30.7419,0.352508,"Pb-Pb #sqrt{#it{s}_{NN}}=5.02 TeV")
+t.DrawLatex(40.,.9,"Pb-Pb #sqrt{#it{s}_{NN}}=5.02 TeV")
 t.SetTextSize(25)
-t.DrawLatex(15.7949,-0.646823,"0.9 MeV correlated uncertainty not shown")
+#t.DrawLatex(15.7949,-0.646823,"0.9 MeV correlated uncertainty not shown")
 
 o = ROOT.TFile("muQvsCent.root","recreate")
 c.Write()

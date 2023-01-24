@@ -51,8 +51,8 @@ if [ $extractRatios -eq 1 ]; then
 .L SignalBinned.cpp+
 //.L Efficiency.cpp+
 .L Secondary.cpp+
-////.L Spectra.cpp+
-//.L AbsorptionError.cpp+
+.L Spectra.cpp+
+.L AbsorptionError.cpp+
 SignalBinned("$cutSettings",8,$argumentSignal,"$fileData","$signalName","recreate")
 //Secondary("$cutSettings",0.12,"$fileData","$fileMC","$PrimaryHe3",false)
 //Spectra("$cutSettings",8,0,$argumentSignal,$sigmoidFlag,"$spectraHistNameId","$spectraName","recreate","AnalysisResults","$signalName","$EfficiencyHe3","$PrimaryHe3")

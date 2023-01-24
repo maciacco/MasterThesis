@@ -22,6 +22,7 @@
 using namespace proton;
 
 bool use_tpc = true;
+bool kSmooth = true;
 bool barlow_criterion = true;
 
 void remove_outliers(TH1D* proj, double rejection_criterion=3.){
@@ -435,6 +436,43 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
     fRatiosVsPtChi2TPC.Write();
     fRatiosVsPtPrim.Write();
     fRatiosVsPtPrimG3G4.Write();
+    if(kSmooth)
+    {
+      if (!use_tpc){
+        fSystematicUncertaintyDCAxy.GetXaxis()->SetRangeUser(1.,1.2);
+        fSystematicUncertaintyDCAz.GetXaxis()->SetRangeUser(1.,1.2);
+        fSystematicUncertaintyPID.GetXaxis()->SetRangeUser(1.,1.2);
+        fSystematicUncertaintyTPCCls.GetXaxis()->SetRangeUser(1.,1.2);
+        fSystematicUncertaintyChi2TPC.GetXaxis()->SetRangeUser(1.,1.2);
+        fSystematicUncertaintyPrim.GetXaxis()->SetRangeUser(1.,1.2);
+        fSystematicUncertaintyROI.GetXaxis()->SetRangeUser(1.,1.2);
+        fSystematicUncertaintyEff.GetXaxis()->SetRangeUser(1.,1.2);
+        fSystematicUncertaintyTFF.GetXaxis()->SetRangeUser(1.,1.2);
+        fSystematicUncertaintyPrimG3G4.GetXaxis()->SetRangeUser(1.,1.2);
+      }
+      else {
+        fSystematicUncertaintyDCAxy.GetXaxis()->SetRangeUser(1.2,3.);
+        fSystematicUncertaintyDCAz.GetXaxis()->SetRangeUser(1.2,3.);
+        fSystematicUncertaintyPID.GetXaxis()->SetRangeUser(1.2,3.);
+        fSystematicUncertaintyTPCCls.GetXaxis()->SetRangeUser(1.2,3.);
+        fSystematicUncertaintyChi2TPC.GetXaxis()->SetRangeUser(1.2,3.);
+        fSystematicUncertaintyPrim.GetXaxis()->SetRangeUser(1.2,3.);
+        fSystematicUncertaintyROI.GetXaxis()->SetRangeUser(1.2,3.);
+        fSystematicUncertaintyEff.GetXaxis()->SetRangeUser(1.2,3.);
+        fSystematicUncertaintyTFF.GetXaxis()->SetRangeUser(1.2,3.);
+        fSystematicUncertaintyPrimG3G4.GetXaxis()->SetRangeUser(1.2,3.);
+      }
+      fSystematicUncertaintyDCAxy.Smooth(1,"R");
+      fSystematicUncertaintyDCAz.Smooth(1,"R");
+      fSystematicUncertaintyPID.Smooth(1,"R");
+      fSystematicUncertaintyTPCCls.Smooth(1,"R");
+      fSystematicUncertaintyChi2TPC.Smooth(1,"R");
+      fSystematicUncertaintyPrim.Smooth(1,"R");
+      fSystematicUncertaintyROI.Smooth(1,"R");
+      fSystematicUncertaintyEff.Smooth(1,"R");
+      fSystematicUncertaintyTFF.Smooth(1,"R");
+      fSystematicUncertaintyPrimG3G4.Smooth(1,"R");
+    }
     fSystematicUncertaintyDCAxy.Write();
     fSystematicUncertaintyDCAz.Write();
     fSystematicUncertaintyPID.Write();
@@ -671,21 +709,26 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
       fSystematicUncertaintyTotalPtCorrelated.SetBinContent(iPtBins,totSysPtCorrelated);
       fSystematicUncertaintyTotalPtCorrelated.SetBinError(iPtBins,0);
     }
-    fSystematicUncertaintyTotal.Write();
 
     // Compute pt correlated systematic uncertainty
     TH1D hRatio(Form("fRatio_%.0f_%.0f", kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]),Form("%.0f-%.0f%%", kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]),kNPtBins,kPtBins);
     for (int iPtBin=5;iPtBin<nUsedPtBins;++iPtBin){
       if (hRatio.GetBinCenter(iPtBin)<0.99 && use_tpc){
         TFile inFileTPC("out/SystematicsAllEPtNotCombinedTPC_extend_4.root");
+        auto htmp_sys=(TH1D*)inFileTPC.Get(Form("fSystematicUncertaintyTotal_%.0f_%.0f;1", kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]));
         auto htmp=(TH1D*)inFileTPC.Get(Form("fRatio_%.0f_%.0f", kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]));
+        fSystematicUncertaintyTotal.SetBinContent(iPtBin,htmp_sys->GetBinContent(iPtBin));
+        fSystematicUncertaintyTotal.SetBinError(iPtBin,0.);
         hRatio.SetBinContent(iPtBin,htmp->GetBinContent(iPtBin));
         hRatio.SetBinError(iPtBin,htmp->GetBinError(iPtBin));
         inFileTPC.Close();
       }
       else if (hRatio.GetBinCenter(iPtBin)>0.99 && hRatio.GetBinCenter(iPtBin)<1.19 && use_tpc){
         TFile inFileTPC("out/SystematicsAllEPtNotCombinedTPC_extend_4TOF.root");
+        auto htmp_sys=(TH1D*)inFileTPC.Get(Form("fSystematicUncertaintyTotal_%.0f_%.0f;1", kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]));
         auto htmp=(TH1D*)inFileTPC.Get(Form("fRatio_%.0f_%.0f", kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]));
+        fSystematicUncertaintyTotal.SetBinContent(iPtBin,htmp_sys->GetBinContent(iPtBin));
+        fSystematicUncertaintyTotal.SetBinError(iPtBin,0.);
         hRatio.SetBinContent(iPtBin,htmp->GetBinContent(iPtBin));
         hRatio.SetBinError(iPtBin,htmp->GetBinError(iPtBin));
         inFileTPC.Close();
@@ -697,21 +740,24 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
       }
     }
     outFile->cd();
+    fSystematicUncertaintyTotal.Write();
     hRatio.Fit("pol0","R","",.5,3.);
     hRatio.Write();
 
     for (int iPtBin=3;iPtBin<nUsedPtBins;++iPtBin){
       if (hRatio.GetBinCenter(iPtBin)<0.99 && use_tpc){
         TFile inFileTPC("out/SystematicsAllEPtNotCombinedTPC_extend_4.root");
-        auto htmp=(TH1D*)inFileTPC.Get(Form("fSystematicUncertaintyTotalPtCorrelated_%.0f_%.0f", kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]));
+        auto htmp=(TH1D*)inFileTPC.Get(Form("fSystematicUncertaintyTotalPtCorrelated_%.0f_%.0f;1", kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]));
         fSystematicUncertaintyTotalPtCorrelated.SetBinContent(iPtBin,htmp->GetBinContent(iPtBin));
+        fSystematicUncertaintyTotalPtCorrelated.SetBinError(iPtBin,0.);
         inFileTPC.Close();
       }
       else if (hRatio.GetBinCenter(iPtBin)>0.99 && hRatio.GetBinCenter(iPtBin)<1.19 && use_tpc){
 
         TFile inFileTPC("out/SystematicsAllEPtNotCombinedTPC_extend_4TOF.root");
-        auto htmp=(TH1D*)inFileTPC.Get(Form("fSystematicUncertaintyTotalPtCorrelated_%.0f_%.0f", kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]));
+        auto htmp=(TH1D*)inFileTPC.Get(Form("fSystematicUncertaintyTotalPtCorrelated_%.0f_%.0f;1", kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]));
         fSystematicUncertaintyTotalPtCorrelated.SetBinContent(iPtBin,htmp->GetBinContent(iPtBin));
+        fSystematicUncertaintyTotalPtCorrelated.SetBinError(iPtBin,0.);
         inFileTPC.Close();
       }
     }
@@ -719,6 +765,7 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
     std::cout<<"; err(0.525) = "<<fSystematicUncertaintyTotalPtCorrelated.GetBinContent(5)<<std::endl;
     outFile->cd();
     fSystematicUncertaintyTotalPtCorrelated.Write();
+
     TH1D h_trial("h_trial","h_trial",kNPtBins,kPtBins);
     TH1D fRatioDistributionTrials(Form("fRatioDistributionTrials_%.0f_%.0f", kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]),Form("%.0f-%.0f%%", kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]),2000,0.95,1.05);
     for (int iTrial=0;iTrial<nTrials;++iTrial){
@@ -738,89 +785,8 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
     }
     
     for (int iPtBin=5;iPtBin<nUsedPtBins;++iPtBin){  
-      fSystematicUncertaintyTotalPtCorrelated.SetBinContent(iPtBin,fSystematicUncertaintyTotalPtCorrelated.GetBinContent(iPtBin)*fRatioFromVariationsTot.GetBinContent(iPtBin));
+      fSystematicUncertaintyTotalPtCorrelated.SetBinContent(iPtBin,fSystematicUncertaintyTotalPtCorrelated.GetBinContent(iPtBin)*hRatio.GetBinContent(iPtBin));
     }
-    outFile->cd();
-    // TCanvas cRatio(Form("cRatio_%.0f_%.0f", kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]), "cRatio");
-    // TLegend lProtonRatio(0.2,0.6,0.4,0.8);
-    // TH1D *hijingProtonRatio=(TH1D*)hijingFile->Get(Form("fProtonRatio_%.0f_%.0f", kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]));
-    // hijingProtonRatio->GetXaxis()->SetRangeUser(1.,3.);
-    // cRatio.SetTicks(1, 1);
-    // hRatio.SetMarkerStyle(20);
-    // hRatio.SetMarkerSize(1.7);
-    // hRatio.GetXaxis()->SetRangeUser(.9,3.1);
-    // hRatio.GetYaxis()->SetRangeUser(0.95, 1.05);
-    // hRatio.SetStats(0);
-    // TH2D hhRatio("hhRatio",";#it{p}_{T} (GeV/#it{c});#bar{p}/p",100,0.9,3.1,100,0.95,1.05);
-    // hhRatio.GetYaxis()->SetNdivisions(505);
-    // hhRatio.SetStats(0);
-    // hhRatio.GetYaxis()->CenterTitle();
-    // hhRatio.GetYaxis()->SetDecimals();
-    // hhRatio.GetXaxis()->SetDecimals();
-    // hhRatio.Draw("axis");
-    // //hRatio.Draw("pe2");
-    // hRatio.SetLineColor(centrality_colors[iC]);
-    // hRatio.SetMarkerColor(centrality_colors[iC]);
-    // TGraphErrors gRatio(&hRatio);
-    // for (int iPtBin=5;iPtBin<nUsedPtBins;++iPtBin){  
-    //   hRatio.SetBinError(iPtBin,fSystematicUncertaintyTotalPtCorrelated.GetBinContent(iPtBin)*fRatioFromVariationsTot.GetBinContent(iPtBin));
-    // }
-    // TGraphErrors gRatioCorr(&hRatio);
-    // //gRatio.Draw("P5 same");
-    // int iPoint{0};
-    // while (iPoint<gRatio.GetN()){
-    //   double x=gRatio.GetPointX(iPoint);
-    //   if (x<1.||x>3.){
-    //     gRatio.RemovePoint(iPoint);
-    //   }
-    //   else ++iPoint;
-    // }
-    // gRatio.GetXaxis()->SetRangeUser(.9,3.1);
-    // gRatio.GetYaxis()->SetRangeUser(0.95, 1.05);
-    // gRatio.SetFillColor(0);
-    // gRatio.SetFillStyle(0);
-    // gRatioCorr.SetFillStyle(3145);
-    // gRatioCorr.SetFillColor(centrality_colors[iC]);
-    // TF1 plotFit("plotFit","pol0",0.9,3.1);
-    // plotFit.SetParameter(0,hRatio.GetFunction("pol0")->GetParameter(0));
-    // plotFit.SetLineColor(kBlack);
-    // plotFit.SetLineWidth(2);
-    // plotFit.Draw("same");
-    // gRatio.Draw("pe5 same");
-    // //gRatioCorr.Draw("P5 same");
-    // hijingProtonRatio->SetMarkerStyle(0);
-    // hijingProtonRatio->SetMarkerSize(0);
-    // hijingProtonRatio->SetFillColor(kGreen+1);
-    // hijingProtonRatio->SetFillStyle(3154);
-    // //hijingProtonRatio->Draw("e3same");
-    // lProtonRatio.AddEntry(&gRatio,"Data");
-    // lProtonRatio.AddEntry(hRatio.GetFunction("pol0"),"Fit");
-    // //lProtonRatio.AddEntry(hijingProtonRatio,"HIJING");
-    // TLatex chi2(2.2, 1.1, Form("#chi^{2}/NDF = %.2f/%d", hRatio.GetFunction("pol0")->GetChisquare(), hRatio.GetFunction("pol0")->GetNDF()));
-    // chi2.SetTextSize(28);
-    // TLatex p0(2.2, 1.15, Form("R = %.4f #pm %.4f", hRatio.GetFunction("pol0")->GetParameter(0), hRatio.GetFunction("pol0")->GetParError(0)));
-    // p0.SetTextSize(28);
-    // TLatex text_alice(0.6,0.8,"ALICE Preliminary");
-    // text_alice.SetNDC(true);
-    // text_alice.SetTextFont(63);
-    // text_alice.SetTextSize(25);
-    // TLatex text_energy(0.6,0.73,"Pb-Pb #sqrt{#it{s}_{NN}} = 5.02 TeV");
-    // text_energy.SetNDC(true);
-    // text_energy.SetTextFont(43);
-    // text_energy.SetTextSize(25);
-    // TLatex text_centrality(0.6,0.66,Form("%.0f-%.0f%% V0M centrality",kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]));
-    // text_centrality.SetNDC(true);
-    // text_centrality.SetTextFont(43);
-    // text_centrality.SetTextSize(25);
-    // //chi2.Draw("same");
-    // //p0.Draw("same");
-    // //lProtonRatio.Draw("same");
-    // text_alice.Draw("same");
-    // text_energy.Draw("same");
-    // text_centrality.Draw("same");
-    // cRatio.Modified();
-    // cRatio.Write();
-    // cRatio.Print(Form("%s/RatiosRun2_proton_%.0f_%.0f.eps", kPlotDir, kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]));
 
     TCanvas cRatio(Form("cRatio_%.0f_%.0f", kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]), "cRatio");
     cRatio.SetTicks(1, 1);
@@ -872,7 +838,7 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
 
     // save ratio plots
     TLegend lSys(0.2,0.6,0.4,0.8);
-    fSystematicUncertaintyTotal.GetXaxis()->SetRangeUser(1.,3.);
+    fSystematicUncertaintyTotal.GetXaxis()->SetRangeUser(0.5,3.);
     fSystematicUncertaintyTotal.GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
     fSystematicUncertaintyTotal.GetYaxis()->SetTitle("Systematic Uncertainty");
     fSystematicUncertaintyTotal.SetMinimum(0.);

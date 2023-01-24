@@ -12,19 +12,23 @@ extractRatios=1
 #fileMC="AnalysisResults_LHC22b9_lowPT_MB"
 #fileData="AnalysisResults_LHC21l5_full_largeDCA_cutChi2"
 #fileMC="AnalysisResults_LHC21l5_full_largeDCA_cutChi2"
-#fileData="AnalysisResults_LHC21l5_lowPtProton_ITSrecalibrated"
-#fileMC="AnalysisResults_LHC21l5_lowPtProton_ITSrecalibrated"
-fileData="../AnalysisResults_LHC22b9_3"
-fileMC="../AnalysisResults_LHC22b9_3"
+fileData="AnalysisResults_LHC21l5_lowPtProton_ITSrecalibrated"
+fileMC="AnalysisResults_LHC21l5_lowPtProton_ITSrecalibrated"
+
+# fileData="../AnalysisResults_LHC22b9_3"
+# fileMC="../AnalysisResults_LHC22b9_3"
+#fileData="../../../../Downloads/AnalysisResults_LHC21l5_noitspid_proton_q"
+#fileMC="../../../../Downloads/AnalysisResults_LHC21l5_noitspid_proton_q"
+
 #signalName="SignalProtonMC_22b9_lowPT_MB"
 #spectraName="SpectraProtonMCMC_22b9_lowPT_MB"
 #EfficiencyHe3="EfficiencyProton_lowPt_LHC22b9_3"
 #PrimaryHe3="PrimaryProtonMC_22b9_lowPT_MB"
-signalName="SignalProtonTPC_MC21l5_raw_primaryTPC_try"
-spectraName="SpectraProtonTPC_MC21l5_raw_primaryTPC_try"
-#EfficiencyHe3="EfficiencyProtonMC_21l5_LOWPT_TESTTPC" #"EfficiencyProtonMC_21l5_LOWPT_TESTTPC_try"
-EfficiencyHe3="EfficiencyProton_LHC22b9_3"
-PrimaryHe3="PrimaryProtonTPC_MC21l5_raw_primaryTPC_try"
+signalName="SignalProtonTPC_MC21l5_raw_primaryTPC" #_q_noitspid"
+spectraName="SpectraProtonTPC_MC21l5_raw_primaryTPC" #_q_noitspid"
+EfficiencyHe3="EfficiencyProtonMC_21l5_LOWPT_TESTTPC" #"EfficiencyProtonMC_21l5_LOWPT_TESTTPC_try"
+#EfficiencyHe3="EfficiencyProtonMC_21l5_LOWPT_TESTTPC_q_noitspid"
+PrimaryHe3="PrimaryProtonTPC_MC21l5_raw_primaryTPC" #_q_noitspid"
 
 # create output directories
 DIR_OUT=out

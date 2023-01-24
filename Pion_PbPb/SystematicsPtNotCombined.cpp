@@ -24,6 +24,7 @@ using namespace pion;
 
 // #define USE_COUNTER
 const bool sys_eff_error = true;
+const bool kSmooth = true;
 const int used_pt_bins = 27;
 const int nTrials=10000;
 
@@ -519,6 +520,32 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
     fRatiosVsPtChi2TPC.Write();
     fRatiosVsPtTPCCls.Write();
     fRatiosVsPtPrim.Write();
+    if (kSmooth){
+      fSystematicUncertaintyDCAz.GetXaxis()->SetRangeUser(0.7, 1.6);
+      fSystematicUncertaintyDCAxy.GetXaxis()->SetRangeUser(0.7, 1.6);
+      fSystematicUncertaintyTPCCls.GetXaxis()->SetRangeUser(0.7, 1.6);
+      fSystematicUncertaintyPID.GetXaxis()->SetRangeUser(0.7, 1.6);
+      fSystematicUncertaintyChi2TPC.GetXaxis()->SetRangeUser(0.7, 1.6);
+      fSystematicUncertaintyROIDown.GetXaxis()->SetRangeUser(0.7, 1.6);
+      fSystematicUncertaintyROIUp.GetXaxis()->SetRangeUser(0.7, 1.6);
+      fSystematicUncertaintyMismatchDown.GetXaxis()->SetRangeUser(0.7, 1.6);
+      fSystematicUncertaintyMismatchUp.GetXaxis()->SetRangeUser(0.7, 1.6);
+      fSystematicUncertaintyEff.GetXaxis()->SetRangeUser(0.7, 1.4);
+      fSystematicUncertaintyTFF.GetXaxis()->SetRangeUser(0.7, 1.4);
+      fSystematicUncertaintyDCAz.Smooth(1,"R");
+      fSystematicUncertaintyDCAxy.Smooth(1,"R");
+      fSystematicUncertaintyTPCCls.Smooth(1,"R");
+      fSystematicUncertaintyPID.Smooth(1,"R");
+      fSystematicUncertaintyChi2TPC.Smooth(1,"R");
+      fSystematicUncertaintyROIDown.Smooth(1,"R");
+      fSystematicUncertaintyROIUp.Smooth(1,"R");
+      fSystematicUncertaintyMismatchDown.Smooth(1,"R");
+      fSystematicUncertaintyMismatchUp.Smooth(1,"R");
+      fSystematicUncertaintyEff.Smooth(1,"R");
+      fSystematicUncertaintyTFF.Smooth(1,"R");
+      fSystematicUncertaintyEff.GetXaxis()->SetRangeUser(0.7, 1.6);
+      fSystematicUncertaintyTFF.GetXaxis()->SetRangeUser(0.7, 1.6);
+    }
     fSystematicUncertaintyDCAxy.Write();
     fSystematicUncertaintyDCAz.Write();
     fSystematicUncertaintyPID.Write();
@@ -787,6 +814,9 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
       fSystematicUncertaintyTotalPtCorrelated.SetBinContent(iPtBins,totSysPtCorrelated);
       fSystematicUncertaintyTotalPtCorrelated.SetBinError(iPtBins,0);
     }
+    fSystematicUncertaintyTotal.GetXaxis()->SetRangeUser(0.7,1.6);
+    fSystematicUncertaintyTotalPtCorrelated.GetXaxis()->SetRangeUser(0.7,1.6);
+
     fSystematicUncertaintyTotal.Write();
     fSystematicUncertaintyTotalPtCorrelated.Write();
 

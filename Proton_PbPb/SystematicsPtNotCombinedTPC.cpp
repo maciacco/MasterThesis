@@ -22,6 +22,7 @@
 using namespace proton;
 
 bool barlow_criterion = true;
+bool kSmooth = true;
 
 void remove_outliers(TH1D* proj, double rejection_criterion=3.){
   double mean = proj->GetMean();
@@ -494,10 +495,37 @@ void SystematicsPtNotCombinedTPC(const int points = kNPoints, const bool cutVar 
     fRatiosVsPtChi2TPC.Write();
     fRatiosVsPtPrim.Write();
     fRatiosVsPtPrimG3G4.Write();
+
+    if(kSmooth)
+    {
+      fSystematicUncertaintyDCAxy.GetXaxis()->SetRangeUser(0.5,1.);
+      fSystematicUncertaintyDCAz.GetXaxis()->SetRangeUser(0.5,1.);
+      fSystematicUncertaintyPID.GetXaxis()->SetRangeUser(0.5,1.);
+      fSystematicUncertaintyTPCCls.GetXaxis()->SetRangeUser(0.5,1.);
+      fSystematicUncertaintyChi2TPC.GetXaxis()->SetRangeUser(0.5,1.);
+      fSystematicUncertaintyITSPID.GetXaxis()->SetRangeUser(0.5,1.);
+      fSystematicUncertaintyPrim.GetXaxis()->SetRangeUser(0.5,1.);
+      fSystematicUncertaintyROI.GetXaxis()->SetRangeUser(0.5,1.);
+      fSystematicUncertaintyEff.GetXaxis()->SetRangeUser(0.5,1.);
+      fSystematicUncertaintyTFF.GetXaxis()->SetRangeUser(0.5,1.);
+      fSystematicUncertaintyPrimG3G4.GetXaxis()->SetRangeUser(0.5,1.);
+      fSystematicUncertaintyDCAxy.Smooth(1,"R");
+      fSystematicUncertaintyDCAz.Smooth(1,"R");
+      fSystematicUncertaintyPID.Smooth(1,"R");
+      fSystematicUncertaintyTPCCls.Smooth(1,"R");
+      fSystematicUncertaintyChi2TPC.Smooth(1,"R");
+      fSystematicUncertaintyITSPID.Smooth(1,"R");
+      fSystematicUncertaintyPrim.Smooth(1,"R");
+      fSystematicUncertaintyROI.Smooth(1,"R");
+      fSystematicUncertaintyEff.Smooth(1,"R");
+      fSystematicUncertaintyTFF.Smooth(1,"R");
+      fSystematicUncertaintyPrimG3G4.Smooth(1,"R");
+    }
     fSystematicUncertaintyDCAxy.Write();
     fSystematicUncertaintyDCAz.Write();
     fSystematicUncertaintyPID.Write();
     fSystematicUncertaintyTPCCls.Write();
+    fSystematicUncertaintyChi2TPC.Write();
     fSystematicUncertaintyITSPID.Write();
     fSystematicUncertaintyPrim.Write();
     fSystematicUncertaintyROI.Write();
@@ -513,6 +541,7 @@ void SystematicsPtNotCombinedTPC(const int points = kNPoints, const bool cutVar 
     TH2D fSystematicsCorrelationsTPCCls(Form("fSystematicsCorrelationsTPCCls_%.0f_%.0f", kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]),Form("%.0f-%.0f%%", kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]),24,58.5,82.5,1000,-.5,.5);
     TH2D fSystematicsCorrelationsChi2TPC(Form("fSystematicsCorrelationsChi2TPC_%.0f_%.0f", kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]),Form("%.0f-%.0f%%", kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]),26,1.995,2.255,1000,-.1,.1);
     TH2D fSystematicsCorrelationsPID(Form("fSystematicsCorrelationsPID_%.0f_%.0f", kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]),Form("%.0f-%.0f%%", kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]),25,3.245,3.505,1000,-.5,.5);
+    TH2D fSystematicsCorrelationsITSPID(Form("fSystematicsCorrelationsITSPID_%.0f_%.0f", kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]),Form("%.0f-%.0f%%", kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]),3,2.,5.,1000,-.5,.5);
     TH2D fSystematicsCorrelationsROI(Form("fSystematicsCorrelationsROI_%.0f_%.0f", kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]),Form("%.0f-%.0f%%", kCentBinsLimitsProton[iC][0], kCentBinsLimitsProton[iC][1]),51,7.49,8.51,1000,-.5,.5);
 
     // roi
@@ -582,6 +611,11 @@ void SystematicsPtNotCombinedTPC(const int points = kNPoints, const bool cutVar 
             int cutVal = cutIndex+1;
             fSystematicsCorrelationsPID.Fill(kTPCPidSigmas[cutVal],h->GetBinContent(iPtBins)-hDefault->GetBinContent(iPtBins));
           }
+          if (tmpCutSettings.EqualTo("its"))
+          {
+            int cutVal = cutIndex;
+            fSystematicsCorrelationsITSPID.Fill(kCutITSPIDVariations[cutVal],h->GetBinContent(iPtBins)-hDefault->GetBinContent(iPtBins));
+          }
           if (tmpCutSettings.EqualTo("chisquare"))
           {
             int cutVal = cutIndex;
@@ -604,8 +638,10 @@ void SystematicsPtNotCombinedTPC(const int points = kNPoints, const bool cutVar 
     std::cout << "CorrelationTPCCls = " << correlationTPCCls <<std::endl;
     double correlationPID = fSystematicsCorrelationsPID.GetCorrelationFactor();
     std::cout << "CorrelationPID = " << correlationPID <<std::endl;
+    double correlationITSPID = fSystematicsCorrelationsITSPID.GetCorrelationFactor();
+    std::cout << "CorrelationITSPID = " << correlationITSPID <<std::endl;
     double correlationChi2TPC = fSystematicsCorrelationsChi2TPC.GetCorrelationFactor();
-    std::cout << "CorrelationChi2TPC = " << correlationPID <<std::endl;
+    std::cout << "CorrelationChi2TPC = " << correlationChi2TPC <<std::endl;
     std::cout << "* * * * * * * * * *"<<std::endl;
     double correlationROI = fSystematicsCorrelationsROI.GetCorrelationFactor();
     std::cout << "CorrelationROI = " << correlationROI <<std::endl;
@@ -635,6 +671,8 @@ void SystematicsPtNotCombinedTPC(const int points = kNPoints, const bool cutVar 
     fSystematicsCorrelationsPID.Draw("colz");
     cCorrPID.Print(Form("%s.pdf",cCorrPID.GetName()));
     fSystematicsCorrelationsPID.Write();
+    
+    fSystematicsCorrelationsITSPID.Write();
 
     TCanvas cCorrROI(fSystematicsCorrelationsROI.GetName(),fSystematicsCorrelationsROI.GetTitle());
     fSystematicsCorrelationsROI.GetXaxis()->SetTitle("ROI width (#sigma_{TPC})");
@@ -676,6 +714,7 @@ void SystematicsPtNotCombinedTPC(const int points = kNPoints, const bool cutVar 
       +sigma_DCAxy*sigma_DCAxy*fraction_uncorr_DCAxy*fraction_uncorr_DCAxy
       +sigma_ROI*sigma_ROI*fraction_uncorr_ROI*fraction_uncorr_ROI
       +sigma_Chi2TPC*sigma_Chi2TPC*fraction_uncorr_Chi2TPC*fraction_uncorr_Chi2TPC
+      +sigma_ITSPID*sigma_ITSPID
       +sigma_Eff*sigma_Eff
       +sigma_TFF*sigma_TFF);
       fSystematicUncertaintyTotal.SetBinContent(iPtBins,totSys);
