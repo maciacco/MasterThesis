@@ -37,6 +37,12 @@ void checkMagFieldPolarity(){
         r[1][i]->SetBinContent(iB,r[0][i]->GetBinContent(iB));
         r[1][i]->SetBinError(iB,r[0][i]->GetBinError(iB));
       }
+      for (int iB{15}; iB < 43; ++iB){    
+        if ((iC==1 && std::abs(r[1][i]->GetBinCenter(iB)-1.825)<0.025 && i==0)||(iC==0 && std::abs(r[1][i]->GetBinCenter(iB)-2.90)<0.025 && i==0)||(iC==4 && std::abs(r[1][i]->GetBinCenter(iB)-1.375)<0.025 && i==0)){
+          r[1][i]->SetBinContent(iB,0);
+          r[1][i]->SetBinError(iB,0);
+        }
+      }
       //std::cout << Form("fRatio_%.0f_%.0f",kCentBinsLimitsPion[iC][0],kCentBinsLimitsPion[iC][1]) << std::endl;
       r[1][i]->GetXaxis()->SetRangeUser(.5,3.);
       r[1][i]->GetYaxis()->SetRangeUser(0.9,1.1);

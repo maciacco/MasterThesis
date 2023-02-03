@@ -56,7 +56,7 @@ def chi2(par,g,gCorr,gB,print_flag):
 ROOT.gStyle.SetOptStat(0)
 cent = [[0,5],[5,10],[10,30],[30,50],[50,90]]
 
-f_names = ["FinalPlot3D_new.root","FinalPlot3D_new_fixmuQ_nopions.root"]
+f_names = ["FinalPlot3D_new_2.root","FinalPlot3D_new_2fixmuQ_nopions.root"]
 file = [ROOT.TFile(f) for f in f_names]
 cvs = [f.Get("cMuBCent") for f in file]
 g = [c.FindObject("MuBCent") for c in cvs]
@@ -139,7 +139,7 @@ t.DrawLatex(40.,1.4,"Pb-Pb #sqrt{#it{s}_{NN}}=5.02 TeV")
 t.SetTextSize(25)
 #t.DrawLatex(17.,-1.,"0.5 MeV correlated uncertainty not shown")
 
-o = ROOT.TFile("muBvsCent.root","recreate")
+o = ROOT.TFile("muBvsCent_1.root","recreate")
 cc.cd()
 h.Fit("pol2")
 h2.Fit("pol2")
@@ -150,8 +150,8 @@ p1 = h.GetFunction("pol2").GetParameter(1)
 p2 = h.GetFunction("pol2").GetParameter(2)
 val = -p1/2./p2
 val_err = np.sqrt(p1**2-4*p2*(p1**2/4./p2-1))/2./p2
-format_val = "{:.2f}".format(val)
-format_val_err = "{:.2f}".format(val_err)
+format_val = "{:.4f}".format(val)
+format_val_err = "{:.4f}".format(val_err)
 format_chi2 = "{:.2f}".format(h.GetFunction("pol2").Eval(val))
 print(f"muB = {format_val} +/- {format_val_err} MeV, chi2 = {format_chi2}/4")
 
@@ -160,8 +160,8 @@ p1 = h2.GetFunction("pol2").GetParameter(1)
 p2 = h2.GetFunction("pol2").GetParameter(2)
 val = -p1/2./p2
 val_err = np.sqrt(p1**2-4*p2*(p1**2/4./p2-1))/2./p2
-format_val = "{:.2f}".format(val)
-format_val_err = "{:.2f}".format(val_err)
+format_val = "{:.4f}".format(val)
+format_val_err = "{:.4f}".format(val_err)
 format_chi2 = "{:.2f}".format(h2.GetFunction("pol2").Eval(val))
 print(f"muB = {format_val} +/- {format_val_err} MeV, chi2 = {format_chi2}/4")
 

@@ -459,6 +459,10 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
         fSystematicUncertaintyPrim.GetXaxis()->SetRangeUser(1.2,3.);
         fSystematicUncertaintyROI.GetXaxis()->SetRangeUser(1.2,3.);
         fSystematicUncertaintyEff.GetXaxis()->SetRangeUser(1.2,3.);
+        fSystematicUncertaintyTFF.GetXaxis()->SetRangeUser(1.2,2.);
+        fSystematicUncertaintyTFF.Smooth(1,"R");
+        fSystematicUncertaintyTFF.GetXaxis()->SetRangeUser(2.,2.6);
+        fSystematicUncertaintyTFF.Smooth(1,"R");
         fSystematicUncertaintyTFF.GetXaxis()->SetRangeUser(1.2,3.);
         fSystematicUncertaintyPrimG3G4.GetXaxis()->SetRangeUser(1.2,3.);
       }
@@ -469,8 +473,8 @@ void SystematicsPtNotCombined(const int points = kNPoints, const bool cutVar = t
       fSystematicUncertaintyChi2TPC.Smooth(1,"R");
       fSystematicUncertaintyPrim.Smooth(1,"R");
       fSystematicUncertaintyROI.Smooth(1,"R");
-      fSystematicUncertaintyEff.Smooth(1,"R");
-      fSystematicUncertaintyTFF.Smooth(1,"R");
+      //fSystematicUncertaintyEff.Smooth(1,"R");
+      //fSystematicUncertaintyTFF.Smooth(1,"R");
       fSystematicUncertaintyPrimG3G4.Smooth(1,"R");
     }
     fSystematicUncertaintyDCAxy.Write();

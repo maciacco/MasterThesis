@@ -133,8 +133,8 @@ p1 = h.GetFunction("pol2").GetParameter(1)
 p2 = h.GetFunction("pol2").GetParameter(2)
 val = -p1/2./p2
 val_err = np.sqrt(p1**2-4*p2*(p1**2/4./p2-1))/2./p2
-format_val = "{:.2f}".format(val)
-format_val_err = "{:.2f}".format(val_err)
+format_val = "{:.4f}".format(val)
+format_val_err = "{:.4f}".format(val_err)
 format_chi2 = "{:.2f}".format(h.GetFunction("pol2").Eval(val))
 print(f"muQ = {format_val} +/- {format_val_err} MeV, chi2 = {format_chi2}/4")
 h.Write()

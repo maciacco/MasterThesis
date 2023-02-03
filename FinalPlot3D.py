@@ -162,7 +162,7 @@ for i_cent, cent in enumerate(centrality_classes):
                     continue
                 tmp_bin_content = ratio_pion.GetBinContent(i_bins)
                 ratio_pion.SetBinContent(i_bins,tmp_bin_content*(eff_ratio_mat_pion/eff_ratio_mat_antipion))
-        ratio_pion.Fit("pol0","QR","",0.7,1.6)
+        ratio_pion.Fit("pol0","QR","",0.7,1.4)
         ratio_pion.Write()
 
         # omega

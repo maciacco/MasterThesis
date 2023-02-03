@@ -108,7 +108,7 @@ const char* ax_labels[] = {"#Omega","#pi","p","{}^{3}_{#Lambda}H","{}^{3}H","{}^
 
 void plot_fits_try(){
   gStyle->SetOptStat(0);
-  TFile in_file("FinalPlot3D_new.root");
+  TFile in_file("FinalPlot3D_new_fixmuQ_nopions.root");
 
   TCanvas *c=new TCanvas("c","c",1500,1000);
   auto pads=CreatePads(c);
@@ -187,5 +187,5 @@ void plot_fits_try(){
   TFile out("fit_out_prova.root","recreate");
   c->Write();
   out.Close();
-  c->Print("fits.pdf");
+  c->Print("fits_fixmuQ_nopions.pdf");
 }
