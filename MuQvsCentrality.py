@@ -55,7 +55,7 @@ staggering = False
 ROOT.gStyle.SetOptStat(0)
 cent = [[0,5],[5,10],[10,30],[30,50],[50,90]]
 
-f_names = ["FinalPlot3D_new.root","FinalPlot3D_new_fixmuQ_nopions.root"]
+f_names = ["FinalPlot3D_new_2.root","FinalPlot3D_new_2fixmuQ_nopions.root"]
 file = [ROOT.TFile(f) for f in f_names]
 cvs = [f.Get("cMuQuncorr") for f in file]
 g = [c.FindObject("MuQCent") for c in cvs]
@@ -67,7 +67,7 @@ c = ROOT.TCanvas()
 c.cd()
 c.SetRightMargin(0.02)
 c.SetTopMargin(0.03)
-frame = ROOT.TH2D("frame",";Centrality (%);#mu_{#it{Q}} (MeV)",1,0,90,1,-2.,1.8)
+frame = ROOT.TH2D("frame",";Centrality (%);#mu_{#it{Q}} (MeV)",1,0,90,1,-.9,.8)
 frame.Draw()
 #gCorr[0].Draw("samepe5")
 for p in range(g[1].GetN()):
@@ -86,7 +86,7 @@ InvertPoints(gB,2,3)
 InvertPoints(gCorrPlot,2,3)
 gCorrPlot.SetFillColor(ROOT.kRed)
 gCorrPlot.SetFillStyle(3354)
-gCorrPlot.Draw("e3")
+#gCorrPlot.Draw("e3")
 # gB.SetLineColor(ROOT.kRed)
 # gB.SetFillColor(ROOT.kRed-10)
 # gB.Draw("e3same")
@@ -117,9 +117,11 @@ l.Draw("same")
 t = ROOT.TLatex()
 t.SetTextFont(44)
 t.SetTextSize(40)
-t.DrawLatex(40.,1.3,"ALICE")
+t.DrawLatex(40.,0.6,"ALICE")
 t.SetTextSize(35)
-t.DrawLatex(40.,.9,"Pb-Pb #sqrt{#it{s}_{NN}}=5.02 TeV")
+t.DrawLatex(40.,.4,"Pb-Pb #sqrt{#it{s}_{NN}}=5.02 TeV")
+t.SetTextSize(25)
+t.DrawLatex(20.,-.5,"#pm0.90 MeV corr. sys. not shown")
 t.SetTextSize(25)
 #t.DrawLatex(15.7949,-0.646823,"0.9 MeV correlated uncertainty not shown")
 

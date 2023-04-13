@@ -3,9 +3,9 @@ const char* ax_labels[] = {"#Omega","#pi","p","{}^{3}_{#Lambda}H","{}^{3}H","{}^
 
 
 void plot_fits_theFist(){
-  TFile in_file("FinalPlot3D_new.root");
+  TFile in_file("FinalPlot3D_new_2.root");
 
-  TCanvas c("c","c",1500,1000);
+  TCanvas c("c","c",1500,1500);
   c.Divide(3,2);
 
   std::vector<TCanvas*> cc;

@@ -108,9 +108,9 @@ const char* ax_labels[] = {"#Omega","#pi","p","{}^{3}_{#Lambda}H","{}^{3}H","{}^
 
 void plot_fits_try(){
   gStyle->SetOptStat(0);
-  TFile in_file("FinalPlot3D_new_fixmuQ_nopions.root");
+  TFile in_file("FinalPlot3D_new_2.root");
 
-  TCanvas *c=new TCanvas("c","c",1500,1000);
+  TCanvas *c=new TCanvas("c","c",1300,1000);
   auto pads=CreatePads(c);
 
   std::vector<TCanvas*> cc;
@@ -134,6 +134,14 @@ void plot_fits_try(){
     t_mub->SetNDC(false);
     t_muq->SetNDC(false);
     t_chi2->SetNDC(false);
+    t_cent->SetTextFont(44);
+    t_mub->SetTextFont(44);
+    t_muq->SetTextFont(44);
+    t_chi2->SetTextFont(44);
+    t_cent->SetTextSize(23);
+    t_mub->SetTextSize(23);
+    t_muq->SetTextSize(23);
+    t_chi2->SetTextSize(23);
     t_cent->SetX(0.3);
     t_mub->SetX(0.3);
     t_muq->SetX(0.3);
@@ -173,11 +181,11 @@ void plot_fits_try(){
   TLatex t;
   t.SetTextFont(44);
   t.SetTextSize(40);
-  t.DrawLatexNDC(0.1,0.7,"ALICE");
+  t.DrawLatexNDC(0.03,0.7,"ALICE");
   t.SetTextSize(35);
-  t.DrawLatexNDC(0.1,0.6,"Pb-Pb #sqrt{#it{s}_{NN}}=5.02 TeV");
+  t.DrawLatexNDC(0.03,0.6,"Pb-Pb #sqrt{#it{s}_{NN}}=5.02 TeV");
   //t.DrawLatexNDC(0.15,0.6,"|y| < 0.5");
-  TLegend l(0.1,0.55,0.5,0.35);
+  TLegend l(0.03,0.55,0.5,0.35);
   l.AddEntry(&g,"data","pe");
   l.AddEntry(&f,"Thermal-FIST, #it{T}_{ch}=155 MeV","l");
   l.SetTextFont(44);
@@ -187,5 +195,5 @@ void plot_fits_try(){
   TFile out("fit_out_prova.root","recreate");
   c->Write();
   out.Close();
-  c->Print("fits_fixmuQ_nopions.pdf");
+  c->Print("fits.pdf");
 }

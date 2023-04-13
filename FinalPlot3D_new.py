@@ -1001,9 +1001,9 @@ for i_cent, cent in enumerate(centrality_classes):
     leg_ratios_particle.AddEntry(gRatiosParticleFit,"fit")
 
     muBmuQ_list = muBmuQ(fixmuQ,nopions,i_cent)
-    text_mu_b = ROOT.TLatex(1,0,"#mu_{B}="+"{:.2f}".format(muBmuQ_list[0])+"#pm"+"{:.2f}".format(muBmuQ_list[1])+"(uncorr.)#pm"+"{:.2f}".format(muBmuQ_list[2])+"(corr.) MeV")
+    text_mu_b = ROOT.TLatex(1,0,"#mu_{B}="+"{:.2f}".format(muBmuQ_list[0])+"#pm"+"{:.2f}".format(muBmuQ_list[1])+"(unc.)#pm"+"{:.2f}".format(muBmuQ_list[2])+"(corr.) MeV")
     text_mu_b.SetName("mu_b")
-    text_mu_q = ROOT.TLatex(1.2,0,"#mu_{Q}="+"{:.2f}".format(muBmuQ_list[3])+"#pm"+"{:.2f}".format(muBmuQ_list[4])+"(uncorr.)#pm"+"{:.2f}".format(muBmuQ_list[5])+"(corr.) MeV")
+    text_mu_q = ROOT.TLatex(1.2,0,"#mu_{Q}="+"{:.2f}".format(muBmuQ_list[3])+"#pm"+"{:.2f}".format(muBmuQ_list[4])+"(unc.)#pm"+"{:.2f}".format(muBmuQ_list[5])+"(corr.) MeV")
     if fixmuQ:
         text_mu_q = ROOT.TLatex(1.2,0,"#mu_{Q}="+"{:.2f}".format(muBmuQ_list[3])+" MeV")
     text_mu_q.SetName("mu_q")
