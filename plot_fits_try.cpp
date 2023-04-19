@@ -67,9 +67,9 @@ std::array<TPad*,12> CreatePads(TCanvas* &cv)
       if (row == 2)rframe->GetYaxis()->SetTickLength(0.01 / sx[center] / (1+0.2));
       if (row == 3)rframe->GetYaxis()->SetTickLength(0.01 / sx[center] / (1+0.2));
       if (row==0 && col == 2) rframe->GetYaxis()->SetTickLength(0);
-      rframe->GetYaxis()->SetTitleSize(20);
+      rframe->GetYaxis()->SetTitleSize(27);
       rframe->GetYaxis()->SetTitleFont((!col) * 43);
-      rframe->GetYaxis()->SetTitleOffset(1.5);
+      rframe->GetYaxis()->SetTitleOffset(1.2);
       rframe->GetYaxis()->SetLabelOffset(0.01);
       rframe->GetYaxis()->SetNdivisions(505);
       rframe->GetYaxis()->SetDecimals(1);
@@ -80,9 +80,9 @@ std::array<TPad*,12> CreatePads(TCanvas* &cv)
       /* rframe->GetXaxis()->CenterTitle(); */
       rframe->GetXaxis()->SetTickLength(0.004 / sx[1-center] / (sy[bot] + sy_top[top_low] + sy_bot[bot_global]));
       if (row==0 && col == 2) rframe->GetXaxis()->SetTickLength(0);
-      rframe->GetXaxis()->SetLabelSize(23);
+      rframe->GetXaxis()->SetLabelSize(27);
       rframe->GetXaxis()->SetLabelFont(43);
-      rframe->GetXaxis()->SetLabelOffset(0.06);
+      rframe->GetXaxis()->SetLabelOffset(0.07);
       rframe->GetXaxis()->SetNdivisions(505);
       rframe->GetXaxis()->SetDecimals(1);
       std::cout<<rframe->GetXaxis()->GetLabelSize()<<" "<<rframe->GetXaxis()->GetTickLength()<<" "<<rframe->GetYaxis()->GetLabelSize()<<" "<<rframe->GetYaxis()->GetTickLength()<<std::endl;
@@ -186,8 +186,12 @@ void plot_fits_try(){
   t.DrawLatexNDC(0.03,0.6,"Pb-Pb #sqrt{#it{s}_{NN}}=5.02 TeV");
   //t.DrawLatexNDC(0.15,0.6,"|y| < 0.5");
   TLegend l(0.03,0.55,0.5,0.35);
+  l.SetTextSize(35);
   l.AddEntry(&g,"data","pe");
-  l.AddEntry(&f,"Thermal-FIST, #it{T}_{ch}=155 MeV","l");
+  l.AddEntry(&f,"Thermal-FIST","l");
+  t.SetTextSize(25);
+  t.DrawLatex(1.05, 0.64, "#it{T}_{ch}=155#pm2 MeV");
+  t.DrawLatex(1.05, 0.56, "#mu_{#it{S}} constrained");
   l.SetTextFont(44);
   l.SetTextSize(25);
   l.Draw("same");

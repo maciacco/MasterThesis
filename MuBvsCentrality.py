@@ -15,6 +15,9 @@ def InvertPoints(g,a,b):
     g.SetPointError(b,buffer[1],buffer[3])
     return
 
+def is_pos_def(x):
+    return np.all(np.linalg.eigvals(x) > 0)
+
 def chi2(par,g,gCorr,gB,print_flag):
     val = []
     uncorr = []
@@ -52,6 +55,37 @@ def chi2(par,g,gCorr,gB,print_flag):
         print(cov_m)
         print(diff_val_par)
     return chisq
+
+def covM(g,gCorr,gB,print_flag):
+    val = []
+    uncorr = []
+    corr = []
+    polarity = []
+    cov_m = []
+    par_vec = []
+    for i_c in range(5):
+        val.append(g.GetPointY(i_c))
+        uncorr.append(np.abs(g.GetErrorY(i_c)))
+        corr.append(np.abs(gCorr.GetErrorY(i_c)))
+        polarity.append(np.abs(gB.GetErrorY(i_c)))
+    polarity_min = min(polarity)
+    corr_min = min(corr)
+    if print_flag:
+        #print(corr)
+        pass
+    for i in range(5):
+        cov_m.append([(polarity_min**2 + corr[i]**2) for _ in range(5)])
+        for j in range(5):
+            if j == i:
+                continue
+            cov_m[i][j] = corr[i]*corr[j] + polarity[i]*polarity[j]
+        cov_m[i][i] = uncorr[i]**2 + corr[i]**2 + polarity[i]**2
+
+    if print_flag:
+        print(cov_m)
+    if is_pos_def(cov_m):
+        print("positive_def")
+    return cov_m
 
 ROOT.gStyle.SetOptStat(0)
 cent = [[0,5],[5,10],[10,30],[30,50],[50,90]]
@@ -165,6 +199,57 @@ format_val = "{:.4f}".format(val)
 format_val_err = "{:.4f}".format(val_err)
 format_chi2 = "{:.2f}".format(h2.GetFunction("pol2").Eval(val))
 print(f"muB = {format_val} +/- {format_val_err} MeV, chi2 = {format_chi2}/4")
+
+# plot covariance matrices
+hh = [ROOT.TH2D(f"covM_{i}", f" ", 5, 0, 5, 5, 0, 5) for i in range(2)]
+cc = [ROOT.TCanvas(f"c_{i}", f"c_{i}", 500, 500) for i in range(2)]
+for iG in range(2):
+    cov = covM(g[iG],gCorr[iG],gB[iG],False)
+    lab = ['0-5%', '5-10%', '10-30%', '30-50%', '50-90%']
+    ROOT.gStyle.SetPalette(ROOT.kLightTemperature)
+    ROOT.gStyle.SetPaintTextFormat(".2f")
+    hh[iG].SetMarkerSize(2)
+    ROOT.gStyle.SetTextFont(42)
+    hh[iG].GetZaxis().SetRangeUser(0.2,0.3)
+    hh[iG].GetXaxis().SetLabelFont(44)
+    hh[iG].GetXaxis().SetLabelSize(25)
+    hh[iG].GetXaxis().SetLabelOffset(-0.35)
+    hh[iG].GetYaxis().SetLabelFont(44)
+    hh[iG].GetYaxis().SetLabelSize(25)
+    for i in range(5):
+        hh[iG].GetXaxis().SetBinLabel(i + 1, lab[i])
+        hh[iG].GetYaxis().SetBinLabel(5 - i, lab[i])
+        for j in range(5):
+            if j > i:
+                continue
+            hh[iG].SetBinContent(i + 1, 5 - j, cov[i][j])
+    cc[iG].cd()
+    hh[iG].GetXaxis().SetNdivisions(5)
+    hh[iG].GetYaxis().SetNdivisions(5)
+    cc[iG].SetRightMargin(0.02)
+    cc[iG].SetLeftMargin(0.13)
+    cc[iG].SetTopMargin(0.08)
+    cc[iG].SetBottomMargin(0.02)
+    hh[iG].Draw("col text")
+    cc[iG].Update()
+    tt = ROOT.TLatex()
+    tt.SetTextFont(44)
+    tt.SetTextSize(29)
+    tt.DrawLatex(0.3, 1.5, "ALICE")
+    tt.SetTextSize(19)
+    tt.DrawLatex(0.3, 1.1, "Pb-Pb #sqrt{#it{s}_{NN}}=5.02 TeV")
+    tt.SetTextSize(19)
+    tt.DrawLatex(0.3, .7, "Thermal-FIST, #mu_{#it{B}} covariance")
+    if iG == 0:
+        tt.DrawLatex(0.3, .3, "#it{T}_{ch}=155#pm2 MeV, #mu_{#it{S}} constrained")
+    else:
+        tt.DrawLatex(0.3, .3, "#it{T}_{ch}=155#pm2 MeV, #mu_{#it{S}} and #mu_{#it{Q}} constrained")
+    # palette = hh[iG].GetListOfFunctions().FindObject("palette")
+    # cc[iG].Modified()
+    # cc[iG].Update()
+    cc[iG].Write()
+    hh[iG].Write()
+    cc[iG].Print(f'covM_{iG}.pdf')
 
 h.Write()
 h2.Write()
