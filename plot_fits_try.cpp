@@ -75,14 +75,14 @@ std::array<TPad*,12> CreatePads(TCanvas* &cv)
       rframe->GetYaxis()->SetDecimals(1);
       if (row==1 || row==3) rframe->GetYaxis()->SetNdivisions(5);
       rframe->GetYaxis()->SetLabelFont(43); // Absolute font size in pixel (precision 3)
-      rframe->GetYaxis()->SetLabelSize((!col) * 15);
+      rframe->GetYaxis()->SetLabelSize((!col) * 18);
 
       /* rframe->GetXaxis()->CenterTitle(); */
       rframe->GetXaxis()->SetTickLength(0.004 / sx[1-center] / (sy[bot] + sy_top[top_low] + sy_bot[bot_global]));
       if (row==0 && col == 2) rframe->GetXaxis()->SetTickLength(0);
       rframe->GetXaxis()->SetLabelSize(27);
       rframe->GetXaxis()->SetLabelFont(43);
-      rframe->GetXaxis()->SetLabelOffset(0.07);
+      rframe->GetXaxis()->SetLabelOffset(0.09);
       rframe->GetXaxis()->SetNdivisions(505);
       rframe->GetXaxis()->SetDecimals(1);
       std::cout<<rframe->GetXaxis()->GetLabelSize()<<" "<<rframe->GetXaxis()->GetTickLength()<<" "<<rframe->GetYaxis()->GetLabelSize()<<" "<<rframe->GetYaxis()->GetTickLength()<<std::endl;
@@ -181,17 +181,17 @@ void plot_fits_try(){
   TLatex t;
   t.SetTextFont(44);
   t.SetTextSize(40);
-  t.DrawLatexNDC(0.03,0.7,"ALICE");
+  t.DrawLatexNDC(0.06,0.7,"ALICE");
   t.SetTextSize(35);
-  t.DrawLatexNDC(0.03,0.6,"Pb-Pb #sqrt{#it{s}_{NN}}=5.02 TeV");
+  t.DrawLatexNDC(0.06,0.6,"Pb-Pb #sqrt{#it{s}_{NN}}=5.02 TeV");
   //t.DrawLatexNDC(0.15,0.6,"|y| < 0.5");
-  TLegend l(0.03,0.55,0.5,0.35);
+  TLegend l(0.08,0.55,0.5,0.35);
   l.SetTextSize(35);
   l.AddEntry(&g,"data","pe");
   l.AddEntry(&f,"Thermal-FIST","l");
   t.SetTextSize(25);
-  t.DrawLatex(1.05, 0.64, "#it{T}_{ch}=155#pm2 MeV");
-  t.DrawLatex(1.05, 0.56, "#mu_{#it{S}} constrained");
+  t.DrawLatex(1.3, 0.62, "#it{T}_{ch}=155#pm2 MeV");
+  t.DrawLatex(1.3, 0.53, "#mu_{#it{S}} constrained");
   l.SetTextFont(44);
   l.SetTextSize(25);
   l.Draw("same");

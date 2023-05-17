@@ -239,7 +239,7 @@ for iG in range(2):
     tt.SetTextSize(19)
     tt.DrawLatex(0.3, 1.1, "Pb-Pb #sqrt{#it{s}_{NN}}=5.02 TeV")
     tt.SetTextSize(19)
-    tt.DrawLatex(0.3, .7, "Thermal-FIST, #mu_{#it{B}} covariance")
+    tt.DrawLatex(0.3, .7, "Thermal-FIST, #mu_{#it{B}} covariance (MeV)")
     if iG == 0:
         tt.DrawLatex(0.3, .3, "#it{T}_{ch}=155#pm2 MeV, #mu_{#it{S}} constrained")
     else:
