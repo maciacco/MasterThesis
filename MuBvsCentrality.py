@@ -237,13 +237,13 @@ for iG in range(2):
     tt.SetTextSize(29)
     tt.DrawLatex(0.3, 1.5, "ALICE")
     tt.SetTextSize(19)
-    tt.DrawLatex(0.3, 1.1, "Pb-Pb #sqrt{#it{s}_{NN}}=5.02 TeV")
+    tt.DrawLatex(0.3, 1.1, "Pb#minusPb #sqrt{#it{s}_{NN}} = 5.02 TeV")
     tt.SetTextSize(19)
-    tt.DrawLatex(0.3, .7, "Thermal-FIST, #mu_{#it{B}} covariance (MeV)")
+    tt.DrawLatex(0.3, .7, "Thermal-FIST, #it{#mu}_{B} covariance (MeV)")
     if iG == 0:
-        tt.DrawLatex(0.3, .3, "#it{T}_{ch}=155#pm2 MeV, #mu_{#it{S}} constrained")
+        tt.DrawLatex(0.3, .3, "#it{T}_{ch} = 155 #pm 2 MeV, #it{#mu}_{S} constrained")
     else:
-        tt.DrawLatex(0.3, .3, "#it{T}_{ch}=155#pm2 MeV, #mu_{#it{S}} and #mu_{#it{Q}} constrained")
+        tt.DrawLatex(0.3, .3, "#it{T}_{ch} = 155 #pm 2 MeV, #it{#mu}_{S} and #it{#mu}_{Q} constrained")
     # palette = hh[iG].GetListOfFunctions().FindObject("palette")
     # cc[iG].Modified()
     # cc[iG].Update()

@@ -18,7 +18,7 @@ using namespace he3;
 
 const int N_TRIALS = 10000;
 
-void SystematicsEfficiencyPrimary(const char *outFileName = "SystematicsEfficiencyPrimary", const char *outFileOption = "recreate", const char *ratioFile = "SpectraHe3", const char *efficiencyFile = "EfficiencyHe3", const char *primaryFile = "PrimaryHe3")
+void SystematicsEfficiencyPrimary(const char *outFileName = "SystematicsEfficiencyPrimary_try", const char *outFileOption = "recreate", const char *ratioFile = "SpectraHe3_kINT7", const char *efficiencyFile = "EfficiencyHe3_kINT7", const char *primaryFile = "PrimaryHe3_kINT7")
 {
   gStyle->SetOptFit(0);
   gStyle->SetOptStat(0);
@@ -74,7 +74,7 @@ void SystematicsEfficiencyPrimary(const char *outFileName = "SystematicsEfficien
           double eff_tmp_err = fEff->GetBinError(iPtBin);
           double prim_tmp = fPrim->GetBinContent(iPtBin);
           double prim_tmp_err = fPrim->GetBinError(iPtBin);
-          double tmp_shift = gRandom->Gaus(1,TMath::Sqrt(eff_tmp_err*eff_tmp_err/eff_tmp/eff_tmp+prim_tmp_err*prim_tmp_err/prim_tmp/prim_tmp));
+          double tmp_shift = gRandom->Gaus(1,TMath::Sqrt(eff_tmp_err*eff_tmp_err/eff_tmp/eff_tmp/* +prim_tmp_err*prim_tmp_err/prim_tmp/prim_tmp */));
           fSpectra[iMatt]->SetBinContent(iPtBin, spec_tmp*tmp_shift);
           fSpectra[iMatt]->SetBinError(iPtBin, fSpectra[iMatt]->GetBinError(iPtBin)*tmp_shift);
         }
