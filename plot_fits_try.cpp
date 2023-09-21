@@ -67,9 +67,9 @@ std::array<TPad*,12> CreatePads(TCanvas* &cv)
       if (row == 2)rframe->GetYaxis()->SetTickLength(0.01 / sx[center] / (1+0.2));
       if (row == 3)rframe->GetYaxis()->SetTickLength(0.01 / sx[center] / (1+0.2));
       if (row==0 && col == 2) rframe->GetYaxis()->SetTickLength(0);
-      rframe->GetYaxis()->SetTitleSize(27);
+      rframe->GetYaxis()->SetTitleSize(33);
       rframe->GetYaxis()->SetTitleFont((!col) * 43);
-      rframe->GetYaxis()->SetTitleOffset(1.2);
+      rframe->GetYaxis()->SetTitleOffset(1.);
       rframe->GetYaxis()->SetLabelOffset(0.01);
       rframe->GetYaxis()->SetNdivisions(505);
       rframe->GetYaxis()->SetDecimals(1);
@@ -80,7 +80,7 @@ std::array<TPad*,12> CreatePads(TCanvas* &cv)
       /* rframe->GetXaxis()->CenterTitle(); */
       rframe->GetXaxis()->SetTickLength(0.004 / sx[1-center] / (sy[bot] + sy_top[top_low] + sy_bot[bot_global]));
       if (row==0 && col == 2) rframe->GetXaxis()->SetTickLength(0);
-      rframe->GetXaxis()->SetLabelSize(27);
+      rframe->GetXaxis()->SetLabelSize(33);
       rframe->GetXaxis()->SetLabelFont(43);
       rframe->GetXaxis()->SetLabelOffset(0.09);
       rframe->GetXaxis()->SetNdivisions(505);
@@ -110,7 +110,7 @@ void plot_fits_try(){
   gStyle->SetOptStat(0);
   TFile in_file("FinalPlot3D_new_2.root");
 
-  TCanvas *c=new TCanvas("c","c",1300,800);
+  TCanvas *c=new TCanvas("c","c",1300,900);
   auto pads=CreatePads(c);
 
   std::vector<TCanvas*> cc;
@@ -138,7 +138,7 @@ void plot_fits_try(){
     t_mub->SetTextFont(44);
     t_muq->SetTextFont(44);
     t_chi2->SetTextFont(44);
-    t_cent->SetTextSize(20);
+    t_cent->SetTextSize(33);
     t_mub->SetTextSize(20);
     t_muq->SetTextSize(20);
     t_chi2->SetTextSize(20);
@@ -146,7 +146,7 @@ void plot_fits_try(){
     t_mub->SetX(0.3);
     t_muq->SetX(0.3);
     t_chi2->SetX(0.3);
-    t_cent->SetY(1.25);
+    t_cent->SetY(1.22);
     t_mub->SetY(0.5);
     t_muq->SetY(0.4);
     t_chi2->SetY(0.6);
@@ -181,20 +181,25 @@ void plot_fits_try(){
   TLatex t;
   t.SetTextFont(44);
   t.SetTextSize(35);
-  t.DrawLatexNDC(0.08,0.7,"ALICE");
+  //t.DrawLatexNDC(0.08,0.7,"ALICE");
   t.SetTextSize(30);
-  t.DrawLatexNDC(0.08,0.6,"Pb#minusPb #sqrt{#it{s}_{NN}} = 5.02 TeV");
+  //t.DrawLatexNDC(0.08,0.6,"Pb#minusPb #sqrt{#it{s}_{NN}} = 5.02 TeV");
   //t.DrawLatexNDC(0.15,0.6,"|y| < 0.5");
-  TLegend l(0.12,0.55,0.5,0.35);
-  l.SetTextSize(35);
-  l.AddEntry(&g,"data","pe");
+  TLegend l(0.02,0.4,0.5,0.7);
+  l.AddEntry(&g,"#splitline{ALICE}{Pb#minusPb #sqrt{#it{s}_{NN}} = 5.02 TeV}","pe");
   l.AddEntry(&f,"Thermal-FIST","l");
-  t.SetTextSize(25);
-  t.DrawLatex(1.5, 0.62, "#it{T}_{ch} = 155 #pm 2 MeV");
-  t.DrawLatex(1.5, 0.53, "#it{#mu}_{S} constrained");
+  t.SetTextSize(30);
+  t.DrawLatex(1., 0.72, "#it{T}_{ch} = 155 #pm 2 MeV");
+  t.DrawLatex(1., 0.62, "#it{#mu}_{S} constrained");
   l.SetTextFont(44);
   l.SetTextSize(25);
   l.Draw("same");
+  TLegendEntry *le1 = (TLegendEntry*)(l.GetListOfPrimitives()->At(0));
+  le1->SetTextFont(43);
+  le1->SetTextSize(30);
+  TLegendEntry *le2 = (TLegendEntry*)(l.GetListOfPrimitives()->At(1));
+  le2->SetTextFont(43);
+  le2->SetTextSize(30);
 
   TFile out("fit_out_prova.root","recreate");
   c->Write();
