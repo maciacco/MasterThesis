@@ -146,13 +146,13 @@ print(f"chisq = {chi2(0.8,g[1],gCorr[1],gB[1],True)}")
 
 cc = ROOT.TCanvas()
 cc.cd()
-h = ROOT.TH1D("h",";#mu_{B} (MeV);#chi^{2}",150,0,1.5)
-for i_p in range(150):
-    h.SetBinContent(i_p+1,chi2(i_p*0.01,g[1],gCorr[1],gB[1],False))
+h = ROOT.TH1D("h",";#it{#mu}_{B} (MeV);#chi^{2}",1000,-5.,5.)
+for i_p in range(1000):
+    h.SetBinContent(i_p+1,chi2(i_p*0.01 - 5.,g[1],gCorr[1],gB[1],False))
 
-h2 = ROOT.TH1D("h2",";#mu_{B} (MeV);#chi^{2}",150,0,1.5)
-for i_p in range(150):
-    h2.SetBinContent(i_p+1,chi2(i_p*0.01,g[0],gCorr[0],gB[0],False))
+h2 = ROOT.TH1D("h2",";#it{#mu}_{B} (MeV);#chi^{2}",1000,-5.,5.)
+for i_p in range(1000):
+    h2.SetBinContent(i_p+1,chi2(i_p*0.01 - 5.,g[0],gCorr[0],gB[0],False))
 
 
 c.cd()
@@ -199,6 +199,60 @@ format_val = "{:.4f}".format(val)
 format_val_err = "{:.4f}".format(val_err)
 format_chi2 = "{:.2f}".format(h2.GetFunction("pol2").Eval(val))
 print(f"muB = {format_val} +/- {format_val_err} MeV, chi2 = {format_chi2}/4")
+
+cchi2 = ROOT.TCanvas("cchi2_muB", "cchi2_muB", 500, 500)
+cchi2.SetTopMargin(0.02)
+cchi2.SetRightMargin(0.02)
+h2.GetXaxis().SetRangeUser(val - 4 * val_err, val + 4 * val_err)
+# h.GetXaxis().SetNdivisions(210)
+# h.GetYaxis().SetNdivisions(210)
+cchi2.cd()
+h2.SetLineWidth(2)
+h2.SetLineColor(ROOT.kAzure - 3)
+h2.Draw("l")
+h2.GetYaxis().SetRangeUser(h2.GetMinimum() - h2.GetMaximum() * 0.05, h2.GetMaximum() * 1.05)
+text = ROOT.TLatex()
+text.SetTextFont(44)
+text.SetTextSize(25)
+text.SetNDC()
+text.DrawLatex(0.32, 0.9, "ALICE")
+text.DrawLatex(0.32, 0.82, "Pb#minusPb #sqrt{#it{s}_{NN}} = 5.02 TeV")
+format_val = "{:.2f}".format(val)
+format_val_err = "{:.2f}".format(val_err)
+text.DrawLatex(0.32, 0.74, "#it{#mu}_{B} = "+format_val+" #pm "+format_val_err+" MeV")
+cchi2.GetPrimitive("pol2").Delete()
+cchi2.Update()
+lines = [ROOT.TLine() for _ in range(6)]
+nsigma = -1
+for ln in lines:
+    ln.SetLineWidth(1)
+    ln.SetLineStyle(9)
+    ln.SetLineColor(ROOT.kOrange + 8)
+    ln.SetX1(val + nsigma * val_err)
+    ln.SetX2(val + nsigma * val_err)
+    ln.SetY1(h2.GetMinimum())
+    ln.SetY2(h2.GetBinContent(h2.FindBin(val + np.abs(nsigma) * val_err)))
+    nsigma = nsigma * (-1)
+    if nsigma < 0:
+        nsigma = nsigma - 1
+    ln.Draw("same")
+lines_2 = [ROOT.TLine() for _ in range(3)]
+nsigma = -1
+text.SetNDC(False)
+for ln in lines_2:
+    ln.SetLineWidth(1)
+    ln.SetLineStyle(9)
+    ln.SetLineColor(ROOT.kOrange + 8)
+    ln.SetX1(val + nsigma * val_err)
+    ln.SetX2(val - nsigma * val_err)
+    ln.SetY1(h2.GetBinContent(h2.FindBin(val - nsigma * val_err)))
+    ln.SetY2(h2.GetBinContent(h2.FindBin(val - nsigma * val_err)))
+    print("{:.0f}".format(np.abs(nsigma))+"sigma C.I. -> "+f"[{val + nsigma * val_err}, {val - nsigma * val_err}]")
+    ln.Draw("same")
+    text.DrawLatex(val - 0.6 * val_err, h2.GetBinContent(h2.FindBin(val - nsigma * val_err)) + h2.GetBinContent(h2.GetMaximumBin()) * 0.03, "{:.0f}".format(np.abs(nsigma))+"#sigma C.I.")
+    nsigma = nsigma - 1
+cchi2.Write()
+cchi2.Print("muBChi2.pdf")
 
 # plot covariance matrices
 hh = [ROOT.TH2D(f"covM_{i}", f" ", 5, 0, 5, 5, 0, 5) for i in range(2)]
