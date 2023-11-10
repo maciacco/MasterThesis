@@ -77,7 +77,7 @@ Color_t colors[]={kRed, kOrange-3, kAzure+4,kGreen+2,kMagenta+2};
 double x_limits[][2]={{0.7,1.6},{0.5, 3.},{2., 35.},{2., 8.},{1.,10.},{1.6, 3.}};
 double x_limits_30_50[][2]={{0.7,1.6},{.5, 3.},{2., 14.},{2., 7.},{1.,10.},{1.6, 3.}};
 double material_ratio_instance[] = {5,4,3,1,-10,2};
-const char *format_fit_results[] = {"#it{R} = %.3f #pm %.3f (uncorr.) #pm %.3f (corr.)","#it{R} = %.3f #pm %.3f (uncorr.) #pm %.3f (corr.)","#it{R} = %.2f #pm %.2f (uncorr.) #pm %.2f (corr.)","#it{R} = %.2f #pm %.2f (uncorr.) #pm %.2f (corr.)","#it{R} = %.3f #pm %.3f (uncorr.) #pm %.3f (syst.)","#it{R} = %.2f #pm %.2f (uncorr.) #pm %.2f (corr.)"};
+const char *format_fit_results[] = {"#it{R} = %.3f #pm %.3f (uncorr.) #pm %.3f (corr.)","#it{R} = %.3f #pm %.3f (uncorr.) #pm %.3f (corr.)","#it{R} = %.2f #pm %.2f (uncorr.) #pm %.2f (corr.)","#it{R} = %.2f #pm %.2f (uncorr.) #pm %.2f (corr.)","#it{R} = %.3f #pm %.3f (uncorr.)","#it{R} = %.2f #pm %.2f (uncorr.) #pm %.2f (corr.)"};
 const char *format_out_results[] = {"%s\t%.12f\t0.000000000000\t%.12f\t%.12f","%s\t%.12f\t0.000000000000\t%.12f\t%.12f","%s\t%.12f\t%.12f\t%.12f\t%.12f","%s\t%.12f\t%.12f\t%.12f\t%.12f","%s\t%.12f\t%.12f\t%.12f","%s\t%.12f\t%.12f\t%.12f\t%.12f"};
 
 void newratios() {
@@ -205,8 +205,8 @@ void newratios() {
           out_ratios_file <<Form(format_out_results[i_part],labels[iP].data(),h[iP]->GetFunction("pol0")->GetParameter(0),sys_err,material_error)<< std::endl;
         }
         else if (i_part==4){
-          text.DrawLatex(mean_x-0.91*half_width_x,mean_y-0.86*half_width_y,Form(format_fit_results[i_part],h[iP]->GetFunction("pol0")->GetParameter(0),h[iP]->GetFunction("pol0")->GetParError(0),sys_tot));
-          out_ratios_file <<Form(format_out_results[i_part],labels[iP].data(),h[iP]->GetFunction("pol0")->GetParameter(0),h[iP]->GetFunction("pol0")->GetParError(0),sys_tot)<< std::endl;
+          text.DrawLatex(mean_x-0.91*half_width_x,mean_y-0.86*half_width_y,Form(format_fit_results[i_part],h[iP]->GetFunction("pol0")->GetParameter(0),std::hypot(h[iP]->GetFunction("pol0")->GetParError(0),sys_tot)));
+          out_ratios_file <<Form(format_out_results[i_part],labels[iP].data(),h[iP]->GetFunction("pol0")->GetParameter(0),std::hypot(h[iP]->GetFunction("pol0")->GetParError(0),sys_tot))<< std::endl;
         }
         else {
           text.DrawLatex(mean_x-0.91*half_width_x,mean_y-0.86*half_width_y,Form(format_fit_results[i_part],h[iP]->GetFunction("pol0")->GetParameter(0),h[iP]->GetFunction("pol0")->GetParError(0),sys_err,material_error));
