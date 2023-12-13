@@ -552,6 +552,7 @@ def muBmuQ(fixmuQ,nopions,i_cent):
         muQ_err = fit_r[i_cent*5][1]/fit_r[i_cent*5][0]*muQ
         muQ_corr = 0
         muQ_polarity = 0
+    # print(np.sqrt(muQ_corr**2 + muQ_polarity**2))
     return [muB,muB_err,muB_corr,muQ,muQ_err,muQ_corr,muB_polarity,muQ_polarity]
 
 apply_scaling_radius = False
@@ -657,16 +658,16 @@ for i_cent, cent in enumerate(centrality_classes):
 
     # get ratios and errors
     ratio_he3 = fit_he3.GetParameter(0)
-    ratio_he3_err = fit_he3.GetParError(0)/ratio_he3
+    ratio_he3_err = fit_he3.GetParError(0) #/ratio_he3
 
     ratio_triton_err = 0.
     ratio_hyp_err = 0.
     ratio_triton = fit_triton.GetParameter(0)
-    ratio_triton_err = fit_triton.GetParError(0)/ratio_triton
+    ratio_triton_err = fit_triton.GetParError(0) #/ratio_triton
     if i_cent < CENT_LIMIT_NUCLEI:
         ratio_hyp = fit_hyp.GetParameter(0)
-        ratio_hyp_err = fit_hyp.GetParError(0)/ratio_hyp
-    
+        ratio_hyp_err = fit_hyp.GetParError(0) #/ratio_hyp
+
     ratio_proton = fit_proton.GetParameter(0)
     ratio_proton_err = 0#fit_proton.GetParError(0)
 
@@ -690,6 +691,7 @@ for i_cent, cent in enumerate(centrality_classes):
     syst_he3 = syst_he3*ratio_he3
     syst_he3_eff_prim = syst_he3_eff_prim*ratio_he3
     syst_he3 = np.sqrt(syst_he3*syst_he3+syst_he3_eff_prim*syst_he3_eff_prim)
+    # print(syst_he3)
     syst_triton = syst_triton*ratio_triton
     syst_triton = np.sqrt(syst_triton*syst_triton)
     if i_cent < CENT_LIMIT_NUCLEI:
@@ -697,7 +699,7 @@ for i_cent, cent in enumerate(centrality_classes):
         syst_hyp = np.sqrt(syst_hyp*syst_hyp)
     syst_proton = fit_proton.GetParError(0)
     syst_pion = fit_pion.GetParError(0)
-    
+
     # final plot
     stat_proton = ratio_proton_err
     stat_pion = ratio_pion_err
@@ -850,7 +852,7 @@ for i_cent, cent in enumerate(centrality_classes):
     for i_part in range(0,6):
         gRatiosParticle.SetPointError(i_part,0,hRatiosParticle.GetBinError(i_part+1))
         gRatiosParticleFit.SetPointError(i_part,0.3,0)
-    
+
     # data to fit ratio
     for i_ticks in range(6):
         hNSigmaRatioFitParticle.GetYaxis().SetNdivisions(5)
@@ -1001,9 +1003,9 @@ for i_cent, cent in enumerate(centrality_classes):
     leg_ratios_particle.AddEntry(gRatiosParticleFit,"fit")
 
     muBmuQ_list = muBmuQ(fixmuQ,nopions,i_cent)
-    text_mu_b = ROOT.TLatex(1,0,"#it{#mu}_{B} = "+"{:.2f}".format(muBmuQ_list[0])+" #pm "+"{:.2f}".format(muBmuQ_list[1])+"(unc.) #pm "+"{:.2f}".format(muBmuQ_list[2])+"(corr.) MeV")
+    text_mu_b = ROOT.TLatex(1,0,"#it{#mu}_{B} = "+"{:.2f}".format(muBmuQ_list[0])+" #pm "+"{:.2f}".format(muBmuQ_list[1])+"(unc.) #pm "+"{:.2f}".format(np.sqrt(muBmuQ_list[2]**2 + muBmuQ_list[6]**2))+"(corr.) MeV")
     text_mu_b.SetName("mu_b")
-    text_mu_q = ROOT.TLatex(1.2,0,"#it{#mu}_{Q} = "+"{:.2f}".format(muBmuQ_list[3])+" #pm "+"{:.2f}".format(muBmuQ_list[4])+"(unc.) #pm "+"{:.2f}".format(muBmuQ_list[5])+"(corr.) MeV")
+    text_mu_q = ROOT.TLatex(1.2,0,"#it{#mu}_{Q} = "+"{:.2f}".format(muBmuQ_list[3])+" #pm "+"{:.2f}".format(muBmuQ_list[4])+"(unc.) #pm "+"{:.2f}".format(np.sqrt(muBmuQ_list[5]**2 + muBmuQ_list[7]**2))+"(corr.) MeV")
     if fixmuQ:
         text_mu_q = ROOT.TLatex(1.2,0,"#it{#mu}_{Q} = "+"{:.2f}".format(muBmuQ_list[3])+" MeV")
     text_mu_q.SetName("mu_q")

@@ -16,3 +16,6 @@
 
 # even if they are inside subdirectories
 !*/
+
+# ignore archive
+archive/*.yaml

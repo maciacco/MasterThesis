@@ -1,5 +1,6 @@
 // particle sequence: pions, protons, hypertriton ,he3
 
+constexpr double pol_err[] = {0.003, 0.003, 0.002, 0., 0.};
 constexpr float minpt[] = {0.66, 0.4, 0., 1.6, 0.5, 1.5};
 constexpr float maxpt[] = {1.64, 3.1, 37., 8.4, 10.5, 3.1};
 constexpr float miny[] = {0.94, 0.93, -0.4, -0.4, 0.5, -0.6};
@@ -148,7 +149,7 @@ void newratios() {
         }
         material_error = std::abs(ratio_mat[1]-ratio_mat[0])*0.5;
       }
-      
+
       int iPoint{0};
       while (iPoint<g[iP]->GetN()){
         double x=g[iP]->GetPointX(iPoint);
@@ -201,15 +202,15 @@ void newratios() {
       material_error = sqrt(material_error*material_error+h[iP]->GetFunction("pol0")->GetParameter(0)*h[iP]->GetFunction("pol0")->GetParameter(0)*(xsec_err_sq[i_part])+(double)(i_part<2)*sys_tot*sys_tot);
       if (draw_text) {
         if (i_part<2){
-          text.DrawLatex(mean_x-0.91*half_width_x,mean_y-0.86*half_width_y,Form(format_fit_results[i_part],h[iP]->GetFunction("pol0")->GetParameter(0),sys_err,material_error));
-          out_ratios_file <<Form(format_out_results[i_part],labels[iP].data(),h[iP]->GetFunction("pol0")->GetParameter(0),sys_err,material_error)<< std::endl;
+          text.DrawLatex(mean_x-0.91*half_width_x,mean_y-0.86*half_width_y,Form(format_fit_results[i_part],h[iP]->GetFunction("pol0")->GetParameter(0),sys_err,sqrt(material_error*material_error + pol_err[iPP]*pol_err[iPP])));
+          out_ratios_file <<Form(format_out_results[i_part],labels[iP].data(),h[iP]->GetFunction("pol0")->GetParameter(0),sys_err,sqrt(material_error*material_error + pol_err[iPP]*pol_err[iPP]))<< std::endl;
         }
         else if (i_part==4){
           text.DrawLatex(mean_x-0.91*half_width_x,mean_y-0.86*half_width_y,Form(format_fit_results[i_part],h[iP]->GetFunction("pol0")->GetParameter(0),std::hypot(h[iP]->GetFunction("pol0")->GetParError(0),sys_tot)));
           out_ratios_file <<Form(format_out_results[i_part],labels[iP].data(),h[iP]->GetFunction("pol0")->GetParameter(0),std::hypot(h[iP]->GetFunction("pol0")->GetParError(0),sys_tot))<< std::endl;
         }
         else {
-          text.DrawLatex(mean_x-0.91*half_width_x,mean_y-0.86*half_width_y,Form(format_fit_results[i_part],h[iP]->GetFunction("pol0")->GetParameter(0),h[iP]->GetFunction("pol0")->GetParError(0),sys_err,material_error));
+          text.DrawLatex(mean_x-0.91*half_width_x,mean_y-0.86*half_width_y,Form(format_fit_results[i_part],h[iP]->GetFunction("pol0")->GetParameter(0),std::hypot(h[iP]->GetFunction("pol0")->GetParError(0),sys_err),material_error));
           out_ratios_file <<Form(format_out_results[i_part],labels[iP].data(),h[iP]->GetFunction("pol0")->GetParameter(0),std::hypot(h[iP]->GetFunction("pol0")->GetParError(0),sys_err),material_error)<< std::endl;
         }
         text.DrawLatex(mean_x-0.5*half_width_x,mean_y+0.7*half_width_y,Form("#chi^{2}/NDF = %.2f/%d",h[iP]->GetFunction("pol0")->GetChisquare(),h[iP]->GetFunction("pol0")->GetNDF()));
