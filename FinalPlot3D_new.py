@@ -593,7 +593,7 @@ for i_cent, cent in enumerate(centrality_classes):
     file_he3 = ROOT.TFile.Open(path_he3 + '/SpectraHe3_kINT7.root')
     file_triton = ROOT.TFile.Open(path_triton + '/SpectraHe3.root')
     file_hyp = ROOT.TFile.Open(path_hyp + '/Ratio.root')
-    file_proton = ROOT.TFile.Open(path_proton + '/out_tof_extend_4_old/SystematicsAllEPtNotCombinedTOF_extend_4.root')
+    file_proton = ROOT.TFile.Open(path_proton + '/SystematicsAllEPtNotCombinedTOF_extend_4.root')
     file_pion = ROOT.TFile.Open(path_pion + '/SystematicsAllEPtNotCombined_extend2.root')
     file_omega = ROOT.TFile.Open(path_omega + '/ratio_cutCompetingMass-3.root')
     file_he3_syst = ROOT.TFile.Open(path_he3 + '/SystematicsAll_extend2.root')
